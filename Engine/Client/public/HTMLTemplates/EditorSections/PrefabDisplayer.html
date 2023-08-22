@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="/GeneralStyles.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<template id="EntityInspector">
+    <h2 id="EntityTitle">Entity Id</h2>
+    <div class="Components" id="EntityComponents"></div>
+
+    <input
+        list="componentTypes"
+        id="addComponent"
+        name="addComponent"
+        class="form-control"
+        style="margin-bottom: 5px" />
+    <datalist id="componentTypes"></datalist>
+    <button id="AddComponentSubmit">Add Component</button>
+</template>
+
+<style>
+    .Component {
+        border: 1px solid rgb(98, 98, 98);
+        padding: 5px;
+        border-radius: 5px;
+        margin: 5px;
+    }
+    .Components {
+        margin-bottom: 20px;
+        background-color: rgb(24, 24, 24);
+        padding: 5px;
+        border-radius: 5px;
+    }
+    #EntityTitle {
+        background-color: #343641;
+        width: 100%;
+        padding: 5px;
+        padding-left: 10px;
+        border-radius: 3px;
+    }
+</style>
+
+<canvas id="renderCanvas" touch-action="none" class="gameCanvas"></canvas>
+
+<script>
+    fetch("GeneralFunctions.js")
+        .then(response => response.text())
+        .then(async data => {
+            var scr = document.createElement("script");
+            scr.innerHTML = data;
+            document.body.appendChild(scr);
+
+            await FetchInjectAdditionalHTML("TopResizer");
+            await FetchInjectAdditionalHTML("RightResizer");
+            await FetchInjectAdditionalHTML("/Toast-Notification");
+            await FetchInjectAdditionalHTML("/HTMLTemplates/EditorTemplate");
+
+            const event = new CustomEvent("PrefabDisplayerSetup", { bubbles: true });
+            document.dispatchEvent(event);
+        });
+
+    function setupInspector(data) {}
+</script>

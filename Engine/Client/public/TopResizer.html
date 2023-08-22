@@ -1,0 +1,75 @@
+<style>
+    .top-verticalResizeHandle {
+        width: 100%;
+        border-top: 1px solid rgb(122, 122, 122);
+        cursor: row-resize;
+        position: absolute;
+        padding-bottom: 7px;
+    }
+
+    .top-verticalResizeHandle:hover {
+        background-color: red;
+        height: 8px;
+    }
+</style>
+
+<!-- Automatically listen and bind any resizeable panels -->
+<script>
+    let topVertResizer_lastY = 0;
+    let topVertResizer_resizingElement = null;
+
+    const top_VertResizerobserver = new MutationObserver(mutationsList => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === "childList") {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.classList.contains("top-verticalResizeHandle")) {
+                            attachVertTopListeners(node);
+                        }
+                        const childElements = node.querySelectorAll(".top-verticalResizeHandle");
+                        childElements.forEach(element => {
+                            attachVertTopListeners(element);
+                        });
+                    }
+                });
+            }
+        }
+    });
+
+    const top_VertResizerconfig = { childList: true, subtree: true };
+    top_VertResizerobserver.observe(document.body, top_VertResizerconfig);
+
+    function attachVertTopListeners(handle) {
+        handle.addEventListener("mousedown", function (event) {
+            topVertResizer_resizingElement = handle.parentElement;
+            topVertResizer_lastY = event.clientY;
+        });
+    }
+
+    document.querySelectorAll(".top-verticalResizeHandle").forEach(attachVertTopListeners);
+
+    document.addEventListener("mousemove", function (event) {
+        if (topVertResizer_resizingElement) {
+            const deltaY = event.clientY - topVertResizer_lastY;
+
+            const screenHeight = window.innerHeight;
+
+            var newHeight = topVertResizer_resizingElement.offsetHeight - deltaY;
+            var newTop = topVertResizer_resizingElement.offsetTop + deltaY;
+            const topMargin = 10;
+            const bottomMargin = 40;
+            newTop = Math.max(newTop, topMargin);
+            newTop = Math.min(newTop, window.innerHeight - bottomMargin);
+            newHeight = Math.max(newHeight, bottomMargin + topVertResizer_resizingElement.offsetHeight);
+
+            topVertResizer_resizingElement.style.height = (newHeight / screenHeight) * 100 + "%";
+            topVertResizer_resizingElement.style.top = (newTop / screenHeight) * 100 + "%";
+
+            topVertResizer_lastY = event.clientY;
+        }
+    });
+
+    document.addEventListener("mouseup", function () {
+        topVertResizer_resizingElement = null;
+    });
+</script>

@@ -1,0 +1,81 @@
+<style>
+    .context-menu {
+        display: none;
+        position: absolute;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        z-index: 1000;
+        border-radius: 2px;
+    }
+
+    .context-menu-item {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    .context-menu-item:hover {
+        background-color: #f0f0f0;
+    }
+</style>
+
+<div id="context-menu" class="context-menu"></div>
+
+<script>
+    function bindClick(doc) {
+        doc.addEventListener("click", hideContextMenu);
+    }
+
+    function hideContextMenu(event) {
+        event.target.ownerDocument.getElementById("context-menu").style.display = "none";
+        event.currentTarget.removeEventListener(event.type, hideContextMenu)
+    }
+
+    function showContextMenu(event, items, doc) {
+        event.preventDefault();
+        bindClick(doc);
+
+        var contextMenu = doc.getElementById("context-menu");
+        contextMenu.innerHTML = "";
+
+        for (var i = 0; i < items.length; i++) {
+            var item = doc.createElement("div");
+            item.className = "context-menu-item";
+            item.textContent = items[i].name;
+            item.addEventListener("click", items[i].callback);
+            contextMenu.appendChild(item);
+        }
+
+        contextMenu.style.display = "block";
+
+        // Get the click coordinates
+        var clickX = event.clientX;
+        var clickY = event.clientY;
+
+        // Get the dimensions of the window
+        var windowWidth = window.innerWidth;
+        var windowHeight = window.innerHeight;
+
+        // Get the dimensions of the context menu
+        var contextMenuWidth = contextMenu.offsetWidth;
+        var contextMenuHeight = contextMenu.offsetHeight;
+
+        // Determine where to display the context menu
+        if (clickX > windowWidth / 2) {
+            // On the right half of the screen, make it go left
+            contextMenu.style.left = clickX - contextMenuWidth + "px";
+        } else {
+            // On the left half of the screen
+            contextMenu.style.left = clickX + "px";
+        }
+
+        if (clickY > windowHeight / 2) {
+            // On the bottom half of the screen, make it go upwards
+            contextMenu.style.top = clickY - contextMenuHeight + "px";
+        } else {
+            // On the top half of the screen
+            contextMenu.style.top = clickY + "px";
+        }
+
+        return false;
+    }
+</script>

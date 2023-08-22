@@ -1,0 +1,262 @@
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #ContentBrowser {
+            height: 30vh; /* 30% of viewport height */
+            width: 70%;
+            position: absolute;
+            pointer-events: all;
+            bottom: 0; 
+            left: 0; 
+            padding: 5px!important;
+            margin: 0px;
+            border-radius: 0px;
+        }
+
+        #InspectorPanel {
+            height: 100vh; /* 100% of viewport height */
+            right:0px;
+            position: absolute;
+            width: 30%;
+            margin: 0px;
+            border-radius: 0px;
+            overflow: auto;
+            pointer-events: all;
+        }
+
+        #Higherarchy {
+            height: 70%; /* 30% of viewport height */
+            width: 20%;
+            left: 0px;
+            top:36px;
+            position: absolute;
+            pointer-events: all;
+            padding: 5px!important;
+            margin: 0px;
+            border-radius: 0px;
+        }
+
+        .selectedHigherarchy{
+            border: 1px solid #d0761c !important;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-gap: 5px; /* Gap between grid items */
+            overflow-y: auto; /* Allow vertical scrolling */
+            grid-template-columns: repeat(10, 1fr); 
+        }
+
+        .content-item {
+            position: relative; /* this is important */
+            color: #f0f0f0;
+            overflow: hidden; /* Optional: in case content is larger than the container */
+            pointer-events: all;
+        }
+
+        .content-item::before {
+            content: "";
+            display: block;
+            padding-bottom: 100%; /* This creates the square aspect ratio */
+        }
+
+        .content-item-content {
+            background-color: #161616;
+            border-radius: 5px;
+            padding: 2px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .selectedContent {
+            background-color: #363636;
+            padding: 5px;
+            border:1px solid #d0761c;
+        }
+
+        #ContentItemThumbnail {
+            background-color: transparent;
+            height: 100%;
+            width: 100%;
+        }
+
+        #ContentItemName {
+            bottom: 2px;
+            pointer-events: none;
+            width:100%;
+            height:100%;
+            background: none;
+            color:white;
+            border:none;
+        }
+
+        #ContentItemName:active {
+            background: #444654;
+        }
+
+        .folderLink {
+            color: white;
+            padding-left: 10px;
+        }
+        .folderLink:hover{
+            cursor: pointer;
+        }
+        .higherarchyEntity {
+            border-radius: 5px;
+            padding: 2px;
+            padding-left: 10px;
+            padding-right: 10px;
+            background-color: #3a3c48;
+        }
+        .higherarchyEntity:hover {
+            cursor: pointer;
+            background-color: #444654;
+            scale: 0.99;
+        }
+        .higherarchEntityText {
+            margin: 0px;
+        }
+
+        .extraInfo {
+            color: #aaa;
+        }
+
+        #editorHeaderPanel {
+            position: absolute;
+            height: 35px;
+            left: 0px;
+            width: 100%;
+            background-color: #1e1e1e;
+            color: white;
+            border-bottom: 1px solid #494c57;
+        }
+
+    </style>
+    <link rel="stylesheet" href="/css/jsonFormDarkTheme.css">
+</head>
+
+<body>
+    <!-- Templates -->
+    <template id="ContentItem">
+        <div class="content-item">
+            <div class="content-item-content" id="selectableContentItem">
+                <img style="pointer-events: none;" id="ContentItemThumbnail" src="https://via.placeholder.com/100x100">
+            </div>
+            <input type="text" class="text-center" id="ContentItemName"></input>
+        </div>
+    </template>
+
+    <template id="BasicItemInspectorInfo">
+        <h1 style="color: white; overflow-wrap: break-word;" id="ItemName">Item Name</h1>
+        <h3 class="extraInfo" id="ItemType">Item Type</h3>
+        <p id="LastModified"> Last Modified:  </p>
+        <p id="ItemSize">Size: 0mb</p>
+        <img id="ItemImage" style="width: 100%; aspect-ratio: 1 / 1;">
+    </template>
+
+    <!-- Editor Setup -->
+    <div class="container-fluid h-100" id="EditorPanels">
+        <div id="editorHeaderPanel">
+
+        </div>
+        <div id="editorMainPanel">
+            <div id="Higherarchy" class="editorPanel hidden">
+                <div class="right-horizontalResizeHandle"></div>
+                <h2 id="HigherarchTitle" style="margin-bottom: 0px;">Higherarchy</h2>
+                <p class="extraInfo">Prefab Higherarchy</p>
+                <div id="HigherarchyItems" style="align-items: center; "></div>
+            </div>
+    
+            <div>
+                <!-- Content Browser -->
+                <div id="ContentBrowser" class="editorPanel">
+                    <div class="top-verticalResizeHandle" style="top: 0px; left: 0px;"></div>
+                    <div class="right-horizontalResizeHandle"></div>
+                    <!--Options-->
+                    <div style="padding-bottom: 10px;">
+                        <div id="ContentOptions">
+                            <!-- <select class="SFSelect" id="ContentCategories">
+                                <option> All Assets </option>
+                            </select> -->
+                            <input type="file" id="ContentUploadUploader" style="display: none;">
+                            <button id="ContentUpload" class="minimalist-button">Upload Content</button>
+                            <button class="minimalist-button" onclick="zoomContentIn()">+</button>
+                            <button class="minimalist-button" onclick="zoomContentOut()">-</button>
+                            <button class="minimalist-button" id="RefreshContent">Refresh</button>
+                        </div>
+                        <div id="FolderLinks" style="display: inline-block; white-space: nowrap;">
+    
+                        </div>
+                    </div>
+                    <!--Actual content-->
+                    <div style="padding: 0%; overflow-y: auto; height: 90%;">
+                        <div id="ContBrowsItems" class="content-grid">
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Inspector -->
+                <div id="InspectorPanel" class="editorPanel hidden">
+                    Component Inspector
+                </div>
+    
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script>
+        FetchInjectAdditionalHTML("Context-Menu");
+    </script>
+    <!-- Zoom in/out for content browser -->
+    <script>
+        var contentColCount = 10;
+        function zoomContentIn() {
+            const contentGrid = document.querySelector('#ContBrowsItems');
+            contentColCount--;
+            if(contentColCount < 1){contentColCount = 1;}
+            contentGrid.style.gridTemplateColumns = `repeat(${contentColCount}, 1fr)`;
+        }
+
+        function zoomContentOut() {
+            const contentGrid = document.querySelector('#ContBrowsItems');
+            contentColCount++;
+            contentGrid.style.gridTemplateColumns = `repeat(${contentColCount}, 1fr)`;
+        }
+    </script>
+
+    <!-- Set higherarchy height in response to content browser -->
+    <script>
+        setTimeout(() => {
+            const contentB = document.querySelector("#ContentBrowser");
+            const inspect = document.querySelector("#InspectorPanel");
+            const resizeObserver = new ResizeObserver(entries => {
+                inspect.style.width = (100-parseFloat(contentB.style.width)) + "%";
+            });
+            resizeObserver.observe(contentB);
+        }, 200);
+    </script>
+    <!-- Set Inspector width in response to content browser -->
+    <script>
+        setTimeout(() => {
+            const contentB = document.querySelector("#ContentBrowser");
+            const higherarch = document.querySelector("#Higherarchy");
+            const resizeObserver = new ResizeObserver(entries => {
+                higherarch.style.height = parseFloat(contentB.style.top) + "%";
+            });
+            resizeObserver.observe(contentB);
+        }, 200);
+    </script>
+
+</body>
+
+</html>

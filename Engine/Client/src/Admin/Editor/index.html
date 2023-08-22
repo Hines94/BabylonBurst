@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Editor - SpaceFleets</title>
+
+        <style>
+            html,
+            body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            .gameCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+        </style>
+        <link rel="stylesheet" href="/GeneralStyles.css" />
+    </head>
+
+    <body>
+        <!-- UI -->
+
+        <div
+            id="GameUI"
+            style="
+                position: absolute;
+                z-index: 1;
+                left: 0px;
+                right: 0px;
+                top: 0px;
+                bottom: 0px;
+                pointer-events: none;
+            "></div>
+
+        <!-- End UI -->
+
+        <canvas id="renderCanvas" touch-action="none"></canvas>
+        <!-- touch-action="none" for best results from PEP -->
+
+        <script>
+            var exports = {};
+        </script>
+        <script src="/GeneralFunctions.js"></script>
+
+        <!-- Base Injections -->
+        <script>
+            FetchInjectAdditionalHTML("TopResizer");
+            FetchInjectAdditionalHTML("RightResizer");
+            FetchInjectAdditionalHTML("Toast-Notification");
+        </script>
+
+        <div id="form"></div>
+
+        <!-- Import Game Client Logic -->
+        <script type="module">
+            import { SpaceFleetsEditor } from "/SpaceFleetsEditor.ts";
+            const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+            //Not worth using worker thread as communication too much!
+            document.body.style.zoom = "100%";
+            //TODO: Additional options from env etc?
+            //Pass in canvas and start up game client
+            const client = new SpaceFleetsEditor(canvas, {});
+        </script>
+    </body>
+</html>

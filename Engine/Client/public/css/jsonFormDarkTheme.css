@@ -1,0 +1,11 @@
+.je-object__container .card {
+    background-color: #232323 !important;
+}
+
+.je-object__container .card-body {
+    background-color: #343434 !important;
+}
+
+.je-object__container label {
+    padding-left: 10px;
+}

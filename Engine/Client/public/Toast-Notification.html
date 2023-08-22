@@ -1,0 +1,26 @@
+<style>
+    #toast {
+        visibility: hidden;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 14px;
+        z-index: 9999;
+        opacity: 0;
+        transition: visibility 0s 0.5s, opacity 0.5s;
+    }
+
+    #toast.visible {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s, opacity 0.5s;
+    }
+</style>
+
+<div id="toast"></div>
