@@ -1,4 +1,3 @@
-import { UpdateAsyncSystemOnTick } from "rooasyncassets";
 import { RunInstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
 import { SendDataToServer } from "./Networking/PlayerDataToServer";
 import { debugBoxVis } from "./Admin/DebugBoxVisualiser";
@@ -8,6 +7,7 @@ import { serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { GameEcosystem } from "./GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
+import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
 
 /** Game specific systems like building only for main SpaceFleets game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {

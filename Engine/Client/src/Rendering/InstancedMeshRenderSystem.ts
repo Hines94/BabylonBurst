@@ -1,8 +1,9 @@
-import { AsyncStaticMeshInstanceRunner } from "rooasyncassets";
+
 import { defaultLayerMask } from "../Utils/LayerMasks";
 import { EntTransform } from "../EntitySystem/CoreComponents";
 import { GameEcosystem } from "../GameEcosystem";
 import { GetComponent } from "../EntitySystem/EntityMsgpackConverter";
+import { AsyncStaticMeshInstanceRunner } from "../AsyncAssets";
 
 function getRunnerID(rend: InstancedRender): string {
     var ret: string = rend.AwsPath + "_" + rend.MeshName + "_" + 0 + "_";

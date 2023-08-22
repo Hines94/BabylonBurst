@@ -1,4 +1,5 @@
-import { AsyncAudioClipDefinition } from "rooasyncassets";
+
+import { AsyncAudioClipDefinition } from "../../../../../AsyncAssets";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
 import { GetFullNameOfObject } from "../ContentItem";
 

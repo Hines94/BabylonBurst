@@ -1,4 +1,4 @@
-import { AsyncAWSBackend, AsyncAssetManager } from "rooasyncassets";
+
 import { LoadHTMLUITemplate } from "../../../HTML/TemplateLoader";
 import { BaseTickableObject } from "../../../Utils/BaseTickableObject";
 import { SpaceFleetsEditor } from "../SpaceFleetsEditor";
@@ -9,6 +9,7 @@ import { GameEcosystem } from "../../../GameEcosystem";
 import { SaveEntitiesToMsgpackIntArray } from "../../../EntitySystem/EntityMsgpackConverter";
 import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
+import { AsyncAssetManager } from "../../../AsyncAssets";
 
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;

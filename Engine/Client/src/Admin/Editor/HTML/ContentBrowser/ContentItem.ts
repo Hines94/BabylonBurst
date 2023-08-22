@@ -1,4 +1,5 @@
-import { IBackendStorageInterface } from "rooasyncassets/dist/cjs/Framework/StorageInterfaceTypes";
+import { IBackendStorageInterface } from "../../../../AsyncAssets";
+
 
 /** Type of content for our editor (or player build) content browser */
 export enum ContentItemType {

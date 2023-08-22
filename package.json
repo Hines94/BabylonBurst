@@ -1,0 +1,17 @@
+{
+  "name": "babylonboost",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babylonjs/core": "^5.49.0",
+    "@babylonjs/gui": "5.49.0",
+    "@babylonjs/inspector": "5.49.0",
+    "@babylonjs/serializers": "5.49.0"
+  }
+}

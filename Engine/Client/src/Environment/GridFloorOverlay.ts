@@ -14,7 +14,7 @@ import { SetSimpleMaterialColor } from "../Materials/AsyncSimpleImageMaterial";
 import { DisposeOfObject } from "../Utils/SceneUtils";
 import { defaultLayerMask } from "../Utils/LayerMasks";
 import { SnapGridUtil } from "../Utils/SnapGridUtil";
-import { InstancedMeshTransform, SetTransformArray } from "rooasyncassets";
+import { InstancedMeshTransform, SetTransformArray } from "../AsyncAssets";
 
 export enum GridType {
     squareGrid,

@@ -1,4 +1,5 @@
-import { AsyncImageDescription } from "rooasyncassets";
+
+import { AsyncImageDescription } from "../../../../../AsyncAssets";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
 import { GetFullNameOfObject } from "../ContentItem";
 

@@ -37,6 +37,7 @@ import { AsyncDataType } from "./Utils/ZipUtils.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 import { AsyncStaticMeshInstanceRunner } from "./AsyncStaticMeshInstanceRunner.js";
 import { AsyncZipPuller } from "./Framework/AsyncZipPuller.js";
+export type { IBackendStorageInterface, IFrontendStorageInterface } from "./Framework/StorageInterfaceTypes.js";
 
 function UpdateAsyncSystemOnTick() {
   UpdateAllMeshDefinitions();

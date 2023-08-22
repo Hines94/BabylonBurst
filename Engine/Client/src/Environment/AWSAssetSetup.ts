@@ -1,11 +1,5 @@
-import {
-    AsyncAssetManager,
-    AsyncAWSBackend,
-    AsyncDataType,
-    AsyncIndexDBFrontend,
-    AsyncInMemoryFrontend,
-    AsyncZipPuller,
-} from "rooasyncassets";
+
+import { AsyncAWSBackend, AsyncAssetManager, AsyncDataType, AsyncInMemoryFrontend, AsyncIndexDBFrontend, AsyncZipPuller } from "../AsyncAssets";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 import { GetWasmModule } from "../WASM/ServerWASMModule";
 

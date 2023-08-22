@@ -1,4 +1,5 @@
-import { AsyncAssetLoader, AsyncDataType } from "rooasyncassets";
+import { AsyncAssetLoader, AsyncDataType } from "../AsyncAssets";
+
 
 export class AsyncJSONLoader extends AsyncAssetLoader {
     //TODO: better caching tactics for JSON?

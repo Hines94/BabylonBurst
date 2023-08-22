@@ -1,7 +1,7 @@
-import { Color4, LinesMesh, Mesh, MeshBuilder, StandardMaterial, Vector3 } from "@babylonjs/core";
-import { InstancedMeshTransform, SetTransformArray } from "rooasyncassets";
+import { Color4, Mesh, MeshBuilder, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { DisposeOfObject } from "../Utils/SceneUtils";
 import { defaultLayerMask } from "../Utils/LayerMasks";
+import { InstancedMeshTransform, SetTransformArray } from "../AsyncAssets";
 
 /** Uses a line renderer to render a feint grid to help with perspective */
 export class GridEdgeOverlay {
