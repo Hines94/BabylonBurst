@@ -3,15 +3,16 @@
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@babylonjs/core": "^5.49.0",
     "@babylonjs/gui": "5.49.0",
     "@babylonjs/inspector": "5.49.0",
-    "@babylonjs/serializers": "5.49.0"
+    "@babylonjs/serializers": "5.49.0",
+    "typescript": "^4.8.4",
+    "vite": "^4.0.4",
+    "@msgpack/msgpack": "^3.0.0-beta2",
+    "uuid": "^9.0.0"
   }
 }

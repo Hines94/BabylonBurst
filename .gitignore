@@ -3,5 +3,6 @@ node_modules
 /.vs
 
 /node_modules
+.env
 
 package-lock.json

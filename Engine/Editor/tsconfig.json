@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "baseUrl": "./",
+      "paths": {
+        "@BabylonBoostClient/*": ["../Client/src/*"]
+      }
+    }
+  }

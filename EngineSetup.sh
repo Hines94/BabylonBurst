@@ -12,12 +12,17 @@ print_cyan "--- Starting setup for Babylon Boost ---\n"
 # Install modules common to all packages
 print_cyan "--- Installing Common Modules ---\n"
 npm install
-npm install -g vite
 
 print_cyan "--- Installing Engine Modules ---\n"
 cd Engine/Client || exit
 npm install
 cd ../../
+cd Engine/Editor
+npm install
+cd ../../
+
+print_cyan "--- Setting up vscode ---\n"
+cp Engine/Tools/vscodeSetup/settings.json .vscode/settings.json
 
 print_cyan "TODO: Install git hooks for Editor\n"
 
