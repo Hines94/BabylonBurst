@@ -12,7 +12,7 @@ export async function setupAsyncManager() {
     //Fake credentaials for now
     //TODO: Use AWS login credentials for users along with admin accounts?
     var creds: any = {
-        identityPoolId: "ap-southeast-2:a4d396b9-e557-4a8c-af6b-6e87ba912930",
+        identityPoolId: "TODO: Support Identity Pool from login!",
         clientConfig: { region: "ap-southeast-2" },
     };
     //Get AWS from environment if running on vite?
@@ -28,7 +28,7 @@ export async function setupAsyncManager() {
     if (environmentVaraibleTracker.GetVariable("USE_MEMORY_FRONTEND") !== "TRUE") {
         frontend = new AsyncIndexDBFrontend();
     }
-    const assetManager = new AsyncAssetManager(new AsyncAWSBackend("sydney-spacefleets", creds), frontend);
+    const assetManager = new AsyncAssetManager(new AsyncAWSBackend(environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"), creds), frontend);
     assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light;
     await assetManager.loadManager();
     setupAWSWASMHooks(assetManager);

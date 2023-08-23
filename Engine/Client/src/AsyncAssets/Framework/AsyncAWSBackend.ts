@@ -101,7 +101,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
     location: string,
     extension: string
   ): Promise<boolean> {
-    const zipData = await createZip(data, "spaceFleetsUpload" + extension);
+    const zipData = await createZip(data, "babylonBoostUpload" + extension);
     const compressedBlob = new Blob([zipData], { type: "application/zip" });
     const uploadParams = {
       Bucket: this.bucketName,
