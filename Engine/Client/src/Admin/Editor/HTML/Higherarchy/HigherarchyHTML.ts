@@ -2,7 +2,7 @@ import { SetInspectorOwner } from "../InspectorWindow/InspectorHTML";
 import { RemoveClassFromAllItems, WaitForEvent } from "../../../../HTML/HTMLUtils";
 import { GameEcosystem } from "../../../../GameEcosystem";
 import { EntitySpecification, GetComponent, RawEntityData } from "../../../../EntitySystem/EntityMsgpackConverter";
-import { SpaceFleetsEditor } from "../../SpaceFleetsEditor";
+import { BabylonBoostEditor } from "../../BabylonBoostEditor";
 import { ShowContextMenu } from "../../../../HTML/HTMLContextMenu";
 import { GetEditorGizmos } from "./EditorGizmos";
 import { EntityInspectorHTML } from "./EntityInspectorHTML";
@@ -22,7 +22,7 @@ export class HigherarchyHTML {
 
     protected setupHigherarchyEcosystem() {
         const gamePanel = this.windowDoc.getElementById("renderCanvas");
-        this.ecosystem = new SpaceFleetsEditor(gamePanel as HTMLCanvasElement, {
+        this.ecosystem = new BabylonBoostEditor(gamePanel as HTMLCanvasElement, {
             noHTML: true,
         });
         const higherarchy = this;

@@ -6,7 +6,7 @@ import { GameEcosystem } from "./GameEcosystem";
 //import * as Ammo from 'ammo.js';
 
 /** Game specific ecosystem client. Has main scene for rendering main game. */
-export class SpaceFleetClient extends RunnableGameEcosystem {
+export class BabylonBoostClient extends RunnableGameEcosystem {
     //Maximum bounds of the world
     worldRadius = 50;
     worldHeight = 20;

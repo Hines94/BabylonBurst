@@ -1,7 +1,7 @@
 
 import { LoadHTMLUITemplate } from "../../../HTML/TemplateLoader";
 import { BaseTickableObject } from "../../../Utils/BaseTickableObject";
-import { SpaceFleetsEditor } from "../SpaceFleetsEditor";
+import { BabylonBoostEditor } from "../BabylonBoostEditor";
 import { ContentBrowserHTML, ContentStorageBackend, GetCurrentLevelItem } from "./ContentBrowser/ContentBrowserHTML";
 import { ContentItem, ContentItemType, GetFullNameOfObject, SaveContentItem } from "./ContentBrowser/ContentItem";
 import { SetupCustomInspectorEditors } from "./InspectorWindow/CustomInspectorInputs";
@@ -14,10 +14,10 @@ import { AsyncAssetManager } from "../../../AsyncAssets";
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;
     contentBrowser: ContentBrowserHTML;
-    editor: SpaceFleetsEditor;
+    editor: BabylonBoostEditor;
     editorStore: ContentStorageBackend;
 
-    constructor(editor: SpaceFleetsEditor) {
+    constructor(editor: BabylonBoostEditor) {
         super();
         this.editor = editor;
         SetupCustomInspectorEditors();

@@ -31,13 +31,13 @@
         </script>
         <!-- Import Game Client Logic -->
         <script type="module">
-            import { SpaceFleetClient } from "/src/SpaceFleetsClient.ts";
+            import { BabylonBoostClient } from "/src/BabylonBoostClient.ts";
             const canvas = document.getElementById("renderCanvas"); // Get the canvas element
             //Not worth using worker thread as communication too much!
             document.body.style.zoom = "100%";
             //TODO: Additional options from env etc?
             //Pass in canvas and start up game client
-            const client = new SpaceFleetClient(canvas);
+            const client = new BabylonBoostClient(canvas);
         </script>
 
         <!-- <script>

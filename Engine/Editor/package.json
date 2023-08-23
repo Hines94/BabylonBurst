@@ -1,5 +1,5 @@
 {
-    "name": "spacefleets",
+    "name": "babylonboosteditor",
     "version": "0.1.0",
     "private": true,
     "main": "src/GameClient/GameClient.ts",

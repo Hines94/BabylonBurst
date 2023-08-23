@@ -19,7 +19,7 @@ type editorOptions = {
 };
 
 //This is the editor for generating/saving/loading different buildable types for our AI and players to use
-export class SpaceFleetsEditor extends RunnableGameEcosystem {
+export class BabylonBoostEditor extends RunnableGameEcosystem {
     options: editorOptions;
     constructor(canvas: HTMLCanvasElement, options: editorOptions) {
         super(canvas);

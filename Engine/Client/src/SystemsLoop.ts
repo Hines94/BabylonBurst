@@ -9,7 +9,7 @@ import { GameEcosystem } from "./GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
 
-/** Game specific systems like building only for main SpaceFleets game */
+/** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
     if (serverConnection) {
         serverConnection.ProcessQueuedServerMessages(gameClient);
