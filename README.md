@@ -1,16 +1,18 @@
 Setup:
-- Install WSL (use wslsetup.bat)
-- run EngineSetup.sh
+- Install WSL
 - create an AWS S3 bucket to contain the data for your game
 - create an AWS global key in IAM (not safe for production)
-- create .env at the base of this 
-Example:
-    DEBUG_MODE=Light
-    USE_MEMORY_FRONTEND=TRUE
-    AWS_ID=YourAwsId
-    AWS_KEY=YourAwsKey
-    AWS_BUCKET_NAME=YourBucketName
-    AWS_BUCKET_REGION=ap-southeast-2
+- Clone this directory (git clone https://github.com/Hines94/BabylonBoost.git) 
+    - OPTIONAL recommended clone direct to WSL as build times are around 10x faster
+- run EngineSetup.sh
+- create .env at the same level as this README
+    Example:
+        DEBUG_MODE=Light
+        USE_MEMORY_FRONTEND=TRUE
+        AWS_ID=YourAwsId
+        AWS_KEY=YourAwsKey
+        AWS_BUCKET_NAME=YourBucketName
+        AWS_BUCKET_REGION=ap-southeast-2
 
 Start Editor:
 run StartEditor.sh
@@ -18,8 +20,8 @@ run StartEditor.sh
 Start Development:
 On vscode:
 run debug mode to debug server (F5)
-No vscode:
-run TODO: StartDevelopment.sh
+No vscode or no debug:
+run bash StartDev.sh
 
 Check Backend Performance:
 Open Prometheus to see graphed data (localhost:3000)

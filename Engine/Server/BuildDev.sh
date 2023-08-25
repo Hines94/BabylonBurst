@@ -17,6 +17,8 @@ run_tests=0
 project_Name=BabylonBoost
 project_Name_Lower=$(to_lower "${project_Name}")
 
+cd ${base_path}
+
 # Define color variables
 RED='\033[0;31m'
 GREEN='\033[0;32m'

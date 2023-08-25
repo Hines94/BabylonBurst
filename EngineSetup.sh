@@ -23,6 +23,8 @@ cd ../../
 
 print_cyan "--- Setting up vscode ---\n"
 cp Engine/Tools/vscodeSetup/settings.json .vscode/settings.json
+cp Engine/Tools/vscodeSetup/launch.json .vscode/launch.json
+cp Engine/Tools/vscodeSetup/tasks.json .vscode/tasks.json
 
 print_cyan "TODO: Install git hooks for Editor\n"
 
