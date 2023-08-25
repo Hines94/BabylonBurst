@@ -1,14 +1,16 @@
 Setup:
+- Install WSL (use wslsetup.bat)
 - run EngineSetup.sh
 - create an AWS S3 bucket to contain the data for your game
 - create an AWS global key in IAM (not safe for production)
-- create .env
+- create .env at the base of this 
 Example:
     DEBUG_MODE=Light
     USE_MEMORY_FRONTEND=TRUE
     AWS_ID=YourAwsId
     AWS_KEY=YourAwsKey
     AWS_BUCKET_NAME=YourBucketName
+    AWS_BUCKET_REGION=ap-southeast-2
 
 Start Editor:
 run StartEditor.sh
