@@ -1,5 +1,12 @@
 echo "Installing Compiling Tools"
 
+cd() {
+    RED='\033[0;31m'
+    RESET='\033[0m'
+    builtin cd "$@" || { echo -e "${RED}Failed to change directory${RESET}" >&2; exit 1; }
+}
+
+
 #Packages for essential C++
 sudo apt update
 sudo apt install build-essential
@@ -16,12 +23,12 @@ sudo apt-get install libssl-dev
 curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
 sudo apt-get install -y nodejs
 sudo npm install -g typescript
-cd ../Tools/Autogeneration || exit
+cd ../Tools/Autogeneration
 npm install
 cd ../../
 
 #Git for vcpkg and emscripten
-cd Tools || exit
+cd Tools
 if [ ! -d "./vcpkg" ]; then
     if ! command -v git &> /dev/null; then
         echo "Git not installed - Installing"
@@ -57,9 +64,10 @@ else
     fi
 fi
 
-cd Emscripten || exit
+mkdir Emscripten
+cd Emscripten
 git clone https://github.com/emscripten-core/emsdk.git
 cd emsdk
 ./emsdk install latest
 ./emsdk activate latest
-cd ../../../SetupFiles  || exit
+cd ../../../SetupFiles

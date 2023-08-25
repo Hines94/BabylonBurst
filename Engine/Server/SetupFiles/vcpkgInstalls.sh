@@ -1,5 +1,12 @@
 #!/bin/bash
 
+cd() {
+    RED='\033[0;31m'
+    RESET='\033[0m'
+    builtin cd "$@" || { echo -e "${RED}Failed to change directory${RESET}" >&2; exit 1; }
+}
+
+
 # --- Package Selection --- #
 
 common_packages=(
@@ -27,7 +34,7 @@ wasm_packages=(
 
 echo "Installing Required Packages"
 export VCPKG_TARGET_TRIPLET=$1
-cd ../Tools/vcpkg  || exit
+cd ../Tools/vcpkg
 
 # In case we are using emscripten
 export PATH=$PATH:../Emscripten/emsdk/upstream/emscripten
