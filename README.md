@@ -2,8 +2,7 @@ Setup:
 - Install WSL
 - create an AWS S3 bucket to contain the data for your game
 - create an AWS global key in IAM (not safe for production)
-- Clone this directory (git clone https://github.com/Hines94/BabylonBoost.git) 
-    - OPTIONAL recommended clone direct to WSL as build times are around 10x faster
+- Clone this directory (git clone https://github.com/Hines94/BabylonBoost.git) into WSL
 - run EngineSetup.sh
 - create .env at the same level as this README
     Example:
@@ -18,14 +17,14 @@ Start Editor:
 run StartEditor.sh
 
 Start Development:
-On vscode:
+On vscode + wsl extension:
 run debug mode to debug server (F5)
-No vscode or no debug:
+No vscode:
 run bash StartDev.sh
 
 Check Backend Performance:
 Open Prometheus to see graphed data (localhost:3000)
-TODO: make dashboard part of repo
+Import the Grafana Dashboard (in Engine/Tools)
 
 Build Production:
 TODO: build client & server

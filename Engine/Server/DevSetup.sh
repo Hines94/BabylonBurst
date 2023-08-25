@@ -29,7 +29,11 @@ cd ../
 
 echo Installing Tools
 cd Tools
+
 wget https://github.com/prometheus/prometheus/releases/download/v2.44.0/prometheus-2.44.0.linux-amd64.tar.gz
 tar xvfz prometheus-*.tar.gz
 rm prometheus-2.44.0.linux-amd64.tar.gz
 cp ../SetupFiles/prometheus/prometheus.yml prometheus-2.44.0.linux-amd64/prometheus.yml
+
+cd Autogeneration
+npm install

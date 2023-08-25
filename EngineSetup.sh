@@ -5,6 +5,9 @@ print_cyan() {
     echo -e "\e[36m$1\e[0m"
 }
 
+base_path="$(cd "$(dirname "$0")" && pwd)"
+cd ${base_path}
+
 # The actual script
 clear
 print_cyan "--- Starting setup for Babylon Boost ---\n"
@@ -16,10 +19,13 @@ npm install
 print_cyan "--- Installing Engine Modules ---\n"
 cd Engine/Client || exit
 npm install
-cd ../../
+cd ${base_path}
 cd Engine/Editor
 npm install
-cd ../../
+cd ${base_path}
+cd Engine/Server
+./DevSetup.sh
+cd ${base_path}
 
 print_cyan "--- Setting up vscode ---\n"
 cp Engine/Tools/vscodeSetup/settings.json .vscode/settings.json
