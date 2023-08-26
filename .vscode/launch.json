@@ -1,8 +1,14 @@
 {
     "version": "0.2.0",
+    "compounds": [
+        {
+            "name": "Server + Client",
+            "configurations": ["Debug Server", "Launch Client"]
+        }
+    ],
     "configurations": [
         {
-            "name": "(gdb) Launch",
+            "name": "Debug Server",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Engine/Server/build/server_build/babylonboostserver",
@@ -22,7 +28,20 @@
             "preLaunchTask": "build"
         },
         {
-            "name": "(gdb) Test",
+            "name": "Launch Client",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/Engine/Client",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "start:dev"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Debug Server Tests",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Engine/Server/build/server_build/runUnitTests",

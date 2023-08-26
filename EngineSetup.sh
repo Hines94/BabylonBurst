@@ -24,7 +24,7 @@ cd Engine/Editor
 npm install
 cd ${base_path}
 cd Engine/Server
-./DevSetup.sh
+bash DevSetup.sh
 cd ${base_path}
 
 print_cyan "--- Setting up vscode ---\n"

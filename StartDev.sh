@@ -20,36 +20,43 @@ arg_exists() {
 #Copy env
 cp ./.env Engine/Client/.env
 cp ./.env Engine/Server/.env
+if [ $? -ne 0 ]; then
+    printf "${RED}BUILD FAIL: Please create a .env file in ${base_path}${RESET}\n"
+    exit 1
+fi
 
 #--- Build Server ---
 echo -e ${MAGENTA}Building Server${RESET}
-bash Engine/Server/BuildDev.sh -t || exit
+bash ${base_path}/Engine/Server/BuildDev.sh -t || exit
 
-#Start client 
-    mkdir ${base_path}/Engine/tmp
-    PIDFILE="${base_path}/Engine/tmp/editor_launch_info.pid"
-    CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs.log"
+#--- Start client ---
+mkdir ${base_path}/Engine/tmp
+PIDFILE="${base_path}/Engine/tmp/editor_launch_info.pid"
+CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs.log"
 
-    # Function to check if a process with the given PID is running
-    is_process_running() {
-        local pid=$1
-        kill -0 $pid 2>/dev/null
-        return $?
-    }
+# Function to check if a process with the given PID is running
+is_process_running() {
+    local pid=$1
+    kill -0 $pid 2>/dev/null
+    return $?
+}
 
-    # Check if the old process is running and kill it
-    if [ -f $PIDFILE ]; then
-        OLD_PID=$(cat $PIDFILE)
-        if is_process_running $OLD_PID; then
-            echo "Stopping old vite process with PID $OLD_PID..."
-            kill $OLD_PID
-            # Wait for the process to terminate
-            wait $OLD_PID 2>/dev/null
-        fi
-        rm -f $PIDFILE
+# Check if the old process is running and kill it
+if [ -f $PIDFILE ]; then
+    OLD_PID=$(cat $PIDFILE)
+    if is_process_running $OLD_PID; then
+        echo "Stopping old vite process with PID $OLD_PID..."
+        kill $OLD_PID
+        # Wait for the process to terminate
+        wait $OLD_PID 2>/dev/null
     fi
+    rm -f $PIDFILE
+fi
 
-    # Start your client process in the background
+# Start client process in the background
+if arg_exists "-ns" "$@"; then
+    echo "Not starting client or server as part of build"
+else
     cd Engine/Client
     nohup npm run start:dev > ${CLIENTLOGS} 2>&1 &
     cd ${base_path}
@@ -58,6 +65,7 @@ bash Engine/Server/BuildDev.sh -t || exit
 
     # Save the PID of the new process
     echo $! > $PIDFILE
+fi
 
 #--- Start Server ---
 if arg_exists "-ns" "$@"; then
