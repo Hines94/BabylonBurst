@@ -13,7 +13,7 @@ export async function setupAsyncManager() {
     //TODO: Use AWS login credentials for users along with admin accounts?
     var creds: any = {
         identityPoolId: "TODO: Support Identity Pool from login!",
-        clientConfig: { region: "ap-southeast-2" },
+        clientConfig: { region: environmentVaraibleTracker.GetVariable("AWS_BUCKET_REGION") },
     };
     //Get AWS from environment if running on vite?
     if (environmentVaraibleTracker.GetVariable("AWS_ID") !== undefined) {
@@ -28,6 +28,7 @@ export async function setupAsyncManager() {
     if (environmentVaraibleTracker.GetVariable("USE_MEMORY_FRONTEND") !== "TRUE") {
         frontend = new AsyncIndexDBFrontend();
     }
+    console.log("BUCKET: " + environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"))
     const assetManager = new AsyncAssetManager(new AsyncAWSBackend(environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"), creds), frontend);
     assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light;
     await assetManager.loadManager();

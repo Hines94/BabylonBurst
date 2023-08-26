@@ -3,7 +3,8 @@
     "compounds": [
         {
             "name": "Server + Client",
-            "configurations": ["Debug Server", "Launch Client"]
+            "configurations": ["Debug Server", "Launch Client"],
+            "preLaunchTask": "build"
         }
     ],
     "configurations": [

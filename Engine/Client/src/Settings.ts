@@ -1,5 +1,4 @@
-import { Scene } from "@babylonjs/core";
-import { premadeHighSetting, premadeLowSetting, premadeMedSetting, premadeUltraSetting } from "./Utils/PremadeSettings";
+import { premadeUltraSetting } from "./Utils/PremadeSettings";
 import { GameEcosystem } from "./GameEcosystem";
 
 export enum DownloadRegion {

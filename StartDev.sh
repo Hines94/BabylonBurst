@@ -24,6 +24,7 @@ if [ $? -ne 0 ]; then
     printf "${RED}BUILD FAIL: Please create a .env file in ${base_path}${RESET}\n"
     exit 1
 fi
+sed -i 's/^/VITE_/' Engine/Client/.env
 
 #--- Build Server ---
 echo -e ${MAGENTA}Building Server${RESET}

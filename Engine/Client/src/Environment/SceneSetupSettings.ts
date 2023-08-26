@@ -84,22 +84,23 @@ export class SceneSetupSettings {
     }
 
     private setupBackground() {
-        var skybox = MeshBuilder.CreateBox("skyBox", { size: 10000.0 }, this.scene);
-        skybox.layerMask = defaultLayerMask;
-        var skyboxMaterial = new StandardMaterial("skyBox", this.scene);
-        skyboxMaterial.backFaceCulling = false;
-        var files = [
-            "./textures/skybox/left.png",
-            "./textures/skybox/up.png",
-            "./textures/skybox/front.png",
-            "./textures/skybox/right.png",
-            "./textures/skybox/down.png",
-            "./textures/skybox/back.png",
-        ];
-        //@ts-ignore
-        skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(files, this.scene);
-        skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-        skyboxMaterial.disableLighting = true;
-        skybox.material = skyboxMaterial;
+        //TODO: Setup skybox?
+        // var skybox = MeshBuilder.CreateBox("skyBox", { size: 10000.0 }, this.scene);
+        // skybox.layerMask = defaultLayerMask;
+        // var skyboxMaterial = new StandardMaterial("skyBox", this.scene);
+        // skyboxMaterial.backFaceCulling = false;
+        // var files = [
+        //     "./textures/skybox/left.png",
+        //     "./textures/skybox/up.png",
+        //     "./textures/skybox/front.png",
+        //     "./textures/skybox/right.png",
+        //     "./textures/skybox/down.png",
+        //     "./textures/skybox/back.png",
+        // ];
+        // //@ts-ignore
+        // skyboxMaterial.reflectionTexture = CubeTexture.CreateFromImages(files, this.scene);
+        // skyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+        // skyboxMaterial.disableLighting = true;
+        // skybox.material = skyboxMaterial;
     }
 }

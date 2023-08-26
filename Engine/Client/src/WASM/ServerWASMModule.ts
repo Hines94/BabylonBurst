@@ -1,11 +1,9 @@
-import { decode } from "@msgpack/msgpack";
 import {
     LoadEntitiesFromMsgpackFormat,
     RawEntityData,
     SaveEntitiesToMsgpackIntArray,
 } from "../EntitySystem/EntityMsgpackConverter";
 import { v4 as uuidv4 } from "uuid";
-import { Observable } from "@babylonjs/core";
 import { DisposeOfObject } from "../Utils/SceneUtils";
 
 //@ts-ignore

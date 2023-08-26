@@ -27,11 +27,6 @@ cd Engine/Server
 bash DevSetup.sh
 cd ${base_path}
 
-print_cyan "--- Setting up vscode ---\n"
-cp Engine/Tools/vscodeSetup/settings.json .vscode/settings.json
-cp Engine/Tools/vscodeSetup/launch.json .vscode/launch.json
-cp Engine/Tools/vscodeSetup/tasks.json .vscode/tasks.json
-
 print_cyan "Install git hooks for Engine\n"
 mkdir ${base_path}/.git/hooks
 cp ${base_path}/Engine/Tools/GitHooks/pre-commit ${base_path}/.git/hooks/pre-commit

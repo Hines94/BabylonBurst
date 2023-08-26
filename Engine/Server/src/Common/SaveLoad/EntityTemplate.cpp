@@ -3,7 +3,7 @@
 #include "Utils/MsgpackHelpers.h"
 
 std::map<std::string, msgpack::object> EntityTemplate::GetComponentDataFromMsgpack(size_t compId, const msgpack::object& data, const std::map<Entity, EntityData*>& entMapping) {
-    if(data.type != msgpack::type:: MAP) {
+    if (data.type != msgpack::type::MAP) {
         return std::map<std::string, msgpack::object>();
     }
     auto compMappings = numerisedComponents.at(compId);
@@ -18,8 +18,8 @@ std::map<std::string, msgpack::object> EntityTemplate::GetComponentDataFromMsgpa
 
 Component* EntityTemplate::unpackComponentIndividual(size_t compId, const msgpack::object& data, const std::map<Entity, EntityData*>& entMapping) {
     //Get base component type
-    if(numerisedComponents.size() <= compId) {
-        std::cerr << "Numerised components too small! " << compId << std::endl;
+    if (numerisedComponents.size() <= compId) {
+        std::cerr << "Numerised components too small! Requested num: " << compId << " max size: " << numerisedComponents.size() << std::endl;
         return nullptr;
     }
     auto compMappings = numerisedComponents.at(compId);
