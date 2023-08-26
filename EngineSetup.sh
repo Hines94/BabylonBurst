@@ -32,7 +32,10 @@ cp Engine/Tools/vscodeSetup/settings.json .vscode/settings.json
 cp Engine/Tools/vscodeSetup/launch.json .vscode/launch.json
 cp Engine/Tools/vscodeSetup/tasks.json .vscode/tasks.json
 
-print_cyan "TODO: Install git hooks for Editor\n"
+print_cyan "Install git hooks for Engine\n"
+mkdir ${base_path}/.git/hooks
+cp ${base_path}/Engine/Tools/GitHooks/pre-commit ${base_path}/.git/hooks/pre-commit
+chmod +x ${base_path}/.git/hooks/pre-commit
 
 print_cyan "--- Babylon Boost setup complete! ---\n"
 read -r -p "Press any key to continue..." key
