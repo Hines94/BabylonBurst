@@ -1,13 +1,13 @@
 #include "ServerMessageProcessor.h"
 #include "Networking/ClientNetworkingData.hpp"
 #include "Networking/NetworkingMessageTypes.hpp"
+#include "SaveLoad/ComponentLoader.h"
+#include "SaveLoad/EntityLoader.h"
 #include "Utils/ChronoUtils.h"
 #include "Utils/MathUtils.h"
 #include <iostream>
 #include <map>
 #include <msgpack.hpp>
-#include "SaveLoad/EntityLoader.h"
-#include "SaveLoad/ComponentLoader.h"
 
 void processEntityPayloadMessage(std::map<std::string, msgpack::object> message) {
     std::cout << "entities payload" << std::endl;
@@ -15,31 +15,33 @@ void processEntityPayloadMessage(std::map<std::string, msgpack::object> message)
     message.find("P")->second.convert(payload);
     //Addition of entities
     const auto keys = EntityLoader::GetNumerisedComponentKeys(payload.find("T")->second);
-    const auto templatedEnts = EntityLoader::GetTemplateFromMsgpackFormat(keys,payload.find("C")->second);
-    EntityLoader::LoadTemplateToExistingEntities(templatedEnts,false);
+    NetworkManager::componentMappings.insert(NetworkManager::componentMappings.end(), keys.begin(), keys.end());
+
+    const auto templatedEnts = EntityLoader::GetTemplateFromMsgpackFormat(NetworkManager::componentMappings, payload.find("C")->second);
+    EntityLoader::LoadTemplateToExistingEntities(templatedEnts, false);
     //Deletion of entities
     const auto deletions = payload.find("D")->second;
     //No deletions if empty string
-    if(deletions.type == msgpack::type::STR) {
+    if (deletions.type == msgpack::type::STR) {
         return;
     }
     std::map<uint64_t, msgpack::object> deletionsMap;
     deletions.convert(deletionsMap);
-    for(const auto& item : deletionsMap) {
+    for (const auto& item : deletionsMap) {
         EntityData* entData = EntityComponentSystem::GetComponentDataForEntity(item.first);
-        if(!entData) {
+        if (!entData) {
             continue;
         }
 
         std::vector<std::string> compDeletions;
         item.second.convert(compDeletions);
         //Full deletion?
-        if(compDeletions.size() == 1 && compDeletions[0] == "__F__") {
+        if (compDeletions.size() == 1 && compDeletions[0] == "__F__") {
             EntityComponentSystem::DelayedRemoveEntity(entData);
-        //Partial deletion?
+            //Partial deletion?
         } else {
-            for(const auto& comp : compDeletions) {
-                EntityComponentSystem::DelayedRemoveComponent(entData,ComponentLoader::GetComponentTypeFromName(comp));
+            for (const auto& comp : compDeletions) {
+                EntityComponentSystem::DelayedRemoveComponent(entData, ComponentLoader::GetComponentTypeFromName(comp));
             }
         }
     }

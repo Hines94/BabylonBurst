@@ -28,7 +28,7 @@ sed -i 's/^/VITE_/' Engine/Client/.env
 
 #--- Build Server ---
 echo -e ${MAGENTA}Building Server${RESET}
-bash ${base_path}/Engine/Server/BuildDev.sh -t || exit
+bash ${base_path}/Engine/Server/BuildDev.sh || exit
 
 #--- Start client ---
 mkdir ${base_path}/Engine/tmp

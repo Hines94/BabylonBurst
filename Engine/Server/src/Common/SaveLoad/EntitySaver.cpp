@@ -19,6 +19,7 @@ msgpack::sbuffer* EntitySaver::GetSpecificSavePack(const std::vector<EntityData*
 
     packer->pack_map(2);
     packer->pack("T");
+    //TODO: We pack all parameters. Could be better to pack just the ones we need to save space? (just a small thing)
     packer->pack(EntityComponentSystem::GetParameterMappings());
 
     packer->pack("C");
