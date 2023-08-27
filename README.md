@@ -12,6 +12,8 @@ Setup:
         AWS_KEY=YourAwsKey
         AWS_BUCKET_NAME=YourBucketName
         AWS_BUCKET_REGION=ap-southeast-2
+        #Cut out the physics engine (bullet)?
+        NO_PHYSICS=false
 
 Start Editor:
 run StartEditor.sh

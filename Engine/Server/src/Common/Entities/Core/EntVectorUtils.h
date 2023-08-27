@@ -1,5 +1,5 @@
 #pragma once
-#include "EntTransform.hpp"
+#include "EntTransform.h"
 #include "EntVector3.hpp"
 #include "EntVector4.hpp"
 #include <vector>

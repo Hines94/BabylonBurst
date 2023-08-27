@@ -2,7 +2,7 @@
 #include "Entities/Control/ControllableEntity.hpp"
 #include "Entities/Control/ControllableMover.h"
 #include "Entities/Control/ControllableRotator.h"
-#include "Entities/Core/EntTransform.hpp"
+#include "Entities/Core/EntTransform.h"
 #include "Entities/EntitySystem.h"
 #include "Networking/ClientLerpTransform.hpp"
 #include "Physics/CapsuleCollider.hpp"

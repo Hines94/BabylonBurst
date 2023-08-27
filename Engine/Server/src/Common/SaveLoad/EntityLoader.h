@@ -16,7 +16,7 @@ namespace EntityLoader {
     //Create FRESH new entities and maintain the relationships
     std::map<Entity, EntityData*> LoadTemplateToNewEntities(const std::shared_ptr<EntityTemplate> Template);
 
-    //Load into existing entities - will add components
+    //Load into existing entities - will add components. If overwrite then will remove ALL OTHER components and create fresh EntityData.
     std::map<Entity, EntityData*> LoadTemplateToExistingEntities(const std::shared_ptr<EntityTemplate> Template, bool overwrite);
 
     //Load from a previous EntitySaver::GetFullSavePack

@@ -1,5 +1,5 @@
 #include "PhysicsSystem.h"
-#include "Entities/Core/EntTransform.hpp"
+#include "Entities/Core/EntTransform.h"
 #include "Entities/Core/EntVectorUtils.h"
 #include "Entities/EntityTaskRunners.hpp"
 #include "RigidBody.h"

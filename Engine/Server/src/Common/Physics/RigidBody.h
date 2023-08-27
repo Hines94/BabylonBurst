@@ -23,6 +23,8 @@ struct RigidBody : public Component {
 
     void RebuildPhysicsBody(EntityData* entData);
 
+    void ResetPositionToEntTransform(EntityData* entData);
+
     void onComponentAdded(EntityData* entData);
 
     void onComponentRemoved(EntityData* entData);

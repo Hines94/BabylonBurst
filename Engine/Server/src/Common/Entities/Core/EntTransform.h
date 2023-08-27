@@ -34,4 +34,6 @@ struct EntTransform : public Component {
     }
 
     DECLARE_COMPONENT_METHODS(EntTransform)
+
+    void onComponentAdded(EntityData* entData);
 };

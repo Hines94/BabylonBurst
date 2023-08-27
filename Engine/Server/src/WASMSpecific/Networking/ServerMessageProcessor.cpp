@@ -10,15 +10,15 @@
 #include <msgpack.hpp>
 
 void processEntityPayloadMessage(std::map<std::string, msgpack::object> message) {
-    std::cout << "entities payload" << std::endl;
     std::map<std::string, msgpack::object> payload;
     message.find("P")->second.convert(payload);
+
     //Addition of entities
     const auto keys = EntityLoader::GetNumerisedComponentKeys(payload.find("T")->second);
     NetworkManager::componentMappings.insert(NetworkManager::componentMappings.end(), keys.begin(), keys.end());
-
     const auto templatedEnts = EntityLoader::GetTemplateFromMsgpackFormat(NetworkManager::componentMappings, payload.find("C")->second);
     EntityLoader::LoadTemplateToExistingEntities(templatedEnts, false);
+
     //Deletion of entities
     const auto deletions = payload.find("D")->second;
     //No deletions if empty string

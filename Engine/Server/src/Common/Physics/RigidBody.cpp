@@ -1,6 +1,6 @@
 #include "RigidBody.h"
 #include "CapsuleCollider.hpp"
-#include "Entities/Core/EntTransform.hpp"
+#include "Entities/Core/EntTransform.h"
 #include "PhysicsSystem.h"
 
 void RigidBody::onComponentAdded(EntityData* entData) {
@@ -33,6 +33,7 @@ void RigidBody::RebuildPhysicsBody(EntityData* owner) {
     btDefaultMotionState* capsuleMotionState = new btDefaultMotionState(btTransform(
         btQuaternion(transform->Rotation.X, transform->Rotation.Y, transform->Rotation.Z, transform->Rotation.W),
         btVector3(transform->Position.X, transform->Position.Y, transform->Position.Z)));
+
     //Setup mass, inertia etc
     btScalar capsuleMass = Mass;
     btVector3 capsuleInertia(0, 0, 0);
@@ -44,6 +45,17 @@ void RigidBody::RebuildPhysicsBody(EntityData* owner) {
 
     //Remove dirty tag
     EntityComponentSystem::DelayedRemoveComponent<DirtyRigidBody>(owner);
+}
+
+void RigidBody::ResetPositionToEntTransform(EntityData* entData) {
+    if (!ItemRigidBody) {
+        return;
+    }
+    auto transform = EntityComponentSystem::GetComponent<EntTransform>(entData);
+    btDefaultMotionState* capsuleMotionState = new btDefaultMotionState(btTransform(
+        btQuaternion(transform->Rotation.X, transform->Rotation.Y, transform->Rotation.Z, transform->Rotation.W),
+        btVector3(transform->Position.X, transform->Position.Y, transform->Position.Z)));
+    ItemRigidBody->setMotionState(capsuleMotionState);
 }
 
 void RigidBody::ResetRigidBody() {

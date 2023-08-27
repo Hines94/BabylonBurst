@@ -1,7 +1,9 @@
 #pragma once
 #include "Entities/EntitySystem.h"
 #include "Utils/MathUtils.h"
+#ifdef PHYSICS
 #include <bullet/btBulletDynamicsCommon.h>
+#endif
 #include <msgpack.hpp>
 #include <nlohmann/json.hpp>
 
@@ -12,10 +14,11 @@ struct EntVector3 {
 
     EntVector3(float x = 0.0f, float y = 0.0f, float z = 0.0f)
         : X(x), Y(y), Z(z) {}
-
+#ifdef PHYSICS
     operator btVector3() const {
         return btVector3(X, Y, Z);
     }
+#endif
 
     bool operator==(const EntVector3& other) {
         return X == other.X && Y == other.Y && Z == other.Z;

@@ -1,9 +1,11 @@
 #include "CommonGameLoop.h"
 #include "Entities/Building/BuildingSystem.h"
+#include "Entities/EntitySystem.h"
+#ifdef PHYSICS
 #include "Entities/Control/ControllableMover.h"
 #include "Entities/Control/ControllableRotator.h"
-#include "Entities/EntitySystem.h"
 #include "Physics/PhysicsSystem.h"
+#endif
 #include "Utils/Environment.h"
 #include "Utils/PerfTracking.h"
 #include "Utils/Settings.h"
@@ -62,23 +64,26 @@ void CommonGameLoop::UpdateSingleGameLoop() {
         return;
     }
 
+#ifdef PHYSICS
     //Rebuild physics bodies that are dirty
     UpdateSystem(systemInit, deltaTime, PhysicsSystem::RebuildRigidBods, "PhysBuildBods");
-
     //TODO: Apply gravitaional forces etc
+#endif
 
     PostPhysicsSetup_PrePhysicsRun_Update();
 
     //Buildng system
     UpdateSystem(systemInit, deltaTime, BuildingSystem::UpdateBuildSystem, "BuildSystem");
 
-    //Update Ship Controllers
+#ifdef PHYSICS
+    //Update Physics Controllers
     UpdateSystem(systemInit, deltaTime, ControllableRotator::UpdateRotationControllers, "ControlRot");
     UpdateSystem(systemInit, deltaTime, ControllableMover::UpdateMovementControllers, "ControlMove");
 
     //Update physics
     UpdateSystem(systemInit, deltaTime, PhysicsSystem::UpdatePhysicsSystem, "PhysMain");
     UpdateSystem(systemInit, deltaTime, PhysicsSystem::PostPhysicsSystem, "PhysPost");
+#endif
 
     EndOfFrame_Update();
 

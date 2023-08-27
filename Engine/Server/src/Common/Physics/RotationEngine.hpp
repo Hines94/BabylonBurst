@@ -1,5 +1,5 @@
 #pragma once
-#include "Entities/Core/EntTransform.hpp"
+#include "Entities/Core/EntTransform.h"
 #include "Entities/Core/EntVectorUtils.h"
 #include "Entities/EntitySystem.h"
 #include "RigidBody.h"
