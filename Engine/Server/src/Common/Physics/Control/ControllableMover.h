@@ -1,5 +1,5 @@
 #pragma once
-#include "../EntitySystem.h"
+#include "Entities/EntitySystem.h"
 
 //Part of the controllable entity - responsible for controling our linear movement - forward, backward, inert damp etc
 struct ControllableMover : public Component {

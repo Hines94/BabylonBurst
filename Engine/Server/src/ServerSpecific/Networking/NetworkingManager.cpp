@@ -1,4 +1,5 @@
 #include "NetworkingManager.h"
+#include "Entities/EntitySystem.h"
 #include "Utils/ChronoUtils.h"
 #include "Utils/PerfTracking.h"
 #include "Utils/StringUtils.h"

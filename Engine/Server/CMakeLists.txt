@@ -97,7 +97,6 @@ add_library(babylonboostlib ${LIB_SOURCES})
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Tools/vcpkg/installed/${DVCPKG_TARGET_TRIPLET}")
 
 if (NOT PHYSICS_DISABLED)
-    message(STATUS "Physics is disabled for this build!")
     find_package(Bullet CONFIG REQUIRED)
 endif()
 find_package(msgpack-cxx CONFIG REQUIRED)
@@ -106,14 +105,17 @@ find_package(ZLIB REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
 
-target_link_libraries(babylonboostlib PRIVATE 
+set(LINK_LIBRARIES 
     msgpack-cxx
     nlohmann_json::nlohmann_json
-    if (NOT PHYSICS_DISABLED)
-        ${BULLET_LIBRARIES}
-    endif()
     ZLIB::ZLIB
 )
+
+if(NOT PHYSICS_DISABLED)
+    list(APPEND LINK_LIBRARIES ${BULLET_LIBRARIES})
+endif()
+
+target_link_libraries(babylonboostlib PRIVATE ${LINK_LIBRARIES})
 
 target_include_directories(babylonboostlib PRIVATE 
     ${TINYGLTF_INCLUDE_DIRS}

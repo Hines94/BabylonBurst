@@ -1,5 +1,4 @@
 #pragma once
-
 #include "uwebsockets/App.h"
 #include <map>
 #include <msgpack.hpp>
@@ -8,11 +7,6 @@
 #include <string>
 #include <thread>
 #include <unordered_set>
-
-// struct awaitingMessage {
-//     uint32_t messageType;
-//     std::string_view message;
-// };
 
 struct ActiveSocketData {
 };

@@ -4,7 +4,7 @@
 #include "Entities/Prefabs/PrefabManager.h"
 #include "Networking/NetworkingManager.h"
 #include "Networking/NetworkingMessageTypes.hpp"
-#include "Player/PlayerController.hpp"
+#include "Player/PlayerCoreComponent.hpp"
 #include "SaveLoad/ComponentLoader.h"
 #include "SaveLoad/EntitySaver.h"
 #include "Utils/PerfTracking.h"
@@ -61,7 +61,7 @@ void PlayerConnectionManager::addNewPlayers(std::unordered_set<std::string> newS
         //Create new player object?
         if (inst.GetPlayerEntity(playerUuid) == 0) {
             auto newPlayer = EntityComponentSystem::AddEntity();
-            PlayerController::createNewPlayer(newPlayer, playerUuid);
+            PlayerCoreComponent::createNewPlayer(newPlayer, playerUuid);
             std::shared_ptr<playerConnectionDetails> newConnectData = std::make_shared<playerConnectionDetails>();
             newConnectData->playerEnt = newPlayer->owningEntity;
             inst.connectedPlayers.insert(std::pair(playerUuid, newConnectData));

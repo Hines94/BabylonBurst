@@ -1,11 +1,11 @@
-#pragma once
-#include "Entities/Control/ControllableMover.h"
-#include "Entities/Control/ControllableRotator.h"
 #include "Entities/EntitySystem.h"
-#include "Entities/EntityTaskRunners.hpp"
+#include "Physics/Control/ControllableMover.h"
+#include "Physics/Control/ControllableRotator.h"
 #include "PlayerPawn.hpp"
-#include <nlohmann/json.hpp>
-#include <string>
+
+
+todo: system to update!
+PlayerController::UpdatePlayerControllers(FirstTime, deltaTime);
 
 //Requested movement instructions
 struct PlayerRequestingMessage {
@@ -17,10 +17,7 @@ struct PlayerRequestingMessage {
     float RequestRollLook;
 };
 
-//Our player controller - deals with requesting movement to controlled entity and tracking what
-struct PlayerController : public Component {
-    CPROPERTY(NET, SAVE)
-    std::string Playeruuid;
+struct FlyingPlayerController : public Component {
     CPROPERTY(NET, SAVE)
     EntityData* ControlledPawn;
     CPROPERTY(NET, SAVE)
@@ -28,7 +25,10 @@ struct PlayerController : public Component {
     CPROPERTY(NOTYPINGS)
     PlayerRequestingMessage playerRequests;
 
-    DECLARE_COMPONENT_METHODS(PlayerController)
+    
+    //TODO: Find all with player core but not flyingPlayerController
+    //Create and control pawn
+    pc->SpawnPlayerPawn(playerData);
 
     //Inherited methods
     void onComponentRemoved(EntityData* entData) {
@@ -76,17 +76,9 @@ struct PlayerController : public Component {
             std::unique_lock lock(newControllable->writeMutex);
             newControllable->CurrentController = playerEnt;
         }
-        EntityComponentSystem::MarkCompToNetwork<PlayerController>(playerEnt);
+        EntityComponentSystem::MarkCompToNetwork<PlayerCoreComponent>(playerEnt);
 
         return true;
-    }
-
-    static void createNewPlayer(EntityData* playerData, std::string uuid) {
-        auto pc = new PlayerController();
-        pc->Playeruuid = uuid;
-        EntityComponentSystem::AddSetComponentToEntity(playerData, pc);
-        //Create and control pawn
-        pc->SpawnPlayerPawn(playerData);
     }
 
     void SpawnPlayerPawn(EntityData* owner) {
@@ -102,13 +94,12 @@ struct PlayerController : public Component {
 
     static void UpdatePlayerControllers(bool init, double deltaTime) {
         //Iterate through all player controllers
-        auto allPC = EntityComponentSystem::GetEntitiesWithData({typeid(PlayerController)}, {});
+        auto allPC = EntityComponentSystem::GetEntitiesWithData({typeid(PlayerCoreComponent)}, {});
         EntityTaskRunners::AutoPerformTasksParallel("PlayerControlUpdate", allPC, updatePlayerControl, deltaTime);
     }
-
 private:
-    static void updatePlayerControl(double dt, EntityData* item) {
-        auto playerComp = EntityComponentSystem::GetComponent<PlayerController>(item);
+    static void updateFlyingControl(double dt, EntityData* item) {
+        auto playerComp = EntityComponentSystem::GetComponent<PlayerCoreComponent>(item);
         //Control our CurrentControllingEntity
         if (!playerComp->CurrentControllingEntity) {
             return;
@@ -134,4 +125,4 @@ private:
 
         //TODO: If no requests after a while from player simply revert back to nothing in case dc etc?
     }
-};
+}

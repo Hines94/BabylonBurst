@@ -3,6 +3,7 @@ import Parser = require('tree-sitter');
 //@ts-ignore
 import CPP = require('tree-sitter-cpp');
 import { FindMacroComment } from './CommentMacroFinder';
+import { EnvVarLoader } from './EnvironmentVariableLoader';
 
 const parser = new Parser();
 parser.setLanguage(CPP);
@@ -155,7 +156,15 @@ function AddStructParams(structDetails:StructDetails) {
     }
 }
 
+/** Main function to find any structs within our file that could be important */
 function findStructs(node:Parser.SyntaxNode,childIndex:number,headerPath:string) : StructDetails[] {
+    if(EnvVarLoader.getInstance().environmentVariables["NO_PHYSICS"] === 'true') {
+        if(headerPath.includes("/Physics")) {
+            console.log("PHYSICS IN NO PHYSICS: " + headerPath);
+            return [];
+        }
+    }
+
     const ret:StructDetails[] = [];
     if (node.type === 'struct_specifier' || node.type === 'class_specifier') {
         const structNameNode = getChildNode(node, 'type_identifier');

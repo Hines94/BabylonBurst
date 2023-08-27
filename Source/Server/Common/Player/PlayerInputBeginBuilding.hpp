@@ -4,6 +4,9 @@
 #include "PlayerBuildingComponent.hpp"
 #include <nlohmann/json.hpp>
 
+
+//TODO: Revive this so we can place cubes around the level?
+
 //Requested movement instructions
 struct PlayerBuildingMessage {
     int RequestType;

@@ -1,5 +1,5 @@
 #pragma once
-#include "../EntitySystem.h"
+#include "Entities/EntitySystem.h"
 
 //Part of the controllable entity - responsible for controling our rotation, look towards etc
 struct ControllableRotator : public Component {

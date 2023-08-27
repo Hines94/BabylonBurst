@@ -75,6 +75,12 @@
         "random": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "__tree": "cpp",
+        "any": "cpp",
+        "future": "cpp",
+        "map": "cpp",
+        "shared_mutex": "cpp",
+        "typeindex": "cpp"
     }
 }

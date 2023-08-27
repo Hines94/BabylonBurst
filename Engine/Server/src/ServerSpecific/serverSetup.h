@@ -1,6 +1,8 @@
 #include "Aws/AwsManager.h"
 #include "Entities/Prefabs/PrefabManager.h"
+#ifdef PHYSICS
 #include "Physics/PhysicsSystem.h"
+#endif
 #include "Player/PlayerConnectionManager.h"
 #include <iostream>
 
@@ -12,8 +14,9 @@ namespace ServerSetup {
         EntityComponentSystem::SetupEntitySystem();
         new PlayerConnectionManager();
         //TODO: Load existing entities from file?
-        //Setup physics
+#ifdef PHYSICS
         new PhysicsSystem();
+#endif
         //Setup prefabs
         PrefabManager::getInstance().RefreshPrefabs();
         //Spawn in environment etc

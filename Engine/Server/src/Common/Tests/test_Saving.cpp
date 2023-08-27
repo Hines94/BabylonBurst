@@ -1,6 +1,4 @@
 #include "Entities/Core/EntTransform.h"
-#include "Physics/RigidBody.h"
-#include "Player/PlayerController.hpp"
 #include "SaveLoad/EntityLoader.h"
 #include "SaveLoad/EntitySaver.h"
 #include "gtest/gtest.h"
@@ -68,17 +66,12 @@ TEST(SavingLoadingTests, LoadEntsFromPresaved) {
     EXPECT_EQ(EntityComponentSystem::GetNumberEntitiesSpawned(), 2);
     //Check component data has been set
     EXPECT_EQ(EntityComponentSystem::HasComponent<EntTransform>(entMap.find(2)->second), true);
-    //Check data has been set
-    EXPECT_EQ(EntityComponentSystem::GetComponent<PlayerController>(entMap.find(1)->second)->Playeruuid, "vmphp3YDs0QGeCYUsRi5");
 }
 
 TEST(SavingLoadingTests, LoadEntsFromFreshSave) {
     //Create some new entities
     EntityComponentSystem::ResetEntitySystem();
     auto newEnt = EntityComponentSystem::AddEntity();
-    auto fakePC = new PlayerController();
-    fakePC->Playeruuid = "TesT1234";
-    EntityComponentSystem::AddSetComponentToEntity(newEnt, fakePC);
     auto newEnt2 = EntityComponentSystem::AddEntity();
     auto fakeTransform = new EntTransform();
     fakeTransform->Position.X = 5;
@@ -99,7 +92,6 @@ TEST(SavingLoadingTests, LoadEntsFromFreshSave) {
     // //Check load correct
     EXPECT_EQ(EntityComponentSystem::GetNumberEntitiesSpawned(), 2);
     auto firstEnt = EntityComponentSystem::GetComponentDataForEntity(1);
-    EXPECT_EQ(EntityComponentSystem::GetComponent<PlayerController>(firstEnt)->Playeruuid, "TesT1234");
     auto secondEnt = EntityComponentSystem::GetComponentDataForEntity(2);
     EXPECT_EQ(EntityComponentSystem::HasComponent<EntTransform>(secondEnt), true);
     EXPECT_EQ(EntityComponentSystem::GetComponent<EntTransform>(secondEnt)->Position.X, 5);
@@ -108,13 +100,13 @@ TEST(SavingLoadingTests, LoadEntsFromFreshSave) {
 TEST(SavingLoadingTests, IgnoreDefaultValues) {
     EntityComponentSystem::ResetEntitySystem();
     const auto newEnt = EntityComponentSystem::AddEntity();
-    EntityComponentSystem::AddSetComponentToEntity(newEnt, new RigidBody());
+    EntityComponentSystem::AddSetComponentToEntity(newEnt, new EntTransform());
     EntityComponentSystem::FlushEntitySystem();
 
     auto save = EntitySaver::GetFullSavePack();
     std::vector<uint8_t> vec(save->data(), save->data() + save->size());
     auto saveTemplate = EntityLoader::LoadTemplateFromSave(vec);
     EXPECT_EQ(saveTemplate.get()->EntityExists(newEnt->owningEntity), true);
-    EXPECT_EQ(saveTemplate.get()->ComponentExists(newEnt->owningEntity, "RigidBody"), true);
-    EXPECT_EQ(saveTemplate.get()->ParameterExists(newEnt->owningEntity, "RigidBody", "Mass"), false);
+    EXPECT_EQ(saveTemplate.get()->ComponentExists(newEnt->owningEntity, "EntTransform"), true);
+    EXPECT_EQ(saveTemplate.get()->ParameterExists(newEnt->owningEntity, "EntTransform", "Position"), false);
 }
