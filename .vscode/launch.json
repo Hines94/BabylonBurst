@@ -42,7 +42,7 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Debug Server Tests",
+            "name": "Debug Engine Tests",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Engine/Server/build/server_build/runUnitTests",

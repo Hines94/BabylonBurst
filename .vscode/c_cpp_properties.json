@@ -1,19 +1,20 @@
 {
     "configurations": [
-      {
-        "name": "Linux",
-        "includePath": [
-          "${workspaceFolder}/Engine/Server/src/Common**",
-          "${workspaceFolder}/Engine/Server/src/ServerSpecific**",
-          "${workspaceFolder}/Engine/Server/src/WASMSpecific**",
-          "Engine/Server/Tools/vcpkg/installed/x64-linux/include"
-        ],
-        "defines": [],
-        "compilerPath": "/usr/bin/gcc",
-        "cStandard": "c11",
-        "cppStandard": "c++23",
-        "intelliSenseMode": "gcc-x64"
-      }
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/Engine/Server/src/Common**",
+                "${workspaceFolder}/Engine/Server/src/ServerSpecific**",
+                "${workspaceFolder}/Engine/Server/src/WASMSpecific**",
+                "Engine/Server/Tools/vcpkg/installed/x64-linux/include",
+                "${workspaceFolder}/Engine/Server/Tools/Emscripten/emsdk/upstream/emscripten/system/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "gcc-x64"
+        }
     ],
     "version": 4
-  }
+}

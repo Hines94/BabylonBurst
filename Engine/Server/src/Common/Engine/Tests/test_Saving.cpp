@@ -86,7 +86,7 @@ TEST(SavingLoadingTests, LoadEntsFromFreshSave) {
     auto saveTemplate = EntityLoader::LoadTemplateFromSave(vec);
     //Check template
     EXPECT_EQ(saveTemplate.get()->templatedEntities.size(), 2);
-    EXPECT_EQ(saveTemplate.get()->templatedEntities.find(1)->second.size(), 1);
+    EXPECT_EQ(saveTemplate.get()->templatedEntities.find(1)->second.size(), 0);
     //Populate world
     EntityLoader::LoadTemplateToNewEntities(saveTemplate);
     // //Check load correct

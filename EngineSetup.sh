@@ -27,7 +27,7 @@ cd Engine/Server
 bash DevSetup.sh
 cd ${base_path}
 
-print_cyan "Install git hooks for Engine\n"
+print_cyan "--- Installing git hooks for Engine ---\n"
 mkdir ${base_path}/.git/hooks
 cp ${base_path}/Engine/Tools/GitHooks/pre-commit ${base_path}/.git/hooks/pre-commit
 chmod +x ${base_path}/.git/hooks/pre-commit

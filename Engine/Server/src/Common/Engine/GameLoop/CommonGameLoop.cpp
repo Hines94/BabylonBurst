@@ -2,8 +2,8 @@
 #include "Engine/Entities/Building/BuildingSystem.h"
 #include "Engine/Entities/EntitySystem.h"
 #ifdef PHYSICS
-#include "Engine/Entities/Control/ControllableMover.h"
-#include "Engine/Entities/Control/ControllableRotator.h"
+#include "Engine/Physics/Control/ControllableMover.h"
+#include "Engine/Physics/Control/ControllableRotator.h"
 #include "Engine/Physics/PhysicsSystem.h"
 #endif
 #include "Engine/Utils/Environment.h"
