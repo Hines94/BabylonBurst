@@ -1,15 +1,15 @@
 #pragma once
-#include "Entities/Control/ControllableEntity.hpp"
-#include "Entities/Control/ControllableMover.h"
-#include "Entities/Control/ControllableRotator.h"
-#include "Entities/Core/EntTransform.h"
-#include "Entities/EntitySystem.h"
-#include "Networking/ClientLerpTransform.hpp"
-#include "Physics/CapsuleCollider.hpp"
-#include "Physics/LinearForceEngine.hpp"
-#include "Physics/RigidBody.h"
-#include "Physics/RotationEngine.hpp"
-#include "Rendering/InstancedRender.hpp"
+#include "Engine/Entities/Control/ControllableEntity.hpp"
+#include "Engine/Entities/Control/ControllableMover.h"
+#include "Engine/Entities/Control/ControllableRotator.h"
+#include "Engine/Entities/Core/EntTransform.h"
+#include "Engine/Entities/EntitySystem.h"
+#include "Engine/Networking/ClientLerpTransform.hpp"
+#include "Engine/Physics/CapsuleCollider.hpp"
+#include "Engine/Physics/LinearForceEngine.hpp"
+#include "Engine/Physics/RigidBody.h"
+#include "Engine/Physics/RotationEngine.hpp"
+#include "Engine/Rendering/InstancedRender.hpp"
 
 // A pawn that can be controlled by our player
 struct PlayerPawn : public Component {

@@ -1,5 +1,5 @@
 #pragma once
-#include "Entities/EntitySystem.h"
+#include "Engine/Entities/EntitySystem.h"
 
 //Manages building controls for the player
 struct PlayerBuildingComponent : public Component {

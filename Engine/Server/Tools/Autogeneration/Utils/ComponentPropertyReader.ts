@@ -159,8 +159,7 @@ function AddStructParams(structDetails:StructDetails) {
 /** Main function to find any structs within our file that could be important */
 function findStructs(node:Parser.SyntaxNode,childIndex:number,headerPath:string) : StructDetails[] {
     if(EnvVarLoader.getInstance().environmentVariables["NO_PHYSICS"] === 'true') {
-        if(headerPath.includes("/Physics")) {
-            console.log("PHYSICS IN NO PHYSICS: " + headerPath);
+        if(headerPath.includes("/Engine/Physics")) {
             return [];
         }
     }
