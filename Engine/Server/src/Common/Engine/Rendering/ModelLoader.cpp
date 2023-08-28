@@ -1,6 +1,6 @@
 #include "ModelLoader.h"
 #include "Engine/Aws/AwsManager.h"
-#include "tiny_gltf.h"
+//#include "tiny_gltf.h"
 
 void ModelLoader::GetModelFromFile(std::string filePath, int fileIndex) {
 
@@ -21,23 +21,23 @@ void ModelLoader::GetModelFromFile(std::string filePath, int fileIndex) {
         return;
     }
 
-    tinygltf::Model model;
-    tinygltf::TinyGLTF loader;
-    std::string err;
-    std::string warn;
+    // tinygltf::Model model;
+    // tinygltf::TinyGLTF loader;
+    // std::string err;
+    // std::string warn;
 
-    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "path_to_your_model.gltf");
+    // bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, "path_to_your_model.gltf");
 
-    if (!warn.empty()) {
-        printf("Warn: %s\n", warn.c_str());
-    }
+    // if (!warn.empty()) {
+    //     printf("Warn: %s\n", warn.c_str());
+    // }
 
-    if (!err.empty()) {
-        printf("Err: %s\n", err.c_str());
-    }
+    // if (!err.empty()) {
+    //     printf("Err: %s\n", err.c_str());
+    // }
 
-    if (!ret) {
-        printf("Failed to load .gltf\n");
-        return;
-    }
+    // if (!ret) {
+    //     printf("Failed to load .gltf\n");
+    //     return;
+    // }
 }

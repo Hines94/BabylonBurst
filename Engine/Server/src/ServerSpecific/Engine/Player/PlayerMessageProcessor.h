@@ -14,18 +14,14 @@ namespace PlayerMessageProcessor {
     class Registrar {
     public:
         Registrar(int msgId, std::function<void(double, std::pair<std::string, std::string>)> func) {
-            std::cout << "reg called!" << std::endl;
-
             if (PlayerMessageProcessor::registeredPlayerMessages.find(msgId) != PlayerMessageProcessor::registeredPlayerMessages.end()) {
                 std::cerr << "Tried to double register for player message type: " << msgId << std::endl;
                 exit(EXIT_FAILURE); // Exit with an error code
             }
             PlayerMessageProcessor::registeredPlayerMessages.insert(std::pair(msgId, func));
-            std::cout << "Registered new client message type!" << std::endl;
+            std::cout << "Registered new client message type: " << msgId << std::endl;
         }
     };
-
-    void test();
 
 } // namespace PlayerMessageProcessor
 
