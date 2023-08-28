@@ -4,6 +4,7 @@
 #include "Engine/Physics/PhysicsSystem.h"
 #endif
 #include "Engine/Player/PlayerConnectionManager.h"
+#include "Engine/Player/testRegister.hpp"
 #include <iostream>
 
 namespace ServerSetup {
@@ -20,5 +21,6 @@ namespace ServerSetup {
         //Setup prefabs
         PrefabManager::getInstance().RefreshPrefabs();
         //Spawn in environment etc
+        TestRego::testFunc();
     }
 } // namespace ServerSetup

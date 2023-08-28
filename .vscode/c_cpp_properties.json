@@ -6,6 +6,9 @@
                 "${workspaceFolder}/Engine/Server/src/Common**",
                 "${workspaceFolder}/Engine/Server/src/ServerSpecific**",
                 "${workspaceFolder}/Engine/Server/src/WASMSpecific**",
+                "${workspaceFolder}/Source/CppSource/WASMSpecific**",
+                "${workspaceFolder}/Source/CppSource/ServerSpecific**",
+                "${workspaceFolder}/Source/CppSource/Common**",
                 "Engine/Server/Tools/vcpkg/installed/x64-linux/include",
                 "${workspaceFolder}/Engine/Server/Tools/Emscripten/emsdk/upstream/emscripten/system/include"
             ],

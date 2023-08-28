@@ -4,14 +4,14 @@ import * as fs from 'fs';
 //This file deals with serialization/deserialization of our components
 
 import { CompPropTags, ComponentProperty, FileComponentsProperties, StructDetails } from "../../Utils/ComponentPropertyReader";
-import { RecursiveDirectoryProcess, sourcePath } from "../../Autogenerator";
+import { RecursiveDirectoryProcess, sourcePath, userSourcePath } from "../../Autogenerator";
 import { UpdateStructsProperties, AllOtherStructs } from "../../Utils/ComponentPropertyReader"
 
 const serializableClasses = new Array<StructDetails>();
 
-function AddSerializablesFromFile(path:string) {
+function AddSerializablesFromFile(basePath:string,path:string) {
     let code = fs.readFileSync(path, 'utf-8');
-    UpdateStructsProperties(code,path);
+    UpdateStructsProperties(code,basePath,path);
 
     const otherStruct = Object.keys(AllOtherStructs);
     otherStruct.forEach((struct) => {
@@ -34,7 +34,8 @@ function AddSerializablesFromFile(path:string) {
 }
 //TODO: This is unneccessary prepass? We can just process all files after main pass?
 export function PerformSerializerPrepass() {
-    RecursiveDirectoryProcess(sourcePath,AddSerializablesFromFile);
+    RecursiveDirectoryProcess(sourcePath,sourcePath,AddSerializablesFromFile);
+    RecursiveDirectoryProcess(userSourcePath,userSourcePath,AddSerializablesFromFile);
 }
 
 export function GenerateCustomSerializationMethods() : string {

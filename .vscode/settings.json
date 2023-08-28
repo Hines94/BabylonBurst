@@ -81,6 +81,15 @@
         "future": "cpp",
         "map": "cpp",
         "shared_mutex": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "strstream": "cpp",
+        "cfenv": "cpp",
+        "complex": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "set": "cpp",
+        "regex": "cpp",
+        "source_location": "cpp",
+        "valarray": "cpp"
     }
 }

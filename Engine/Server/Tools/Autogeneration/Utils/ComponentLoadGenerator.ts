@@ -23,10 +23,7 @@ export function GenerateComponentLoader() {
     function extractRelevantComponents() {
         const comps = Object.keys(AllComponents);
         comps.forEach(element => {
-            const path = RemovePlatformSpecificIncludePath(
-                AllComponents[element].headerPath.replace(sourcePath + "/", "")
-            );
-            output += `#include "${path}"\n`;
+            output += `#include "${AllComponents[element].headerPath}"\n`;
         });
         output += `\n`;
         return comps;

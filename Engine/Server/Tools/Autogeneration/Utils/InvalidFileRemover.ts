@@ -16,7 +16,7 @@ function removeInvalidFile(filePath:string) {
 }
 
 export function RemoveInvalidFiles() {
-    RecursiveDirectoryProcess(buildPath,removeInvalidFile);
+    RecursiveDirectoryProcess(buildPath,buildPath,removeInvalidFile);
 }
 
 export function WriteFile(outputFile:string, output:string) {

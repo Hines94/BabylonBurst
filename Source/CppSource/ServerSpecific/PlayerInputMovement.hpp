@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Engine/Entities/EntitySystem.h"
-#include "PlayerController.hpp"
+#include "Player/FlyingPlayerController.hpp"
+#include "Engine/Player/PlayerConnectionManager.h"
 #include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
@@ -27,7 +28,7 @@ namespace PlayerMoveProcessor {
             return;
         }
 
-        auto playerComp = EntityComponentSystem::GetComponent<PlayerController>(playerData);
+        auto playerComp = EntityComponentSystem::GetComponent<FlyingPlayerController>(playerData);
         if (!EntityComponentSystem::IsValid(playerComp->CurrentControllingEntity)) {
             return;
         }

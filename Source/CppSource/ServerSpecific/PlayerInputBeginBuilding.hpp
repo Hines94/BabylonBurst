@@ -1,7 +1,8 @@
 #pragma once
 #include "Engine/Entities/Building/NewShipSetup.hpp"
 #include "Engine/Entities/EntitySystem.h"
-#include "PlayerBuildingComponent.hpp"
+#include "Engine/Player/PlayerConnectionManager.h"
+#include "Player/PlayerBuildingComponent.hpp"
 #include <nlohmann/json.hpp>
 
 

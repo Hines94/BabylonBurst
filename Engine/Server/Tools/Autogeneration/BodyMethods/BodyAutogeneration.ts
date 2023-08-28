@@ -21,12 +21,12 @@ function createCppAutogenBase(relativeDir: string, fileNameExten: string, output
 }
 
 //Run the autogeneration for a cpp body based on the file we are currently running
-export function RunBodyAutogeneration(fileCode:any,filePath:string) {
+export function RunBodyAutogeneration(fileCode:any,basePath:string,filePath:string) {
     if(Object.keys(FileComponentsProperties).length == 0){
         return;
     }
     //Create the autogen file
-    let { relativeDir, fileNameExten, outputFile } = CreateAutogenFile(filePath);
+    let { relativeDir, fileNameExten, outputFile } = CreateAutogenFile(basePath,filePath);
 
     //Common, Server specific etc are a given, so remove them
     relativeDir = RemovePlatformSpecificIncludePath(relativeDir);

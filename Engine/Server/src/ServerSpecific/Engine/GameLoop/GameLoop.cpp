@@ -1,7 +1,7 @@
 #include "GameLoop.h"
 #include "Engine/Networking/NetworkingManager.h"
 #include "Engine/Player/PlayerConnectionManager.h"
-#include "Engine/Player/PlayerMessageProcessor.hpp"
+#include "Engine/Player/PlayerMessageProcessor.h"
 #include "Engine/TestSenarios/TestingController.hpp"
 #include "Engine/Utils/Environment.h"
 

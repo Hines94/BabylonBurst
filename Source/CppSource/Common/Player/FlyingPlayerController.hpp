@@ -1,11 +1,16 @@
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Physics/Control/ControllableMover.h"
 #include "Engine/Physics/Control/ControllableRotator.h"
+#include "Engine/Player/PlayerCoreComponent.hpp"
+#include "Engine/Entities/EntityTaskRunners.hpp"
 #include "PlayerPawn.hpp"
 
 
-todo: system to update!
-PlayerController::UpdatePlayerControllers(FirstTime, deltaTime);
+// todo: system to update!
+// PlayerController::UpdatePlayerControllers(FirstTime, deltaTime);
+//TODO: Find all with player core but not flyingPlayerController
+//Create and control pawn
+// pc->SpawnPlayerPawn(playerData);
 
 //Requested movement instructions
 struct PlayerRequestingMessage {
@@ -25,10 +30,7 @@ struct FlyingPlayerController : public Component {
     CPROPERTY(NOTYPINGS)
     PlayerRequestingMessage playerRequests;
 
-    
-    //TODO: Find all with player core but not flyingPlayerController
-    //Create and control pawn
-    pc->SpawnPlayerPawn(playerData);
+     DECLARE_COMPONENT_METHODS(FlyingPlayerController)
 
     //Inherited methods
     void onComponentRemoved(EntityData* entData) {
@@ -95,11 +97,11 @@ struct FlyingPlayerController : public Component {
     static void UpdatePlayerControllers(bool init, double deltaTime) {
         //Iterate through all player controllers
         auto allPC = EntityComponentSystem::GetEntitiesWithData({typeid(PlayerCoreComponent)}, {});
-        EntityTaskRunners::AutoPerformTasksParallel("PlayerControlUpdate", allPC, updatePlayerControl, deltaTime);
+        EntityTaskRunners::AutoPerformTasksParallel("PlayerControlUpdate", allPC, updateFlyingControl, deltaTime);
     }
 private:
     static void updateFlyingControl(double dt, EntityData* item) {
-        auto playerComp = EntityComponentSystem::GetComponent<PlayerCoreComponent>(item);
+        auto playerComp = EntityComponentSystem::GetComponent<FlyingPlayerController>(item);
         //Control our CurrentControllingEntity
         if (!playerComp->CurrentControllingEntity) {
             return;
@@ -125,4 +127,4 @@ private:
 
         //TODO: If no requests after a while from player simply revert back to nothing in case dc etc?
     }
-}
+};

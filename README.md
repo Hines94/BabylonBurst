@@ -32,5 +32,13 @@ Build Production:
 TODO: build client & server
 
 Extend Code:
+- Be careful using .hpp and .h files - unless included in a .cpp they will not be compiled in
+Follow folder structure:
+Source
+    CppSource
+        Common - compiled into WASM + Server
+        ServerSpecific - compiled into backend only
+        WASMSpecific - compiled into WASM only
+            WASM_INTERFACE - compiled with Emscripten for Embind (to make Typescript hooks into WASM - see Examples)
+
 TODO: use the Source/Client for any frontend code - include BabylonBoostClient to use any of those exports
-TODO: use Source/Server for any server code - paths should be auto resolved

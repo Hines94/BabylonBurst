@@ -1,7 +1,7 @@
 #pragma once
-#include "Engine/Entities/Control/ControllableEntity.hpp"
-#include "Engine/Entities/Control/ControllableMover.h"
-#include "Engine/Entities/Control/ControllableRotator.h"
+#include "Engine/Physics/Control/ControllableEntity.hpp"
+#include "Engine/Physics/Control/ControllableMover.h"
+#include "Engine/Physics/Control/ControllableRotator.h"
 #include "Engine/Entities/Core/EntTransform.h"
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Networking/ClientLerpTransform.hpp"

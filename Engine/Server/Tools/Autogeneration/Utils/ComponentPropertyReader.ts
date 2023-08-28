@@ -4,6 +4,7 @@ import Parser = require('tree-sitter');
 import CPP = require('tree-sitter-cpp');
 import { FindMacroComment } from './CommentMacroFinder';
 import { EnvVarLoader } from './EnvironmentVariableLoader';
+import { RemovePlatformSpecificIncludePath } from './PlatformUtils';
 
 const parser = new Parser();
 parser.setLanguage(CPP);
@@ -72,11 +73,11 @@ function isNameNode(nodeType: string): boolean {
 }
 
 //Reads over a file and gets any components and custom property specifiers for our structs
-export function UpdateStructsProperties(code:any,filePath:string)  {
+export function UpdateStructsProperties(code:any,basePath:string,filePath:string)  {
     FileComponentsProperties = {};
 
     const tree = parser.parse(code);
-    const structs = findStructs(tree.rootNode,0,filePath);
+    const structs = findStructs(tree.rootNode,0,basePath,filePath);
 
     //Add structs
     for(const struct of structs) {
@@ -157,7 +158,7 @@ function AddStructParams(structDetails:StructDetails) {
 }
 
 /** Main function to find any structs within our file that could be important */
-function findStructs(node:Parser.SyntaxNode,childIndex:number,headerPath:string) : StructDetails[] {
+function findStructs(node:Parser.SyntaxNode,childIndex:number,basePath:string,headerPath:string) : StructDetails[] {
     if(EnvVarLoader.getInstance().environmentVariables["NO_PHYSICS"] === 'true') {
         if(headerPath.includes("/Engine/Physics")) {
             return [];
@@ -169,9 +170,12 @@ function findStructs(node:Parser.SyntaxNode,childIndex:number,headerPath:string)
         const structNameNode = getChildNode(node, 'type_identifier');
         const structName = structNameNode[0].text;
         const structBody = getChildNode(node, 'field_declaration_list')[0];
+        const cleanHeaderPath = RemovePlatformSpecificIncludePath(
+            headerPath.replace(basePath + "/", "")
+        );
         const details:StructDetails = {
             name: structName,
-            headerPath:headerPath,
+            headerPath:cleanHeaderPath,
             structTags:[],
             properties: [],
             inheritClasses: [],
@@ -206,7 +210,7 @@ function findStructs(node:Parser.SyntaxNode,childIndex:number,headerPath:string)
     for (let i = 0; i < node.childCount; i++) {
         const found = node.child(i);
         if(found) {
-            ret.push(...findStructs(found,i,headerPath));
+            ret.push(...findStructs(found,i,basePath,headerPath));
         }
     }
 
