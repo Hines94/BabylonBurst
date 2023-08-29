@@ -6,6 +6,7 @@ import { RunBodyAutogeneration, RunBodyPrepass } from './BodyMethods/BodyAutogen
 import { UpdateStructsProperties } from './Utils/ComponentPropertyReader';
 import { GenerateComponentLoader } from './Utils/ComponentLoadGenerator';
 import { FinishClientAutoTypings } from './ClientTypings/ClientTypingsAutogenerator';
+import { RemoveInvalidFiles } from './Utils/InvalidFileRemover';
 
 export const userSourcePath = "../../../../../Source/CppSource";
 export const sourcePath = "../../../src";
@@ -30,14 +31,27 @@ export function CreateAutogenFile(basePath:string ,filePath: string,extension:st
 }
 
 //Process a directory and search for any candidates for autogeneration
-export function RecursiveDirectoryProcess(basePath:string,dirPath: string,processMethod:(basePath:string,filePath:string)=>void) {
+export function RecursiveDirectoryProcess(basePath:string,dirPath: string,processMethod:(basePath:string,filePath:string)=>void, fileTypes:string[]) {
+    if(!fs.existsSync(basePath)) {
+        console.error("Given faulty base path: " + basePath);
+        process.exit(1);
+    }
+    
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
 
     for (const entry of entries) {
         if (entry.isDirectory()) {
-            RecursiveDirectoryProcess(basePath,path.join(dirPath, entry.name),processMethod);
-        } else if (entry.isFile() && (entry.name.endsWith('.h') || entry.name.endsWith('.hpp'))) {
-            processMethod(basePath,path.join(dirPath, entry.name))
+            RecursiveDirectoryProcess(basePath,path.join(dirPath, entry.name),processMethod,fileTypes);
+        } else if (entry.isFile()) {
+            var typeFound = false;
+            fileTypes.forEach(ft=>{
+                if(entry.name.endsWith(ft)){
+                    typeFound = true;
+                }
+            })
+            if(typeFound) {
+                processMethod(basePath,path.join(dirPath, entry.name));
+            }
         }
     }
 }
@@ -46,10 +60,11 @@ async function RunAutogenerator() {
     //Prepasses
     RunBodyPrepass();
     //Autogeneration
-    RecursiveDirectoryProcess(sourcePath,sourcePath,processFile);
-    RecursiveDirectoryProcess(userSourcePath,userSourcePath,processFile);
+    RecursiveDirectoryProcess(sourcePath,sourcePath,processFile,[".h",".hpp"]);
+    RecursiveDirectoryProcess(userSourcePath,userSourcePath,processFile,[".h",".hpp"]);
     GenerateComponentLoader();
     FinishClientAutoTypings();
+    RemoveInvalidFiles();
 }
 
 //Actual autogeneration

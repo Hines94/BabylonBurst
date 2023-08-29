@@ -1,5 +1,5 @@
 #pragma once
-#include "BuildableObject.h"
+#include "Building/BuildableObject.h"
 #include <string>
 #include <unordered_map>
 
@@ -10,3 +10,4 @@ namespace BuildingSystem {
 
     BuildableObject* GetBuildableObject(const std::string& name);
 } // namespace BuildingSystem
+  // BuildingSystem

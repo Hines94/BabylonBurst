@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Engine/Entities/EntitySystem.h"
-#include "Player/FlyingPlayerController.hpp"
 #include "Engine/Player/PlayerConnectionManager.h"
+#include "Player/FlyingPlayerController.hpp"
 #include <nlohmann/json.hpp>
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ void from_json(const nlohmann::json& j, PlayerRequestingMessage& p) {
 namespace PlayerMoveProcessor {
 
     void processPlayerMovementInput(double dt, std::pair<std::string, std::string> task) {
-        //First get player ent and comp
+        // First get player ent and comp
         auto playerEnt = PlayerConnectionManager::getInstance().GetPlayerEntity(task.first);
         auto playerData = EntityComponentSystem::GetComponentDataForEntity(playerEnt);
 
@@ -33,7 +33,7 @@ namespace PlayerMoveProcessor {
             return;
         }
 
-        //Decode message
+        // Decode message
         try {
             playerComp->playerRequests = nlohmann::json::parse(task.second).get<PlayerRequestingMessage>();
         } catch (nlohmann::json::parse_error& e) {
@@ -42,3 +42,4 @@ namespace PlayerMoveProcessor {
         }
     }
 } // namespace PlayerMoveProcessor
+  // PlayerMoveProcessor

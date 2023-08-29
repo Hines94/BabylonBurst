@@ -1,5 +1,11 @@
-
-import { AsyncAWSBackend, AsyncAssetManager, AsyncDataType, AsyncInMemoryFrontend, AsyncIndexDBFrontend, AsyncZipPuller } from "../AsyncAssets";
+import {
+    AsyncAWSBackend,
+    AsyncAssetManager,
+    AsyncDataType,
+    AsyncInMemoryFrontend,
+    AsyncIndexDBFrontend,
+    AsyncZipPuller,
+} from "../AsyncAssets";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 import { GetWasmModule } from "../WASM/ServerWASMModule";
 
@@ -28,8 +34,11 @@ export async function setupAsyncManager() {
     if (environmentVaraibleTracker.GetVariable("USE_MEMORY_FRONTEND") !== "TRUE") {
         frontend = new AsyncIndexDBFrontend();
     }
-    console.log("BUCKET: " + environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"))
-    const assetManager = new AsyncAssetManager(new AsyncAWSBackend(environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"), creds), frontend);
+    console.log("BUCKET: " + environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"));
+    const assetManager = new AsyncAssetManager(
+        new AsyncAWSBackend(environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"), creds),
+        frontend
+    );
     assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light;
     await assetManager.loadManager();
     setupAWSWASMHooks(assetManager);

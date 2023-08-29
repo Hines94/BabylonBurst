@@ -1,4 +1,3 @@
-
 import { defaultLayerMask } from "../Utils/LayerMasks";
 import { EntTransform } from "../EntitySystem/CoreComponents";
 import { GameEcosystem } from "../GameEcosystem";

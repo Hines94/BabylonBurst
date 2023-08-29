@@ -1,7 +1,6 @@
 import { PBRMaterial } from "@babylonjs/core";
 import { AsyncImageDescription } from "../AsyncAssets";
 
-
 export async function SetAlbedoToPBR(mat: PBRMaterial, alb: AsyncImageDescription) {
     if (alb === undefined || alb.ourPath === undefined || alb.ourPath === "") {
         return;

@@ -1,15 +1,3 @@
 #!/bin/sh
 
-#Tidy of Engine C++ code
-git diff --cached --name-only | \
-grep -E "^Engine/.*\.(cpp|hpp|h)$" | \
-while read FILE
-do
-    if [ -f "$FILE" ]; then
-        clang-format -i -style=file "$FILE" && git add "$FILE"
-    fi
-done
-
-#Tidy of Engine typescript code
-cd Engine/Tools/GitHooks
-node pre-commit.cjs
+bash CodeTidy.sh

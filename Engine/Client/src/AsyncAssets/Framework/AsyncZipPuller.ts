@@ -1,9 +1,5 @@
 import { Observable, Observer } from "@babylonjs/core";
-import {
-  AsyncDataType,
-  GetAssetFullPath,
-  UnzipAndCacheData,
-} from "../Utils/ZipUtils.js";
+import { AsyncDataType, GetAssetFullPath, UnzipAndCacheData } from "../Utils/ZipUtils.js";
 import { CacheWorkerDirective, CacheWorkerResult } from "./CacheWorkerTypes.js";
 import { AsyncAssetManager } from "../index.js";
 
@@ -12,130 +8,115 @@ import { AsyncAssetManager } from "../index.js";
 var existingZipPullers: { [id: string]: AsyncZipPuller } = {};
 
 export class AsyncZipPuller {
-  //TODO: If versioning then remove old versions from response cache?
-  filePath: string;
-  loadType: AsyncDataType;
-  startLoadTime = performance.now();
-  onAssetLoad = new Observable();
-  completed = false;
-  success = true;
+    //TODO: If versioning then remove old versions from response cache?
+    filePath: string;
+    loadType: AsyncDataType;
+    startLoadTime = performance.now();
+    onAssetLoad = new Observable();
+    completed = false;
+    success = true;
 
-  webWorkerObserve: Observer<CacheWorkerResult>;
+    webWorkerObserve: Observer<CacheWorkerResult>;
 
-  constructor(filePath: string, loadType: AsyncDataType) {
-    this.filePath = filePath;
-    this.loadType = loadType;
-    this.PerformLoadProcess();
-  }
-
-  private async PerformLoadProcess() {
-    var manager = AsyncAssetManager.GetAssetManager();
-    const webWorker = await manager.GetWebWorker();
-    if (webWorker !== undefined) {
-      if (manager.printDebugStatements) {
-        console.log("USING WEB WORKER FOR ASYNC ZIP PULLER: " + this.filePath);
-      }
-      const directive: CacheWorkerDirective = {
-        path: this.filePath,
-        loadType: this.loadType,
-      };
-      webWorker.postMessage(directive);
-      this.webWorkerObserve = manager.onWebWorkerCompleteCaching.add(
-        this.WebWorkerComplete.bind(this)
-      );
-    } else {
-      this.processBackendResponse(
-        await manager.backendStorage.GetItemAtLocation(this.filePath)
-      );
-    }
-  }
-
-  static RemoveCacheAtLocation(location: string) {
-    //Remove zip puller caching for all items within this Zip
-    delete existingZipPullers[location];
-  }
-
-  //For online - process our AWS response and check for any cached so we don't need to re-download
-  private async processBackendResponse(zipBytes: Uint8Array) {
-    var manager = AsyncAssetManager.GetAssetManager();
-    this.success = await UnzipAndCacheData(
-      zipBytes,
-      manager.frontendCache,
-      this.loadType,
-      this.filePath
-    );
-
-    const loadTime = (performance.now() - this.startLoadTime) / 1000;
-    if (manager.printDebugStatements) {
-      console.log(
-        "Time to load asset from Backend: " +
-          this.filePath +
-          " " +
-          loadTime +
-          "s"
-      );
+    constructor(filePath: string, loadType: AsyncDataType) {
+        this.filePath = filePath;
+        this.loadType = loadType;
+        this.PerformLoadProcess();
     }
 
-    this.completed = true;
-    this.onAssetLoad.notifyObservers(null);
-  }
-
-  GetFinishedPromise(): Promise<boolean> {
-    const puller = this;
-    return new Promise((resolve, reject) => {
-      if (puller.completed === true) {
-        resolve(true);
-      }
-      puller.onAssetLoad.add(() => {
-        resolve(true);
-      });
-    });
-  }
-
-  async WebWorkerComplete(data: CacheWorkerResult) {
-    if (data.path !== this.filePath) {
-      return;
-    }
-    this.completed = true;
-    this.success = data.success;
-    this.onAssetLoad.notifyObservers(null);
-    const manager = AsyncAssetManager.GetAssetManager();
-    manager.onWebWorkerCompleteCaching.remove(this.webWorkerObserve);
-  }
-
-  static async LoadFileData(
-    assetPath: string,
-    fileIndex: number,
-    dataType: AsyncDataType,
-    bIgnoreCache: boolean
-  ): Promise<any> {
-    const fullPath = GetAssetFullPath(assetPath, fileIndex);
-
-    //Already cached from Frontend? (this specific file, eg file 0)
-    if (!bIgnoreCache) {
-      const preloadedData = await AsyncZipPuller.GetCachedFile(fullPath);
-      if (preloadedData !== null) {
-        return preloadedData;
-      }
+    private async PerformLoadProcess() {
+        var manager = AsyncAssetManager.GetAssetManager();
+        const webWorker = await manager.GetWebWorker();
+        if (webWorker !== undefined) {
+            if (manager.printDebugStatements) {
+                console.log("USING WEB WORKER FOR ASYNC ZIP PULLER: " + this.filePath);
+            }
+            const directive: CacheWorkerDirective = {
+                path: this.filePath,
+                loadType: this.loadType,
+            };
+            webWorker.postMessage(directive);
+            this.webWorkerObserve = manager.onWebWorkerCompleteCaching.add(this.WebWorkerComplete.bind(this));
+        } else {
+            this.processBackendResponse(await manager.backendStorage.GetItemAtLocation(this.filePath));
+        }
     }
 
-    //Get general payload from Backend (covers all items in zip)
-    var existingPuller = existingZipPullers[assetPath];
-    if (existingPuller === null || existingPuller === undefined) {
-      existingPuller = new AsyncZipPuller(assetPath, dataType);
+    static RemoveCacheAtLocation(location: string) {
+        //Remove zip puller caching for all items within this Zip
+        delete existingZipPullers[location];
     }
-    await existingPuller.GetFinishedPromise();
 
-    //Return specific item requested (eg file 0)
-    return await AsyncZipPuller.GetCachedFile(fullPath);
-  }
+    //For online - process our AWS response and check for any cached so we don't need to re-download
+    private async processBackendResponse(zipBytes: Uint8Array) {
+        var manager = AsyncAssetManager.GetAssetManager();
+        this.success = await UnzipAndCacheData(zipBytes, manager.frontendCache, this.loadType, this.filePath);
 
-  static async GetCachedFile(assetFullPath: string) {
-    var manager = AsyncAssetManager.GetAssetManager();
-    var cachedResult = await manager.frontendCache.Get(assetFullPath);
-    if (cachedResult !== undefined && cachedResult !== null) {
-      return cachedResult;
+        const loadTime = (performance.now() - this.startLoadTime) / 1000;
+        if (manager.printDebugStatements) {
+            console.log("Time to load asset from Backend: " + this.filePath + " " + loadTime + "s");
+        }
+
+        this.completed = true;
+        this.onAssetLoad.notifyObservers(null);
     }
-    return null;
-  }
+
+    GetFinishedPromise(): Promise<boolean> {
+        const puller = this;
+        return new Promise((resolve, reject) => {
+            if (puller.completed === true) {
+                resolve(true);
+            }
+            puller.onAssetLoad.add(() => {
+                resolve(true);
+            });
+        });
+    }
+
+    async WebWorkerComplete(data: CacheWorkerResult) {
+        if (data.path !== this.filePath) {
+            return;
+        }
+        this.completed = true;
+        this.success = data.success;
+        this.onAssetLoad.notifyObservers(null);
+        const manager = AsyncAssetManager.GetAssetManager();
+        manager.onWebWorkerCompleteCaching.remove(this.webWorkerObserve);
+    }
+
+    static async LoadFileData(
+        assetPath: string,
+        fileIndex: number,
+        dataType: AsyncDataType,
+        bIgnoreCache: boolean
+    ): Promise<any> {
+        const fullPath = GetAssetFullPath(assetPath, fileIndex);
+
+        //Already cached from Frontend? (this specific file, eg file 0)
+        if (!bIgnoreCache) {
+            const preloadedData = await AsyncZipPuller.GetCachedFile(fullPath);
+            if (preloadedData !== null) {
+                return preloadedData;
+            }
+        }
+
+        //Get general payload from Backend (covers all items in zip)
+        var existingPuller = existingZipPullers[assetPath];
+        if (existingPuller === null || existingPuller === undefined) {
+            existingPuller = new AsyncZipPuller(assetPath, dataType);
+        }
+        await existingPuller.GetFinishedPromise();
+
+        //Return specific item requested (eg file 0)
+        return await AsyncZipPuller.GetCachedFile(fullPath);
+    }
+
+    static async GetCachedFile(assetFullPath: string) {
+        var manager = AsyncAssetManager.GetAssetManager();
+        var cachedResult = await manager.frontendCache.Get(assetFullPath);
+        if (cachedResult !== undefined && cachedResult !== null) {
+            return cachedResult;
+        }
+        return null;
+    }
 }

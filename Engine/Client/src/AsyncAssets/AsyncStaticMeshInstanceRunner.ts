@@ -8,26 +8,25 @@ import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
  * NOTE: AsyncStaticMeshDefinition style instances will not work!
  */
 export class AsyncStaticMeshInstanceRunner extends AsyncStaticMeshDefinition {
- 
     //Instance change no longer does anything as we are running system as a whole
-    override instanceChange(details: StaticMeshInstanceDetails): void { }
+    override instanceChange(details: StaticMeshInstanceDetails): void {}
 
     /** Change all transforms for this specific mesh */
-    RunTransformSystem(scene: Scene, values:Float32Array){
+    RunTransformSystem(scene: Scene, values: Float32Array) {
         const finalMesh = this.GetFinalMesh(scene);
-        if(finalMesh === undefined){
+        if (finalMesh === undefined) {
             this.loadInMesh(scene);
             return;
         }
 
         //Note: 16 floats per matrix!
-        const numMeshes = values.length/16;
+        const numMeshes = values.length / 16;
         //Require add more instances?
-        if(numMeshes  > this.currentInstanceNum ){
+        if (numMeshes > this.currentInstanceNum) {
             this.currentInstanceNum = GetMeshInstanceNum(numMeshes);
         }
 
-        //update all transforms 
+        //update all transforms
         finalMesh.thinInstanceSetBuffer("matrix", values);
         finalMesh.isVisible = values.length > 0;
     }

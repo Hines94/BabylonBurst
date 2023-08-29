@@ -15,195 +15,166 @@ var currentlyLoadingAssets: { [id: string]: number } = {};
 const onCurrentlyLoadingAssetsChange = new Observable<string>();
 
 /** For standard unmodified search paths */
-export function GetPreviouslyLoadedAWSAsset(
-  path: string,
-  fileIndex: number
-): AsyncAssetLoader {
-  const zipPath = GetAssetFullPath(path, fileIndex);
-  if (loadedAssets[zipPath] !== undefined && loadedAssets[zipPath] !== null) {
-    return loadedAssets[zipPath];
-  }
-  return null;
+export function GetPreviouslyLoadedAWSAsset(path: string, fileIndex: number): AsyncAssetLoader {
+    const zipPath = GetAssetFullPath(path, fileIndex);
+    if (loadedAssets[zipPath] !== undefined && loadedAssets[zipPath] !== null) {
+        return loadedAssets[zipPath];
+    }
+    return null;
 }
 
 /** For custom paths (eg. scene loader) */
-export function GetPreviouslyLoadedAWSAssetCustomPath(
-  path: string
-): AsyncAssetLoader {
-  if (loadedAssets[path] !== undefined && loadedAssets[path] !== null) {
-    return loadedAssets[path];
-  }
-  return null;
+export function GetPreviouslyLoadedAWSAssetCustomPath(path: string): AsyncAssetLoader {
+    if (loadedAssets[path] !== undefined && loadedAssets[path] !== null) {
+        return loadedAssets[path];
+    }
+    return null;
 }
 
 export function WipePreviouslyLoadedAsyncAssets() {
-  //TODO delete existing?
-  loadedAssets = {};
+    //TODO delete existing?
+    loadedAssets = {};
 }
 
 /** Easy function so we can see what assets are currently in the loading process */
 export function AwaitForAllAsyncAssetsToLoad(): Promise<null> {
-  return new Promise((resolve, reject) => {
-    if (Object.keys(currentlyLoadingAssets).length === 0) {
-      resolve(null);
-    } else {
-      onCurrentlyLoadingAssetsChange.add(function () {
-        const keys = Object.keys(currentlyLoadingAssets);
-        if (keys.length === 0) {
-          resolve(null);
+    return new Promise((resolve, reject) => {
+        if (Object.keys(currentlyLoadingAssets).length === 0) {
+            resolve(null);
+        } else {
+            onCurrentlyLoadingAssetsChange.add(function () {
+                const keys = Object.keys(currentlyLoadingAssets);
+                if (keys.length === 0) {
+                    resolve(null);
+                }
+            });
         }
-      });
-    }
-  });
+    });
 }
 
 /** All asssets that are currently in an Async loading state  */
 export function GetCurrentlyLoadingAsyncAssets(): { [id: string]: number } {
-  return currentlyLoadingAssets;
+    return currentlyLoadingAssets;
 }
 
 /**
  * The root class for async loading in AWS assets. Is abstract so should be overriden by specific loaders.
  */
 export abstract class AsyncAssetLoader {
-  /** If set to true then our frontend cache will be ignored */
-  ignoreCache = false;
-  requestedAssetPath: string;
-  AssetFullyLoaded = false;
-  onAssetFullyLoaded = new Observable<AsyncAssetLoader>();
+    /** If set to true then our frontend cache will be ignored */
+    ignoreCache = false;
+    requestedAssetPath: string;
+    AssetFullyLoaded = false;
+    onAssetFullyLoaded = new Observable<AsyncAssetLoader>();
 
-  startLoadTime: number;
-  desiredFileIndex: number;
+    startLoadTime: number;
+    desiredFileIndex: number;
 
-  abstract GetDataLoadType(): AsyncDataType;
+    abstract GetDataLoadType(): AsyncDataType;
 
-  constructor(
-    assetPath: string,
-    fileIndex: number,
-    startLoad = true,
-    ignoreCache = false
-  ) {
-    this.ignoreCache = ignoreCache;
-    this.requestedAssetPath = assetPath + ".zip";
-    this.desiredFileIndex = fileIndex;
-    if (startLoad === true) {
-      this.performAsyncLoad();
-    }
-  }
-
-  async performAsyncLoad() {
-    const manager = AsyncAssetManager.GetAssetManager();
-    if (manager.printDebugStatements) {
-      console.log("Requested asset at path: " + this.requestedAssetPath);
+    constructor(assetPath: string, fileIndex: number, startLoad = true, ignoreCache = false) {
+        this.ignoreCache = ignoreCache;
+        this.requestedAssetPath = assetPath + ".zip";
+        this.desiredFileIndex = fileIndex;
+        if (startLoad === true) {
+            this.performAsyncLoad();
+        }
     }
 
-    const ourAssetPath = this.GetAssetFullPath();
-    IncrementCurrentlyLoadingAssets(ourAssetPath, manager);
-    //If first then cache in case we want to perform a get unique
-    if (
-      GetPreviouslyLoadedAWSAsset(
-        this.requestedAssetPath,
-        this.desiredFileIndex
-      ) !== null
-    ) {
-      //Add to our in memory cache
-      loadedAssets[ourAssetPath] = this;
+    async performAsyncLoad() {
+        const manager = AsyncAssetManager.GetAssetManager();
+        if (manager.printDebugStatements) {
+            console.log("Requested asset at path: " + this.requestedAssetPath);
+        }
+
+        const ourAssetPath = this.GetAssetFullPath();
+        IncrementCurrentlyLoadingAssets(ourAssetPath, manager);
+        //If first then cache in case we want to perform a get unique
+        if (GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileIndex) !== null) {
+            //Add to our in memory cache
+            loadedAssets[ourAssetPath] = this;
+        }
+
+        if (manager.printDebugStatements) {
+            this.startLoadTime = performance.now();
+        }
+
+        //Get the data we are looking for and perform load
+        const data = await AsyncZipPuller.LoadFileData(
+            this.requestedAssetPath,
+            this.desiredFileIndex,
+            this.GetDataLoadType(),
+            this.ignoreCache
+        );
+        this.PerformSpecificSetup(data);
+
+        if (manager.printDebugStatements) {
+            const loadTime = (performance.now() - this.startLoadTime) / 1000;
+            console.log("Asset loaded: " + this.requestedAssetPath + " load time: " + loadTime + "s");
+        }
+
+        DecrementCurrentlyLoadingAssets(ourAssetPath, manager);
     }
 
-    if (manager.printDebugStatements) {
-      this.startLoadTime = performance.now();
+    static RemovePriorCaching(location: string, fileIndex: number) {
+        const fullPath = GetAssetFullPath(location, fileIndex);
+        delete loadedAssets[fullPath];
     }
 
-    //Get the data we are looking for and perform load
-    const data = await AsyncZipPuller.LoadFileData(
-      this.requestedAssetPath,
-      this.desiredFileIndex,
-      this.GetDataLoadType(),
-      this.ignoreCache
-    );
-    this.PerformSpecificSetup(data);
-
-    if (manager.printDebugStatements) {
-      const loadTime = (performance.now() - this.startLoadTime) / 1000;
-      console.log(
-        "Asset loaded: " +
-          this.requestedAssetPath +
-          " load time: " +
-          loadTime +
-          "s"
-      );
+    /** Will load in our string data ahead of time */
+    async PerformBackgroundCache() {
+        await AsyncZipPuller.LoadFileData(
+            this.requestedAssetPath,
+            this.desiredFileIndex,
+            this.GetDataLoadType(),
+            this.ignoreCache
+        );
     }
 
-    DecrementCurrentlyLoadingAssets(ourAssetPath, manager);
-  }
+    GetAssetFullPath(): string {
+        return GetAssetFullPath(this.requestedAssetPath, this.desiredFileIndex);
+    }
 
-  static RemovePriorCaching(location: string, fileIndex: number) {
-    const fullPath = GetAssetFullPath(location, fileIndex);
-    delete loadedAssets[fullPath];
-  }
+    async PerformSpecificSetup(response: any) {
+        await this.onAsyncDataLoaded(response);
+        this.AssetFullyLoaded = true;
+        this.onAssetFullyLoaded.notifyObservers(this);
+    }
 
-  /** Will load in our string data ahead of time */
-  async PerformBackgroundCache() {
-    await AsyncZipPuller.LoadFileData(
-      this.requestedAssetPath,
-      this.desiredFileIndex,
-      this.GetDataLoadType(),
-      this.ignoreCache
-    );
-  }
-
-  GetAssetFullPath(): string {
-    return GetAssetFullPath(this.requestedAssetPath, this.desiredFileIndex);
-  }
-
-  async PerformSpecificSetup(response: any) {
-    await this.onAsyncDataLoaded(response);
-    this.AssetFullyLoaded = true;
-    this.onAssetFullyLoaded.notifyObservers(this);
-  }
-
-  getWaitForFullyLoadPromise(): Promise<AsyncAssetLoader> {
-    var loader = this;
-    return new Promise((resolve, reject) => {
-      if (loader.AssetFullyLoaded === true) {
-        resolve(loader);
-      } else {
-        loader.onAssetFullyLoaded.add(function () {
-          resolve(loader);
+    getWaitForFullyLoadPromise(): Promise<AsyncAssetLoader> {
+        var loader = this;
+        return new Promise((resolve, reject) => {
+            if (loader.AssetFullyLoaded === true) {
+                resolve(loader);
+            } else {
+                loader.onAssetFullyLoaded.add(function () {
+                    resolve(loader);
+                });
+            }
         });
-      }
-    });
-  }
+    }
 
-  //---------------------OVERRIDE METHODS---------------------------
-  //When we get our data back and ready to process
-  abstract onAsyncDataLoaded(cachedResponse: any): Promise<null>;
+    //---------------------OVERRIDE METHODS---------------------------
+    //When we get our data back and ready to process
+    abstract onAsyncDataLoaded(cachedResponse: any): Promise<null>;
 }
 
-function IncrementCurrentlyLoadingAssets(
-  ourAssetPath: string,
-  manager: AsyncAssetManager
-) {
-  if (currentlyLoadingAssets[ourAssetPath] === undefined) {
-    currentlyLoadingAssets[ourAssetPath] = 0;
-    onCurrentlyLoadingAssetsChange.notifyObservers(ourAssetPath);
-    if (manager.printDebugStatements)
-      console.log("Asset: " + ourAssetPath + " Started Loading");
-  }
-  currentlyLoadingAssets[ourAssetPath] += 1;
+function IncrementCurrentlyLoadingAssets(ourAssetPath: string, manager: AsyncAssetManager) {
+    if (currentlyLoadingAssets[ourAssetPath] === undefined) {
+        currentlyLoadingAssets[ourAssetPath] = 0;
+        onCurrentlyLoadingAssetsChange.notifyObservers(ourAssetPath);
+        if (manager.printDebugStatements) console.log("Asset: " + ourAssetPath + " Started Loading");
+    }
+    currentlyLoadingAssets[ourAssetPath] += 1;
 }
-function DecrementCurrentlyLoadingAssets(
-  ourAssetPath: string,
-  manager: AsyncAssetManager
-) {
-  if (currentlyLoadingAssets[ourAssetPath] === undefined) {
-    return;
-  }
-  currentlyLoadingAssets[ourAssetPath] -= 1;
-  if (currentlyLoadingAssets[ourAssetPath] === 0) {
-    delete currentlyLoadingAssets[ourAssetPath];
-    onCurrentlyLoadingAssetsChange.notifyObservers(ourAssetPath);
-    if (manager.printDebugStatements)
-      console.log("ASSET: " + ourAssetPath + " FINISHED LOADING");
-  }
+function DecrementCurrentlyLoadingAssets(ourAssetPath: string, manager: AsyncAssetManager) {
+    if (currentlyLoadingAssets[ourAssetPath] === undefined) {
+        return;
+    }
+    currentlyLoadingAssets[ourAssetPath] -= 1;
+    if (currentlyLoadingAssets[ourAssetPath] === 0) {
+        delete currentlyLoadingAssets[ourAssetPath];
+        onCurrentlyLoadingAssetsChange.notifyObservers(ourAssetPath);
+        if (manager.printDebugStatements) console.log("ASSET: " + ourAssetPath + " FINISHED LOADING");
+    }
 }

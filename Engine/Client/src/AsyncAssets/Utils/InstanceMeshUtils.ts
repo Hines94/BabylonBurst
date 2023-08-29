@@ -8,10 +8,16 @@ export class InstancedMeshTransform {
     rotation = new Vector3(0, 0, 0);
     scale = new Vector3(1, 1, 1);
 
-    constructor(loc:Vector3 = undefined,rot:Vector3 = undefined,scale:Vector3 = undefined){
-        if(loc !== undefined){this.location = loc;}
-        if(rot !== undefined){this.rotation = rot;}
-        if(scale !== undefined){this.scale = scale;}
+    constructor(loc: Vector3 = undefined, rot: Vector3 = undefined, scale: Vector3 = undefined) {
+        if (loc !== undefined) {
+            this.location = loc;
+        }
+        if (rot !== undefined) {
+            this.rotation = rot;
+        }
+        if (scale !== undefined) {
+            this.scale = scale;
+        }
     }
 
     clone(): InstancedMeshTransform {
@@ -28,9 +34,9 @@ export class InstancedMeshTransform {
         return m;
     }
 
-    setValuesForTransform(array: Float32Array,offset: number){
+    setValuesForTransform(array: Float32Array, offset: number) {
         var Quat = Quaternion.FromEulerAngles(this.rotation.x, this.rotation.y, this.rotation.z);
-        Matrix.Compose(this.scale, Quat, this.location).copyToArray(array,offset);
+        Matrix.Compose(this.scale, Quat, this.location).copyToArray(array, offset);
     }
 }
 
@@ -44,6 +50,11 @@ export function SetTransformArray(instanceTransforms: InstancedMeshTransform[], 
     mesh.thinInstanceSetBuffer("matrix", bufferMatrices);
 }
 
-export function SetTransformAtIndex(transform: InstancedMeshTransform, mesh: Mesh, index: number,refreshInstances = false) {
-    mesh.thinInstanceSetMatrixAt(index, transform.getMatrix(),refreshInstances);
+export function SetTransformAtIndex(
+    transform: InstancedMeshTransform,
+    mesh: Mesh,
+    index: number,
+    refreshInstances = false
+) {
+    mesh.thinInstanceSetMatrixAt(index, transform.getMatrix(), refreshInstances);
 }

@@ -8,7 +8,7 @@ export function AddValidFile(filePath:string) {
     validFiles.add(filePath);
 }
 
-function removeInvalidFile(filePath:string) {
+function removeInvalidFile(basePath:string,filePath:string) {
     if(validFiles.has(filePath)){
         return;
     }
@@ -16,7 +16,7 @@ function removeInvalidFile(filePath:string) {
 }
 
 export function RemoveInvalidFiles() {
-    RecursiveDirectoryProcess(buildPath,buildPath,removeInvalidFile);
+    RecursiveDirectoryProcess(buildPath,buildPath,removeInvalidFile,[".h",".hpp",".cpp"]);
 }
 
 export function WriteFile(outputFile:string, output:string) {
@@ -37,6 +37,7 @@ export function FileIncludesString(outputFile:string, check:string){
 }
 
 export function WriteFileIfChanged(outputFile:string, output:string) : boolean {
+    AddValidFile(outputFile);
     if(fs.existsSync(outputFile)){
         if(fs.readFileSync(outputFile, 'utf-8') !== output){
             fs.writeFileSync(outputFile, output);
@@ -46,6 +47,5 @@ export function WriteFileIfChanged(outputFile:string, output:string) : boolean {
     } else { 
         fs.writeFileSync(outputFile, output); 
     }
-    AddValidFile(outputFile);
     return true;
 }

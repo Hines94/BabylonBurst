@@ -1,14 +1,10 @@
 #pragma once
-#include "Engine/Entities/Building/NewShipSetup.hpp"
+#include "Building/NewBuildableSetup.hpp"
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Player/PlayerConnectionManager.h"
 #include "Player/PlayerBuildingComponent.hpp"
 #include <nlohmann/json.hpp>
 
-
-//TODO: Revive this so we can place cubes around the level?
-
-//Requested movement instructions
 struct PlayerBuildingMessage {
     int RequestType;
     Entity TargetItem;
@@ -21,7 +17,7 @@ void from_json(const nlohmann::json& j, PlayerBuildingMessage& p) {
 
 namespace PlayerBeginBuildProcessor {
     void processPlayerBeginBuildInput(double dt, std::pair<std::string, std::string> task) {
-        //First get player ent and comp
+        // First get player ent and comp
         auto playerEnt = PlayerConnectionManager::getInstance().GetPlayerEntity(task.first);
         auto playerData = EntityComponentSystem::GetComponentDataForEntity(playerEnt);
 
@@ -30,32 +26,32 @@ namespace PlayerBeginBuildProcessor {
             return;
         }
 
-        //Add build comp if not exists
+        // Add build comp if not exists
         if (!EntityComponentSystem::HasComponent<PlayerBuildingComponent>(playerData)) {
             EntityComponentSystem::AddSetComponentToEntity(playerData, new PlayerBuildingComponent());
         }
         auto playerBComp = EntityComponentSystem::GetComponent<PlayerBuildingComponent>(playerData);
 
-        //Decode message and set building
+        // Decode message and set building
         try {
             PlayerBuildingMessage playerBuildRequest = nlohmann::json::parse(task.second).get<PlayerBuildingMessage>();
-            //is stop building
+            // is stop building
             if (playerBuildRequest.RequestType == 1) {
                 std::unique_lock lock(playerBComp->writeMutex);
                 playerBComp->CurrentBuildItem = nullptr;
                 return;
             }
-            //is requesting a new build
+            // is requesting a new build
             if (playerBuildRequest.RequestType == 2) {
-                //TODO: Check permission to generate new!
-                auto buildItem = NewShipSetup::GenerateNewShip();
+                // TODO: Check permission to generate new!
+                auto buildItem = NewBuildableSetup::GenerateNewBuildable();
                 std::unique_lock lock(playerBComp->writeMutex);
                 playerBComp->CurrentBuildItem = buildItem;
-                //Else requesting build to existing item
+                // Else requesting build to existing item
             } else if (playerBuildRequest.RequestType == 3) {
                 auto buildItem = EntityComponentSystem::GetComponentDataForEntity(playerBuildRequest.TargetItem);
                 if (EntityComponentSystem::IsValid(buildItem)) {
-                    //TODO: Check they have permission etc!
+                    // TODO: Check they have permission etc!
                     std::unique_lock lock(playerBComp->writeMutex);
                     playerBComp->CurrentBuildItem = buildItem;
                 }
@@ -68,3 +64,4 @@ namespace PlayerBeginBuildProcessor {
         }
     }
 } // namespace PlayerBeginBuildProcessor
+  // PlayerBeginBuildProcessor

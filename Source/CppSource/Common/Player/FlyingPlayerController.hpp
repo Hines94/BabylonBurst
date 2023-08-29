@@ -1,18 +1,11 @@
 #include "Engine/Entities/EntitySystem.h"
+#include "Engine/Entities/EntityTaskRunners.hpp"
 #include "Engine/Physics/Control/ControllableMover.h"
 #include "Engine/Physics/Control/ControllableRotator.h"
 #include "Engine/Player/PlayerCoreComponent.hpp"
-#include "Engine/Entities/EntityTaskRunners.hpp"
 #include "PlayerPawn.hpp"
 
-
-// todo: system to update!
-// PlayerController::UpdatePlayerControllers(FirstTime, deltaTime);
-//TODO: Find all with player core but not flyingPlayerController
-//Create and control pawn
-// pc->SpawnPlayerPawn(playerData);
-
-//Requested movement instructions
+// Requested movement instructions
 struct PlayerRequestingMessage {
     float RequestForwardAxis;
     float RequestSideAxis;
@@ -30,9 +23,9 @@ struct FlyingPlayerController : public Component {
     CPROPERTY(NOTYPINGS)
     PlayerRequestingMessage playerRequests;
 
-     DECLARE_COMPONENT_METHODS(FlyingPlayerController)
+    DECLARE_COMPONENT_METHODS(FlyingPlayerController)
 
-    //Inherited methods
+    // Inherited methods
     void onComponentRemoved(EntityData* entData) {
         if (CurrentControllingEntity != nullptr && IsControllingPawn() == false) {
             auto Cont = EntityComponentSystem::GetComponent<ControllableEntity>(CurrentControllingEntity);
@@ -41,30 +34,28 @@ struct FlyingPlayerController : public Component {
         }
     }
 
-    //Methods
-    bool IsControllingPawn() {
-        return ControlledPawn != nullptr && CurrentControllingEntity != nullptr && CurrentControllingEntity == ControlledPawn;
-    }
+    // Methods
+    bool IsControllingPawn() { return ControlledPawn != nullptr && CurrentControllingEntity != nullptr && CurrentControllingEntity == ControlledPawn; }
 
     bool ChangeControlledTarget(EntityData* newTarget, EntityData* playerEnt) {
-        //Check this item can be controlled
+        // Check this item can be controlled
         auto newControllable = EntityComponentSystem::GetComponent<ControllableEntity>(newTarget);
         {
             std::shared_lock readLock(newControllable->writeMutex);
             if (newControllable != nullptr && newControllable->CurrentController != nullptr) {
-                //Item is already controlled!
+                // Item is already controlled!
                 return false;
             }
         }
 
-        //Remove old target
+        // Remove old target
         if (CurrentControllingEntity != nullptr) {
             auto oldComp = EntityComponentSystem::GetComponent<ControllableEntity>(CurrentControllingEntity);
             std::unique_lock oldC(oldComp->writeMutex);
             oldComp->CurrentController = nullptr;
         }
 
-        //Set new target
+        // Set new target
         std::unique_lock ourLock(writeMutex);
         if (EntityComponentSystem::HasComponent<ControllableEntity>(newTarget) == false) {
             return false;
@@ -84,7 +75,7 @@ struct FlyingPlayerController : public Component {
     }
 
     void SpawnPlayerPawn(EntityData* owner) {
-        //Basic setup
+        // Basic setup
         auto pawnEnt = EntityComponentSystem::AddEntity();
         std::unique_lock lock(writeMutex);
         ControlledPawn = pawnEnt;
@@ -95,14 +86,26 @@ struct FlyingPlayerController : public Component {
     }
 
     static void UpdatePlayerControllers(bool init, double deltaTime) {
-        //Iterate through all player controllers
-        auto allPC = EntityComponentSystem::GetEntitiesWithData({typeid(PlayerCoreComponent)}, {});
+        // Setup Flying PC
+        auto noPC = EntityComponentSystem::GetEntitiesWithData({typeid(PlayerCoreComponent)}, {typeid(FlyingPlayerController)});
+        EntityTaskRunners::AutoPerformTasksParallel("setupPlayerControl", noPC, setupFlyingControl, deltaTime);
+
+        // Iterate through all player controllers
+        auto allPC = EntityComponentSystem::GetEntitiesWithData({typeid(FlyingPlayerController)}, {});
         EntityTaskRunners::AutoPerformTasksParallel("PlayerControlUpdate", allPC, updateFlyingControl, deltaTime);
     }
+
 private:
+    static void setupFlyingControl(double dt, EntityData* item) {
+        const auto pc = new FlyingPlayerController();
+        EntityComponentSystem::AddSetComponentToEntity(item, pc);
+        pc->SpawnPlayerPawn(item);
+        std::cout << "Setup Player controller" << std::endl;
+    }
+
     static void updateFlyingControl(double dt, EntityData* item) {
         auto playerComp = EntityComponentSystem::GetComponent<FlyingPlayerController>(item);
-        //Control our CurrentControllingEntity
+        // Control our CurrentControllingEntity
         if (!playerComp->CurrentControllingEntity) {
             return;
         }
@@ -111,7 +114,9 @@ private:
             return;
         }
 
-        //Set values in our controlled component controllers
+        std::cout << "Updating flying controller" << std::endl;
+
+        // Set values in our controlled component controllers
         if (EntityComponentSystem::HasComponent<ControllableRotator>(playerComp->CurrentControllingEntity)) {
             auto rotComp = EntityComponentSystem::GetComponent<ControllableRotator>(playerComp->CurrentControllingEntity);
             rotComp->RequestedPitch = playerComp->playerRequests.RequestPitchLook;
@@ -125,6 +130,7 @@ private:
             linComp->RequestedUpAxis = playerComp->playerRequests.RequestUpAxis;
         }
 
-        //TODO: If no requests after a while from player simply revert back to nothing in case dc etc?
+        // TODO: If no requests after a while from player simply revert back to
+        // nothing in case dc etc?
     }
 };

@@ -4,7 +4,6 @@ import { AsyncStaticMeshDefinition } from "./AsyncStaticMeshDefinition.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 import { Color4 } from "@babylonjs/core/Maths/math.color.js";
 
-
 //This file contains clone,instance and description
 
 //----------------------------------------------------------------------- CLONE --------------------------------------------------------------------------------
@@ -16,7 +15,9 @@ export class StaticMeshCloneDetails {
     //The owning definition
     protected definition: AsyncStaticMeshDefinition;
     private desiredScene: Scene = null;
-    GetScene(){return this.desiredScene;}
+    GetScene() {
+        return this.desiredScene;
+    }
 
     constructor(definition: AsyncStaticMeshDefinition, bStartVisible: boolean, scene: Scene) {
         this.bMeshVisible = bStartVisible;
@@ -38,7 +39,9 @@ export class StaticMeshCloneDetails {
      * For this clone set all new materials
      */
     setCloneMaterials(mats: Material[]) {
-        if(mats === undefined || mats === null){return;}
+        if (mats === undefined || mats === null) {
+            return;
+        }
         if (this.materials !== null && mats.length !== this.materials.length) {
             console.error("Tried to set clone materials with incorrect number of materials!");
             return;
@@ -50,7 +53,9 @@ export class StaticMeshCloneDetails {
         //Else may feed in some nulls
         else {
             for (var i = 0; i < mats.length; i++) {
-                if (mats[i] !== null) { this.materials[i] = mats[i]; }
+                if (mats[i] !== null) {
+                    this.materials[i] = mats[i];
+                }
             }
         }
         this.refreshMultiMat();
@@ -60,14 +65,19 @@ export class StaticMeshCloneDetails {
      * For this clone set a new material for one of our submeshes
      */
     setCloneMaterialAtIndex(mat: Material, index: number) {
-        if (index < 0 || index >= this.materials.length) { console.error("Passed invalid index for clone mesh!"); return; }
+        if (index < 0 || index >= this.materials.length) {
+            console.error("Passed invalid index for clone mesh!");
+            return;
+        }
         this.materials[index] = mat;
         this.refreshMultiMat();
     }
 
     /** Rebuilds our materials array into a multimat */
     private refreshMultiMat() {
-        if (this.cloneMesh === null) { return; }
+        if (this.cloneMesh === null) {
+            return;
+        }
         var multimat = new MultiMaterial("CloneMultiMat", this.desiredScene);
         for (var i = 0; i < this.materials.length; i++) {
             multimat.subMaterials.push(this.materials[i]);
@@ -80,7 +90,9 @@ export class StaticMeshCloneDetails {
      */
     setCloneTransform(transform: InstancedMeshTransform) {
         this.desiredTransform = transform;
-        if (this.cloneMesh === null) { return; }
+        if (this.cloneMesh === null) {
+            return;
+        }
         this.cloneMesh.position = this.desiredTransform.location;
         this.cloneMesh.rotation = this.desiredTransform.rotation;
         this.cloneMesh.scaling = this.desiredTransform.scale;
@@ -115,10 +127,11 @@ export class StaticMeshCloneDetails {
         }
     }
 
-
     /** This is called when the master is loaded and our clone is ready */
-    createClone( bNotifyComplete: boolean) {
-        if (this.bAwaitingDestroy === true) { return; }
+    createClone(bNotifyComplete: boolean) {
+        if (this.bAwaitingDestroy === true) {
+            return;
+        }
         const finalMesh = this.definition.GetFinalMesh(this.desiredScene);
         this.cloneMesh = finalMesh.clone(finalMesh.name + "_clone");
         this.cloneMesh.isVisible = this.bMeshVisible;
@@ -127,11 +140,12 @@ export class StaticMeshCloneDetails {
         if (this.materials !== null) {
             //Fill in any nulls from definition
             for (var i = 0; i < this.materials.length; i++) {
-                if (this.materials[i] === null) { this.materials[i] = this.definition.materials[i]; }
+                if (this.materials[i] === null) {
+                    this.materials[i] = this.definition.materials[i];
+                }
             }
             this.refreshMultiMat();
-        }
-        else {
+        } else {
             this.materials = this.definition.materials;
         }
 
@@ -143,11 +157,13 @@ export class StaticMeshCloneDetails {
     bAwaitingDestroy = false;
     /** If we no longer want the clone this method will neatly clean up */
     DestroyClone() {
-        if (this.cloneMesh !== null) { this.cloneMesh.dispose(); }
+        if (this.cloneMesh !== null) {
+            this.cloneMesh.dispose();
+        }
         this.bAwaitingDestroy = true;
     }
 
-    dispose(){
+    dispose() {
         this.DestroyClone();
     }
 
@@ -160,8 +176,9 @@ export class StaticMeshCloneDetails {
     getMeshCreatedPromise(): Promise<StaticMeshCloneDetails> {
         var loader = this;
         return new Promise((resolve, reject) => {
-            if (loader.bCloneCreated === true) { resolve(loader); }
-            else {
+            if (loader.bCloneCreated === true) {
+                resolve(loader);
+            } else {
                 loader.onCloneCreated.add(function () {
                     resolve(loader);
                 });
@@ -170,7 +187,6 @@ export class StaticMeshCloneDetails {
     }
 }
 
-
 //----------------------------------------------------------------------- INSTANCE --------------------------------------------------------------------------------
 
 /**
@@ -178,12 +194,13 @@ export class StaticMeshCloneDetails {
  * Use an instance if you want to keep the same material and have only color and transform variations
  */
 export class StaticMeshInstanceDetails {
-
-    private instanceColor:Color4;
+    private instanceColor: Color4;
 
     private desiredTransform = new InstancedMeshTransform();
     private desiredScene: Scene = null;
-    GetScene(){return this.desiredScene;}
+    GetScene() {
+        return this.desiredScene;
+    }
 
     //The owning definition
     private definition: AsyncStaticMeshDefinition;
@@ -194,8 +211,12 @@ export class StaticMeshInstanceDetails {
     }
 
     private instanceIndex = -1;
-    setInstanceIndex(index: number) { this.instanceIndex = index; }
-    getInstanceIndex() { return this.instanceIndex; }
+    setInstanceIndex(index: number) {
+        this.instanceIndex = index;
+    }
+    getInstanceIndex() {
+        return this.instanceIndex;
+    }
 
     private bMeshVisible = true;
 
@@ -203,47 +224,60 @@ export class StaticMeshInstanceDetails {
     onInstanceCreated = new Observable<StaticMeshInstanceDetails>();
     onInstanceTransformChange = new Observable<StaticMeshInstanceDetails>();
 
-    getMeshVisible(): boolean { return this.bMeshVisible; }
+    getMeshVisible(): boolean {
+        return this.bMeshVisible;
+    }
 
     /** Includes visibility */
-    shouldMeshBeShown(){
+    shouldMeshBeShown() {
         return this.bMeshVisible === true;
     }
 
     /** Will work even if the mesh is not loaded yet */
     setMeshVisible(bVisible: boolean) {
-        if(this.bInDeletion === true) { return; }
+        if (this.bInDeletion === true) {
+            return;
+        }
         this.bMeshVisible = bVisible;
-        if (this.instanceIndex === -1) { return; }
+        if (this.instanceIndex === -1) {
+            return;
+        }
         this.definition.instanceChange(this);
     }
 
     //This is called when the master is loaded and our instance is ready
     instancePopulated() {
-        if(this.bInDeletion === true) { return; }
+        if (this.bInDeletion === true) {
+            return;
+        }
         this.bInstanceCreated = true;
-        if(this.instanceColor !== undefined){this.definition.requireColorUpdate = true;}
+        if (this.instanceColor !== undefined) {
+            this.definition.requireColorUpdate = true;
+        }
         this.onInstanceCreated.notifyObservers(this);
         this.onInstanceTransformChange.notifyObservers(this);
         const sceneID = GetAsyncSceneIdentifier(this.GetScene());
     }
 
-    setInstanceColor(color:Color4) {
+    setInstanceColor(color: Color4) {
         this.instanceColor = color;
         this.definition.requireColorUpdate = true;
     }
 
-    getInstanceColor():number[]{
-        if(this.instanceColor === undefined){return [0,0,0,0];}
-        return [this.instanceColor.r,this.instanceColor.g,this.instanceColor.b,this.instanceColor.a];
+    getInstanceColor(): number[] {
+        if (this.instanceColor === undefined) {
+            return [0, 0, 0, 0];
+        }
+        return [this.instanceColor.r, this.instanceColor.g, this.instanceColor.b, this.instanceColor.a];
     }
 
     //This will fire when we have loaded our asset and created an instance for this mesh
     getInstanceCreatedPromise(): Promise<StaticMeshInstanceDetails> {
         var loader = this;
         return new Promise((resolve, reject) => {
-            if (loader.bInstanceCreated === true) { resolve(loader); }
-            else {
+            if (loader.bInstanceCreated === true) {
+                resolve(loader);
+            } else {
                 loader.onInstanceCreated.add(function () {
                     resolve(loader);
                 });
@@ -257,10 +291,14 @@ export class StaticMeshInstanceDetails {
      */
     setInstanceTransform(transform: InstancedMeshTransform, immediateChange = false) {
         this.desiredTransform = transform;
-        if (this.instanceIndex === -1) { return; }
-        if(this.shouldMeshBeShown() === false || this.bInDeletion === true) { return; }
+        if (this.instanceIndex === -1) {
+            return;
+        }
+        if (this.shouldMeshBeShown() === false || this.bInDeletion === true) {
+            return;
+        }
         this.definition.instanceChange(this);
-        if(immediateChange){
+        if (immediateChange) {
             this.definition.UpdateQueuedTransformPositions();
         }
         this.onInstanceTransformChange.notifyObservers(this); //TODO: This before?
@@ -268,7 +306,9 @@ export class StaticMeshInstanceDetails {
 
     /** Sets the position of our instance Only (no rot/scale) */
     setInstancePosition(newPos: Vector3) {
-        if(this.bInDeletion === true) { return; }
+        if (this.bInDeletion === true) {
+            return;
+        }
         var copy = this.desiredTransform.clone();
         copy.location = newPos;
         this.setInstanceTransform(copy);
@@ -276,7 +316,9 @@ export class StaticMeshInstanceDetails {
 
     /** Sets the rotation of our instance Only (no pos/scale) */
     setInstanceRotation(newRot: Vector3) {
-        if(this.bInDeletion === true) { return; }
+        if (this.bInDeletion === true) {
+            return;
+        }
         var copy = this.desiredTransform.clone();
         copy.rotation = newRot;
         this.setInstanceTransform(copy);
@@ -284,7 +326,9 @@ export class StaticMeshInstanceDetails {
 
     /** Sets the scale of our instance Only (no rot/pos) */
     setInstanceScale(newScale: Vector3) {
-        if(this.bInDeletion === true) { return; }
+        if (this.bInDeletion === true) {
+            return;
+        }
         var copy = this.desiredTransform.clone();
         copy.scale = newScale;
         this.setInstanceTransform(copy);
@@ -300,7 +344,6 @@ export class StaticMeshInstanceDetails {
         return ret;
     }
 
-
     getInstanceBoundingBox(): BoundingBox {
         var originalBoundingBox = this.definition.GetFinalMesh(this.desiredScene).getBoundingInfo().boundingBox;
         return originalBoundingBox;
@@ -310,14 +353,16 @@ export class StaticMeshInstanceDetails {
         return this.definition.GetFinalMesh(this.desiredScene);
     }
 
-
     bInDeletion = false;
     /** Method for disposing of this instance and not requiring use anymore */
     dispose() {
-        if(this.bInDeletion === true) { return; }
-        if(this.bMeshVisible === true) { this.setMeshVisible(false); }
+        if (this.bInDeletion === true) {
+            return;
+        }
+        if (this.bMeshVisible === true) {
+            this.setMeshVisible(false);
+        }
         //TODO remove other variables?
         this.bInDeletion = true;
     }
-
 }

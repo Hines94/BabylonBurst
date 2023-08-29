@@ -3,10 +3,8 @@ import { AdvancedDynamicTexture } from "@babylonjs/gui";
 import { BackgroundCacher } from "./Framework/BackgroundCacher.js";
 import { AsyncDataType } from "./Utils/ZipUtils.js";
 
-
 /** An easy way to load in premade assets from AWS and the GUI editor */
 export class AsyncGUIDescription extends BackgroundCacher {
-
     loadingGUI: AsyncGUILoader = null;
     ourPath: string;
     ourFileIndex: number;
@@ -18,7 +16,6 @@ export class AsyncGUIDescription extends BackgroundCacher {
     }
 
     async GetGUICopy(advancedTexture: AdvancedDynamicTexture) {
-
         if (this.loadingGUI === null) {
             this.loadingGUI = new AsyncGUILoader(this.ourPath, this.ourFileIndex);
         }
@@ -31,18 +28,18 @@ export class AsyncGUIDescription extends BackgroundCacher {
     }
 
     async GetBackgroundCacheTask(): Promise<string> {
-        const task = new AsyncGUILoader(this.ourPath, this.ourFileIndex,false);
+        const task = new AsyncGUILoader(this.ourPath, this.ourFileIndex, false);
         await task.PerformBackgroundCache();
         return this.ourPath;
     }
 }
 
-
-
 class AsyncGUILoader extends AsyncAssetLoader {
     stringData: any;
 
-    GetDataLoadType(): AsyncDataType { return AsyncDataType.string; }
+    GetDataLoadType(): AsyncDataType {
+        return AsyncDataType.string;
+    }
 
     async onAsyncDataLoaded(cachedResponse: any): Promise<null> {
         this.stringData = cachedResponse;

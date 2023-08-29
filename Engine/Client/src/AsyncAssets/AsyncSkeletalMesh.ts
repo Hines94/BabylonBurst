@@ -3,11 +3,9 @@ import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStatic
 import { AsyncStaticMeshDefinition } from "./AsyncStaticMeshDefinition.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 
-
 /*
  * This is an extension of the static mesh classes and allows us to easily access specific skeletal mesh functionality.
  */
-
 
 // /** A static mesh Instance. Can't change any materials on this instance. */
 // export class SkeletalMeshInstanceDetails extends StaticMeshInstanceDetails {
@@ -19,7 +17,6 @@ import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
  *  Currently used for ALL skeletal meshes.
  */
 export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
-
     private tempSkeleton: Skeleton = null;
 
     override createClone(bNotifyComplete: boolean) {
@@ -31,7 +28,11 @@ export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
         super.createClone(false);
 
         //Skeletal specific options
-        const LoadedScene = AsyncStaticMeshDefinition.GetAsyncMeshLoader(this.GetScene(),this.definition.desiredPath,this.definition.fileIndex).loadedGLTF;
+        const LoadedScene = AsyncStaticMeshDefinition.GetAsyncMeshLoader(
+            this.GetScene(),
+            this.definition.desiredPath,
+            this.definition.fileIndex
+        ).loadedGLTF;
 
         this.tempSkeleton = LoadedScene.skeletons[0].clone("Clone_" + LoadedScene.skeletons[0].name);
         this.cloneMesh.skeleton = this.tempSkeleton;
@@ -42,16 +43,19 @@ export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
 
     override DestroyClone() {
         super.DestroyClone();
-        if (this.tempSkeleton !== null) { this.tempSkeleton.dispose(); }
+        if (this.tempSkeleton !== null) {
+            this.tempSkeleton.dispose();
+        }
     }
-
 
     /**
      * Apply a new skeleton to the clone mesh
      * @param skel desired skeleton
      */
     applyNewSkeleton(skel: Skeleton) {
-        if (skel === this.tempSkeleton) { return; }
+        if (skel === this.tempSkeleton) {
+            return;
+        }
         if (this.tempSkeleton !== null) {
             this.tempSkeleton.dispose();
             this.tempSkeleton = null;
@@ -59,17 +63,19 @@ export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
         this.cloneMesh.skeleton = skel;
     }
 
-    GetAnimationRangeByName(name:string,bWarn=true){
+    GetAnimationRangeByName(name: string, bWarn = true) {
         const anims = (this.definition as AsyncSkeletalMeshDefinition).getAnimationData();
-        for(var i = 0; i < anims.length;i++){
-            if(anims[i].name === name){return anims[i];}
+        for (var i = 0; i < anims.length; i++) {
+            if (anims[i].name === name) {
+                return anims[i];
+            }
         }
-        if(bWarn)console.warn("Can't find animation range by name: " + name + " this mesh: " + this.definition.meshName);
+        if (bWarn)
+            console.warn("Can't find animation range by name: " + name + " this mesh: " + this.definition.meshName);
         return null;
     }
 
-    GetAllAnimationRanges(): AnimationRange[]
-    {
+    GetAllAnimationRanges(): AnimationRange[] {
         return (this.definition as AsyncSkeletalMeshDefinition).getAnimationData();
     }
 }
@@ -80,8 +86,8 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     extensionType = ".babylon";
     instanceVertexData: Float32Array = null;
 
-    override getMeshClone(scene: Scene,bStartVisible: boolean): SkeletalMeshCloneDetails {
-        const newClone = new SkeletalMeshCloneDetails(this, bStartVisible,scene);
+    override getMeshClone(scene: Scene, bStartVisible: boolean): SkeletalMeshCloneDetails {
+        const newClone = new SkeletalMeshCloneDetails(this, bStartVisible, scene);
         this.populateMeshClone(newClone);
         return newClone;
     }
@@ -102,7 +108,7 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     }
 
     /** Will bake out our animation data so we can play animations on instances */
-    private async bakeVertexAnimationData(scene:Scene) {
+    private async bakeVertexAnimationData(scene: Scene) {
         const baker = new VertexAnimationBaker(scene, this.GetFinalMesh(scene));
         this.instanceVertexData = await baker.bakeVertexData(this.getAnimationData());
         const vertexTexture = baker.textureFromBakedVertexData(this.instanceVertexData);
@@ -112,15 +118,22 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     }
 
     /** Verifies that the skeletal mesh defi that we made is correct! */
-    verifySkeletalMeshDefinition(scene:Scene): boolean {
-        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene,this.desiredPath,this.fileIndex);
+    verifySkeletalMeshDefinition(scene: Scene): boolean {
+        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex);
         const LoadedScene = asyncLoader.loadedGLTF;
         if (LoadedScene.skeletons.length === 0) {
-            console.error("No skeletons found in the GLTF scene for " + this.desiredPath + ". Require ONE (only) for importing skeletal meshes");
+            console.error(
+                "No skeletons found in the GLTF scene for " +
+                    this.desiredPath +
+                    ". Require ONE (only) for importing skeletal meshes"
+            );
             return false;
-        }
-        else if (LoadedScene.skeletons.length > 1) {
-            console.error("Multiple skeletons found in the GLTF scene for " + this.desiredPath + ". Async loading works with ONE only!");
+        } else if (LoadedScene.skeletons.length > 1) {
+            console.error(
+                "Multiple skeletons found in the GLTF scene for " +
+                    this.desiredPath +
+                    ". Async loading works with ONE only!"
+            );
             return false;
         }
         return true;
@@ -136,7 +149,7 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
         return this.getFirstFinalMesh().skeleton;
     }
 
-    protected getFirstFinalMesh(){
+    protected getFirstFinalMesh() {
         const keys = Object.keys(this.finalCombinedMeshes);
         return this.finalCombinedMeshes[keys[0]];
     }

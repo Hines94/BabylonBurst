@@ -34,8 +34,8 @@ function AddSerializablesFromFile(basePath:string,path:string) {
 }
 //TODO: This is unneccessary prepass? We can just process all files after main pass?
 export function PerformSerializerPrepass() {
-    RecursiveDirectoryProcess(sourcePath,sourcePath,AddSerializablesFromFile);
-    RecursiveDirectoryProcess(userSourcePath,userSourcePath,AddSerializablesFromFile);
+    RecursiveDirectoryProcess(sourcePath,sourcePath,AddSerializablesFromFile,[".h",".hpp"]);
+    RecursiveDirectoryProcess(userSourcePath,userSourcePath,AddSerializablesFromFile,[".h",".hpp"]);
 }
 
 export function GenerateCustomSerializationMethods() : string {
