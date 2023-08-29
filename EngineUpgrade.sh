@@ -17,8 +17,10 @@ fi
 
 # Check if the engine's remote exists, if not, add it
 if ! git ls-remote engine-upstream > /dev/null 2>&1; then
-    echo "Adding engine's GitHub repository as 'engine-upstream' remote..."
-    git remote add engine-upstream https://github.com/YOUR_GITHUB_USERNAME/YOUR_PROJECT.git
+    echo "Adding engine's GitHub repository as 'engine-upstream' remote temporarily..."
+    git remote add engine-upstream https://github.com/Hines94/BabylonBoost.git
+else
+    echo "'engine-upstream' remote already exists. Using it temporarily for the upgrade..."
 fi
 
 # Backup the Source folder
@@ -39,6 +41,9 @@ echo "Restoring your 'Source' directory..."
 rm -rf Source
 mv "$BACKUP_DIR" Source
 
+# Remove the engine-upstream remote
+echo "Removing temporary 'engine-upstream' remote..."
+git remote remove engine-upstream
+
 # Complete!
 echo -e ${MAGENTA}"Upgrade complete! If you encounter any merge conflicts, resolve them and continue the rebase. After ensuring everything works, you can push to your own repository."${RESET}
-
