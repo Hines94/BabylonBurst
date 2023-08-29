@@ -29,7 +29,6 @@ async function retryServerConnection() {
 export class ServerConnection {
     socket: WebSocket;
     currentLatency: number = 0;
-    ourConnectionID: string;
 
     serverMessages: ArrayBuffer[] = [];
 
@@ -71,10 +70,6 @@ export class ServerConnection {
             ecosystem.wasmWrapper.ProcessServerMessage(this.serverMessages[i]);
         }
         this.serverMessages = [];
-    }
-
-    GetLocalConnectID() {
-        return this.ourConnectionID;
     }
 
     SendMessageToServer(message: string | ArrayBufferLike | Blob | ArrayBufferView, type: MessageToServType) {

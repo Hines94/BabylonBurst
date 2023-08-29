@@ -11,7 +11,7 @@ void ControllableMover::UpdateMovementController(double deltaTime, EntityData* c
     //Get Required Vals
     auto contMov = EntityComponentSystem::GetComponent<ControllableMover>(controller);
     auto clampedForward = std::clamp(contMov->RequestedForwardAxis, -1.f, 1.f);
-    auto clampedSide = std::clamp(contMov->RequestedSideAxis, -1.f, 1.f);
+    auto clampedSide = std::clamp(-contMov->RequestedSideAxis, -1.f, 1.f);
     auto clampedUp = std::clamp(contMov->RequestedUpAxis, -1.f, 1.f);
 
     for (auto& re : contMov->ControllableForceAppliers) {

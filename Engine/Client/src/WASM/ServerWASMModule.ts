@@ -1,4 +1,5 @@
 import {
+    EntitySpecification,
     LoadEntitiesFromMsgpackFormat,
     RawEntityData,
     SaveEntitiesToMsgpackIntArray,
@@ -167,7 +168,7 @@ export class ServerWASMModuleWrapper {
     }
 
     /** Get Msgpack data for specific Entity. Could be slightly wrong if not FlushEntitySystem called */
-    GetDataForEntity(entId: JSEntity, ignoreDefaultValues = false): RawEntityData {
+    GetDataForEntity(entId: JSEntity, ignoreDefaultValues = false): EntitySpecification {
         const allData = LoadEntitiesFromMsgpackFormat(
             WASMArrayToUint8(this.wasmModule.GetDataForEntity(entId, ignoreDefaultValues))
         );

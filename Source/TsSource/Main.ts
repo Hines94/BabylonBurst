@@ -1,6 +1,9 @@
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { UpdateCamera } from "@userCode/CameraUpdater";
+import { SendDataToServer } from "@userCode/PlayerDataToServer";
 
 
 export function UpdateTick(ecosystem:GameEcosystem) {
-    console.log("TICK!");
+    UpdateCamera(ecosystem);
+    SendDataToServer(ecosystem);
 }

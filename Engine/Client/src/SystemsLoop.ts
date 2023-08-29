@@ -1,5 +1,4 @@
 import { RunInstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
-import { SendDataToServer } from "./Networking/PlayerDataToServer";
 import { debugBoxVis } from "./Admin/DebugBoxVisualiser";
 import { UpdateAdminInterface } from "./Admin/AdminDebugInterface";
 import { DebugMode, environmentVaraibleTracker } from "./Utils/EnvironmentVariableTracker";
@@ -15,7 +14,6 @@ export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
     if (serverConnection) {
         serverConnection.ProcessQueuedServerMessages(gameClient);
     }
-    SendDataToServer(gameClient);
 }
 
 /** Our tick system that contains general functions like rendering that we will want on a range of windows */

@@ -1,5 +1,5 @@
-import { GameEcosystem } from "../GameEcosystem";
-import { MessageToServType, serverConnection } from "./ServerConnection";
+import { GameEcosystem } from "../../Engine/Client/src/GameEcosystem";
+import { MessageToServType, serverConnection } from "../../Engine/Client/src/Networking/ServerConnection";
 
 export class ServerFrameDataRequest {
     Forward: number;
