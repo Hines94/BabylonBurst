@@ -32,9 +32,14 @@ cp -R Source "$BACKUP_DIR"
 echo "Fetching the latest changes from engine-upstream..."
 git fetch engine-upstream
 
-# Rebase the changes onto the user's current branch
-echo "Rebasing your changes onto the latest engine version..."
-git rebase engine-upstream/main
+# Restore the Source folder from the backup
+echo "Restoring your 'Source' directory..."
+rm -rf Source
+mv "$BACKUP_DIR" Source
+
+# Merge the changes from the engine-upstream's main branch into the user's current branch
+echo "Merging changes from the latest engine version into your branch..."
+git merge engine-upstream/main
 
 # Restore the Source folder from the backup
 echo "Restoring your 'Source' directory..."
@@ -46,4 +51,4 @@ echo "Removing temporary 'engine-upstream' remote..."
 git remote remove engine-upstream
 
 # Complete!
-echo -e ${MAGENTA}"Upgrade complete! If you encounter any merge conflicts, resolve them and continue the rebase. After ensuring everything works, you can push to your own repository."${RESET}
+echo -e ${MAGENTA}"Upgrade complete! If you encounter any merge conflicts, resolve them. After ensuring everything works, you can push to your own repository."${RESET}
