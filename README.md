@@ -42,7 +42,7 @@ Import the Grafana Dashboard (in Engine/Tools)
 Build Production:
 TODO: build client & server
 
-Extend Code:
+Extend Code C++:
 - Be careful using .hpp and .h files - unless included in a .cpp they will not be compiled in
 - Follow folder structure:
     Source
@@ -53,9 +53,13 @@ Extend Code:
                 WASM_INTERFACE - compiled with Emscripten for Embind (to make Typescript hooks into WASM - see Examples)
 - Register systems to update by including "Engine/GameLoop/CommonGameLoop.h" and using REGISTER_MIDDLE_SYSTEM_UPDATE (START/MIDDLE/END)
 - Register messages from players (clients) by REGISTER_PLAYER_MESSAGE(id for message, function to process)
-- TODO: Send messages to Engine
-- TODO: Custom messages to players
+- TODO: Custom messages to players from Server
 
+Extend Code Typescript:
+- Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 
+- Send messages to Server - if(serverConnection) { serverConnection.SendMessageToServer() }
+
+Future ideas:
 - TODO: Future iterations include tools for login & account management on AWS & integrate directly into Engine
 - TODO: Future iterations include tools for deployment to AWS
 - TODO: Include Blender tool for uploading models in an easy to use format
@@ -64,5 +68,3 @@ Extend Code:
 - TODO: Future iterations support skeletal mesh animator to make animations from ECS easy & support instancing 
 - TODO: Future iterations support easy particle effects
 - TODO: Future iterations support ECS audio play
-
-TODO: use the Source/Client for any frontend code - include BabylonBoostClient to use any of those exports

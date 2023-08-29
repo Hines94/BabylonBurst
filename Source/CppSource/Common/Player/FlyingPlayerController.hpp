@@ -114,8 +114,6 @@ private:
             return;
         }
 
-        std::cout << "Updating flying controller" << std::endl;
-
         // Set values in our controlled component controllers
         if (EntityComponentSystem::HasComponent<ControllableRotator>(playerComp->CurrentControllingEntity)) {
             auto rotComp = EntityComponentSystem::GetComponent<ControllableRotator>(playerComp->CurrentControllingEntity);

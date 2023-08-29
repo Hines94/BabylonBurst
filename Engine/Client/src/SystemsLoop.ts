@@ -8,6 +8,7 @@ import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { GameEcosystem } from "./GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
+import { UpdateTick } from "@userCode/Main"
 
 /** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
@@ -28,6 +29,8 @@ export function UpdateSystemsLoop(gameClient: GameEcosystem, specificSystems: (e
 
     //Generic tickables (eg html GUI etc)
     UpdateAllTickables(gameClient);
+
+    UpdateTick(gameClient);
 
     //Update each of our core systems
     specificSystems(gameClient);

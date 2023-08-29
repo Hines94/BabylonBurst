@@ -1,3 +1,5 @@
+import path from 'path';
+
 export default {
     assetsInclude: "**/*.wasm",
     build: {
@@ -9,4 +11,10 @@ export default {
             allow: [".."],
         },
     },
+    resolve: {
+        alias: {
+            '@engine': path.resolve(__dirname, 'src'),
+            '@userCode': path.resolve(__dirname, '../../Source/TsSource'),
+        }
+    }
 };
