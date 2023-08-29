@@ -42,6 +42,15 @@ Import the Grafana Dashboard (in Engine/Tools)
 Build Production:
 TODO: build client & server
 
+Git & Engine Upgrades:
+- Git will come with history from BabylonBoost engine
+    - (OPTIONAL) - delete this
+    - (OPTIONAL) - work from a branch
+- Upgrading from any git history
+    - Run 'bash EngineUpgrade.sh' 
+    - Should automatically merge in changes from the engine
+    - If you have changed Engine code you may need to resolve any conflicts
+
 Extend Code C++:
 - Be careful using .hpp and .h files - unless included in a .cpp they will not be compiled in
 - Follow folder structure:

@@ -32,7 +32,7 @@ cp -R Source "$BACKUP_DIR"
 echo "Fetching the latest changes from engine-upstream..."
 git fetch engine-upstream
 
-# Restore the Source folder from the backup
+# Restore the Source folder from the backup (before merge)
 echo "Restoring your 'Source' directory..."
 rm -rf Source
 mv "$BACKUP_DIR" Source
@@ -41,7 +41,7 @@ mv "$BACKUP_DIR" Source
 echo "Merging changes from the latest engine version into your branch..."
 git merge engine-upstream/main
 
-# Restore the Source folder from the backup
+# Restore the Source folder from the backup (after merge just in case)
 echo "Restoring your 'Source' directory..."
 rm -rf Source
 mv "$BACKUP_DIR" Source
