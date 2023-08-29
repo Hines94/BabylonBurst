@@ -25,7 +25,6 @@ public:
     virtual void UpdateSingleGameLoop();
 
 protected:
-
     virtual bool InitialFrame_Update() = 0;
 
     virtual void PostPhysicsSetup_PrePhysicsRun_Update() = 0;
@@ -72,19 +71,19 @@ public:
 };
 
 // Initial system update (start of frame before physics setup)
-// Function should be format: std::function<void(bool, double)> (initialized, deltaTime) 
+// Function should be format: std::function<void(bool, double)> (initialized, deltaTime)
 // Rate limit used to limit max runs (eg 0.1 will run 10 times sec). Use -1 for no  limit.
 // Run in  the order  they are registered in
 #define REGISTER_START_SYSTEM_UPDATE(systemName, func, rateLimit) static CommonGameLoop::Registrar _registrar_initial_##systemName(SystemUpdateType::Initial, #systemName, func, rateLimit);
 
 // Middle update - after physics setup but before run
-// Function should be format: std::function<void(bool, double)> (initialized, deltaTime) 
+// Function should be format: std::function<void(bool, double)> (initialized, deltaTime)
 // Rate limit used to limit max runs (eg 0.1 will run 10 times sec). Use -1 for no  limit.
 // Run in  the order  they are registered in
 #define REGISTER_MIDDLE_SYSTEM_UPDATE(systemName, func, rateLimit) static CommonGameLoop::Registrar _registrar_middle_##systemName(SystemUpdateType::Middle, #systemName, func, rateLimit);
 
 // End system update (After all physics)
-// Function should be format: std::function<void(bool, double)> (initialized, deltaTime) 
+// Function should be format: std::function<void(bool, double)> (initialized, deltaTime)
 // Rate limit used to limit max runs (eg 0.1 will run 10 times sec). Use -1 for no  limit.
 // Run in  the order  they are registered in
 #define REGISTER_END_SYSTEM_UPDATE(systemName, func, rateLimit) static CommonGameLoop::Registrar _registrar_middle_##systemName(SystemUpdateType::EndOfFrame, #systemName, func, rateLimit);

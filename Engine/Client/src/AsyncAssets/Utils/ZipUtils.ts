@@ -5,23 +5,29 @@ export enum AsyncDataType {
     string,
     arrayBuffer,
     blob,
-    json
+    json,
 }
 
-
-export function GetZipPath(path: string){
+export function GetZipPath(path: string) {
     var zipPath = path;
-    if (zipPath.includes(".zip") === false) { zipPath = path + ".zip"; }
+    if (zipPath.includes(".zip") === false) {
+        zipPath = path + ".zip";
+    }
     return zipPath;
 }
 
-export function GetAssetFullPath(path: string, fileIndex: number){
+export function GetAssetFullPath(path: string, fileIndex: number) {
     var zipPath = GetZipPath(path);
     zipPath = fileIndex.toFixed(0) + "_" + zipPath;
     return zipPath;
 }
 
-export async function UnzipAndCacheData(zipBytes:Uint8Array,frontendCache:IFrontendStorageInterface,loadType:AsyncDataType,filePath:string) : Promise<boolean> {
+export async function UnzipAndCacheData(
+    zipBytes: Uint8Array,
+    frontendCache: IFrontendStorageInterface,
+    loadType: AsyncDataType,
+    filePath: string
+): Promise<boolean> {
     // //Perform our deflate (best we can do on javascript - tried Brotli & LZMA libraries for many hours but no good libs)
     const { entries } = await unzip(zipBytes);
     //Add all found files to cache for offline etc
@@ -33,17 +39,16 @@ export async function UnzipAndCacheData(zipBytes:Uint8Array,frontendCache:IFront
         var data = null;
         if (loadType === AsyncDataType.string) {
             data = await entry.text();
-        }
-        else if (loadType === AsyncDataType.arrayBuffer) {
+        } else if (loadType === AsyncDataType.arrayBuffer) {
             data = await entry.arrayBuffer();
-        }
-        else if (loadType === AsyncDataType.blob) {
+        } else if (loadType === AsyncDataType.blob) {
             data = await entry.blob();
-        }
-        else {
+        } else {
             data = await entry.json();
         }
-        if(await frontendCache.Put(data, GetAssetFullPath(filePath,i)) === false){success=false;}
+        if ((await frontendCache.Put(data, GetAssetFullPath(filePath, i))) === false) {
+            success = false;
+        }
         i++;
     }
     return success;
