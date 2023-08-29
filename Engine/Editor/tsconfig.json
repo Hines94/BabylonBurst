@@ -2,7 +2,8 @@
     "compilerOptions": {
       "baseUrl": "./",
       "paths": {
-        "@BabylonBoostClient/*": ["../Client/src/*"]
+        "@BabylonBoostClient/*": ["../Client/src/*"],
+        "@userCode/*": ["../../Source/TsSource/*"]
       }
     }
   }

@@ -25,6 +25,10 @@ Setup:
         AWS_BUCKET_REGION=ap-southeast-2
         #Cut out the physics engine (bullet)?
         NO_PHYSICS=false
+VsCode:
+- Install vscode extension
+- Install c/c++ for WSL & extension pack
+- Install CMake for WSL
 
 Start Editor:
 run StartEditor.sh

@@ -14,7 +14,9 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-          '@BabylonBoostClient': path.resolve(__dirname, '../Client/src')
+          '@BabylonBoostClient': path.resolve(__dirname, '../Client/src'),
+          '@engine': path.resolve(__dirname, '../Client/src'),
+          '@userCode': path.resolve(__dirname, '../../Source/TsSource')
         }
     },
     plugins: [

@@ -31,7 +31,7 @@ function setInputsForFrame(ecosystem: GameEcosystem) {
 
     //View Change?
     //TODO: If in player mode then locked cursor?
-    ThisFrameServerData.Yaw = ecosystem.camera.DesiredRotationChange.x;
+    ThisFrameServerData.Yaw = -ecosystem.camera.DesiredRotationChange.x;
     ThisFrameServerData.Pitch = ecosystem.camera.DesiredRotationChange.y;
     ThisFrameServerData.Roll = ecosystem.camera.DesiredRotationChange.z;
     //console.log(ThisFrameServerData.RequestPitchLook)
