@@ -13,6 +13,7 @@
 #include <map>
 #include <thread>
 #include <typeinfo>
+#include "Engine/Navigation/NavmeshBuildSystem.h"
 
 std::vector<SystemUpdateParams> CommonGameLoop::registeredInitialFrameUpdates;
 std::vector<SystemUpdateParams> CommonGameLoop::registeredMiddleFrameUpdates;
@@ -64,6 +65,8 @@ void CommonGameLoop::UpdateSingleGameLoop() {
     for (const auto& sys : registeredInitialFrameUpdates) {
         UpdateSystem(systemInit, deltaTime, sys.systemFunction, sys.systemName, sys.systemRateLimit);
     }
+
+    UpdateSystem(systemInit,deltaTime,NavmeshBuildSystem::RunSystem,"NavmeshBuild");
 
 #ifdef PHYSICS
     // Rebuild physics bodies that are dirty

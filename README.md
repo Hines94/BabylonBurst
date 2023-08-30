@@ -30,6 +30,9 @@ VsCode:
 - Install c/c++ for WSL & extension pack
 - Install CMake for WSL
 
+Working With Examples:
+Simply copy the CppSource and TsSource folders into your Source folder and re-compile
+
 Start Editor:
 run StartEditor.sh
 

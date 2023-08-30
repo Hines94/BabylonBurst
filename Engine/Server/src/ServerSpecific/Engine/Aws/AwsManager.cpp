@@ -1,5 +1,5 @@
 #include "AwsManager.h"
-
+#include "Engine/Utils/StringUtils.h"
 #include "Engine/Utils/Environment.h"
 #include "rapidcsv.h"
 #include <aws/core/Aws.h>
@@ -34,7 +34,7 @@ AwsManager::AwsManager() : bucketName{Environment::GetEnvironmentVariable("AWS_B
 
 void AwsManager::GetFileFromS3(const std::string& key, int fileIndex, std::function<void(std::vector<uint8_t>)> readyCallback) {
     Aws::S3::Model::GetObjectRequest object_request;
-    object_request.WithBucket(bucketName.c_str()).WithKey(key.c_str());
+    object_request.WithBucket(bucketName.c_str()).WithKey(StringUtils::EnsureZipExtension(key).c_str());
     auto get_object_outcome = s3Client->GetObject(object_request);
 
     if (get_object_outcome.IsSuccess()) {
