@@ -17,13 +17,14 @@ common_packages=(
     "bullet3"
     "rapidcsv"
     "zlib"
-    "tinygltf"
 )
 
 linux_packages=(
     "uwebsockets"
     "prometheus-cpp"
     "aws-sdk-cpp"
+    "tinygltf"
+    "draco"
 )
 
 wasm_packages=(
@@ -34,10 +35,16 @@ wasm_packages=(
 
 echo "Installing Required Packages"
 export VCPKG_TARGET_TRIPLET=$1
-cd ../Tools/vcpkg
+cd ../Tools
+
+tools_path="$(cd "$(dirname "$0")" && pwd)"
+
+cd vcpkg
 
 # In case we are using emscripten
-export PATH=$PATH:../Emscripten/emsdk/upstream/emscripten
+export PATH=$PATH:${tools_path}/Emscripten/emsdk/upstream/emscripten
+source ${tools_path}/Emscripten/emsdk/upstream/emscripten
+export EMSCRIPTEN=${tools_path}/Emscripten/emsdk/upstream/emscripten
 
 #Common
 for package in ${common_packages[@]}; do
@@ -46,12 +53,12 @@ done
 #linux
 if [ "$VCPKG_TARGET_TRIPLET" == "x64-linux" ]; then
     for package in ${linux_packages[@]}; do
-        ./vcpkg install $package:$VCPKG_TARGET_TRIPLET
+        ./vcpkg install $package:$VCPKG_TARGET_TRIPLET || exit 1
     done
 fi
 #wasm
 if [ "$VCPKG_TARGET_TRIPLET" == "wasm32-emscripten" ]; then
     for package in ${wasm_packages[@]}; do
-        ./vcpkg install $package:$VCPKG_TARGET_TRIPLET
+        ./vcpkg install $package:$VCPKG_TARGET_TRIPLET || exit 1
     done
 fi

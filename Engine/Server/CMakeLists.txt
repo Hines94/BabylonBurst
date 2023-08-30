@@ -117,7 +117,6 @@ find_package(msgpack-cxx CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PkgConfig REQUIRED)
-find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
 
 set(LINK_LIBRARIES 
     msgpack-cxx
@@ -132,7 +131,6 @@ endif()
 target_link_libraries(babylonboostlib PRIVATE ${LINK_LIBRARIES})
 
 target_include_directories(babylonboostlib PRIVATE 
-    ${TINYGLTF_INCLUDE_DIRS}
     ${MSGPACK_CXX_INCLUDE_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR}/Tools/vcpkg/installed/${DVCPKG_TARGET_TRIPLET}/include" 
 )
@@ -177,6 +175,8 @@ endif()
 
 #Non Emscripten packages
 if(NOT wasmBuild)
+    find_package(draco CONFIG REQUIRED)
+    find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
     find_package(TBB CONFIG REQUIRED)
     find_package(AWSSDK REQUIRED COMPONENTS s3)
     find_package(prometheus-cpp CONFIG REQUIRED) # - PROBLEMS WITH EMSCRIPTEN
@@ -188,12 +188,14 @@ if(NOT wasmBuild)
         prometheus-cpp::core prometheus-cpp::pull 
         ${LIBZIP_LIBRARIES}
         ${AWSSDK_LINK_LIBRARIES}
+        draco::draco
     )
     find_path(UWEBSOCKETS_INCLUDE_DIRS "uwebsockets/App.h" 
         PATHS "./Tools/vcpkg/installed/${DVCPKG_TARGET_TRIPLET}/include")
     target_include_directories(babylonboostlib PRIVATE 
         ${LIBZIP_INCLUDE_DIRS}
         ${UWEBSOCKETS_INCLUDE_DIRS}
+        ${TINYGLTF_INCLUDE_DIRS}
     )
 endif()
 

@@ -7,7 +7,7 @@
 
 void BuildEntity(double Dt, EntityData* ent) {
     const NavigatableMesh* nm = EntityComponentSystem::GetComponent<NavigatableMesh>(ent);
-    const auto model = ModelLoader::getInstance().GetModelFromFile(nm->AwsPath,0);
+    const auto model = ModelLoader::getInstance().GetMeshFromFile(nm->AwsPath,nm->MeshName,0);
     if(!model.has_value()) {
         return;
     }

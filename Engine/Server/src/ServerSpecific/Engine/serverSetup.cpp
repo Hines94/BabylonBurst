@@ -8,7 +8,6 @@
 #include <iostream>
 
 void ServerSetup::SetupGame() {
-
     //Setup AWS
     AwsManager::getInstance();
     //Spawn in all our managers
