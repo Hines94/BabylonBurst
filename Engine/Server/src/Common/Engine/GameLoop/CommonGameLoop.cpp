@@ -5,6 +5,7 @@
 #include "Engine/Physics/Control/ControllableRotator.h"
 #include "Engine/Physics/PhysicsSystem.h"
 #endif
+#include "Engine/Navigation/NavmeshBuildSystem.h"
 #include "Engine/Utils/Environment.h"
 #include "Engine/Utils/PerfTracking.h"
 #include "Engine/Utils/Settings.h"
@@ -13,7 +14,6 @@
 #include <map>
 #include <thread>
 #include <typeinfo>
-#include "Engine/Navigation/NavmeshBuildSystem.h"
 
 std::vector<SystemUpdateParams> CommonGameLoop::registeredInitialFrameUpdates;
 std::vector<SystemUpdateParams> CommonGameLoop::registeredMiddleFrameUpdates;
@@ -66,7 +66,7 @@ void CommonGameLoop::UpdateSingleGameLoop() {
         UpdateSystem(systemInit, deltaTime, sys.systemFunction, sys.systemName, sys.systemRateLimit);
     }
 
-    UpdateSystem(systemInit,deltaTime,NavmeshBuildSystem::RunSystem,"NavmeshBuild");
+    UpdateSystem(systemInit, deltaTime, NavmeshBuildSystem::RunSystem, "NavmeshBuild");
 
 #ifdef PHYSICS
     // Rebuild physics bodies that are dirty

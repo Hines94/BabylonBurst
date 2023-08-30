@@ -1,11 +1,11 @@
 #pragma once
+#include "Engine/Rendering/ExtractedMeshData.hpp"
+#include "tiny_gltf.h"
 #include <mutex>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "tiny_gltf.h"
-#include "Engine/Rendering/ExtractedMeshData.hpp"
-#include <optional>
 
 class ModelLoader {
 public:
@@ -30,7 +30,7 @@ private:
 
     std::unordered_map<std::string, std::vector<uint8_t>> cachedModelData;
 
-    std::map<std::string,tinygltf::Model> loadedModels;
+    std::map<std::string, tinygltf::Model> loadedModels;
 
     std::optional<ExtractedModelData> getMeshDataFromModel(std::string modelName, std::string meshName);
 };

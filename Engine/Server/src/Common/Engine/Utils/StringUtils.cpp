@@ -58,8 +58,7 @@ std::string StringUtils::RemoveNumericPrefix(const std::string& str) {
     return str.substr(i);
 }
 
-
-std::string  StringUtils::EnsureZipExtension(const std::string &filename) {
+std::string StringUtils::EnsureZipExtension(const std::string& filename) {
     if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".zip") {
         return filename + ".zip";
     }

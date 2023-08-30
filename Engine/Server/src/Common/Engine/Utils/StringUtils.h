@@ -4,5 +4,5 @@
 namespace StringUtils {
     std::string RemoveNumericPrefix(const std::string& str);
     std::string DeflateStringView(std::string_view input);
-    std::string EnsureZipExtension(const std::string &filename);
+    std::string EnsureZipExtension(const std::string& filename);
 } // namespace StringUtils

@@ -7,7 +7,7 @@ import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { GameEcosystem } from "./GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
-import { UpdateTick } from "@userCode/Main"
+import { UpdateTick } from "@userCode/Main";
 
 /** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {

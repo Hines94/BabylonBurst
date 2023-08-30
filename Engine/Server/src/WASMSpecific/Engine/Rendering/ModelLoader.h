@@ -1,10 +1,10 @@
 #pragma once
+#include "Engine/Rendering/ExtractedMeshData.hpp"
 #include <mutex>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <optional>
-#include "Engine/Rendering/ExtractedMeshData.hpp"
 
 class ModelLoader {
 public:
@@ -19,7 +19,7 @@ public:
         return instance;
     }
 
-   std::optional<ExtractedModelData> GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    std::optional<ExtractedModelData> GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
 
 private:
     // Private constructor so that no objects can be created

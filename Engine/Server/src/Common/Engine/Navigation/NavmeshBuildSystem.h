@@ -13,5 +13,4 @@ public:
 
     NavmeshBuildSystem(NavmeshBuildSystem const&) = delete;
     void operator=(NavmeshBuildSystem const&) = delete;
-
 };

@@ -1,6 +1,6 @@
 #include "AwsManager.h"
-#include "Engine/Utils/StringUtils.h"
 #include "Engine/Utils/Environment.h"
+#include "Engine/Utils/StringUtils.h"
 #include "rapidcsv.h"
 #include <aws/core/Aws.h>
 #include <aws/core/auth/AWSCredentialsProviderChain.h>

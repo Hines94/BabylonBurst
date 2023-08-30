@@ -12,10 +12,10 @@ std::optional<ExtractedModelData> ModelLoader::GetMeshFromFile(std::string fileP
 
     //Already loaded?
     const auto modelIt = loadedModels.find(path);
-    if(modelIt != loadedModels.end()) {
-        return getMeshDataFromModel(path,meshName);
+    if (modelIt != loadedModels.end()) {
+        return getMeshDataFromModel(path, meshName);
     }
-    
+
     //First - get the file with the data
     if (cachedModelData.find(path) == cachedModelData.end()) {
         cachedModelData.insert(std::pair(path, std::vector<uint8_t>()));
@@ -48,24 +48,23 @@ std::optional<ExtractedModelData> ModelLoader::GetMeshFromFile(std::string fileP
         std::cout << "Failed to load model data in for " << path << std::endl;
         return std::nullopt;
     }
-    loadedModels.insert(std::pair(path,model));
-    return getMeshDataFromModel(path,meshName);
+    loadedModels.insert(std::pair(path, model));
+    return getMeshDataFromModel(path, meshName);
 }
-
 
 std::optional<ExtractedModelData> ModelLoader::getMeshDataFromModel(std::string modelName, std::string meshName) {
     const auto modelIt = loadedModels.find(modelName);
-    if(modelIt == loadedModels.end()) {
+    if (modelIt == loadedModels.end()) {
         return std::nullopt;
     }
     const auto& model = modelIt->second;
-    for(const auto& node : model.nodes) {
-        if(node.mesh == 0) {
+    for (const auto& node : model.nodes) {
+        if (node.mesh == 0) {
             continue;
         }
         const auto& mesh = model.meshes[node.mesh];
-        if(mesh.name != meshName) { 
-            continue; 
+        if (mesh.name != meshName) {
+            continue;
         }
         ExtractedModelData result;
         for (size_t i = 0; i < mesh.primitives.size(); i++) {
