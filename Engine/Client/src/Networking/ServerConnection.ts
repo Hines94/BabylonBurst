@@ -1,5 +1,5 @@
 import { decode } from "@msgpack/msgpack";
-import { GameEcosystem } from "../GameEcosystem";
+import { GameEcosystem } from "../../../Shared/src/GameEcosystem";
 import { DisposeOfObject, WaitForTime } from "../Utils/SceneUtils";
 
 export var serverConnection: ServerConnection;

@@ -1,5 +1,5 @@
 import { premadeUltraSetting } from "./Utils/PremadeSettings";
-import { GameEcosystem } from "./GameEcosystem";
+import { GameEcosystem } from "../../Shared/src/GameEcosystem";
 
 export enum DownloadRegion {
     sydney,

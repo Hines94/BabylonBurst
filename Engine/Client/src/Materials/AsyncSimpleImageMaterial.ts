@@ -1,7 +1,7 @@
 import { Color3, Color4, InputBlock, Material, NodeMaterial, Scene, Vector4 } from "@babylonjs/core";
 
 import { GetSimpleImageMaterial } from "./SimpleImageMaterial";
-import { AsyncImageDescription, AsyncMaterial } from "../AsyncAssets";
+import { AsyncImageDescription, AsyncMaterial } from "../../../Shared/src/AsyncAssets";
 
 /** A default implementation of our cell shaded material */
 export class AsyncSimpleImageMaterial extends AsyncMaterial {

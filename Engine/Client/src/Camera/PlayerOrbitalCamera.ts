@@ -1,7 +1,7 @@
 import { Vector3 } from "@babylonjs/core";
 import { EntVector4 } from "../EntitySystem/CoreComponents";
 import { ExitPointerLock } from "../Utils/SceneUtils";
-import { GameEcosystem } from "../GameEcosystem";
+import { GameEcosystem } from "../../../Shared/src/GameEcosystem";
 import { PlayerCamera } from "./PlayerCamera";
 
 export class PlayerOrbitalCamera {

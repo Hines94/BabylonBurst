@@ -1,4 +1,4 @@
-import { AsyncAssetLoader, AsyncDataType } from "../AsyncAssets";
+import { AsyncAssetLoader, AsyncDataType } from "../../../Shared/src/AsyncAssets";
 
 export class AsyncJSONLoader extends AsyncAssetLoader {
     //TODO: better caching tactics for JSON?

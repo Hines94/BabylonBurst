@@ -2,7 +2,7 @@ import { UpdateGameSpecificSystems as UpdateGameplaySpecificSystems } from "./Sy
 import { FramerateCounter } from "./GUI/Generic/FramerateCounter";
 import { ServerConnection } from "./Networking/ServerConnection";
 import { RunnableGameEcosystem } from "./RunnableGameEcosystem";
-import { GameEcosystem } from "./GameEcosystem";
+import { GameEcosystem } from "../../Shared/src/GameEcosystem";
 
 /** Game specific ecosystem client. Has main scene for rendering main game. */
 export class BabylonBoostClient extends RunnableGameEcosystem {

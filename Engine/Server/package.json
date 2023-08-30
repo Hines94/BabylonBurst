@@ -1,0 +1,28 @@
+{
+    "name": "babylonboostshared",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "devDependencies": {
+        "@babylonjs/inspector": "file:../node_modules/@babylonjs/inspector",
+        "@jest/globals": "^29.3.1",
+        "@types/jest": "^29.2.3",
+        "@types/node": "^16.11.64",
+        "@types/synaptic": "^1.0.4",
+        "@types/uuid": "^9.0.2",
+        "http-server": "^14.1.1",
+        "jest": "^29.3.1",
+        "ts-jest": "^29.0.3"
+    },
+    "dependencies": {
+        "socket.io-client": "^4.6.1",
+        "@aws-sdk/client-s3": "../Shared/node_modules/@aws-sdk/client-s3",
+        "@aws-sdk/credential-providers": "../Shared/node_modules/@aws-sdk/credential-providers",
+        "unzipit": "../Shared/node_modules/unzipit",
+        "jszip": "../Shared/node_modules/jszip",
+        "@babylonjs/core": "../Shared/node_modules/@babylonjs/core",
+        "@babylonjs/gui": "../Shared/node_modules/@babylonjs/gui",
+        "@msgpack/msgpack": "../Shared/node_modules/msgpack",
+        "uuid": "../Shared/node_modules/uuid"
+    }
+}

@@ -4,9 +4,9 @@ import { UpdateAdminInterface } from "./Admin/AdminDebugInterface";
 import { DebugMode, environmentVaraibleTracker } from "./Utils/EnvironmentVariableTracker";
 import { serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
-import { GameEcosystem } from "./GameEcosystem";
+import { GameEcosystem } from "../../Shared/src/GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
-import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
+import { UpdateAsyncSystemOnTick } from "../../Shared/src/AsyncAssets";
 import { UpdateTick } from "@userCode/Main"
 
 /** Game specific systems like building only for main game */
@@ -49,7 +49,6 @@ export function UpdateSystemsLoop(gameClient: GameEcosystem, specificSystems: (e
 }
 
 function runSystem(ecosystem: GameEcosystem, system: (ecosystem: GameEcosystem) => void) {
-    ecosystem.wasmWrapper.FlushEntitySystem();
     system(ecosystem);
 }
 

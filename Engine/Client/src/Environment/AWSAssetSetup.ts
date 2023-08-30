@@ -5,7 +5,7 @@ import {
     AsyncInMemoryFrontend,
     AsyncIndexDBFrontend,
     AsyncZipPuller,
-} from "../AsyncAssets";
+} from "../../../Shared/src/AsyncAssets";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 import { GetWasmModule } from "../WASM/ServerWASMModule";
 

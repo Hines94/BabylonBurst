@@ -21,7 +21,7 @@ import {
 } from "../Utils/SceneUtils";
 import { EntVector4 } from "../EntitySystem/CoreComponents";
 import { AxisType, GetNormalizedAxisForEntRotation } from "../Utils/EntSystemUtils";
-import { GameEcosystem } from "../GameEcosystem";
+import { GameEcosystem } from "../../../Shared/src/GameEcosystem";
 
 const CamFOV = 1;
 

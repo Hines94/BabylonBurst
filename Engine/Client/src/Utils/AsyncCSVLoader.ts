@@ -1,4 +1,4 @@
-import { AsyncAssetLoader, AsyncDataType } from "../AsyncAssets";
+import { AsyncAssetLoader, AsyncDataType } from "../../../Shared/src/AsyncAssets";
 
 // Return array of string values, or NULL if CSV string not well formed.
 function CSVtoArray(text: string): string[][] {
