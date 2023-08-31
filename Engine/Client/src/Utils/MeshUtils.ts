@@ -59,11 +59,11 @@ export function CreateMeshFromTriangles(triangles: EntVector3[][], scene: Scene,
 }
 
 export type ExtractedMeshData = {
-    vertices:number[];
-    triangles:number[];
-}
+    vertices: number[];
+    triangles: number[];
+};
 
-export function ExtractedMeshDataToMesh(data:ExtractedMeshData,scene:Scene) {
+export function ExtractedMeshDataToMesh(data: ExtractedMeshData, scene: Scene) {
     var customMesh = new Mesh("custom", scene);
 
     var vertexData = new VertexData();

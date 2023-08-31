@@ -70,10 +70,10 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
     try {
         // Unpack the object
         oh = msgpack::unpack(reinterpret_cast<const char*>(prefabData.data()), prefabData.size());
-    } catch(const std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << "Prefab: " << prefabLocation << " has invalid data! " << e.what() << std::endl;
         return "";
-    } catch(...) {
+    } catch (...) {
         std::cerr << "Prefab: " << prefabLocation << " has invalid data! " << std::endl;
         return "";
     }
@@ -81,7 +81,7 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
     std::map<std::string, msgpack::object> decoded_map;
     try {
         oh.get().convert(decoded_map);
-    } catch(...) {
+    } catch (...) {
         std::cerr << "Prefab: " << prefabLocation << " data is not map! " << std::endl;
         return "";
     }

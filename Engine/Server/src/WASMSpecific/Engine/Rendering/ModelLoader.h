@@ -1,11 +1,11 @@
 #pragma once
 #include "Engine/Rendering/ExtractedMeshData.hpp"
+#include <map>
 #include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <map>
 
 class ModelLoader {
 public:

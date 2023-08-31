@@ -80,7 +80,7 @@ void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::
         if (!c.second) {
             continue;
         }
-        if(!ComponentLoader::ShouldSaveComponent(c.first)) {
+        if (!ComponentLoader::ShouldSaveComponent(c.first)) {
             continue;
         }
         PackerDetails p = {.dt = ComponentDataType::Network, .isSizingPass = true};

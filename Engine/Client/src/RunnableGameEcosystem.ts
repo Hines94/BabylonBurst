@@ -99,7 +99,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
         this.sceneSettings = new SceneSetupSettings(this.scene);
         await this.sceneSettings.setupScene();
 
-        SetupModelLoader(this.scene,AsyncAssetManager.GetAssetManager());
+        SetupModelLoader(this.scene, AsyncAssetManager.GetAssetManager());
         this.setupBackground();
         this.setupExtras();
 
@@ -178,6 +178,6 @@ export class RunnableGameEcosystem implements GameEcosystem {
     lastTick = 0;
 }
 
-export function GetEcosystemForModule(module:ServerWASMModuleWrapper) : GameEcosystem {
+export function GetEcosystemForModule(module: ServerWASMModuleWrapper): GameEcosystem {
     return module.___ECOSYSTEM___;
 }

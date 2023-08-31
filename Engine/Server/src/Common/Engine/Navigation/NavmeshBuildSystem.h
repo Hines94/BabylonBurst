@@ -1,8 +1,8 @@
 #pragma once
+#include "Engine/Rendering/ExtractedMeshData.hpp"
+#include "Engine/Utils/Observable.hpp"
 #include <atomic>
 #include <functional>
-#include "Engine/Utils/Observable.hpp"
-#include "Engine/Rendering/ExtractedMeshData.hpp"
 
 class NavmeshBuildSystem {
 public:

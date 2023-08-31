@@ -103,7 +103,7 @@ bool IsNetworkedForPlayer(EntityData* ent, const tbb::concurrent_unordered_map<s
         if (!c.second) {
             continue;
         }
-        if(!ComponentLoader::ShouldNetworkComponent(c.first)) {
+        if (!ComponentLoader::ShouldNetworkComponent(c.first)) {
             continue;
         }
 

@@ -1,10 +1,10 @@
 #include "WASMSetupInterface.h"
 #include "Engine/Entities/Prefabs/PrefabManager.h"
-#include <emscripten/bind.h>
-#include <iostream>
-#include "Engine/Rendering/ModelLoader.h"
 #include "Engine/Navigation/NavmeshBuildSystem.h"
 #include "Engine/Rendering/ExtractedMeshSerializer.h"
+#include "Engine/Rendering/ModelLoader.h"
+#include <emscripten/bind.h>
+#include <iostream>
 
 namespace WASMSetup {
     std::string WASMModuleIdentifier = "";
@@ -13,7 +13,7 @@ namespace WASMSetup {
 using namespace emscripten;
 
 std::vector<uint8_t> GetModelCallback(std::string file, std::string modelName, int fileIndex) {
-    emscripten::val jsArray =  emscripten::val::global("RequestModelData")(file, modelName, fileIndex, WASMSetup::WASMModuleIdentifier);
+    emscripten::val jsArray = emscripten::val::global("RequestModelData")(file, modelName, fileIndex, WASMSetup::WASMModuleIdentifier);
     std::vector<uint8_t> data;
     unsigned length = jsArray["length"].as<unsigned>();
     for (unsigned i = 0; i < length; ++i) {

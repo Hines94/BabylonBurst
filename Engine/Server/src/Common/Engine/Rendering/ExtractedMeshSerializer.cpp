@@ -1,6 +1,5 @@
 #include "ExtractedMeshSerializer.h"
 
-
 msgpack::sbuffer ExtractedMeshSerializer::GetBufferForExtractedMesh(const ExtractedModelData& extractedData) {
     msgpack::sbuffer buffer;
     msgpack::packer<msgpack::sbuffer> pk(&buffer);
@@ -29,28 +28,28 @@ msgpack::sbuffer ExtractedMeshSerializer::GetBufferForExtractedMesh(const Extrac
     return buffer;
 }
 
-ExtractedModelData ExtractedMeshSerializer::GetDataFromMsgpackData(const msgpack::object_handle& oh){
+ExtractedModelData ExtractedMeshSerializer::GetDataFromMsgpackData(const msgpack::object_handle& oh) {
     msgpack::object obj = oh.get();
     ExtractedModelData extractedData;
-    
+
     // Iterate through each key-value pair in the map
     for (uint32_t i = 0; i < obj.via.map.size; i++) {
         msgpack::object key = obj.via.map.ptr[i].key;
         msgpack::object val = obj.via.map.ptr[i].val;
         if (key.as<std::string>() == "vertices") {
-            for(size_t j = 0; j < val.via.array.size; j += 3) {
+            for (size_t j = 0; j < val.via.array.size; j += 3) {
                 Vertex v;
                 v.x = val.via.array.ptr[j].as<float>();
-                v.y = val.via.array.ptr[j+1].as<float>();
-                v.z = val.via.array.ptr[j+2].as<float>();
+                v.y = val.via.array.ptr[j + 1].as<float>();
+                v.z = val.via.array.ptr[j + 2].as<float>();
                 extractedData.vertices.push_back(v);
             }
         } else if (key.as<std::string>() == "triangles") {
-            for(size_t j = 0; j < val.via.array.size; j += 3) {
+            for (size_t j = 0; j < val.via.array.size; j += 3) {
                 Triangle t;
                 t.v1 = val.via.array.ptr[j].as<uint32_t>();
-                t.v2 = val.via.array.ptr[j+1].as<uint32_t>();
-                t.v3 = val.via.array.ptr[j+2].as<uint32_t>();
+                t.v2 = val.via.array.ptr[j + 1].as<uint32_t>();
+                t.v3 = val.via.array.ptr[j + 2].as<uint32_t>();
                 extractedData.triangles.push_back(t);
             }
         }

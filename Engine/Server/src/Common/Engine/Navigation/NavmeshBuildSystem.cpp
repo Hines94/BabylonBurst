@@ -1,11 +1,11 @@
 #include "NavmeshBuildSystem.h"
+#include "Engine/Entities/EntitySeriesTaskRunners.hpp"
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Entities/EntityTaskRunners.hpp"
 #include "Engine/Navigation/BuiltNavMesh.h"
 #include "Engine/Rendering/ModelLoader.h"
 #include "NavigatableMesh.h"
 #include <recastnavigation/Recast.h>
-#include "Engine/Entities/EntitySeriesTaskRunners.hpp"
 
 static NavmeshBuildSystem instance;
 
@@ -25,13 +25,13 @@ void BuildEntity(double Dt, EntityData* ent) {
 
     nm->extractedModelData = extractedData;
 
-    EntityComponentSystem::AddSetComponentToEntity(ent, new BuiltNavigatableMesh(),false,false);
+    EntityComponentSystem::AddSetComponentToEntity(ent, new BuiltNavigatableMesh(), false, false);
 }
 
 ExtractedModelData GetModelFromDetailedMesh(const rcPolyMeshDetail& dmesh) {
     ExtractedModelData extractedData;
     for (int i = 0; i < dmesh.nverts; i++) {
-        Vertex vertex = { dmesh.verts[i * 3], dmesh.verts[i * 3 + 1], dmesh.verts[i * 3 + 2] };
+        Vertex vertex = {dmesh.verts[i * 3], dmesh.verts[i * 3 + 1], dmesh.verts[i * 3 + 2]};
         extractedData.vertices.push_back(vertex);
     }
 
@@ -39,7 +39,7 @@ ExtractedModelData GetModelFromDetailedMesh(const rcPolyMeshDetail& dmesh) {
         const int base = dmesh.meshes[i * 4];
         const int end = base + dmesh.meshes[i * 4 + 1];
         for (int j = base; j < end; j++) {
-            Triangle triangle = { (uint32_t)dmesh.tris[j * 4], (uint32_t)dmesh.tris[j * 4 + 1], (uint32_t)dmesh.tris[j * 4 + 2] };
+            Triangle triangle = {(uint32_t)dmesh.tris[j * 4], (uint32_t)dmesh.tris[j * 4 + 1], (uint32_t)dmesh.tris[j * 4 + 2]};
             extractedData.triangles.push_back(triangle);
         }
     }
@@ -62,56 +62,58 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
     const auto unbuiltEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableMesh)}, {typeid(BuiltNavigatableMesh)});
     EntityTaskRunners::AutoPerformTasksParallel("BuildNavmesh", unbuiltEnts, BuildEntity, dt);
 
-    if(unbuiltEnts.get()->size() > 0 && NavmeshBuildSystem::getInstance().meshUnbuilt == false) {
+    if (unbuiltEnts.get()->size() > 0 && NavmeshBuildSystem::getInstance().meshUnbuilt == false) {
         NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
     }
 }
 
 void NavmeshBuildSystem::PerformNavmeshRebuild() {
     const auto allEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableMesh)}, {});
-    
+
     std::cout << "Meshes into Navmesh: " << allEnts.get()->size() << std::endl;
 
     //Rebuild navmesh
     std::vector<float> verts;
     std::vector<int> tris;
 
-    EntityTaskRunners::AutoPerformTasksSeries("rasteriseHeightfield",allEnts,
-    [&](double Dt, EntityData* ent) {
-        NavigatableMesh* nm = EntityComponentSystem::GetComponent<NavigatableMesh>(ent);
-        const auto extractedData = nm->extractedModelData;
-        if(!nm->extractedModelData) {
-            return;
-        }
-        for (const auto& tri : extractedData->triangles) {
-            // Vertex 1
-            verts.push_back(extractedData->vertices[tri.v1].x);
-            verts.push_back(extractedData->vertices[tri.v1].y);
-            verts.push_back(extractedData->vertices[tri.v1].z);
-            
-            // Vertex 2
-            verts.push_back(extractedData->vertices[tri.v2].x);
-            verts.push_back(extractedData->vertices[tri.v2].y);
-            verts.push_back(extractedData->vertices[tri.v2].z);
-            
-            // Vertex 3
-            verts.push_back(extractedData->vertices[tri.v3].x);
-            verts.push_back(extractedData->vertices[tri.v3].y);
-            verts.push_back(extractedData->vertices[tri.v3].z);
-        }
+    EntityTaskRunners::AutoPerformTasksSeries(
+        "rasteriseHeightfield", allEnts,
+        [&](double Dt, EntityData* ent) {
+            NavigatableMesh* nm = EntityComponentSystem::GetComponent<NavigatableMesh>(ent);
+            const auto extractedData = nm->extractedModelData;
+            if (!nm->extractedModelData) {
+                return;
+            }
+            for (const auto& tri : extractedData->triangles) {
+                // Vertex 1
+                verts.push_back(extractedData->vertices[tri.v1].x);
+                verts.push_back(extractedData->vertices[tri.v1].y);
+                verts.push_back(extractedData->vertices[tri.v1].z);
 
-        for (size_t i = 0; i < extractedData->triangles.size(); ++i) {
-            tris.push_back(i*3);
-            tris.push_back(i*3+1);
-            tris.push_back(i*3+2);
-        }
-    },0);
+                // Vertex 2
+                verts.push_back(extractedData->vertices[tri.v2].x);
+                verts.push_back(extractedData->vertices[tri.v2].y);
+                verts.push_back(extractedData->vertices[tri.v2].z);
+
+                // Vertex 3
+                verts.push_back(extractedData->vertices[tri.v3].x);
+                verts.push_back(extractedData->vertices[tri.v3].y);
+                verts.push_back(extractedData->vertices[tri.v3].z);
+            }
+
+            for (size_t i = 0; i < extractedData->triangles.size(); ++i) {
+                tris.push_back(i * 3);
+                tris.push_back(i * 3 + 1);
+                tris.push_back(i * 3 + 2);
+            }
+        },
+        0);
 
     const float FLT_MAX = 10;
     //Get min and max bounds of navmesh area
-    float bmin[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
-    float bmax[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-    for (int i = 0; i < verts.size(); i+=3) {
+    float bmin[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+    float bmax[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+    for (int i = 0; i < verts.size(); i += 3) {
         for (int j = 0; j < 3; j++) {
             bmin[j] = std::min(bmin[j], verts[i + j]);
             bmax[j] = std::max(bmax[j], verts[i + j]);
@@ -144,7 +146,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     // Create a heightfield
     rcHeightfield hf;
     rcContext context(false);
-    if (!rcCreateHeightfield(&context, hf, config.width , config.height, &config.bmin[0], &config.bmax[0], config.cs, config.ch)) {
+    if (!rcCreateHeightfield(&context, hf, config.width, config.height, &config.bmin[0], &config.bmax[0], config.cs, config.ch)) {
         std::cerr << "Can't create heightfield for context " << std::endl;
     }
 
@@ -165,7 +167,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     std::cout << "Spans after rasterizing: " << spanCount << std::endl;
 
     //Filter out items that are too low to walk on
-    rcFilterWalkableLowHeightSpans(&context,20,hf);
+    rcFilterWalkableLowHeightSpans(&context, 20, hf);
     //Compact heightfield to save geom
     rcCompactHeightfield chf;
     if (!rcBuildCompactHeightfield(&context, config.walkableHeight, config.walkableClimb, hf, chf)) {
@@ -184,7 +186,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     printNumCells(chf, "Walkable cells after distance field: ");
 
     if (!rcBuildRegions(&context, chf, 0, config.minRegionArea, config.mergeRegionArea)) {
-            std::cerr << "Issue building regions navmesh" << std::endl;
+        std::cerr << "Issue building regions navmesh" << std::endl;
     }
     printNumCells(chf, "Walkable cells after regions: ");
 
@@ -193,7 +195,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         std::cerr << "Issue building contours navmesh" << std::endl;
     }
     std::cout << "Number of contours: " << cset.nconts << std::endl;
-    
+
     rcPolyMesh pmesh;
     if (!rcBuildPolyMesh(&context, cset, config.maxVertsPerPoly, pmesh)) {
         std::cerr << "Issue building poly navmesh" << std::endl;
@@ -204,8 +206,8 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     if (!rcBuildPolyMeshDetail(&context, pmesh, chf, config.detailSampleDist, config.detailSampleMaxError, dmesh)) {
         std::cerr << "Issue building detail poly navmesh" << std::endl;
     }
-    
-    if(NavmeshBuildSystem::getInstance().onNavmeshRebuild.HasListeners()) {
+
+    if (NavmeshBuildSystem::getInstance().onNavmeshRebuild.HasListeners()) {
         // ExtractedModelData testMesh;
         // EntityTaskRunners::AutoPerformTasksSeries("testHeight",allEnts,
         //     [&](double Dt, EntityData* ent) {

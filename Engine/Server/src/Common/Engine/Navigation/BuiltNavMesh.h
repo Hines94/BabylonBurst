@@ -6,5 +6,5 @@ CCOMPONENT(NOTYPINGS, NOSAVE, NONETWORK)
 struct BuiltNavigatableMesh : public Component {
     DECLARE_COMPONENT_METHODS(BuiltNavigatableMesh)
 
-     void onComponentRemoved(EntityData* entData);
+    void onComponentRemoved(EntityData* entData);
 };
