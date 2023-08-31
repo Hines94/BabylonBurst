@@ -1,3 +1,4 @@
+import { SetupModelLoader } from "@engine/Environment/ModelLoaderSetup";
 import {
     AsyncAWSBackend,
     AsyncAssetManager,

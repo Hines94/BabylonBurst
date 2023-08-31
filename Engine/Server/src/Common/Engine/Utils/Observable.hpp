@@ -18,6 +18,10 @@ public:
         listeners.erase(std::remove(listeners.begin(), listeners.end(), listener), listeners.end());
     }
 
+    bool HasListeners() {
+        return listeners.size() > 0;
+    }
+
     void triggerEvent(Args... args) {
         for (auto& listener : listeners) {
             listener(args...);

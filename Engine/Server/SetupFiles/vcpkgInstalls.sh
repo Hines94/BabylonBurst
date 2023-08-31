@@ -17,6 +17,7 @@ common_packages=(
     "bullet3"
     "rapidcsv"
     "zlib"
+    "recastnavigation"
 )
 
 linux_packages=(

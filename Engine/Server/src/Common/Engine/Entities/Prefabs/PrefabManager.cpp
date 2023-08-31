@@ -65,12 +65,26 @@ Component* PrefabManager::TryGetDefaultPrefabComp(EntityData* ent, std::string C
 }
 
 std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocation, const std::vector<uint8_t>& prefabData) {
-    // Unpack the object
-    msgpack::object_handle oh = msgpack::unpack(reinterpret_cast<const char*>(prefabData.data()), prefabData.size());
+    bool validPrefabData = true;
+    msgpack::object_handle oh;
+    try {
+        // Unpack the object
+        oh = msgpack::unpack(reinterpret_cast<const char*>(prefabData.data()), prefabData.size());
+    } catch(const std::exception& e) {
+        std::cerr << "Prefab: " << prefabLocation << " has invalid data! " << e.what() << std::endl;
+        return "";
+    } catch(...) {
+        std::cerr << "Prefab: " << prefabLocation << " has invalid data! " << std::endl;
+        return "";
+    }
 
-    // Convert object to map
     std::map<std::string, msgpack::object> decoded_map;
-    oh.get().convert(decoded_map);
+    try {
+        oh.get().convert(decoded_map);
+    } catch(...) {
+        std::cerr << "Prefab: " << prefabLocation << " data is not map! " << std::endl;
+        return "";
+    }
 
     // Extract the desired data
     std::string prefabID;
@@ -127,8 +141,8 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
     prefabNameToUUID.insert(std::make_pair(std::string(prefabLocation), prefabID));
     prefabsByUUID.insert(std::make_pair(prefabID, enttemplate));
 
-    std::cout << "Loaded Prefab: " << prefabLocation << std::endl;
     checkAllPrefabsLoaded(prefabLocation);
+
     return prefabID;
 }
 

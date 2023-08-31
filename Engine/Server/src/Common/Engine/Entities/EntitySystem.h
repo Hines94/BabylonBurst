@@ -72,7 +72,9 @@ namespace ComponentFlags {
     //Custom property flags to be used with CPROPERTY
     enum Flags {
         //Do not type this property for client
-        NOTYPINGS = 1 << 0
+        NOTYPINGS = 1 << 0,
+        NOSAVE = 1 << 1,
+        NONETWORK = 1 << 2,
     };
 } // namespace ComponentFlags
 

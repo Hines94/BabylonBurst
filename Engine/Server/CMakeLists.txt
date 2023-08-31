@@ -117,11 +117,16 @@ find_package(msgpack-cxx CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(recastnavigation CONFIG REQUIRED)
 
 set(LINK_LIBRARIES 
     msgpack-cxx
     nlohmann_json::nlohmann_json
     ZLIB::ZLIB
+    RecastNavigation::Detour 
+    RecastNavigation::Recast 
+    RecastNavigation::DebugUtils 
+    RecastNavigation::DetourCrowd
 )
 
 if(NOT PHYSICS_DISABLED)
@@ -224,7 +229,7 @@ if(wasmBuild)
         "SHELL:-s WASM=1"
         "SHELL:-s ALLOW_MEMORY_GROWTH=1"
         "SHELL:-s \"EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']\""
-        #"SHELL:-s NO_DISABLE_EXCEPTION_CATCHING" - For full builds catch?
+        #"SHELL:-s NO_DISABLE_EXCEPTION_CATCHING" # - For full builds catch?
         "SHELL:-Oz"
         "SHELL:-flto"
         #"SHELL:--strip-debug" - TODO: If prod build?

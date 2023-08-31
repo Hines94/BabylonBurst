@@ -13,6 +13,9 @@ import { ServerWASMModuleWrapper } from "./WASM/ServerWASMModule";
 import { PlayerCamera } from "./Camera/PlayerCamera";
 import { GetGameSettings } from "./Settings";
 import { setupAsyncManager } from "./Environment/AWSAssetSetup";
+import { SetupModelLoader } from "@engine/Environment/ModelLoaderSetup";
+import { AsyncAssetManager } from "@engine/AsyncAssets";
+import { SetupNavmeshVisualiser } from "@engine/Rendering/NavmeshVisualRenderSystem";
 
 /** Custom game launch - eg editor or client side performance checks */
 export class RunnableGameEcosystem implements GameEcosystem {
@@ -46,9 +49,10 @@ export class RunnableGameEcosystem implements GameEcosystem {
     }
 
     dispose(): void {
-        this.engine.dispose();
+        this.wasmWrapper.___ECOSYSTEM___ = undefined;
         this.wasmWrapper.dispose();
         delete this.wasmWrapper;
+        this.engine.dispose();
     }
     private waitLoadResolve: any;
     waitLoadedPromise: Promise<GameEcosystem> = new Promise((resolve, reject) => {
@@ -71,7 +75,9 @@ export class RunnableGameEcosystem implements GameEcosystem {
             ecosystem.engine.resize();
         };
         await setupAsyncManager();
+        SetupNavmeshVisualiser();
         this.wasmWrapper = new ServerWASMModuleWrapper(await BabylonBoostWASM());
+        this.wasmWrapper.___ECOSYSTEM___ = this;
         await this.wasmWrapper.awaitWASMModuleReady();
         this.setupScene();
         this.camera = new PlayerCamera(this);
@@ -93,6 +99,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
         this.sceneSettings = new SceneSetupSettings(this.scene);
         await this.sceneSettings.setupScene();
 
+        SetupModelLoader(this.scene,AsyncAssetManager.GetAssetManager());
         this.setupBackground();
         this.setupExtras();
 
@@ -169,4 +176,8 @@ export class RunnableGameEcosystem implements GameEcosystem {
         this.lastTick = NewTick;
     }
     lastTick = 0;
+}
+
+export function GetEcosystemForModule(module:ServerWASMModuleWrapper) : GameEcosystem {
+    return module.___ECOSYSTEM___;
 }

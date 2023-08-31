@@ -20,7 +20,7 @@ public:
         return instance;
     }
 
-    std::optional<ExtractedModelData> GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    ExtractedModelData* GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
 
 private:
     // Private constructor so that no objects can be created
@@ -32,5 +32,7 @@ private:
 
     std::map<std::string, tinygltf::Model> loadedModels;
 
-    std::optional<ExtractedModelData> getMeshDataFromModel(std::string modelName, std::string meshName);
+    std::map<std::string, ExtractedModelData> extractedModels;
+
+    ExtractedModelData* getMeshDataFromModel(std::string modelName, std::string meshName);
 };

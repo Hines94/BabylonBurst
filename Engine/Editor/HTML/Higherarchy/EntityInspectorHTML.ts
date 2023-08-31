@@ -85,7 +85,10 @@ export class EntityInspectorHTML {
     componentDatas: { editor: JSONEditor; comp: string }[] = [];
 
     addComponentToInspector(comp: string, inspector: HTMLElement, entityId: number) {
-        //@ts-ignore
+        if(!componentSchemas[comp]) {
+            console.error("No schema for component: " + comp);
+            return;
+        }
         const schema = JSON.parse(componentSchemas[comp]);
         const componentWrapper = document.createElement("div");
         const higherarch = this;
@@ -118,6 +121,8 @@ export class EntityInspectorHTML {
 
         function SetupComponentEditor() {
             editor.on("ready", () => {
+                //Start collapsed for ease
+                editor.editors.root.collapse_control.click();
                 const label = componentWrapper.querySelector("label");
                 label.innerText = comp;
 
@@ -130,6 +135,7 @@ export class EntityInspectorHTML {
                     removeButton.onclick = () => {
                         delete higherarch.owner.allEntities[entityId][comp];
                         componentWrapper.remove();
+                        higherarch.owner.ecosystem.wasmWrapper.DelayedRemoveComponent(entityId,comp);
                         higherarch.owner.RegenerateHigherarchy();
                     };
                     label.parentElement.appendChild(removeButton);

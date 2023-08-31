@@ -57,3 +57,23 @@ export function CreateMeshFromTriangles(triangles: EntVector3[][], scene: Scene,
         return existingMesh;
     }
 }
+
+export type ExtractedMeshData = {
+    vertices:number[];
+    triangles:number[];
+}
+
+export function ExtractedMeshDataToMesh(data:ExtractedMeshData,scene:Scene) {
+    var customMesh = new Mesh("custom", scene);
+
+    var vertexData = new VertexData();
+
+    // Now, you assign vertices and indices (triangles) to the vertexData
+    vertexData.positions = data.vertices;
+    vertexData.indices = data.triangles;
+
+    // Apply vertex data to the custom mesh
+    vertexData.applyToMesh(customMesh);
+
+    return customMesh;
+}

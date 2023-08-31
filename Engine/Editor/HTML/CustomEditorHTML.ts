@@ -9,7 +9,7 @@ import { SaveEntitiesToMsgpackIntArray } from "@BabylonBoostClient/EntitySystem/
 import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
 import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBoostClient/AsyncAssets/index";
-import { ContentBrowserHTML, ContentStorageBackend } from "./ContentBrowser/ContentBrowserHTML";
+import { ContentBrowserHTML, ContentStorageBackend, GetCurrentLevelItem } from "./ContentBrowser/ContentBrowserHTML";
 
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;

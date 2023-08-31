@@ -73,6 +73,7 @@ export class ServerWASMModuleWrapper {
     wasmModule: any;
     uuid: string;
     setup: boolean;
+    ___ECOSYSTEM___:any;
     setupResolve: (() => void) | null = null;
 
     constructor(wasmModule: any) {

@@ -60,9 +60,12 @@ export class HigherarchyHTML {
 
     /** Reset our WASM module to same as the JS data */
     RefreshWASMToData() {
-        this.ecosystem.wasmWrapper.ResetEntitySystem();
-        this.ecosystem.wasmWrapper.LoadMsgpackDataToExistingEntities(this.allEntities, true);
+        this.ecosystem.wasmWrapper.LoadMsgpackDataToExistingEntities(this.allEntities, false);
         this.ecosystem.wasmWrapper.FlushEntitySystem();
+    }
+    /** Full wipe */
+    ResetWASMEntities() {
+        this.ecosystem.wasmWrapper.ResetEntitySystem();
     }
 
     /** Rebuild Entities and entity rows */
@@ -129,6 +132,7 @@ export class HigherarchyHTML {
                             if (this.windowDoc.defaultView.confirm("Delete Entity " + entId + "?")) {
                                 row.remove();
                                 delete this.allEntities[entId];
+                                this.ecosystem.wasmWrapper.DelayedRemoveEntity(entId);
                                 this.RegenerateHigherarchy();
                             }
                         },

@@ -38,6 +38,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         this.windowDoc = this.Displayer.window.document;
         await WaitForEvent("PrefabDisplayerSetup", this.windowDoc);
         this.setupEditorPanel();
+        this.windowDoc.getElementById("ContentBrowser").remove(); //TODO: if it becomes useful again show
 
         //Setup new game ecosystem so we can render any prefab items
         this.setupHigherarchyEcosystem();

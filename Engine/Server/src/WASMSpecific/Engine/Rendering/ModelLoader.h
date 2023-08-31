@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <map>
 
 class ModelLoader {
 public:
@@ -19,11 +20,19 @@ public:
         return instance;
     }
 
-    std::optional<ExtractedModelData> GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    ExtractedModelData* GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+
+    void SetGetMeshCallback(std::function<std::vector<uint8_t>(std::string, std::string, int)> callback) {
+        GetMeshCallback = callback;
+    }
 
 private:
     // Private constructor so that no objects can be created
     ModelLoader() {}
+
+    std::function<std::vector<uint8_t>(std::string, std::string, int)> GetMeshCallback;
+
+    std::map<std::string, ExtractedModelData> extractedModels;
 
     static std::mutex dataMutex;
 };

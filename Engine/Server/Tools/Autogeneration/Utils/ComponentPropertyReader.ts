@@ -20,7 +20,9 @@ export enum CompPropTags {
 
 /** Different types of custom tag that componments themselves may have */
 export enum CompTags {
-    NOTYPINGS
+    NOTYPINGS,
+    NOSAVE,
+    NONETWORK
 }
 
 function isValidComponentTag(value: string): boolean {

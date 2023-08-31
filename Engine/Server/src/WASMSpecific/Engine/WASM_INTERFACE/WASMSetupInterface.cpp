@@ -2,12 +2,30 @@
 #include "Engine/Entities/Prefabs/PrefabManager.h"
 #include <emscripten/bind.h>
 #include <iostream>
+#include "Engine/Rendering/ModelLoader.h"
+#include "Engine/Navigation/NavmeshBuildSystem.h"
+#include "Engine/Rendering/ExtractedMeshSerializer.h"
 
 namespace WASMSetup {
     std::string WASMModuleIdentifier = "";
 }
 
 using namespace emscripten;
+
+std::vector<uint8_t> GetModelCallback(std::string file, std::string modelName, int fileIndex) {
+    emscripten::val jsArray =  emscripten::val::global("RequestModelData")(file, modelName, fileIndex, WASMSetup::WASMModuleIdentifier);
+    std::vector<uint8_t> data;
+    unsigned length = jsArray["length"].as<unsigned>();
+    for (unsigned i = 0; i < length; ++i) {
+        data.push_back(jsArray[i].as<uint8_t>());
+    }
+    return data;
+}
+
+void NavmeshRebuild(ExtractedModelData data) {
+    const auto buffer = ExtractedMeshSerializer::GetBufferForExtractedMesh(data);
+    emscripten::val::global("OnNavmeshRebuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
+}
 
 void SetupWASMModule(std::string uniqueModuleId) {
     WASMSetup::WASMModuleIdentifier = uniqueModuleId;
@@ -17,6 +35,8 @@ void SetupWASMModule(std::string uniqueModuleId) {
         std::cout << "Prefab Manager fully loaded" << std::endl;
         WASMSetup::callWASMSetupComplete();
     });
+    ModelLoader::getInstance().SetGetMeshCallback(GetModelCallback);
+    NavmeshBuildSystem::getInstance().onNavmeshRebuild.addListener(NavmeshRebuild);
 }
 
 void WASMSetup::callWASMSetupComplete() {

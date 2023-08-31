@@ -1,4 +1,8 @@
 #pragma once
+#include <atomic>
+#include <functional>
+#include "Engine/Utils/Observable.hpp"
+#include "Engine/Rendering/ExtractedMeshData.hpp"
 
 class NavmeshBuildSystem {
 public:
@@ -11,6 +15,12 @@ public:
 
     static void RunSystem(bool Init, double dt);
 
+    void PerformNavmeshRebuild();
+
+    std::atomic<bool> meshUnbuilt;
+
     NavmeshBuildSystem(NavmeshBuildSystem const&) = delete;
     void operator=(NavmeshBuildSystem const&) = delete;
+
+    Observable<ExtractedModelData> onNavmeshRebuild;
 };

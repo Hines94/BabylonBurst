@@ -41,7 +41,7 @@ struct RigidBody : public Component {
 
 /**DON'T MOVE TO TOP OF THIS FILE! Interferes with treesitter
 A simple tag to show that this body requires a rebuild*/
-CCOMPONENT(NOTYPINGS)
+CCOMPONENT(NOTYPINGS, NOSAVE, NONETWORK)
 struct DirtyRigidBody : public Component {
     DECLARE_COMPONENT_METHODS(DirtyRigidBody)
 };

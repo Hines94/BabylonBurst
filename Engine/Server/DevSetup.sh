@@ -21,7 +21,7 @@ cd ../../
 
 echo Installing Required Software
 cd SetupFiles
-#bash ubuntuInstalls.sh || exit
+bash ubuntuInstalls.sh || exit
 echo Install packages
 bash vcpkgInstalls.sh x64-linux || exit
 bash vcpkgInstalls.sh wasm32-emscripten || exit

@@ -103,6 +103,9 @@ bool IsNetworkedForPlayer(EntityData* ent, const tbb::concurrent_unordered_map<s
         if (!c.second) {
             continue;
         }
+        if(!ComponentLoader::ShouldNetworkComponent(c.first)) {
+            continue;
+        }
 
         //If specific properties check those?
         auto it = comps.find(c.first);
