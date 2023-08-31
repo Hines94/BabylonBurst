@@ -24,8 +24,8 @@ export function SetupNavmeshVisualiser() {
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
 
-        EnsureMaterialPresent(ecosystem,NavVisMaterialName,new Color4(0.9, 0.8, 0.3, 0.02));
-        RebuildVisMesh(unpackedData, ecosystem,ecosystem.dynamicProperties[NavVisMaterialName],NavVisMeshName);
+        EnsureMaterialPresent(ecosystem, NavVisMaterialName, new Color4(0.9, 0.8, 0.3, 0.02));
+        RebuildVisMesh(unpackedData, ecosystem, ecosystem.dynamicProperties[NavVisMaterialName], NavVisMeshName);
     };
 
     //@ts-ignore
@@ -34,11 +34,11 @@ export function SetupNavmeshVisualiser() {
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
 
-        EnsureMaterialPresent(ecosystem,HeightVisMaterialName,new Color4(0, 0.9, 0, 0.02));
-        RebuildVisMesh(unpackedData, ecosystem,ecosystem.dynamicProperties[HeightVisMaterialName],HeightVisMeshName);
+        EnsureMaterialPresent(ecosystem, HeightVisMaterialName, new Color4(0, 0.9, 0, 0.02));
+        RebuildVisMesh(unpackedData, ecosystem, ecosystem.dynamicProperties[HeightVisMaterialName], HeightVisMeshName);
     };
 }
-function RebuildVisMesh(unpackedData: unknown, ecosystem: GameEcosystem,mat:Material,name:string) {
+function RebuildVisMesh(unpackedData: unknown, ecosystem: GameEcosystem, mat: Material, name: string) {
     const extractData = unpackedData as ExtractedMeshData;
     const mesh = ExtractedMeshDataToMesh(extractData, ecosystem.scene);
     mesh.material = mat;
@@ -47,12 +47,12 @@ function RebuildVisMesh(unpackedData: unknown, ecosystem: GameEcosystem,mat:Mate
     }
     ecosystem.dynamicProperties[name] = mesh;
 
-    console.log(name+"rebuilt. Number verts: " + extractData.vertices.length);
+    console.log(name + "rebuilt. Number verts: " + extractData.vertices.length);
 
     return mesh;
 }
 
-function EnsureMaterialPresent(ecosystem: GameEcosystem,name:string,color:Color4) {
+function EnsureMaterialPresent(ecosystem: GameEcosystem, name: string, color: Color4) {
     if (!ecosystem.dynamicProperties[name]) {
         const newMat = GetSimpleImageMaterial(ecosystem.scene);
         ecosystem.dynamicProperties[name] = newMat;
@@ -61,4 +61,3 @@ function EnsureMaterialPresent(ecosystem: GameEcosystem,name:string,color:Color4
         SetSimpleMaterialColor(newMat, color);
     }
 }
-

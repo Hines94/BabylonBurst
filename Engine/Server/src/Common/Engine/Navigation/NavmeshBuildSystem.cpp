@@ -59,10 +59,10 @@ ExtractedModelData GetModelFromHeightfield(const rcHeightfield& hf, const rcConf
                 float baseZ = config.bmin[2] + y * config.cs;
 
                 // Create 4 vertices for top face of the voxel
-                Vertex v1 = { baseX, baseY, baseZ };
-                Vertex v2 = { baseX + config.cs, baseY, baseZ };
-                Vertex v3 = { baseX + config.cs, baseY, baseZ + config.cs };
-                Vertex v4 = { baseX, baseY, baseZ + config.cs };
+                Vertex v1 = {baseX, baseY, baseZ};
+                Vertex v2 = {baseX + config.cs, baseY, baseZ};
+                Vertex v3 = {baseX + config.cs, baseY, baseZ + config.cs};
+                Vertex v4 = {baseX, baseY, baseZ + config.cs};
 
                 // Add vertices to the data
                 uint32_t baseIndex = data.vertices.size();
@@ -72,8 +72,8 @@ ExtractedModelData GetModelFromHeightfield(const rcHeightfield& hf, const rcConf
                 data.vertices.push_back(v4);
 
                 // Create 2 triangles for the quad
-                Triangle t1 = { baseIndex, baseIndex + 1, baseIndex + 2 };
-                Triangle t2 = { baseIndex, baseIndex + 2, baseIndex + 3 };
+                Triangle t1 = {baseIndex, baseIndex + 1, baseIndex + 2};
+                Triangle t2 = {baseIndex, baseIndex + 2, baseIndex + 3};
 
                 // Add triangles to the data
                 data.triangles.push_back(t1);
@@ -82,7 +82,7 @@ ExtractedModelData GetModelFromHeightfield(const rcHeightfield& hf, const rcConf
         }
     }
     data.ensureTrianglesUpwards();
-    
+
     return data;
 }
 
@@ -205,8 +205,8 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     std::cout << "Spans after rasterizing: " << spanCount << std::endl;
 
-    if (NavmeshBuildSystem::getInstance().onHeightfieldRebuild.HasListeners()) { 
-        NavmeshBuildSystem::getInstance().onHeightfieldRebuild.triggerEvent(GetModelFromHeightfield(hf,config));
+    if (NavmeshBuildSystem::getInstance().onHeightfieldRebuild.HasListeners()) {
+        NavmeshBuildSystem::getInstance().onHeightfieldRebuild.triggerEvent(GetModelFromHeightfield(hf, config));
     }
 
     //Filter out items that are too low to walk on
