@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine/Rendering/ExtractedMeshData.hpp"
+#include "Engine/Rendering/ExtractedMeshData.h"
 #include "Engine/Utils/Observable.hpp"
 #include <atomic>
 #include <functional>
@@ -22,5 +22,6 @@ public:
     NavmeshBuildSystem(NavmeshBuildSystem const&) = delete;
     void operator=(NavmeshBuildSystem const&) = delete;
 
+    Observable<ExtractedModelData> onHeightfieldRebuild;
     Observable<ExtractedModelData> onNavmeshRebuild;
 };

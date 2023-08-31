@@ -1,5 +1,5 @@
 #pragma once
-#include "ExtractedMeshData.hpp"
+#include "ExtractedMeshData.h"
 #include <msgpack.hpp>
 
 namespace ExtractedMeshSerializer {

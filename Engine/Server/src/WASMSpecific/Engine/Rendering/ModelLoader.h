@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine/Rendering/ExtractedMeshData.hpp"
+#include "Engine/Rendering/ExtractedMeshData.h"
 #include <map>
 #include <mutex>
 #include <optional>

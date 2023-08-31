@@ -147,29 +147,32 @@ endif()
 # -----------------------------------------------------------
 
 # --------------------- Testing -----------------------------
-enable_testing()
 
-# All engine tests
-file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*/Engine/Tests/*.cpp)
-add_executable(runUnitTests ${TEST_SOURCES})
+if (NOT ${ENV_VARS_NO_TESTS} STREQUAL "true")
+    enable_testing()
 
-find_package(GTest CONFIG REQUIRED)
-target_link_libraries(runUnitTests PRIVATE babylonboostlib GTest::gtest GTest::gtest_main)
+    # All engine tests
+    file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*/Engine/Tests/*.cpp)
+    add_executable(runUnitTests ${TEST_SOURCES})
 
-target_include_directories(runUnitTests PRIVATE 
-    ${UWEBSOCKETS_INCLUDE_DIRS}
-)
+    find_package(GTest CONFIG REQUIRED)
+    target_link_libraries(runUnitTests PRIVATE babylonboostlib GTest::gtest GTest::gtest_main)
 
-if(wasmBuild)
-    add_test(
-        NAME runUnitTests
-        COMMAND runUnitTests
+    target_include_directories(runUnitTests PRIVATE 
+        ${UWEBSOCKETS_INCLUDE_DIRS}
     )
-else()
-    add_test(
-        NAME runUnitTests
-        COMMAND node runUnitTests
-    )
+
+    if(wasmBuild)
+        add_test(
+            NAME runUnitTests
+            COMMAND runUnitTests
+        )
+    else()
+        add_test(
+            NAME runUnitTests
+            COMMAND node runUnitTests
+        )
+    endif()
 endif()
 
 #TODO: Source tests?

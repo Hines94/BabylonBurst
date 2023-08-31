@@ -1,4 +1,4 @@
-import { Mesh, PBRMaterial, Scene, StandardMaterial, VertexBuffer, VertexData } from "@babylonjs/core";
+import { Mesh, PBRMaterial, Scene, StandardMaterial, Vector3, VertexBuffer, VertexData } from "@babylonjs/core";
 import { EntVector3 } from "../EntitySystem/CoreComponents";
 import { defaultLayerMask } from "./LayerMasks";
 
@@ -63,6 +63,7 @@ export type ExtractedMeshData = {
     triangles: number[];
 };
 
+/** Warning - since no normal information they can be inversed */
 export function ExtractedMeshDataToMesh(data: ExtractedMeshData, scene: Scene) {
     var customMesh = new Mesh("custom", scene);
 
@@ -71,6 +72,46 @@ export function ExtractedMeshDataToMesh(data: ExtractedMeshData, scene: Scene) {
     // Now, you assign vertices and indices (triangles) to the vertexData
     vertexData.positions = data.vertices;
     vertexData.indices = data.triangles;
+
+    // Apply vertex data to the custom mesh
+    vertexData.applyToMesh(customMesh);
+
+    return customMesh;
+}
+
+/** Ensures faces point upwards (for nav related items) */
+export function ExtractedMeshDataToMeshUpNormals(data: ExtractedMeshData, scene: Scene) {
+    var customMesh = new Mesh("custom", scene);
+
+    var vertexData = new VertexData();
+
+    // Now, you assign vertices and indices (triangles) to the vertexData
+    vertexData.positions = data.vertices;
+    vertexData.indices = data.triangles;
+
+    // Ensure the normals array exists and is of the appropriate size
+    vertexData.normals = new Array(vertexData.positions.length).fill(0);
+
+    // Compute normals
+    VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
+
+    // Bias the normals to point upwards
+    const upwardVector = new Vector3(0, 1, 0);
+    for (let i = 0; i < vertexData.normals.length; i += 3) {
+        let normal = new Vector3(vertexData.normals[i], vertexData.normals[i + 1], vertexData.normals[i + 2]);
+        normal.addInPlace(upwardVector);
+        normal.normalize();
+
+        vertexData.normals[i] = normal.x;
+        vertexData.normals[i + 1] = normal.y;
+        vertexData.normals[i + 2] = normal.z;
+    }
+
+    for (let i = 0; i < vertexData.indices.length; i += 3) {
+        let temp = vertexData.indices[i];
+        vertexData.indices[i] = vertexData.indices[i + 2];
+        vertexData.indices[i + 2] = temp;
+    }
 
     // Apply vertex data to the custom mesh
     vertexData.applyToMesh(customMesh);

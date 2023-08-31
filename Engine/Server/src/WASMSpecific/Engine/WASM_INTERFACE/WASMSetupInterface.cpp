@@ -27,6 +27,11 @@ void NavmeshRebuild(ExtractedModelData data) {
     emscripten::val::global("OnNavmeshRebuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
 }
 
+void HeightfieldRebuild(ExtractedModelData data) {
+    const auto buffer = ExtractedMeshSerializer::GetBufferForExtractedMesh(data);
+    emscripten::val::global("OnHeightfieldRebuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
+}
+
 void SetupWASMModule(std::string uniqueModuleId) {
     WASMSetup::WASMModuleIdentifier = uniqueModuleId;
     //Setup prefabs - Needs to be after get uuid so we can call async functions in AWS interface
@@ -37,6 +42,7 @@ void SetupWASMModule(std::string uniqueModuleId) {
     });
     ModelLoader::getInstance().SetGetMeshCallback(GetModelCallback);
     NavmeshBuildSystem::getInstance().onNavmeshRebuild.addListener(NavmeshRebuild);
+    NavmeshBuildSystem::getInstance().onHeightfieldRebuild.addListener(HeightfieldRebuild);
 }
 
 void WASMSetup::callWASMSetupComplete() {

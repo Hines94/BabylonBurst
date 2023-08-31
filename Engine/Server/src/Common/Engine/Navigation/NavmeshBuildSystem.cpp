@@ -47,6 +47,45 @@ ExtractedModelData GetModelFromDetailedMesh(const rcPolyMeshDetail& dmesh) {
     return extractedData;
 }
 
+ExtractedModelData GetModelFromHeightfield(const rcHeightfield& hf, const rcConfig& config) {
+    ExtractedModelData data;
+
+    // For each cell in the grid
+    for (int y = 0; y < hf.height; ++y) {
+        for (int x = 0; x < hf.width; ++x) {
+            for (rcSpan* s = hf.spans[x + y * hf.width]; s; s = s->next) {
+                float baseX = config.bmin[0] + x * config.cs;
+                float baseY = config.bmin[1] + s->smin * config.ch;
+                float baseZ = config.bmin[2] + y * config.cs;
+
+                // Create 4 vertices for top face of the voxel
+                Vertex v1 = { baseX, baseY, baseZ };
+                Vertex v2 = { baseX + config.cs, baseY, baseZ };
+                Vertex v3 = { baseX + config.cs, baseY, baseZ + config.cs };
+                Vertex v4 = { baseX, baseY, baseZ + config.cs };
+
+                // Add vertices to the data
+                uint32_t baseIndex = data.vertices.size();
+                data.vertices.push_back(v1);
+                data.vertices.push_back(v2);
+                data.vertices.push_back(v3);
+                data.vertices.push_back(v4);
+
+                // Create 2 triangles for the quad
+                Triangle t1 = { baseIndex, baseIndex + 1, baseIndex + 2 };
+                Triangle t2 = { baseIndex, baseIndex + 2, baseIndex + 3 };
+
+                // Add triangles to the data
+                data.triangles.push_back(t1);
+                data.triangles.push_back(t2);
+            }
+        }
+    }
+    data.ensureTrianglesUpwards();
+    
+    return data;
+}
+
 void printNumCells(rcCompactHeightfield& chf, std::string prefix) {
     int walkableCells = 0;
     for (int i = 0; i < chf.spanCount; ++i) {
@@ -109,10 +148,10 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         },
         0);
 
-    const float FLT_MAX = 10;
+    const float BOUNDS_MAX = 10;
     //Get min and max bounds of navmesh area
-    float bmin[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
-    float bmax[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+    float bmin[3] = {BOUNDS_MAX, BOUNDS_MAX, BOUNDS_MAX};
+    float bmax[3] = {-BOUNDS_MAX, -BOUNDS_MAX, -BOUNDS_MAX};
     for (int i = 0; i < verts.size(); i += 3) {
         for (int j = 0; j < 3; j++) {
             bmin[j] = std::min(bmin[j], verts[i + j]);
@@ -127,8 +166,8 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         config.bmin[i] = bmin[i];
         config.bmax[i] = bmax[i];
     }
-    config.cs = 0.5f;
-    config.ch = 0.3f;
+    config.cs = 3.0f;
+    config.ch = 1.0f;
     config.width = (int)((config.bmax[0] - config.bmin[0]) / config.cs + 0.5f);
     config.height = (int)((config.bmax[2] - config.bmin[2]) / config.cs + 0.5f);
     config.walkableSlopeAngle = 45.0f;
@@ -166,8 +205,12 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     std::cout << "Spans after rasterizing: " << spanCount << std::endl;
 
+    if (NavmeshBuildSystem::getInstance().onHeightfieldRebuild.HasListeners()) { 
+        NavmeshBuildSystem::getInstance().onHeightfieldRebuild.triggerEvent(GetModelFromHeightfield(hf,config));
+    }
+
     //Filter out items that are too low to walk on
-    rcFilterWalkableLowHeightSpans(&context, 20, hf);
+    rcFilterWalkableLowHeightSpans(&context, 200, hf);
     //Compact heightfield to save geom
     rcCompactHeightfield chf;
     if (!rcBuildCompactHeightfield(&context, config.walkableHeight, config.walkableClimb, hf, chf)) {
@@ -175,10 +218,10 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     printNumCells(chf, "Walkable cells after compacting: ");
 
-    if (!rcErodeWalkableArea(&context, config.walkableRadius, chf)) {
-        std::cerr << "Issue eroding for navmesh" << std::endl;
-    }
-    printNumCells(chf, "Walkable cells after eroding: ");
+    // if (!rcErodeWalkableArea(&context, config.walkableRadius, chf)) {
+    //     std::cerr << "Issue eroding for navmesh" << std::endl;
+    // }
+    // printNumCells(chf, "Walkable cells after eroding: ");
 
     if (!rcBuildDistanceField(&context, chf)) {
         std::cerr << "Issue building distance fields navmesh" << std::endl;
