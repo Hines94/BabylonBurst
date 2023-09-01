@@ -4,7 +4,7 @@ export function AddOptionToEditorTopMenu(
     ecosystem: GameEcosystem,
     menuName: string,
     elementName: string
-): HTMLParagraphElement {
+): HTMLLIElement {
     const menu = ensureEditorMenu(ecosystem, menuName);
     return menu.GetMenuOption(elementName);
 }
@@ -28,8 +28,6 @@ export class EditorTopMenu {
     /** Top level for menu */
     topLevelHolder: HTMLElement;
 
-    elements: { [name: string]: HTMLParagraphElement } = {};
-
     constructor(ecosystem: GameEcosystem, name: string) {
         this.ecosystem = ecosystem;
         this.topBar = ecosystem.doc.getElementById("editorHeaderPanel");
@@ -37,15 +35,42 @@ export class EditorTopMenu {
         this.setupEditorMenu();
     }
 
-    GetMenuOption(optionName: string): HTMLParagraphElement {
-        if (this.elements[optionName]) {
-            return this.elements[optionName];
+    GetMenuOption(optionName: string): HTMLLIElement {
+        const topMenu = this;
+        //Split on subfolders
+        const subs = optionName.split("/");
+        var folderLevel:any = this.dropdownContent;
+        if(subs.length > 1) {
+            //For each subfolder level
+            for (var s = 0; s < subs.length - 1; s++) {
+                const folderName = subs[s];
+                //No existing folder?
+                if (!folderLevel.elements[folderName]) {
+                    const listEle = topMenu.ecosystem.doc.createElement("li");
+                    listEle.innerText = folderName;
+                    const holderElement = topMenu.ecosystem.doc.createElement("ul") as any;
+                    holderElement.classList.add("sub-menu");
+                    folderLevel.elements[folderName] = holderElement; 
+                    listEle.appendChild(holderElement);
+                    if (!holderElement.elements) { holderElement.elements = []; }
+                    folderLevel.appendChild(listEle);
+                }
+                //Set new Level we are at
+                folderLevel = folderLevel.elements[folderName];
+            }
+            optionName = subs[subs.length-1];
         }
-        const newElement = this.ecosystem.doc.createElement("p");
+
+        //Generate bottom level item
+        if (folderLevel.elements[optionName]) {
+            return folderLevel.elements[optionName];
+        }
+        const newElement = topMenu.ecosystem.doc.createElement("li");
         newElement.innerText = optionName;
-        this.dropdownContent.appendChild(newElement);
-        this.elements[optionName] = newElement;
+        folderLevel.appendChild(newElement);
+        folderLevel.elements[optionName] = newElement;
         return newElement;
+
     }
 
     private setupEditorMenu() {
@@ -56,6 +81,7 @@ export class EditorTopMenu {
         this.topLevelHolder.appendChild(itembutton);
         this.dropdownContent = this.ecosystem.doc.createElement("div");
         this.dropdownContent.className = "dropdown-content";
+        (this.dropdownContent as any).elements = [];
         this.topLevelHolder.appendChild(this.dropdownContent);
         this.topBar.appendChild(this.topLevelHolder);
     }

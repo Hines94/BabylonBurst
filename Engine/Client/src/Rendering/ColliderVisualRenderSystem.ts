@@ -11,7 +11,7 @@ import { GameEcosystem } from "../GameEcosystem";
 import { uiLayerMask } from "../Utils/LayerMasks";
 import { Color3, StandardMaterial } from "@babylonjs/core";
 
-export const showVisualsProp = "___SHOWCOLLIDERS___";
+const showVisualsProp = "___Collider___";
 const colliderMaterial = "___COLLIDERMATERIAL___";
 const loadedVisuals = "___LOADEDCOLLIDERMESHES___";
 

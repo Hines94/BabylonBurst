@@ -22,6 +22,7 @@ public:
     NavmeshBuildSystem(NavmeshBuildSystem const&) = delete;
     void operator=(NavmeshBuildSystem const&) = delete;
 
-    Observable<ExtractedModelData> onHeightfieldRebuild;
-    Observable<ExtractedModelData> onNavmeshRebuild;
+    //Final stage is just "NavMesh"
+    Observable<ExtractedModelData, std::string> onNavmeshStageRebuild;
+    Observable<std::vector<LineSegment>> onNavmeshContoursRebuild;
 };

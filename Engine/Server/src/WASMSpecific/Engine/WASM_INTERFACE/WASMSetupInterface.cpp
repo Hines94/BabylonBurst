@@ -22,14 +22,14 @@ std::vector<uint8_t> GetModelCallback(std::string file, std::string modelName, i
     return data;
 }
 
-void NavmeshRebuild(ExtractedModelData data) {
+void NavmeshRebuild(ExtractedModelData data, std::string stage) {
     const auto buffer = ExtractedMeshSerializer::GetBufferForExtractedMesh(data);
-    emscripten::val::global("OnNavmeshRebuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
+    emscripten::val::global("OnNavStageBuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), stage, WASMSetup::WASMModuleIdentifier);
 }
 
-void HeightfieldRebuild(ExtractedModelData data) {
-    const auto buffer = ExtractedMeshSerializer::GetBufferForExtractedMesh(data);
-    emscripten::val::global("OnHeightfieldRebuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
+void NavmeshContoursRebuild(std::vector<LineSegment> contours) {
+    const auto buffer = ExtractedMeshSerializer::GetBufferForLinesVector(contours);
+    emscripten::val::global("OnNavCountorsBuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
 }
 
 void SetupWASMModule(std::string uniqueModuleId) {
@@ -41,8 +41,9 @@ void SetupWASMModule(std::string uniqueModuleId) {
         WASMSetup::callWASMSetupComplete();
     });
     ModelLoader::getInstance().SetGetMeshCallback(GetModelCallback);
-    NavmeshBuildSystem::getInstance().onNavmeshRebuild.addListener(NavmeshRebuild);
-    NavmeshBuildSystem::getInstance().onHeightfieldRebuild.addListener(HeightfieldRebuild);
+    //TODO: This should be only if we are in some sort of debug mode or Editor?
+    NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.addListener(NavmeshRebuild);
+    NavmeshBuildSystem::getInstance().onNavmeshContoursRebuild.addListener(NavmeshContoursRebuild);
 }
 
 void WASMSetup::callWASMSetupComplete() {

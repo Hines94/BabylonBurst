@@ -96,6 +96,52 @@ void printNumCells(rcCompactHeightfield& chf, std::string prefix) {
     std::cout << prefix << walkableCells << std::endl;
 }
 
+std::vector<LineSegment> GetLinesFromContours(const rcContourSet* cset) {
+    std::vector<LineSegment> lines;
+
+    if (!cset) {
+        std::cerr << "cset is nullptr!" << std::endl;
+        return lines;
+    }
+
+    const float* orig = cset->bmin;
+    const float cs = cset->cs;
+    const float ch = cset->ch;
+
+    for (int i = 0; i < cset->nconts; ++i) {
+        const rcContour& contour = cset->conts[i];
+
+        if (contour.nverts < 2) {
+            std::cerr << "Contour " << i << " has less than 2 vertices." << std::endl;
+            continue;
+        }
+
+        if (!contour.verts) {
+            std::cerr << "Invalid vertices for contour " << i << std::endl;
+            continue;
+        }
+
+        for (int j = 0, k = contour.nverts - 1; j < contour.nverts; k = j++) {
+            const int* va = &contour.verts[k * 4];
+            const int* vb = &contour.verts[j * 4];
+
+            LineSegment segment;
+
+            segment.startX = orig[0] + va[0] * cs;
+            segment.startY = orig[1] + (va[1] + 1 + (i & 1)) * ch;
+            segment.startZ = orig[2] + va[2] * cs;
+
+            segment.endX = orig[0] + vb[0] * cs;
+            segment.endY = orig[1] + (vb[1] + 1 + (i & 1)) * ch;
+            segment.endZ = orig[2] + vb[2] * cs;
+
+            lines.push_back(segment);
+        }
+    }
+
+    return lines;
+}
+
 void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
     NavmeshBuildSystem::getInstance().meshUnbuilt = false;
     const auto unbuiltEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableMesh)}, {typeid(BuiltNavigatableMesh)});
@@ -159,6 +205,25 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         }
     }
 
+    if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
+        ExtractedModelData geomIn;
+        for (int i = 0; i < verts.size(); i += 3) {
+            Vertex newVert;
+            newVert.x = verts[i];
+            newVert.y = verts[i + 1];
+            newVert.z = verts[i + 2];
+            geomIn.vertices.push_back(newVert);
+        }
+        for (int i = 0; i < tris.size(); i += 3) {
+            Triangle newTri;
+            newTri.v1 = tris[i];
+            newTri.v2 = tris[i + 1];
+            newTri.v3 = tris[i + 2];
+            geomIn.triangles.push_back(newTri);
+        }
+        NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(geomIn, "Nav Geom In");
+    }
+
     rcConfig config;
     memset(&config, 0, sizeof(config));
     //Setup config for building
@@ -188,12 +253,10 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     if (!rcCreateHeightfield(&context, hf, config.width, config.height, &config.bmin[0], &config.bmax[0], config.cs, config.ch)) {
         std::cerr << "Can't create heightfield for context " << std::endl;
     }
+    std::cout << "Verts into navmesh: " << verts.size() << std::endl;
 
     // Assume all triangles are walkable for now
     std::vector<unsigned char> triAreas(tris.size(), RC_WALKABLE_AREA);
-
-    std::cout << "Verts into navmesh: " << verts.size() << std::endl;
-
     rcRasterizeTriangles(&context, &verts[0], verts.size() / 3, &tris[0], &triAreas[0], tris.size() / 3, hf, config.walkableClimb);
     int spanCount = 0;
     for (int y = 0; y < hf.height; ++y) {
@@ -205,8 +268,8 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     std::cout << "Spans after rasterizing: " << spanCount << std::endl;
 
-    if (NavmeshBuildSystem::getInstance().onHeightfieldRebuild.HasListeners()) {
-        NavmeshBuildSystem::getInstance().onHeightfieldRebuild.triggerEvent(GetModelFromHeightfield(hf, config));
+    if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
+        NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(GetModelFromHeightfield(hf, config), "Nav Heightfield");
     }
 
     //Filter out items that are too low to walk on
@@ -218,10 +281,10 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     printNumCells(chf, "Walkable cells after compacting: ");
 
-    // if (!rcErodeWalkableArea(&context, config.walkableRadius, chf)) {
-    //     std::cerr << "Issue eroding for navmesh" << std::endl;
-    // }
-    // printNumCells(chf, "Walkable cells after eroding: ");
+    if (!rcErodeWalkableArea(&context, config.walkableRadius, chf)) {
+        std::cerr << "Issue eroding for navmesh" << std::endl;
+    }
+    printNumCells(chf, "Walkable cells after eroding: ");
 
     if (!rcBuildDistanceField(&context, chf)) {
         std::cerr << "Issue building distance fields navmesh" << std::endl;
@@ -239,6 +302,10 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     std::cout << "Number of contours: " << cset.nconts << std::endl;
 
+    if (onNavmeshContoursRebuild.HasListeners()) {
+        onNavmeshContoursRebuild.triggerEvent(GetLinesFromContours(&cset));
+    }
+
     rcPolyMesh pmesh;
     if (!rcBuildPolyMesh(&context, cset, config.maxVertsPerPoly, pmesh)) {
         std::cerr << "Issue building poly navmesh" << std::endl;
@@ -248,19 +315,8 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     rcPolyMeshDetail dmesh;
     if (!rcBuildPolyMeshDetail(&context, pmesh, chf, config.detailSampleDist, config.detailSampleMaxError, dmesh)) {
         std::cerr << "Issue building detail poly navmesh" << std::endl;
-    }
-
-    if (NavmeshBuildSystem::getInstance().onNavmeshRebuild.HasListeners()) {
-        // ExtractedModelData testMesh;
-        // EntityTaskRunners::AutoPerformTasksSeries("testHeight",allEnts,
-        //     [&](double Dt, EntityData* ent) {
-        //         NavigatableMesh* nm = EntityComponentSystem::GetComponent<NavigatableMesh>(ent);
-        //         const auto extractedData = nm->extractedModelData;
-        //         testMesh.triangles.insert(testMesh.triangles.end(),extractedData->triangles.begin(),extractedData->triangles.end());
-        //         testMesh.vertices.insert(testMesh.vertices.end(),extractedData->vertices.begin(),extractedData->vertices.end());
-        // },0);
-        //NavmeshBuildSystem::getInstance().onNavmeshRebuild.triggerEvent(testMesh);
-        NavmeshBuildSystem::getInstance().onNavmeshRebuild.triggerEvent(GetModelFromDetailedMesh(dmesh));
+    } else if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
+        NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(GetModelFromDetailedMesh(dmesh), "NavMesh");
     }
 
     std::cout << "Navmesh Generated" << std::endl;

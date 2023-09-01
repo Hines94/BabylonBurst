@@ -1,43 +1,97 @@
-import { Color3, Color4, Material, StandardMaterial } from "@babylonjs/core";
+import { Color4, Material, MeshBuilder, Observable, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { SetSimpleMaterialColor } from "@engine/Materials/AsyncSimpleImageMaterial";
 import { GetSimpleImageMaterial } from "@engine/Materials/SimpleImageMaterial";
 import { GetEcosystemForModule } from "@engine/RunnableGameEcosystem";
-import { ExtractedMeshData, ExtractedMeshDataToMesh, ExtractedMeshDataToMeshUpNormals } from "@engine/Utils/MeshUtils";
+import { ExtractedMeshData, ExtractedMeshDataToMesh } from "@engine/Utils/MeshUtils";
 import { GetWasmModule } from "@engine/WASM/ServerWASMModule";
 import { decode } from "@msgpack/msgpack";
 
 var navmeshVizSetup = false;
-const NavVisMeshName = "___NAV_VIS_MESH___";
-const NavVisMaterialName = "___NAV_VIS_MATERIAL___";
 
-const HeightVisMeshName = "___HEIGHTFIELD_VIS_MESH___";
-const HeightVisMaterialName = "___HEIGHTFIELD_VIS_MATERIAL___";
+export type navStageChangeDat = {
+    ecosystem: GameEcosystem;
+    stage: string;
+};
+export const onNavmeshStageChange = new Observable<navStageChangeDat>();
+
+export function RefreshNavmeshVisualisationStage(ecosystem: GameEcosystem, stage: string) {
+    RefreshMeshVisual(ecosystem, stage, getMeshNameForStage(stage));
+}
+
+function getMaterialNameForStage(stage: string) {
+    return "___NAVVISMATERIAL___" + stage + "___";
+}
+function getMeshNameForStage(stage: string) {
+    return "___NAVVISMESH___" + stage + "___";
+}
+
+function getMaterialColorForStage(stage: string): Color4 {
+    if (stage == "Nav Geom In") {
+        return new Color4(0.1, 0.1, 0.8, 0.02);
+    }
+    if (stage == "Nav Heightfield") {
+        return new Color4(0.1, 0.9, 0.1, 0.02);
+    }
+    return new Color4(0.9, 0.8, 0.3, 0.02);
+}
 
 export function SetupNavmeshVisualiser() {
     if (navmeshVizSetup) {
         return;
     }
     //@ts-ignore
-    window.OnNavmeshRebuild = async function (data: Uint8Array, module: string) {
+    window.OnNavStageBuild = async function (data: Uint8Array, stage: string, module: string) {
         const unpackedData = decode(new Uint8Array(data));
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
+        onNavmeshStageChange.notifyObservers({ ecosystem: ecosystem, stage: stage });
 
-        EnsureMaterialPresent(ecosystem, NavVisMaterialName, new Color4(0.9, 0.8, 0.3, 0.02));
-        RebuildVisMesh(unpackedData, ecosystem, ecosystem.dynamicProperties[NavVisMaterialName], NavVisMeshName);
+        var mat = getMaterialNameForStage(stage);
+        var mesh = getMeshNameForStage(stage);
+
+        EnsureMaterialPresent(ecosystem, mat, getMaterialColorForStage(stage));
+        RebuildVisMesh(unpackedData, ecosystem, ecosystem.dynamicProperties[mat], mesh);
+        RefreshMeshVisual(ecosystem, stage, mesh);
     };
 
     //@ts-ignore
-    window.OnHeightfieldRebuild = async function (data: Uint8Array, module: string) {
-        const unpackedData = decode(new Uint8Array(data));
+    window.OnNavCountorsBuild = async function (rawdata: Uint8Array, module: string) {
+        const data = decode(new Uint8Array(rawdata)) as any;
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
+        const mat = getMaterialNameForStage("Contours");
+        const mesh = getMeshNameForStage("Contours");
 
-        EnsureMaterialPresent(ecosystem, HeightVisMaterialName, new Color4(0, 0.9, 0, 0.02));
-        RebuildVisMesh(unpackedData, ecosystem, ecosystem.dynamicProperties[HeightVisMaterialName], HeightVisMeshName);
+        EnsureMaterialPresent(ecosystem, mat, new Color4(1, 1, 1, 0.05));
+
+        if (ecosystem.dynamicProperties[mesh]) {
+            ecosystem.dynamicProperties[mesh].dispose();
+        }
+        let lines = [];
+        for (let i = 0; i < data.segments.length; i += 6) {
+            lines.push(new Vector3(data.segments[i], data.segments[i + 1], data.segments[i + 2]));
+            lines.push(new Vector3(data.segments[i + 3], data.segments[i + 4], data.segments[i + 5]));
+        }
+        ecosystem.dynamicProperties[mesh] = MeshBuilder.CreateLines("lines", { points: lines }, ecosystem.scene);
+
+        RefreshMeshVisual(ecosystem, "Contours", mesh);
     };
 }
+
+function RefreshMeshVisual(ecosystem: GameEcosystem, name: string, meshName: string) {
+    if (!ecosystem.dynamicProperties[meshName]) {
+        return;
+    }
+
+    const boolIndicator = "___" + name + "___";
+    if (ecosystem.dynamicProperties[boolIndicator]) {
+        ecosystem.dynamicProperties[meshName].isVisible = true;
+    } else {
+        ecosystem.dynamicProperties[meshName].isVisible = false;
+    }
+}
+
 function RebuildVisMesh(unpackedData: unknown, ecosystem: GameEcosystem, mat: Material, name: string) {
     const extractData = unpackedData as ExtractedMeshData;
     const mesh = ExtractedMeshDataToMesh(extractData, ecosystem.scene);

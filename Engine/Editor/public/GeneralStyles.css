@@ -104,8 +104,10 @@ button:hover {
     height: 100%;
 }
 
+
 .dropdown {
     display: inline;
+    position: relative; /* added for correct positioning */
 }
 
 .dropdown button {
@@ -115,14 +117,20 @@ button:hover {
     outline: none;
 }
 
-.dropdown-content {
+.dropdown-content,
+.sub-menu {  /* added .sub-menu selector for the nested dropdowns */
     display: none;
     position: absolute;
-    min-width: 160px;
+    background-color: #f9f9f9; /* default background color for dropdown, you can adjust */
+    min-width: 180px;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2); /* shadow for the dropdown for a lifted appearance */
     z-index: 1;
+    list-style-type: none; /* remove bullet points from the list */
+    padding: 0; /* remove padding around the list */
 }
 
-.dropdown-content p {
+.dropdown-content li,
+.sub-menu li {  /* added .sub-menu li selector for nested dropdown items */
     color: var(--highlight);
     background-color: var(--background-second);
     padding: 12px 16px;
@@ -131,7 +139,15 @@ button:hover {
     margin: 0px;
 }
 
-.dropdown-content p:hover {
+.dropdown-content a,
+.sub-menu a {  /* added for anchors in dropdown to have default styles */
+    color: black; /* default color, you can adjust */
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content li:hover,
+.sub-menu li:hover {  /* added .sub-menu li:hover selector for hover effect on nested dropdown items */
     color: white;
     cursor: pointer;
     background-color: var(--background-third);
@@ -139,4 +155,11 @@ button:hover {
 
 .dropdown:hover .dropdown-content {
     display: block;
+}
+
+/* Added styles for nested dropdown behavior */
+.dropdown-content li:hover > .sub-menu {
+    display: block;
+    left: 100%;  /* position the nested dropdown to the right of the parent dropdown */
+    top: 0;
 }

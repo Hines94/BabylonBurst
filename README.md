@@ -16,15 +16,8 @@ Setup:
 - Clone this directory (git clone https://github.com/Hines94/BabylonBoost.git) into WSL
 - run EngineSetup.sh
 - create .env at the same level as this README
-    Example:
-        DEBUG_MODE=Light
-        USE_MEMORY_FRONTEND=TRUE
-        AWS_ID=YourAwsId
-        AWS_KEY=YourAwsKey
-        AWS_BUCKET_NAME=YourBucketName
-        AWS_BUCKET_REGION=ap-southeast-2
-        #Cut out the physics engine (bullet)?
-        NO_PHYSICS=false
+    - See .env.sample for how to structure
+    - Required: AWS_ID, AWS_KEY, AWS_BUCKET_NAME, AWS_BUCKET_REGION, DEBUG_MODE
 VsCode:
 - Install vscode extension
 - Install c/c++ for WSL & extension pack

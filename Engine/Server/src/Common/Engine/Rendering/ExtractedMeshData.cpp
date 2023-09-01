@@ -35,7 +35,6 @@ void ExtractedModelData::ensureTrianglesUpwards() {
 
         if (normal.y < 0) {
             tri.flipTriangleOrientation();
-            std::cout << "Flipped tri" << std::endl;
         }
     }
 }

@@ -28,6 +28,29 @@ msgpack::sbuffer ExtractedMeshSerializer::GetBufferForExtractedMesh(const Extrac
     return buffer;
 }
 
+msgpack::sbuffer ExtractedMeshSerializer::GetBufferForLinesVector(std::vector<LineSegment>& segments) {
+    msgpack::sbuffer buffer;
+    msgpack::packer<msgpack::sbuffer> pk(&buffer);
+
+    pk.pack_map(1); // There is one main key: "segments"
+
+    // Pack the segments
+    pk.pack_str(8); // The length of the string "segments"
+    pk.pack_str_body("segments", 8);
+    pk.pack_array(segments.size() * 6); // Each segment has 6 floats (startX, startY, startZ, endX, endY, endZ)
+
+    for (const LineSegment& segment : segments) {
+        pk.pack(segment.startX);
+        pk.pack(segment.startY);
+        pk.pack(segment.startZ);
+        pk.pack(segment.endX);
+        pk.pack(segment.endY);
+        pk.pack(segment.endZ);
+    }
+
+    return buffer;
+}
+
 ExtractedModelData ExtractedMeshSerializer::GetDataFromMsgpackData(const msgpack::object_handle& oh) {
     msgpack::object obj = oh.get();
     ExtractedModelData extractedData;

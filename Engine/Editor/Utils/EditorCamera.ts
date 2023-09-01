@@ -28,7 +28,11 @@ export class EditorCamera {
             EntVector4.EulerToQuaternion(this.sphereMesh.rotation),
             ecosystem
         );
-        const moveSens = 10;
+        var moveSens = 10;
+        if(ecosystem.InputValues.shift.isActive) {
+            moveSens = moveSens*2;
+        }
+        
         const forDes = ecosystem.InputValues.forward * ecosystem.deltaTime * moveSens;
         const sideDes = ecosystem.InputValues.side * ecosystem.deltaTime * moveSens;
         const upDes = ecosystem.InputValues.up * ecosystem.deltaTime * moveSens;

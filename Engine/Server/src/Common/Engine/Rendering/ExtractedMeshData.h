@@ -22,3 +22,8 @@ struct ExtractedModelData {
     //Useful for navmesh - Can get wrong orientation from heightfield (no problem)
     void ensureTrianglesUpwards();
 };
+
+struct LineSegment {
+    float startX, startY, startZ;
+    float endX, endY, endZ;
+};
