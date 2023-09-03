@@ -52,12 +52,6 @@ echo -e ${MAGENTA}"--- Code Formatting Complete ---"${RESET}
 
 #Auto add any changed files
 if arg_exists "-gitadd" "$@"; then
-    cd ${base_path}/Engine/Server
-    git diff --name-only --diff-filter=AM | xargs git add
-    cd ${base_path}/Engine/Client
-    git diff --name-only --diff-filter=AM src/**/*.ts | xargs git add
+    git diff --name-only --diff-filter=AM | xargs -I {} git add "${base_path}/{}"
 
-    cd ${base_path}/Source
-    git diff --name-only --diff-filter=AM ./CppSource | xargs git add
-    git diff --name-only --diff-filter=AM TsSource/**/*.ts | xargs git add
 fi

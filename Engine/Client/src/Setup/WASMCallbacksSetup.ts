@@ -4,17 +4,17 @@ import { GetWasmModule } from "@engine/WASM/ServerWASMModule";
 
 export function setupGeneralWASMCallbacks() {
     //@ts-ignore
-    window.RequestVisualError = function (message: string, duration:number ,module: string) {
+    window.RequestVisualError = function (message: string, duration: number, module: string) {
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
 
-        ShowToastNotification(message,duration,ecosystem.doc,"Red");
-    }
+        ShowToastNotification(message, duration, ecosystem.doc, "Red");
+    };
     //@ts-ignore
-    window.RequestVisualInfo = function (message: string, duration:number ,module: string) {
+    window.RequestVisualInfo = function (message: string, duration: number, module: string) {
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
 
-        ShowToastNotification(message,duration,ecosystem.doc);
-    }
+        ShowToastNotification(message, duration, ecosystem.doc);
+    };
 }

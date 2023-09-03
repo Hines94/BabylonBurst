@@ -263,6 +263,18 @@ public:
     }
 
     template <typename T>
+    static T* GetOrCreateSingleton() {
+        const T* existingSingleton = GetSingleton<T>();
+        if (existingSingleton) {
+            return existingSingleton;
+        }
+        const auto newEnt = AddEntity();
+        const T* newComp = new T();
+        AddSetComponentToEntity(newEnt, newComp);
+        return newComp;
+    }
+
+    template <typename T>
     static T* GetSingleton() {
         const std::type_index typeC = typeid(T);
         const auto query = GetEntitiesWithData({typeC}, {});

@@ -2,15 +2,16 @@
 #include "Engine/Entities/EntitySeriesTaskRunners.hpp"
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Entities/EntityTaskRunners.hpp"
+#include "Engine/Navigation/LoadedNavmeshData.h"
 #include "Engine/Navigation/LoadedNavmeshSurface.h"
+#include "Engine/Navigation/NavigatableEntitySurface.h"
 #include "Engine/Navigation/NavmeshBuildSetup.h"
 #include "Engine/Rendering/ModelLoader.h"
-#include "Engine/Navigation/NavigatableEntitySurface.h"
+#include "Engine/Utils/VisualMessageShower.h"
 #include "NavmeshBuildSystemDebugMethods.cpp"
-#include <recastnavigation/Recast.h>
 #include <recastnavigation/DetourNavMesh.h>
 #include <recastnavigation/DetourNavMeshBuilder.h>
-#include "Engine/Utils/VisualMessageShower.h"
+#include <recastnavigation/Recast.h>
 
 static NavmeshBuildSystem instance;
 
@@ -238,45 +239,46 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
 
     //Convert high poly mesh into actual navmesh data
-    // unsigned char* navData = 0;
-	// int navDataSize = 0;
-	// dtNavMeshCreateParams params;
-    // memset(&params, 0, sizeof(params));
-    // params.verts = pmesh.verts;
-    // params.vertCount = pmesh.nverts;
-    // params.polys = pmesh.polys;
-    // params.polyAreas = pmesh.areas;
-    // params.polyFlags = pmesh.flags;
-    // params.polyCount = pmesh.npolys;
-    // params.nvp = pmesh.nvp;
-    // params.detailMeshes = dmesh.meshes;
-    // params.detailVerts = dmesh.verts;
-    // params.detailVertsCount = dmesh.nverts;
-    // params.detailTris = dmesh.tris;
-    // params.detailTriCount = dmesh.ntris;
-    // params.offMeshConVerts = m_geom->getOffMeshConnectionVerts();
-    // params.offMeshConRad = m_geom->getOffMeshConnectionRads();
-    // params.offMeshConDir = m_geom->getOffMeshConnectionDirs();
-    // params.offMeshConAreas = m_geom->getOffMeshConnectionAreas();
-    // params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
-    // params.offMeshConUserID = m_geom->getOffMeshConnectionId();
-    // params.offMeshConCount = m_geom->getOffMeshConnectionCount();
-    // params.walkableHeight = m_agentHeight;
-    // params.walkableRadius = config.walkableRadius;
-    // params.walkableClimb = config.walkableClimb;
-    // rcVcopy(params.bmin, pmesh.bmin);
-    // rcVcopy(params.bmax, pmesh.bmax);
-    // params.cs = config.cs;
-    // params.ch = config.ch;
-    // params.buildBvTree = true;
-    
-    // if (!dtCreateNavMeshData(&params, &navData, &navDataSize)) {
-    //     std:: cerr << "Could not build Detour navmesh" << std::endl;
-    // }
+    unsigned char* navData = 0;
+    int navDataSize = 0;
+    dtNavMeshCreateParams params;
+    memset(&params, 0, sizeof(params));
+    params.verts = pmesh.verts;
+    params.vertCount = pmesh.nverts;
+    params.polys = pmesh.polys;
+    params.polyAreas = pmesh.areas;
+    params.polyFlags = pmesh.flags;
+    params.polyCount = pmesh.npolys;
+    params.nvp = pmesh.nvp;
+    params.detailMeshes = dmesh.meshes;
+    params.detailVerts = dmesh.verts;
+    params.detailVertsCount = dmesh.nverts;
+    params.detailTris = dmesh.tris;
+    params.detailTriCount = dmesh.ntris;
+    params.offMeshConVerts = m_geom->getOffMeshConnectionVerts();
+    params.offMeshConRad = m_geom->getOffMeshConnectionRads();
+    params.offMeshConDir = m_geom->getOffMeshConnectionDirs();
+    params.offMeshConAreas = m_geom->getOffMeshConnectionAreas();
+    params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
+    params.offMeshConUserID = m_geom->getOffMeshConnectionId();
+    params.offMeshConCount = m_geom->getOffMeshConnectionCount();
+    params.walkableHeight = m_agentHeight;
+    params.walkableRadius = config.walkableRadius;
+    params.walkableClimb = config.walkableClimb;
+    rcVcopy(params.bmin, pmesh.bmin);
+    rcVcopy(params.bmax, pmesh.bmax);
+    params.cs = config.cs;
+    params.ch = config.ch;
+    params.buildBvTree = true;
 
-    // buildSettings->BuiltNavmeshData = std::string(reinterpret_cast<char*>(navData),navDataSize);
+    if (!dtCreateNavMeshData(&params, &navData, &navDataSize)) {
+        std::cerr << "Could not build Detour navmesh" << std::endl;
+    }
 
-    if(!buildSettings) {
+    LoadedNavmeshData* load = EntityComponentSystem::GetOrCreateSingleton<LoadedNavmeshData>();
+    load->navmeshData = std::string(reinterpret_cast<char*>(navData), navDataSize);
+
+    if (!buildSettings) {
         VisualMessageShower::ShowVisibleInfoMessageIfEditor("Rebuilt navmesh with default NavmeshBuildSetup. Please add comp to entity to change settings.");
     } else {
         VisualMessageShower::ShowVisibleInfoMessageIfEditor("Rebuilt navmesh with custom NavmeshBuildSetup");

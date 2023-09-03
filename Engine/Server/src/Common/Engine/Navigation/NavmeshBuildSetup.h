@@ -33,11 +33,6 @@ struct NavmeshBuildSetup : public Component {
     //Any regions smaller than this will be merged if possible
     float MergeRegionArea = 50;
 
-    //CPROPERTY(SAVE, NOTYPINGS) TODO: Save this out for use later
-    std::string BuiltNavmeshData;
-    // CPROPERTY(SAVE, NOTYPINGS)
-    // std::vector<EntityData*> BuiltNavmeshEntities;
-
     bool performRebuild = false;
 
     void onComponentAdded(EntityData* entData);
