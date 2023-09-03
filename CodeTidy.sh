@@ -1,3 +1,15 @@
+
+arg_exists() {
+    target_arg="$1"
+    shift
+    for arg in "$@"; do
+        if [ "$arg" = "$target_arg" ]; then
+            return 0  # True in shell terms, meaning the argument exists
+        fi
+    done
+    return 1  # False in shell terms, meaning the argument does not exist
+}
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -36,3 +48,16 @@ else
 fi
 
 echo -e ${MAGENTA}"--- Code Formatting Complete ---"${RESET}
+
+
+#Auto add any changed files
+if arg_exists "-gitadd" "$@"; then
+    cd ${base_path}/Engine/Server
+    git diff --name-only --diff-filter=AM | xargs git add
+    cd ${base_path}/Engine/Client
+    git diff --name-only --diff-filter=AM src/**/*.ts | xargs git add
+
+    cd ${base_path}/Source
+    git diff --name-only --diff-filter=AM ./CppSource | xargs git add
+    git diff --name-only --diff-filter=AM TsSource/**/*.ts | xargs git add
+fi

@@ -6,7 +6,7 @@ export function FindMacroComment(parentNode:Parser.SyntaxNode, itemChildId:numbe
     var macros : Parser.SyntaxNode[] = [];
     var comment : Parser.SyntaxNode | null = null;
     var backTrack = 1;
-    while(!bHitProperty && backTrack < 3) {
+    while(!bHitProperty && backTrack < 4) {
         // Check if the previous sibling is a macro invocation
         const prevSibling = parentNode.children[itemChildId - backTrack];
         if(!prevSibling) {break;}
@@ -19,7 +19,15 @@ export function FindMacroComment(parentNode:Parser.SyntaxNode, itemChildId:numbe
             }
         });
         if(foundMacro) {
-            //Do nothing else!
+            //Comment could be bundled with the macro (for some odd reason seems to happen)
+            if (prevSibling.children) {
+                for (const child of prevSibling.children) {
+                    if (child.type === 'comment') {
+                        comment = child;
+                        break;
+                    }
+                }
+            }
         } else if (prevSibling && prevSibling.type === 'comment') {
             comment = prevSibling;
         } else {

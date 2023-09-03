@@ -18,7 +18,7 @@ export type navStageChangeDat = {
 export const onNavmeshStageChange = new Observable<navStageChangeDat>();
 
 export function RefreshNavmeshVisualisationStage(ecosystem: GameEcosystem, stage: string) {
-    if(stage == "NavRegions") {
+    if (stage == "NavRegions") {
         for (var r = 0; r < 200; r++) {
             const meshStage = stage + "_" + r;
             RefreshMeshVisual(ecosystem, stage, getMeshNameForStage(meshStage));

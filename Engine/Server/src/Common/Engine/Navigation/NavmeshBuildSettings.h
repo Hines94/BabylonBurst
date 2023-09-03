@@ -8,21 +8,27 @@ struct NavmeshBuildSettings : public Component {
     CPROPERTY(NET, SAVE)
     //Smaller is more granular but takes longer
     float CellSize = 0.2;
+
     CPROPERTY(NET, SAVE)
     //Smaller is more granular but takes longer
     float CellHeight = 0.1;
+
     CPROPERTY(NET, SAVE)
     //Max degrees of walkable slope
     float WalkableSlopeHeight = 45;
+
     CPROPERTY(NET, SAVE)
     //Max height (m) that is considered climbale
     float WalkableClimb = 2;
+
     CPROPERTY(NET, SAVE)
     //Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable
     float WalkableHeight = 2;
+
     CPROPERTY(NET, SAVE)
     //Minimum size in cells allowed to form an island region
     float MinRegionArea = 8;
+
     CPROPERTY(NET, SAVE)
     //Any regions smaller than this will be merged if possible
     float MergeRegionArea = 50;
