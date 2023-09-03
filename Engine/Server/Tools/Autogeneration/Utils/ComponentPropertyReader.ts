@@ -15,7 +15,8 @@ export enum CompPropTags {
     SAVE,
     NET,
     NOTYPINGS,
-    EDREAD
+    EDREAD,
+    NOEQUALITY
 };
 
 /** Different types of custom tag that componments themselves may have */

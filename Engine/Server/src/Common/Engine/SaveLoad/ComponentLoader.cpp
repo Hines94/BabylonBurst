@@ -13,3 +13,7 @@ std::type_index ComponentLoader::GetComponentTypeFromName(const std::string& Nam
     }
     return it->second;
 }
+
+std::type_index ComponentLoader::GetTypeFromComponent(Component* comp) {
+    return typeid(*comp);
+}

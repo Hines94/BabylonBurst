@@ -12,11 +12,11 @@ struct EntVector4 {
     EntVector4(float x = 0.0f, float y = 0.0f, float z = 0.0f, float w = 0.0f)
         : X(x), Y(y), Z(z), W(w) {}
 
-    bool operator==(const EntVector4& other) {
+    bool operator==(const EntVector4& other) const {
         return X == other.X && Y == other.Y && Z == other.Z && W == other.W;
     }
 
-    bool operator!=(const EntVector4& other) {
+    bool operator!=(const EntVector4& other) const {
         return !(*this == other);
     }
 

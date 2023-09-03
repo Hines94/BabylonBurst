@@ -20,11 +20,11 @@ struct EntVector3 {
     }
 #endif
 
-    bool operator==(const EntVector3& other) {
+    bool operator==(const EntVector3& other) const {
         return X == other.X && Y == other.Y && Z == other.Z;
     }
 
-    bool operator!=(const EntVector3& other) {
+    bool operator!=(const EntVector3& other) const {
         return !(*this == other);
     }
 

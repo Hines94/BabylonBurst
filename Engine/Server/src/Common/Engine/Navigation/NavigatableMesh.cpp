@@ -6,3 +6,9 @@ void NavigatableMesh::onComponentRemoved(EntityData* entData) {
         EntityComponentSystem::DelayedRemoveComponent<BuiltNavigatableMesh>(entData);
     }
 }
+
+void NavigatableMesh::onComponentAdded(EntityData* entData) {
+    if (EntityComponentSystem::HasComponent<BuiltNavigatableMesh>(entData)) {
+        EntityComponentSystem::DelayedRemoveComponent<BuiltNavigatableMesh>(entData);
+    }
+}

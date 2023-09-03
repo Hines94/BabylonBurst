@@ -25,4 +25,5 @@ public:
     //Final stage is just "NavMesh"
     Observable<ExtractedModelData, std::string> onNavmeshStageRebuild;
     Observable<std::vector<LineSegment>> onNavmeshContoursRebuild;
+    Observable<std::vector<ExtractedModelData>> onNavmeshRegionsRebuild;
 };

@@ -14,5 +14,7 @@ struct NavigatableMesh : public Component {
 
     void onComponentRemoved(EntityData* entData);
 
+    void onComponentAdded(EntityData* entData);
+
     DECLARE_COMPONENT_METHODS(NavigatableMesh)
 };

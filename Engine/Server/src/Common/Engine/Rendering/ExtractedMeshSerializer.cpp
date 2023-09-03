@@ -28,6 +28,39 @@ msgpack::sbuffer ExtractedMeshSerializer::GetBufferForExtractedMesh(const Extrac
     return buffer;
 }
 
+msgpack::sbuffer ExtractedMeshSerializer::GetBufferForMeshVector(std::vector<ExtractedModelData>& data) {
+    msgpack::sbuffer buffer;
+    msgpack::packer<msgpack::sbuffer> pk(&buffer);
+
+    pk.pack_array(data.size()); // Number of extracted models in the list.
+
+    for (const ExtractedModelData& extractedData : data) {
+        pk.pack_map(2); // There are two main keys: "vertices" and "triangles"
+
+        // Pack the vertices
+        pk.pack_str(8); // The length of the string "vertices"
+        pk.pack_str_body("vertices", 8);
+        pk.pack_array(extractedData.vertices.size() * 3); // Each vertex has 3 floats
+        for (const Vertex& v : extractedData.vertices) {
+            pk.pack(v.x);
+            pk.pack(v.y);
+            pk.pack(v.z);
+        }
+
+        // Pack the triangles
+        pk.pack_str(9); // The length of the string "triangles"
+        pk.pack_str_body("triangles", 9);
+        pk.pack_array(extractedData.triangles.size() * 3); // Each triangle has 3 uint32_t
+        for (const Triangle& t : extractedData.triangles) {
+            pk.pack(t.v1);
+            pk.pack(t.v2);
+            pk.pack(t.v3);
+        }
+    }
+
+    return buffer;
+}
+
 msgpack::sbuffer ExtractedMeshSerializer::GetBufferForLinesVector(std::vector<LineSegment>& segments) {
     msgpack::sbuffer buffer;
     msgpack::packer<msgpack::sbuffer> pk(&buffer);

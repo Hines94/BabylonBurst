@@ -90,6 +90,7 @@
         "set": "cpp",
         "regex": "cpp",
         "source_location": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "scoped_allocator": "cpp"
     }
 }

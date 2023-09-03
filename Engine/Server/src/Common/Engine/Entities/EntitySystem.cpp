@@ -370,6 +370,9 @@ void EntityComponentSystem::AddSetComponentToEntity(EntityData* entityData, Comp
         //Add to dirty list
         ActiveEntitySystem->dirtyBitsetItems.insert(entityData);
     } else {
+        //If comp exists then perform a notify
+        const auto oldComp = EntityComponentSystem::GetComponent(entityData, compType);
+        oldComp->onComponentOverwritten(entityData, comp);
         //Delete old component
         delete GetComponent(entityData, compType);
     }

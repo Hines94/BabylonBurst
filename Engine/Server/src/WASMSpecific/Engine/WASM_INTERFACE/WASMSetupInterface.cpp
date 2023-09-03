@@ -32,6 +32,11 @@ void NavmeshContoursRebuild(std::vector<LineSegment> contours) {
     emscripten::val::global("OnNavCountorsBuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
 }
 
+void NavmeshRegionsRebuild(std::vector<ExtractedModelData> regions) {
+    const auto buffer = ExtractedMeshSerializer::GetBufferForMeshVector(regions);
+    emscripten::val::global("OnNavRegionsBuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
+}
+
 void SetupWASMModule(std::string uniqueModuleId) {
     WASMSetup::WASMModuleIdentifier = uniqueModuleId;
     //Setup prefabs - Needs to be after get uuid so we can call async functions in AWS interface
@@ -44,6 +49,7 @@ void SetupWASMModule(std::string uniqueModuleId) {
     //TODO: This should be only if we are in some sort of debug mode or Editor?
     NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.addListener(NavmeshRebuild);
     NavmeshBuildSystem::getInstance().onNavmeshContoursRebuild.addListener(NavmeshContoursRebuild);
+    NavmeshBuildSystem::getInstance().onNavmeshRegionsRebuild.addListener(NavmeshRegionsRebuild);
 }
 
 void WASMSetup::callWASMSetupComplete() {

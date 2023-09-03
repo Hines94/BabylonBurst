@@ -31,6 +31,10 @@ public:
 
     virtual void onComponentRemoved(EntityData* entData){};
 
+    virtual void onComponentOverwritten(EntityData* entData, Component* newComp){};
+
+    virtual bool isEqual(const Component* other) const = 0;
+
     /// @brief Note: No vars returned will not be networked or saved
     /// @param details Packer details so we can provide the correct count/data
     /// @param childComponent Optional child comp to test against. If nullptr will check against base (new instance)
@@ -50,7 +54,9 @@ public:
 #define DECLARE_COMPONENT_METHODS(TypeName)                                                                                                         \
     void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData);          \
     void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData); \
-    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent = nullptr);
+    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent = nullptr);                                         \
+    bool operator==(const TypeName& other) const;                                                                                                   \
+    bool isEqual(const Component* other) const;
 
 //Custom property flags to be used with CPROPERTY
 namespace PropertyFlags {
@@ -63,6 +69,8 @@ namespace PropertyFlags {
         NOTYPINGS = 1 << 2,
         //Read only in Editor
         EDREAD = 1 << 3,
+        //Not counted when checking if components are equal
+        NOEQUALITY = 1 << 4
     };
 }
 

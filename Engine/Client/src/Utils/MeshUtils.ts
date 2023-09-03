@@ -1,4 +1,14 @@
-import { Mesh, PBRMaterial, Scene, StandardMaterial, Vector3, VertexBuffer, VertexData } from "@babylonjs/core";
+import {
+    Color3,
+    Color4,
+    Mesh,
+    PBRMaterial,
+    Scene,
+    StandardMaterial,
+    Vector3,
+    VertexBuffer,
+    VertexData,
+} from "@babylonjs/core";
 import { EntVector3 } from "../EntitySystem/CoreComponents";
 import { defaultLayerMask } from "./LayerMasks";
 
@@ -117,4 +127,14 @@ export function ExtractedMeshDataToMeshUpNormals(data: ExtractedMeshData, scene:
     vertexData.applyToMesh(customMesh);
 
     return customMesh;
+}
+
+// Using BabylonJS Color3 for RGB
+export function getRandomColor3() {
+    return new Color3(Math.random(), Math.random(), Math.random());
+}
+
+// Using BabylonJS Color4 for RGBA
+export function GetRandomColor4(alpha: number) {
+    return new Color4(Math.random(), Math.random(), Math.random(), alpha);
 }

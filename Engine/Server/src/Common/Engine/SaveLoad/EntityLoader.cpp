@@ -59,6 +59,10 @@ void AddComponentsToEntities(EntityTemplate* data, const std::map<Entity, Entity
         for (auto& comp : ent.second) {
             Component* newComp = data->GetComponentFromTemplatedEntity(ent.first, std::stoull(comp.first), NewEntities);
             if (newComp != nullptr) {
+                const auto oldComp = EntityComponentSystem::GetComponent(newData, ComponentLoader::GetTypeFromComponent(newComp));
+                if (newComp->isEqual(oldComp)) {
+                    continue;
+                }
                 EntityComponentSystem::AddSetComponentToEntity(newData, newComp, true, false);
                 addedComponents.push_back(std::pair(newComp, newData));
             }

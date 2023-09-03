@@ -1,9 +1,10 @@
 import { Color4, Material, MeshBuilder, Observable, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { ShowToastNotification } from "@engine/HTML/HTMLToastItem";
 import { SetSimpleMaterialColor } from "@engine/Materials/AsyncSimpleImageMaterial";
 import { GetSimpleImageMaterial } from "@engine/Materials/SimpleImageMaterial";
 import { GetEcosystemForModule } from "@engine/RunnableGameEcosystem";
-import { ExtractedMeshData, ExtractedMeshDataToMesh } from "@engine/Utils/MeshUtils";
+import { ExtractedMeshData, ExtractedMeshDataToMesh, GetRandomColor4 } from "@engine/Utils/MeshUtils";
 import { GetWasmModule } from "@engine/WASM/ServerWASMModule";
 import { decode } from "@msgpack/msgpack";
 
@@ -13,6 +14,7 @@ export type navStageChangeDat = {
     ecosystem: GameEcosystem;
     stage: string;
 };
+
 export const onNavmeshStageChange = new Observable<navStageChangeDat>();
 
 export function RefreshNavmeshVisualisationStage(ecosystem: GameEcosystem, stage: string) {
@@ -33,6 +35,9 @@ function getMaterialColorForStage(stage: string): Color4 {
     if (stage == "Nav Heightfield") {
         return new Color4(0.1, 0.9, 0.1, 0.02);
     }
+    if (stage == "LowPoly NavMesh") {
+        return new Color4(0.7, 0.9, 0.1, 0.02);
+    }
     return new Color4(0.9, 0.8, 0.3, 0.02);
 }
 
@@ -47,12 +52,51 @@ export function SetupNavmeshVisualiser() {
         const ecosystem = GetEcosystemForModule(wasmmodule);
         onNavmeshStageChange.notifyObservers({ ecosystem: ecosystem, stage: stage });
 
+        //console.log(unpackedData)
+
         var mat = getMaterialNameForStage(stage);
         var mesh = getMeshNameForStage(stage);
 
         EnsureMaterialPresent(ecosystem, mat, getMaterialColorForStage(stage));
         RebuildVisMesh(unpackedData, ecosystem, ecosystem.dynamicProperties[mat], mesh);
         RefreshMeshVisual(ecosystem, stage, mesh);
+    };
+
+    //@ts-ignore
+    window.OnNavRegionsBuild = async function (data: Uint8Array, module: string) {
+        const stage = "NavRegions";
+        const unpackedData = decode(new Uint8Array(data)) as any;
+        const wasmmodule = GetWasmModule(module);
+        const ecosystem = GetEcosystemForModule(wasmmodule);
+        onNavmeshStageChange.notifyObservers({ ecosystem: ecosystem, stage: stage });
+
+        for (var r = 0; r < 200; r++) {
+            const meshStage = stage + "_" + r;
+            var mesh = getMeshNameForStage(meshStage);
+            if (ecosystem.dynamicProperties[mesh]) {
+                ecosystem.dynamicProperties[mesh].dispose();
+                delete ecosystem.dynamicProperties[mesh];
+            }
+        }
+
+        for (var r = 0; r < unpackedData.length; r++) {
+            if (r > 200) {
+                ShowToastNotification(
+                    "Too many navmesh regions to view! " + unpackedData.length,
+                    6000,
+                    ecosystem.doc,
+                    "Red"
+                );
+                break;
+            }
+            const meshStage = stage + "_" + r;
+            var mat = getMaterialNameForStage(meshStage);
+            var mesh = getMeshNameForStage(meshStage);
+
+            EnsureMaterialPresent(ecosystem, mat, GetRandomColor4(0.02));
+            RebuildVisMesh(unpackedData[r], ecosystem, ecosystem.dynamicProperties[mat], mesh);
+            RefreshMeshVisual(ecosystem, stage, mesh);
+        }
     };
 
     //@ts-ignore
@@ -101,7 +145,7 @@ function RebuildVisMesh(unpackedData: unknown, ecosystem: GameEcosystem, mat: Ma
     }
     ecosystem.dynamicProperties[name] = mesh;
 
-    console.log(name + "rebuilt. Number verts: " + extractData.vertices.length);
+    //console.log(name + "rebuilt. Number verts: " + extractData.vertices.length);
 
     return mesh;
 }
