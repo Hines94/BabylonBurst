@@ -12,9 +12,5 @@ struct ControllableEntity : public Component {
 
     //All Rotators under the control of this Entity
 
-    //Inherited methods
-    void onComponentRemoved(EntityData* entData) {
-    }
-
     DECLARE_COMPONENT_METHODS(ControllableEntity)
 };

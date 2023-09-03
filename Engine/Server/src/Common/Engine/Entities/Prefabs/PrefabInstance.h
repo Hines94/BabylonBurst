@@ -6,9 +6,9 @@ struct PrefabInstance : public Component {
 
     DECLARE_COMPONENT_METHODS(PrefabInstance)
 
-    void onComponentAdded(EntityData* entData);
+    void onComponentAdded(EntityData* entData) override;
 
-    void onComponentRemoved(EntityData* entData);
+    void onComponentRemoved(EntityData* entData) override;
 
     CPROPERTY(NET, SAVE)
     std::string PrefabUUID;

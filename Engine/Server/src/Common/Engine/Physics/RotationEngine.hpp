@@ -17,9 +17,6 @@ struct RotationEngine : public Component {
 
     DECLARE_COMPONENT_METHODS(RotationEngine)
 
-    void onComponentRemoved(EntityData* entData) {
-    }
-
     //Take a normalized movement request (yaw pitch -1 to 1) and process it into the item
     void processNormalizedMovementRequest(EntityData* mover, float clampedYaw, float clampedPitch, float clampedRoll, double deltaTime) {
         if (!Enabled) {

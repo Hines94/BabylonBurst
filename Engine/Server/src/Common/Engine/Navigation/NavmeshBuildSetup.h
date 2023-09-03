@@ -35,9 +35,9 @@ struct NavmeshBuildSetup : public Component {
 
     bool performRebuild = false;
 
-    void onComponentAdded(EntityData* entData);
+    void onComponentAdded(EntityData* entData) override;
 
-    void onComponentOverwritten(EntityData* entData, Component* newComp);
+    void onComponentOverwritten(EntityData* entData, Component* newComp) override;
 
     static bool NavBuildSettingsEqual(NavmeshBuildSetup* settingsA, NavmeshBuildSetup* settingsB);
 };

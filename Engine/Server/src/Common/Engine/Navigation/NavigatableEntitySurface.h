@@ -12,9 +12,9 @@ struct NavigatableEntitySurface : public Component {
 
     ExtractedModelData* extractedModelData;
 
-    void onComponentRemoved(EntityData* entData);
+    void onComponentRemoved(EntityData* entData) override;
 
-    void onComponentAdded(EntityData* entData);
+    void onComponentAdded(EntityData* entData) override;
 
     DECLARE_COMPONENT_METHODS(NavigatableEntitySurface)
 };

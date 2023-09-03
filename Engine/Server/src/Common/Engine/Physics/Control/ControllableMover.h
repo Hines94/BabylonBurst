@@ -12,9 +12,6 @@ struct ControllableMover : public Component {
     CPROPERTY(NET, SAVE)
     std::vector<EntityData*> ControllableForceAppliers;
 
-    void onComponentRemoved(EntityData* entData) {
-    }
-
     static void UpdateMovementControllers(bool firstTime, double deltaTime);
 
     DECLARE_COMPONENT_METHODS(ControllableMover)

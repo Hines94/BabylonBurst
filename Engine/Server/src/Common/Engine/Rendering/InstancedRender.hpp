@@ -12,8 +12,5 @@ struct InstancedRender : public Component {
     std::string MeshName;
     uint LayerMask;
 
-    void onComponentRemoved(EntityData* entData) {
-    }
-
     DECLARE_COMPONENT_METHODS(InstancedRender)
 };

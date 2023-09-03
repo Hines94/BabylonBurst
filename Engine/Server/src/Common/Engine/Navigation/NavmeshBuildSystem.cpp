@@ -255,14 +255,14 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     params.detailVertsCount = dmesh.nverts;
     params.detailTris = dmesh.tris;
     params.detailTriCount = dmesh.ntris;
-    params.offMeshConVerts = m_geom->getOffMeshConnectionVerts();
-    params.offMeshConRad = m_geom->getOffMeshConnectionRads();
-    params.offMeshConDir = m_geom->getOffMeshConnectionDirs();
-    params.offMeshConAreas = m_geom->getOffMeshConnectionAreas();
-    params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
-    params.offMeshConUserID = m_geom->getOffMeshConnectionId();
-    params.offMeshConCount = m_geom->getOffMeshConnectionCount();
-    params.walkableHeight = m_agentHeight;
+    // params.offMeshConVerts = m_geom->getOffMeshConnectionVerts(); TODO: Revisit these https://github.com/recastnavigation/recastnavigation/blob/main/RecastDemo/Source/Sample_SoloMesh.cpp
+    // params.offMeshConRad = m_geom->getOffMeshConnectionRads();
+    // params.offMeshConDir = m_geom->getOffMeshConnectionDirs();
+    // params.offMeshConAreas = m_geom->getOffMeshConnectionAreas();
+    // params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
+    // params.offMeshConUserID = m_geom->getOffMeshConnectionId();
+    // params.offMeshConCount = m_geom->getOffMeshConnectionCount();
+    params.walkableHeight = config.walkableHeight;
     params.walkableRadius = config.walkableRadius;
     params.walkableClimb = config.walkableClimb;
     rcVcopy(params.bmin, pmesh.bmin);
@@ -275,8 +275,12 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         std::cerr << "Could not build Detour navmesh" << std::endl;
     }
 
+    //Set data saved for later
     LoadedNavmeshData* load = EntityComponentSystem::GetOrCreateSingleton<LoadedNavmeshData>();
     load->navmeshData = std::string(reinterpret_cast<char*>(navData), navDataSize);
+    load->onComponentAdded(nullptr); //This is a bit sneaky but we want to init the loadednavmeshdata with out set string
+
+    //TODO: Generate navmesh useable object
 
     if (!buildSettings) {
         VisualMessageShower::ShowVisibleInfoMessageIfEditor("Rebuilt navmesh with default NavmeshBuildSetup. Please add comp to entity to change settings.");

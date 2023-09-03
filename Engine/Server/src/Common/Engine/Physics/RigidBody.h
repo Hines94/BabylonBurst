@@ -25,9 +25,9 @@ struct RigidBody : public Component {
 
     void ResetPositionToEntTransform(EntityData* entData);
 
-    void onComponentAdded(EntityData* entData);
+    void onComponentAdded(EntityData* entData) override;
 
-    void onComponentRemoved(EntityData* entData);
+    void onComponentRemoved(EntityData* entData) override;
 
     //NOTE: After step forces are auto reset, so no need to use this
     void ResetRigidBody();

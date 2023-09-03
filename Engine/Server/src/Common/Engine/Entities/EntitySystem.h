@@ -51,12 +51,12 @@ public:
 };
 
 //Base methods for a component. Allows networking, saving and loading of data
-#define DECLARE_COMPONENT_METHODS(TypeName)                                                                                                         \
-    void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData);          \
-    void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData); \
-    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent = nullptr);                                         \
-    bool operator==(const TypeName& other) const;                                                                                                   \
-    bool isEqual(const Component* other) const;
+#define DECLARE_COMPONENT_METHODS(TypeName)                                                                                                                  \
+    void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) override;          \
+    void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) override; \
+    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent = nullptr) override;                                         \
+    bool operator==(const TypeName& other) const;                                                                                                            \
+    bool isEqual(const Component* other) const override;
 
 //Custom property flags to be used with CPROPERTY
 namespace PropertyFlags {
@@ -264,12 +264,12 @@ public:
 
     template <typename T>
     static T* GetOrCreateSingleton() {
-        const T* existingSingleton = GetSingleton<T>();
+        T* existingSingleton = GetSingleton<T>();
         if (existingSingleton) {
             return existingSingleton;
         }
         const auto newEnt = AddEntity();
-        const T* newComp = new T();
+        T* newComp = new T();
         AddSetComponentToEntity(newEnt, newComp);
         return newComp;
     }

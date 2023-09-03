@@ -21,9 +21,6 @@ struct LinearForceEngine : public Component {
 
     DECLARE_COMPONENT_METHODS(LinearForceEngine)
 
-    void onComponentRemoved(EntityData* entData) {
-    }
-
     //Apply linear force using simple requests (forward/back etc)
     void ApplyLinearForceToBody(EntityData* body, EntityData* Us, float RequestedForward, float RequestedSide, float RequestedUp) {
         auto transform = EntityComponentSystem::GetComponent<EntTransform>(body);

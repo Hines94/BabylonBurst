@@ -10,8 +10,5 @@ struct PhysicsCollider : public Component {
     CPROPERTY(NET, SAVE)
     std::string MeshName;
 
-    void onComponentRemoved(EntityData* entData) {
-    }
-
     DECLARE_COMPONENT_METHODS(PhysicsCollider)
 };
