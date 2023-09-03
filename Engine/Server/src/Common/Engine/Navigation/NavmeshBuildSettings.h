@@ -18,8 +18,8 @@ struct NavmeshBuildSettings : public Component {
     float WalkableSlopeHeight = 45;
 
     CPROPERTY(NET, SAVE)
-    //Max height (m) that is considered climbale
-    float WalkableClimb = 2;
+    //Max height (cell Units) that is considered climbale
+    float WalkableClimb = 1;
 
     CPROPERTY(NET, SAVE)
     //Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable

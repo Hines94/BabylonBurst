@@ -5,45 +5,56 @@
 
 namespace NavmeshDebugMethods {
     inline ExtractedModelData GetModelFromDetailedMesh(const rcPolyMeshDetail& dmesh) {
-        ExtractedModelData extractedData;
-        extractedData.vertices.reserve(dmesh.nverts);
-        for (int i = 0; i < dmesh.nverts; i++) {
-            Vertex vertex = {dmesh.verts[i * 3], dmesh.verts[i * 3 + 1], dmesh.verts[i * 3 + 2]};
-            extractedData.vertices.push_back(vertex);
-        }
+        // ExtractedModelData extractedData;
+        // extractedData.vertices.reserve(dmesh.nverts);
+        // for (int i = 0; i < dmesh.nverts; i++) {
+        //     Vertex vertex = {dmesh.verts[i * 3], dmesh.verts[i * 3 + 1], dmesh.verts[i * 3 + 2]};
+        //     extractedData.vertices.push_back(vertex);
+        // }
 
-        for (int i = 0; i < dmesh.nmeshes; i++) {
-            const int base = dmesh.meshes[i * 4];
-            const int end = base + dmesh.meshes[i * 4 + 1];
-            for (int j = base; j < end; j++) {
-                Triangle triangle = {(uint32_t)dmesh.tris[j * 4], (uint32_t)dmesh.tris[j * 4 + 1], (uint32_t)dmesh.tris[j * 4 + 2]};
-                extractedData.triangles.push_back(triangle);
-            }
-        }
+        // for (int i = 0; i < dmesh.nmeshes; i++) {
+        //     const int base = dmesh.meshes[i * 4];
+        //     const int end = base + dmesh.meshes[i * 4 + 1];
+        //     for (int j = base; j < end; j++) {
+        //         Triangle triangle = {(uint32_t)dmesh.tris[j * 4], (uint32_t)dmesh.tris[j * 4 + 1], (uint32_t)dmesh.tris[j * 4 + 2]};
+        //         extractedData.triangles.push_back(triangle);
+        //     }
+        // }
 
-        return extractedData;
+        // return extractedData;
+        //TODO: Fix this if needed?
     }
 
-    inline ExtractedModelData GetModelFromLowPolyMesh(const rcPolyMesh& lmesh) {
+    inline ExtractedModelData GetModelFromLowPolyMesh(const rcPolyMesh& mesh) {
         ExtractedModelData extractedData;
 
-        // Extract vertices
-        extractedData.vertices.reserve(lmesh.nverts);
-        for (int i = 0; i < lmesh.nverts; i++) {
+        // Extract vertices with correct scaling and positioning
+        extractedData.vertices.reserve(mesh.nverts);
+        for (int i = 0; i < mesh.nverts; i++) {
+            const unsigned short* v = &mesh.verts[i * 3];
             Vertex vertex = {
-                static_cast<float>(lmesh.verts[i * 3]),
-                static_cast<float>(lmesh.verts[i * 3 + 1]),
-                static_cast<float>(lmesh.verts[i * 3 + 2])};
+                mesh.bmin[0] + v[0] * mesh.cs,
+                mesh.bmin[1] + (v[1] + 1) * mesh.ch,  // Note the +1 offset
+                mesh.bmin[2] + v[2] * mesh.cs
+            };
             extractedData.vertices.push_back(vertex);
         }
 
-        // Extract triangles (assuming each polygon in your low poly mesh has 3 vertices)
-        for (int i = 0; i < lmesh.npolys; i++) {
-            Triangle triangle = {
-                (uint32_t)lmesh.polys[i * 3],
-                (uint32_t)lmesh.polys[i * 3 + 1],
-                (uint32_t)lmesh.polys[i * 3 + 2]};
-            extractedData.triangles.push_back(triangle);
+        // Extract triangles
+        const int nvp = mesh.nvp;
+        for (int i = 0; i < mesh.npolys; ++i) {
+            const unsigned short* p = &mesh.polys[i * nvp * 2];
+            
+            // Triangulate the polygon
+            for (int j = 2; j < nvp; ++j) {
+                if (p[j] == RC_MESH_NULL_IDX) break;
+                Triangle triangle = {
+                    p[0],
+                    p[j - 1],
+                    p[j]
+                };
+                extractedData.triangles.push_back(triangle);
+            }
         }
 
         return extractedData;

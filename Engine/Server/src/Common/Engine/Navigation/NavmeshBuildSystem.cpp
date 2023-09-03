@@ -238,9 +238,9 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     if (!rcBuildPolyMeshDetail(&context, pmesh, chf, config.detailSampleDist, config.detailSampleMaxError, dmesh)) {
         std::cerr << "Issue building detail poly navmesh" << std::endl;
     }
-    if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
-        NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(NavmeshDebugMethods::GetModelFromDetailedMesh(dmesh), "NavMesh");
-    }
+    // if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
+    //     NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(NavmeshDebugMethods::GetModelFromDetailedMesh(dmesh), "NavMesh");
+    // }
 
     std::cout << "Navmesh Generated" << std::endl;
 }
