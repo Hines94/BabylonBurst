@@ -10,6 +10,20 @@ function getRunnerID(rend: InstancedRender): string {
     return ret;
 }
 
+export function RefreshWireframeMode(ecosystem:GameEcosystem) {
+    if(!ecosystem.dynamicProperties.LoadedRunners) {
+        return;
+    }
+    const allRunners = Object.keys(ecosystem.dynamicProperties.LoadedRunners);
+    allRunners.forEach(r=>{
+        const runner = ecosystem.dynamicProperties.LoadedRunners[r] as AsyncStaticMeshInstanceRunner;
+        const finalMesh = runner.GetFinalMesh(ecosystem.scene);
+        if(finalMesh) {
+            finalMesh.material.wireframe = ecosystem.dynamicProperties["___MATERIALWIREFRAMEMODE___"];
+        }
+    })
+}
+
 export class InstancedRender {
     AwsPath: string = "";
     MeshName: string = "";

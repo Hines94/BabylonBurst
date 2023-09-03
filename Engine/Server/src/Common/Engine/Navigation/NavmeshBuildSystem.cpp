@@ -53,12 +53,7 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
 
 void NavmeshBuildSystem::PerformNavmeshRebuild() {
     const auto allEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableMesh)}, {});
-    const auto settings = EntityComponentSystem::GetEntitiesWithData({typeid(NavmeshBuildSettings)}, {});
-
-    NavmeshBuildSettings* buildSettings = nullptr;
-    if (settings.get()->size() > 0) {
-        buildSettings = EntityComponentSystem::GetComponent<NavmeshBuildSettings>(settings.get()->GetLimitedNumber(1)[0]);
-    }
+    NavmeshBuildSettings* buildSettings = EntityComponentSystem::GetSingleton<NavmeshBuildSettings>();
 
     std::cout << "Meshes into Navmesh: " << allEnts.get()->size() << std::endl;
 

@@ -5,7 +5,7 @@
 
 namespace NavmeshDebugMethods {
     inline ExtractedModelData GetModelFromDetailedMesh(const rcPolyMeshDetail& dmesh) {
-        // ExtractedModelData extractedData;
+        ExtractedModelData extractedData;
         // extractedData.vertices.reserve(dmesh.nverts);
         // for (int i = 0; i < dmesh.nverts; i++) {
         //     Vertex vertex = {dmesh.verts[i * 3], dmesh.verts[i * 3 + 1], dmesh.verts[i * 3 + 2]};
@@ -20,9 +20,8 @@ namespace NavmeshDebugMethods {
         //         extractedData.triangles.push_back(triangle);
         //     }
         // }
-
-        // return extractedData;
         //TODO: Fix this if needed?
+        return extractedData;
     }
 
     inline ExtractedModelData GetModelFromLowPolyMesh(const rcPolyMesh& mesh) {
@@ -34,9 +33,8 @@ namespace NavmeshDebugMethods {
             const unsigned short* v = &mesh.verts[i * 3];
             Vertex vertex = {
                 mesh.bmin[0] + v[0] * mesh.cs,
-                mesh.bmin[1] + (v[1] + 1) * mesh.ch,  // Note the +1 offset
-                mesh.bmin[2] + v[2] * mesh.cs
-            };
+                mesh.bmin[1] + (v[1] + 1) * mesh.ch, // Note the +1 offset
+                mesh.bmin[2] + v[2] * mesh.cs};
             extractedData.vertices.push_back(vertex);
         }
 
@@ -44,15 +42,14 @@ namespace NavmeshDebugMethods {
         const int nvp = mesh.nvp;
         for (int i = 0; i < mesh.npolys; ++i) {
             const unsigned short* p = &mesh.polys[i * nvp * 2];
-            
+
             // Triangulate the polygon
             for (int j = 2; j < nvp; ++j) {
                 if (p[j] == RC_MESH_NULL_IDX) break;
                 Triangle triangle = {
                     p[0],
                     p[j - 1],
-                    p[j]
-                };
+                    p[j]};
                 extractedData.triangles.push_back(triangle);
             }
         }
