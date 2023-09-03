@@ -1,6 +1,6 @@
-import { ShowToastNotification } from "@BabylonBoostClient/HTML/HTMLToastItem";
-import { GetNewNameItem } from "@BabylonBoostClient/HTML/HTMLUtils";
-import { OpenNewWindow } from "@BabylonBoostClient/HTML/HTMLWindowManager";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { GetNewNameItem } from "@BabylonBurstClient/HTML/HTMLUtils";
+import { OpenNewWindow } from "@BabylonBurstClient/HTML/HTMLWindowManager";
 
 const existingWindowItems: { [name: string]: Window } = {};
 

@@ -1,4 +1,4 @@
-echo Starting setup for BabylonBoost Server Side
+echo Starting setup for BabylonBurst Server Side
 
 cd() {
     RED='\033[0;31m'

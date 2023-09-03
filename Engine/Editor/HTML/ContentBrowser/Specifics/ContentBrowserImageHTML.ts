@@ -1,5 +1,5 @@
 
-import { AsyncImageDescription } from "@BabylonBoostClient/AsyncAssets/index";
+import { AsyncImageDescription } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
 import { GetFullNameOfObject } from "../ContentItem";
 

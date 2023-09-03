@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Editor - BabylonBoost</title>
+        <title>Editor - BabylonBurst</title>
 
         <style>
             html,
@@ -59,13 +59,13 @@
 
         <!-- Import Game Client Logic -->
         <script type="module">
-            import { BabylonBoostEditor } from "/BabylonBoostEditor.ts";
+            import { BabylonBurstEditor } from "/BabylonBurstEditor.ts";
             const canvas = document.getElementById("renderCanvas"); // Get the canvas element
             //Not worth using worker thread as communication too much!
             document.body.style.zoom = "100%";
             //TODO: Additional options from env etc?
             //Pass in canvas and start up game client
-            const client = new BabylonBoostEditor(canvas, {});
+            const client = new BabylonBurstEditor(canvas, {});
         </script>
     </body>
 </html>

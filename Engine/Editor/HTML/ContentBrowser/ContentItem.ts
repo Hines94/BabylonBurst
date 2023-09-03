@@ -1,4 +1,4 @@
-import { IBackendStorageInterface } from "@BabylonBoostClient/AsyncAssets";
+import { IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
 
 
 /** Type of content for our editor (or player build) content browser */

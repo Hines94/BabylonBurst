@@ -18,7 +18,7 @@ fi
 # Check if the engine's remote exists, if not, add it
 if ! git ls-remote engine-upstream > /dev/null 2>&1; then
     echo "Adding engine's GitHub repository as 'engine-upstream' remote temporarily..."
-    git remote add engine-upstream https://github.com/Hines94/BabylonBoost.git
+    git remote add engine-upstream https://github.com/Hines94/BabylonBurst.git
 else
     echo "'engine-upstream' remote already exists. Using it temporarily for the upgrade..."
 fi

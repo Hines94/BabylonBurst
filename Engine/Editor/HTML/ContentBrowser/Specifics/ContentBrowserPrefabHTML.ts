@@ -1,10 +1,10 @@
-import { AsyncArrayBufferLoader } from "@BabylonBoostClient/Utils/StandardAsyncLoaders";
+import { AsyncArrayBufferLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
 import { GetFullNameOfObject } from "../ContentItem";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { decode } from "@msgpack/msgpack";
-import { PrefabPackedType } from "@BabylonBoostClient/EntitySystem/PrefabPackedType";
-import { ShowToastNotification } from "@BabylonBoostClient/HTML/HTMLToastItem";
+import { PrefabPackedType } from "@BabylonBurstClient/EntitySystem/PrefabPackedType";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 
 export class ContentBrowserPrefabHTML extends ContentBrowserItemHTML {
     protected performPrimaryMethod(): void {

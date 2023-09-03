@@ -1,8 +1,8 @@
 import { decode } from "@msgpack/msgpack";
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { ContextMenuItem, ShowContextMenu } from "@BabylonBoostClient/HTML/HTMLContextMenu";
-import { ShowToastNotification } from "@BabylonBoostClient/HTML/HTMLToastItem";
-import { CloneTemplate, GetNewNameItem, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBoostClient/HTML/HTMLUtils";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { ContextMenuItem, ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { CloneTemplate, GetNewNameItem, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ContentBrowserItemHTML } from "./ContentBrowserItemHTML";
 import { ContentItem, ContentItemType, GetContentItemNameInclType } from "./ContentItem";
 import { GetContentItemHTMLSpecific } from "./ContentItemTypes";

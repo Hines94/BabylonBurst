@@ -29,6 +29,10 @@ public:
 
     void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
     }
+
+    virtual bool isEqual(const Component* other) const {
+        return false;
+    }
 };
 
 int TestComp::removedNum = 0;
@@ -46,6 +50,9 @@ public:
     void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
     }
     void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
+    }
+    virtual bool isEqual(const Component* other) const {
+        return false;
     }
 };
 

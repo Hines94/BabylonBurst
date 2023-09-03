@@ -1,8 +1,8 @@
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { hideColliderVisualSystem } from "@BabylonBoostClient/Rendering/ColliderVisualRenderSystem";
-import { RefreshNavmeshVisualisationStage, navStageChangeDat, onNavmeshStageChange } from "@BabylonBoostClient/Rendering/NavmeshVisualRenderSystem";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
+import { RefreshNavmeshVisualisationStage, navStageChangeDat, onNavmeshStageChange } from "@BabylonBurstClient/Rendering/NavmeshVisualRenderSystem";
 import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
-import { RefreshWireframeMode } from "@BabylonBoostClient/Rendering/InstancedMeshRenderSystem";
+import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 
 /** All visualistaion options such as view colliders etc */
 export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {

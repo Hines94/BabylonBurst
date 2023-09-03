@@ -1,5 +1,5 @@
-import { AsyncStringLoader } from "@BabylonBoostClient/Utils/StandardAsyncLoaders";
-import { ConvertDataBackToCSV } from "@BabylonBoostClient/Utils/DataToCSV";
+import { AsyncStringLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
+import { ConvertDataBackToCSV } from "@BabylonBurstClient/Utils/DataToCSV";
 import { OpenDatasheet, SetupDatasheet as SetupDatasheet } from "../../Datasheets/DatasheetEditor";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
 import { GetFullNameOfObject } from "../ContentItem";

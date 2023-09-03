@@ -13,7 +13,7 @@ Setup:
 - Install WSL
 - create an AWS S3 bucket to contain the data for your game
 - create an AWS global key in IAM (not safe for production)
-- Clone this directory (git clone https://github.com/Hines94/BabylonBoost.git) into WSL
+- Clone this directory (git clone https://github.com/Hines94/BabylonBurst.git) into WSL
 - run EngineSetup.sh
 - create .env at the same level as this README
     - See .env.sample for how to structure
@@ -43,7 +43,7 @@ Build Production:
 TODO: build client & server
 
 Git & Engine Upgrades:
-- Git will come with history from BabylonBoost engine
+- Git will come with history from BabylonBurst engine
     - (OPTIONAL) - delete this
     - (OPTIONAL) - work from a branch
 - Upgrading from any git history

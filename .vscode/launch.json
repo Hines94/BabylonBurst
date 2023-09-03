@@ -12,7 +12,7 @@
             "name": "Debug Server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Engine/Server/build/server_build/babylonboostserver",
+            "program": "${workspaceFolder}/Engine/Server/build/server_build/babylonburstserver",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

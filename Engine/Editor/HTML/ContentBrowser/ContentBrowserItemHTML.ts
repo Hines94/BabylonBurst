@@ -1,6 +1,6 @@
-import { ShowContextMenu } from "@BabylonBoostClient/HTML/HTMLContextMenu";
-import { ShowToastNotification } from "@BabylonBoostClient/HTML/HTMLToastItem";
-import { CloneTemplate, GetNewNameItem, MakeDraggableElement } from "@BabylonBoostClient/HTML/HTMLUtils";
+import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { CloneTemplate, GetNewNameItem, MakeDraggableElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { GetInspectorOwner, SetInspectorOwner } from "../InspectorWindow/InspectorHTML";
 import { ContentBrowserHTML } from "./ContentBrowserHTML";
 import {

@@ -28,7 +28,11 @@ sed -i 's/^/VITE_/' Engine/Client/.env
 
 #--- Build Server ---
 echo -e ${MAGENTA}Building Server${RESET}
-bash ${base_path}/Engine/Server/BuildDev.sh || exit
+if arg_exists "-t" "$@"; then
+    bash ${base_path}/Engine/Server/BuildDev.sh -t || exit
+else
+    bash ${base_path}/Engine/Server/BuildDev.sh || exit
+fi
 
 #--- Start client ---
 mkdir ${base_path}/Engine/tmp
@@ -72,5 +76,5 @@ fi
 if arg_exists "-ns" "$@"; then
     exit 0
 else
-    ./Engine/Server/build/server_build/babylonboostserver
+    ./Engine/Server/build/server_build/babylonburstserver
 fi

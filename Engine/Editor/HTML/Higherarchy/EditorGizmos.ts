@@ -1,7 +1,7 @@
 import { AbstractMesh, GizmoManager, Observable } from "@babylonjs/core";
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { GetComponent, RawEntityData } from "@BabylonBoostClient/EntitySystem/EntityMsgpackConverter";
-import { EntTransform } from "@BabylonBoostClient/EntitySystem/CoreComponents";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { GetComponent, RawEntityData } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
+import { EntTransform } from "@BabylonBurstClient/EntitySystem/CoreComponents";
 
 export function GetEditorGizmos(ecosystem: GameEcosystem) {
     if (ecosystem.dynamicProperties["EditorGizmos"] === undefined) {

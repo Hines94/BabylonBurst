@@ -1,5 +1,5 @@
 
-import { AsyncAudioClipDefinition } from "@BabylonBoostClient/AsyncAssets/index";
+import { AsyncAudioClipDefinition } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
 import { GetFullNameOfObject } from "../ContentItem";
 

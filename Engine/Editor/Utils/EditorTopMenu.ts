@@ -1,4 +1,4 @@
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 
 export function AddOptionToEditorTopMenu(
     ecosystem: GameEcosystem,

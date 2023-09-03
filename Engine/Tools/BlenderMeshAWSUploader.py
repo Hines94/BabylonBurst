@@ -1,6 +1,6 @@
 bl_info = {
     # required
-    'name': 'BabylonBoostS3Saver',
+    'name': 'BabylonBurstS3Saver',
     'blender': (2, 93, 0),
     'category': 'Object',
     # optional

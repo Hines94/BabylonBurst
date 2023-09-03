@@ -1,23 +1,23 @@
 
-import { LoadHTMLUITemplate } from "@BabylonBoostClient/HTML/TemplateLoader";
-import { BaseTickableObject } from "@BabylonBoostClient/Utils/BaseTickableObject";
-import { BabylonBoostEditor } from "../BabylonBoostEditor";
+import { LoadHTMLUITemplate } from "@BabylonBurstClient/HTML/TemplateLoader";
+import { BaseTickableObject } from "@BabylonBurstClient/Utils/BaseTickableObject";
+import { BabylonBurstEditor } from "../BabylonBurstEditor";
 import { ContentItem, ContentItemType, GetFullNameOfObject, SaveContentItem } from "./ContentBrowser/ContentItem";
 import { SetupCustomInspectorEditors } from "./InspectorWindow/CustomInspectorInputs";
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { SaveEntitiesToMsgpackIntArray } from "@BabylonBoostClient/EntitySystem/EntityMsgpackConverter";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { SaveEntitiesToMsgpackIntArray } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
-import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBoostClient/AsyncAssets/index";
+import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserHTML, ContentStorageBackend, GetCurrentLevelItem } from "./ContentBrowser/ContentBrowserHTML";
 
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;
     contentBrowser: ContentBrowserHTML;
-    editor: BabylonBoostEditor;
+    editor: BabylonBurstEditor;
     editorStore: ContentStorageBackend;
 
-    constructor(editor: BabylonBoostEditor) {
+    constructor(editor: BabylonBurstEditor) {
         super();
         this.editor = editor;
         SetupCustomInspectorEditors();

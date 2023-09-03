@@ -40,7 +40,7 @@
       },
       "id": 12,
       "panels": [],
-      "title": "Space Fleets Sepcific",
+      "title": "Babylon Boost Sepcific",
       "type": "row"
     },
     {
@@ -832,7 +832,7 @@
         "options": [],
         "query": {
           "query": "label_values(go_memstats_alloc_bytes, namespace)",
-          "refId": "Space Fleets Go Server-namespace-Variable-Query"
+          "refId": "Babylon Burst Go Server-namespace-Variable-Query"
         },
         "refresh": 2,
         "regex": "",
@@ -862,7 +862,7 @@
         "options": [],
         "query": {
           "query": "label_values(process_resident_memory_bytes, pod)",
-          "refId": "Space Fleets Go Server-pod-Variable-Query"
+          "refId": "Babylon Burst Go Server-pod-Variable-Query"
         },
         "refresh": 2,
         "regex": "",
@@ -952,7 +952,7 @@
     ]
   },
   "timezone": "browser",
-  "title": "BabylonBoost Local Server",
+  "title": "BabylonBurst Local Server",
   "uid": "ypFZFgvmz",
   "version": 41,
   "weekStart": ""

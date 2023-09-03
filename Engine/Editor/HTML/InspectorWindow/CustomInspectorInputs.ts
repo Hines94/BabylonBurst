@@ -1,6 +1,6 @@
 //@ts-ignore
 import { JSONEditor } from "@json-editor/json-editor";
-import { MakeDroppableElement } from "@BabylonBoostClient/HTML/HTMLUtils";
+import { MakeDroppableElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 
 interface JSONSchema {
     title?: string;

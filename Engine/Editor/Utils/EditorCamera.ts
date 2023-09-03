@@ -1,7 +1,7 @@
 import { Mesh, MeshBuilder, Vector3 } from "@babylonjs/core";
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { AngleToRad } from "@BabylonBoostClient/Utils/MathUtils";
-import { EntVector4 } from "@BabylonBoostClient/EntitySystem/CoreComponents";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { AngleToRad } from "@BabylonBurstClient/Utils/MathUtils";
+import { EntVector4 } from "@BabylonBurstClient/EntitySystem/CoreComponents";
 
 /** Simply takes the player camera and runs a simple movement  */
 export class EditorCamera {
