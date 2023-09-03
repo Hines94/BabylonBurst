@@ -3,6 +3,7 @@
 #include "Engine/Navigation/NavmeshBuildSystem.h"
 #include "Engine/Rendering/ExtractedMeshSerializer.h"
 #include "Engine/Rendering/ModelLoader.h"
+#include "Engine/Utils/VisualMessageShower.h"
 #include <emscripten/bind.h>
 #include <iostream>
 
@@ -37,6 +38,13 @@ void NavmeshRegionsRebuild(std::vector<ExtractedModelData> regions) {
     emscripten::val::global("OnNavRegionsBuild")(emscripten::val(emscripten::typed_memory_view(buffer.size(), buffer.data())), WASMSetup::WASMModuleIdentifier);
 }
 
+void RequestErrorMessage(std::string message, float time) {
+    emscripten::val::global("RequestVisualError")(message, time, WASMSetup::WASMModuleIdentifier);
+}
+void RequestInfoMessage(std::string message, float time) {
+    emscripten::val::global("RequestVisualInfo")(message, time, WASMSetup::WASMModuleIdentifier);
+}
+
 void SetupWASMModule(std::string uniqueModuleId) {
     WASMSetup::WASMModuleIdentifier = uniqueModuleId;
     //Setup prefabs - Needs to be after get uuid so we can call async functions in AWS interface
@@ -50,6 +58,8 @@ void SetupWASMModule(std::string uniqueModuleId) {
     NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.addListener(NavmeshRebuild);
     NavmeshBuildSystem::getInstance().onNavmeshContoursRebuild.addListener(NavmeshContoursRebuild);
     NavmeshBuildSystem::getInstance().onNavmeshRegionsRebuild.addListener(NavmeshRegionsRebuild);
+    VisualMessageShower::RequestVisibleErrorMessageShow.addListener(RequestErrorMessage);
+    VisualMessageShower::RequestVisibleInfoMessageShow.addListener(RequestInfoMessage);
 }
 
 void WASMSetup::callWASMSetupComplete() {

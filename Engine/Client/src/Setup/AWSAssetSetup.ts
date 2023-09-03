@@ -1,4 +1,3 @@
-import { SetupModelLoader } from "@engine/Environment/ModelLoaderSetup";
 import {
     AsyncAWSBackend,
     AsyncAssetManager,
@@ -9,6 +8,7 @@ import {
 } from "../AsyncAssets";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 import { GetWasmModule } from "../WASM/ServerWASMModule";
+import { setupGeneralWASMCallbacks } from "@engine/Setup/WASMCallbacksSetup";
 
 //Since manager is global we just check if setup
 export async function setupAsyncManager() {
@@ -43,6 +43,7 @@ export async function setupAsyncManager() {
     assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light;
     await assetManager.loadManager();
     setupAWSWASMHooks(assetManager);
+    setupGeneralWASMCallbacks();
     console.log("Setup Async Asset Manager");
 }
 

@@ -1,8 +1,8 @@
-#include "NavmeshBuildSettings.h"
+#include "NavmeshBuildSetup.h"
 #include "Engine/Entities/EntitySeriesTaskRunners.hpp"
 
-void NavmeshBuildSettings::onComponentAdded(EntityData* ent) {
-    const auto existingBuilds = EntityComponentSystem::GetEntitiesWithData({typeid(NavmeshBuildSettings)}, {});
+void NavmeshBuildSetup::onComponentAdded(EntityData* ent) {
+    const auto existingBuilds = EntityComponentSystem::GetEntitiesWithData({typeid(NavmeshBuildSetup)}, {});
     if (existingBuilds.get()->size() > 0) {
         EntityTaskRunners::AutoPerformTasksSeries(
             "SingeltonNavSettings", existingBuilds, [&](double Dt, EntityData* existing) {
@@ -14,15 +14,15 @@ void NavmeshBuildSettings::onComponentAdded(EntityData* ent) {
     }
 }
 
-void NavmeshBuildSettings::onComponentOverwritten(EntityData* entData, Component* newComp) {
-    const auto newCompNav = static_cast<NavmeshBuildSettings*>(newComp);
+void NavmeshBuildSetup::onComponentOverwritten(EntityData* entData, Component* newComp) {
+    const auto newCompNav = static_cast<NavmeshBuildSetup*>(newComp);
     if (NavBuildSettingsEqual(this, newCompNav)) {
         return;
     }
     newCompNav->performRebuild = true;
 }
 
-bool NavmeshBuildSettings::NavBuildSettingsEqual(NavmeshBuildSettings* settingsA, NavmeshBuildSettings* settingsB) {
+bool NavmeshBuildSetup::NavBuildSettingsEqual(NavmeshBuildSetup* settingsA, NavmeshBuildSetup* settingsB) {
     if (settingsA->CellHeight != settingsB->CellHeight) {
         return false;
     }

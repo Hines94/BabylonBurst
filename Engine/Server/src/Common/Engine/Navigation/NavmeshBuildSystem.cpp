@@ -2,12 +2,15 @@
 #include "Engine/Entities/EntitySeriesTaskRunners.hpp"
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Entities/EntityTaskRunners.hpp"
-#include "Engine/Navigation/BuiltNavMesh.h"
-#include "Engine/Navigation/NavmeshBuildSettings.h"
+#include "Engine/Navigation/LoadedNavmeshSurface.h"
+#include "Engine/Navigation/NavmeshBuildSetup.h"
 #include "Engine/Rendering/ModelLoader.h"
-#include "NavigatableMesh.h"
+#include "Engine/Navigation/NavigatableEntitySurface.h"
 #include "NavmeshBuildSystemDebugMethods.cpp"
 #include <recastnavigation/Recast.h>
+#include <recastnavigation/DetourNavMesh.h>
+#include <recastnavigation/DetourNavMeshBuilder.h>
+#include "Engine/Utils/VisualMessageShower.h"
 
 static NavmeshBuildSystem instance;
 
@@ -17,7 +20,7 @@ NavmeshBuildSystem::NavmeshBuildSystem() {
 }
 
 void BuildEntity(double Dt, EntityData* ent) {
-    NavigatableMesh* nm = EntityComponentSystem::GetComponent<NavigatableMesh>(ent);
+    NavigatableEntitySurface* nm = EntityComponentSystem::GetComponent<NavigatableEntitySurface>(ent);
     const auto extractedData = ModelLoader::getInstance().GetMeshFromFile(nm->AwsPath, nm->MeshName, 0);
 
     if (!extractedData) {
@@ -27,22 +30,22 @@ void BuildEntity(double Dt, EntityData* ent) {
 
     nm->extractedModelData = extractedData;
 
-    EntityComponentSystem::AddSetComponentToEntity(ent, new BuiltNavigatableMesh(), false, false);
+    EntityComponentSystem::AddSetComponentToEntity(ent, new LoadedNavmeshSurface(), false, false);
 }
 
 void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
     NavmeshBuildSystem::getInstance().meshUnbuilt = false;
-    const auto unbuiltEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableMesh)}, {typeid(BuiltNavigatableMesh)});
+    const auto unbuiltEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface)}, {typeid(LoadedNavmeshSurface)});
     EntityTaskRunners::AutoPerformTasksParallel("BuildNavmesh", unbuiltEnts, BuildEntity, dt);
 
     //Different geom require rebuild?
     if (unbuiltEnts.get()->size() > 0 && NavmeshBuildSystem::getInstance().meshUnbuilt == false) {
         NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
     } else {
-        const auto settings = EntityComponentSystem::GetEntitiesWithData({typeid(NavmeshBuildSettings)}, {});
+        const auto settings = EntityComponentSystem::GetEntitiesWithData({typeid(NavmeshBuildSetup)}, {});
         //Request rebuild from settings?
         if (settings.get()->size() > 0 && unbuiltEnts.get()->size() == 0) {
-            const auto firstNavSettings = EntityComponentSystem::GetComponent<NavmeshBuildSettings>(settings.get()->GetLimitedNumber(1)[0]);
+            const auto firstNavSettings = EntityComponentSystem::GetComponent<NavmeshBuildSetup>(settings.get()->GetLimitedNumber(1)[0]);
             if (firstNavSettings->performRebuild) {
                 firstNavSettings->performRebuild = false;
                 NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
@@ -52,8 +55,8 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
 }
 
 void NavmeshBuildSystem::PerformNavmeshRebuild() {
-    const auto allEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableMesh)}, {});
-    NavmeshBuildSettings* buildSettings = EntityComponentSystem::GetSingleton<NavmeshBuildSettings>();
+    const auto allEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface)}, {});
+    NavmeshBuildSetup* buildSettings = EntityComponentSystem::GetSingleton<NavmeshBuildSetup>();
 
     std::cout << "Meshes into Navmesh: " << allEnts.get()->size() << std::endl;
 
@@ -64,7 +67,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     EntityTaskRunners::AutoPerformTasksSeries(
         "rasteriseHeightfield", allEnts,
         [&](double Dt, EntityData* ent) {
-            NavigatableMesh* nm = EntityComponentSystem::GetComponent<NavigatableMesh>(ent);
+            NavigatableEntitySurface* nm = EntityComponentSystem::GetComponent<NavigatableEntitySurface>(ent);
             const auto extractedData = nm->extractedModelData;
             if (!nm->extractedModelData) {
                 std::cerr << "Null extracted data" << std::endl;
@@ -233,9 +236,51 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     if (!rcBuildPolyMeshDetail(&context, pmesh, chf, config.detailSampleDist, config.detailSampleMaxError, dmesh)) {
         std::cerr << "Issue building detail poly navmesh" << std::endl;
     }
-    // if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
-    //     NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(NavmeshDebugMethods::GetModelFromDetailedMesh(dmesh), "NavMesh");
+
+    //Convert high poly mesh into actual navmesh data
+    // unsigned char* navData = 0;
+	// int navDataSize = 0;
+	// dtNavMeshCreateParams params;
+    // memset(&params, 0, sizeof(params));
+    // params.verts = pmesh.verts;
+    // params.vertCount = pmesh.nverts;
+    // params.polys = pmesh.polys;
+    // params.polyAreas = pmesh.areas;
+    // params.polyFlags = pmesh.flags;
+    // params.polyCount = pmesh.npolys;
+    // params.nvp = pmesh.nvp;
+    // params.detailMeshes = dmesh.meshes;
+    // params.detailVerts = dmesh.verts;
+    // params.detailVertsCount = dmesh.nverts;
+    // params.detailTris = dmesh.tris;
+    // params.detailTriCount = dmesh.ntris;
+    // params.offMeshConVerts = m_geom->getOffMeshConnectionVerts();
+    // params.offMeshConRad = m_geom->getOffMeshConnectionRads();
+    // params.offMeshConDir = m_geom->getOffMeshConnectionDirs();
+    // params.offMeshConAreas = m_geom->getOffMeshConnectionAreas();
+    // params.offMeshConFlags = m_geom->getOffMeshConnectionFlags();
+    // params.offMeshConUserID = m_geom->getOffMeshConnectionId();
+    // params.offMeshConCount = m_geom->getOffMeshConnectionCount();
+    // params.walkableHeight = m_agentHeight;
+    // params.walkableRadius = config.walkableRadius;
+    // params.walkableClimb = config.walkableClimb;
+    // rcVcopy(params.bmin, pmesh.bmin);
+    // rcVcopy(params.bmax, pmesh.bmax);
+    // params.cs = config.cs;
+    // params.ch = config.ch;
+    // params.buildBvTree = true;
+    
+    // if (!dtCreateNavMeshData(&params, &navData, &navDataSize)) {
+    //     std:: cerr << "Could not build Detour navmesh" << std::endl;
     // }
+
+    // buildSettings->BuiltNavmeshData = std::string(reinterpret_cast<char*>(navData),navDataSize);
+
+    if(!buildSettings) {
+        VisualMessageShower::ShowVisibleInfoMessageIfEditor("Rebuilt navmesh with default NavmeshBuildSetup. Please add comp to entity to change settings.");
+    } else {
+        VisualMessageShower::ShowVisibleInfoMessageIfEditor("Rebuilt navmesh with custom NavmeshBuildSetup");
+    }
 
     std::cout << "Navmesh Generated" << std::endl;
 }

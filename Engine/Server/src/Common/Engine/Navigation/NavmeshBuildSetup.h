@@ -2,8 +2,8 @@
 #include "Engine/Entities/EntitySystem.h"
 
 //For now a singleton - but TODO: in future may be different build settings for different types (eg large vehicle vs humanoid) http://digestingduck.blogspot.com/2009/08/recast-settings-uncovered.html
-struct NavmeshBuildSettings : public Component {
-    DECLARE_COMPONENT_METHODS(NavmeshBuildSettings)
+struct NavmeshBuildSetup : public Component {
+    DECLARE_COMPONENT_METHODS(NavmeshBuildSetup)
 
     CPROPERTY(NET, SAVE)
     //Smaller is more granular but takes longer
@@ -33,11 +33,16 @@ struct NavmeshBuildSettings : public Component {
     //Any regions smaller than this will be merged if possible
     float MergeRegionArea = 50;
 
+    //CPROPERTY(SAVE, NOTYPINGS) TODO: Save this out for use later
+    std::string BuiltNavmeshData;
+    // CPROPERTY(SAVE, NOTYPINGS)
+    // std::vector<EntityData*> BuiltNavmeshEntities;
+
     bool performRebuild = false;
 
     void onComponentAdded(EntityData* entData);
 
     void onComponentOverwritten(EntityData* entData, Component* newComp);
 
-    static bool NavBuildSettingsEqual(NavmeshBuildSettings* settingsA, NavmeshBuildSettings* settingsB);
+    static bool NavBuildSettingsEqual(NavmeshBuildSetup* settingsA, NavmeshBuildSetup* settingsB);
 };

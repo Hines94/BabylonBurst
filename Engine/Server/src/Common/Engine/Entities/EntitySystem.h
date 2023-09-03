@@ -264,16 +264,16 @@ public:
 
     template <typename T>
     static T* GetSingleton() {
-        const auto typeC = typeid(T);
-        const auto query = GetEntitiesWithData({typeC,{}});
+        const std::type_index typeC = typeid(T);
+        const auto query = GetEntitiesWithData({typeC}, {});
         const auto numE = query.get()->size();
-        if(numE == 0) {
+        if (numE == 0) {
             return nullptr;
         }
-        if(numE > 1) {
+        if (numE > 1) {
             std::cerr << "Asked for singleton with type " << typeC.name() << " but multiple!" << std::endl;
         }
-        return GetComponent<T>(query.get()->GetLimitedNumber(1));
+        return GetComponent<T>(query.get()->GetLimitedNumber(1)[0]);
     }
 
     static Component* GetComponent(EntityData* data, std::type_index compType);

@@ -4,7 +4,7 @@
 
 //A mesh that can be used to move about a Navigatable Pawn
 REQUIRE_OTHER_COMPONENTS(EntTransform)
-struct NavigatableMesh : public Component {
+struct NavigatableEntitySurface : public Component {
     CPROPERTY(NET, SAVE)
     std::string AwsPath;
     CPROPERTY(NET, SAVE)
@@ -16,5 +16,5 @@ struct NavigatableMesh : public Component {
 
     void onComponentAdded(EntityData* entData);
 
-    DECLARE_COMPONENT_METHODS(NavigatableMesh)
+    DECLARE_COMPONENT_METHODS(NavigatableEntitySurface)
 };
