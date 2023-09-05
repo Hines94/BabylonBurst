@@ -1,8 +1,8 @@
 #include "BuildingSystem.h"
 #include "Engine/Aws/AwsManager.h"
 
-void BuildingSystem::UpdateBuildSystem(bool FirstTime, double dt) {
-    if (FirstTime == true) {
+void BuildingSystem::UpdateBuildSystem(bool SystemInit, double dt) {
+    if (!SystemInit) {
         // TODO: Remove old code
         return;
         // Init csv

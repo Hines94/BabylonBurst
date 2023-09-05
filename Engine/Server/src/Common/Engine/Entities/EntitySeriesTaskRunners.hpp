@@ -13,9 +13,7 @@
 
 namespace EntityTaskRunners {
 
-#ifdef __EMSCRIPTEN__
-    //Entity vector is std we dont need extra method
-#else
+#ifdef BBSERVER
     template <typename T>
     static void AutoPerformTasksSeries(std::string taskName, EntityVector<T*> jobs, std::function<void(double, T*)> workerOp, double deltaTime) {
         auto startTime = std::chrono::system_clock::now();

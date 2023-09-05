@@ -85,7 +85,7 @@ struct FlyingPlayerController : public Component {
         ChangeControlledTarget(pawnEnt, owner);
     }
 
-    static void UpdatePlayerControllers(bool init, double deltaTime) {
+    static void UpdatePlayerControllers(bool SystemInit, double deltaTime) {
         // Setup Flying PC
         auto noPC = EntityComponentSystem::GetEntitiesWithData({typeid(PlayerCoreComponent)}, {typeid(FlyingPlayerController)});
         EntityTaskRunners::AutoPerformTasksParallel("setupPlayerControl", noPC, setupFlyingControl, deltaTime);

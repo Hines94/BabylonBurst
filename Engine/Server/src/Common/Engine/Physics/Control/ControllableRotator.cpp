@@ -2,7 +2,7 @@
 #include "Engine/Entities/EntityTaskRunners.hpp"
 #include "Engine/Physics/RotationEngine.hpp"
 
-void ControllableRotator::UpdateRotationControllers(bool firstTime, double deltaTime) {
+void ControllableRotator::UpdateRotationControllers(bool SystemInit, double deltaTime) {
     auto rotatorControls = EntityComponentSystem::GetEntitiesWithData({typeid(ControllableRotator)}, {});
     EntityTaskRunners::AutoPerformTasksParallel("RotControllers", rotatorControls, UpdateRotationController, deltaTime);
 }

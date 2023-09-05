@@ -10,7 +10,7 @@ struct ControllableRotator : public Component {
     CPROPERTY(NET, SAVE)
     std::vector<EntityData*> ControllableRotators;
 
-    static void UpdateRotationControllers(bool firstTime, double deltaTime);
+    static void UpdateRotationControllers(bool SystemInit, double deltaTime);
 
     DECLARE_COMPONENT_METHODS(ControllableRotator)
 

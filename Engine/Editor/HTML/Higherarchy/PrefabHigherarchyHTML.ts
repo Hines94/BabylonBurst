@@ -103,6 +103,9 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
     }
 
     protected override GetPrefabInsetLevel(entity: EntitySpecification): number {
+        if(GetComponent(entity, Prefab) === undefined) {
+            return 0;
+        }
         if (GetComponent(entity, Prefab).PrefabIdentifier != this.prefabUUID) {
             return 1;
         }

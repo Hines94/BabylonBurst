@@ -5,6 +5,7 @@ export function GetAsyncSceneIdentifier(scene: Scene) {
     //Going old school JS on this!
     //@ts-ignore
     if (scene["___ASYNCASSETUNIQUEID___"] === undefined) {
+        //@ts-ignore
         scene["___ASYNCASSETUNIQUEID___"] = generateUUID();
     }
     //@ts-ignore

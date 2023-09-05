@@ -23,7 +23,7 @@ void PrefabManager::RefreshPrefabs() {
         prefabNameToUUID.clear();
         prefabsByUUID.clear();
 
-        std::cout << "Possible Prefab Object Number: " << allItems.size() << std::endl;
+        std::cout << "Stored Content Item Number: " << allItems.size() << std::endl;
 
         for (const auto& prefabName : prefabItems) {
             this->prefabsAwaitingCallback.push_back(prefabName);
@@ -109,7 +109,7 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
 
     //Existing prefab?
     if (prefabsByUUID.contains(prefabID)) {
-#ifdef __EMSCRIPTEN__
+#ifdef BBCLIENT
         prefabsByUUID.erase(prefabID);
 #else
         prefabsByUUID.unsafe_erase(prefabID);
@@ -117,7 +117,7 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
 
         //Find name and erase (in case of same name)
         if (prefabNameToUUID.contains(prefabLocation) && prefabNameToUUID[prefabLocation] == prefabID) {
-#ifdef __EMSCRIPTEN__
+#ifdef BBCLIENT
             prefabNameToUUID.erase(prefabLocation);
 #else
             prefabNameToUUID.unsafe_erase(prefabLocation);
@@ -126,7 +126,7 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
             //Find name and erase (in case of name change)
             for (const auto& n : prefabNameToUUID) {
                 if (n.second == prefabID) {
-#ifdef __EMSCRIPTEN__
+#ifdef BBCLIENT
                     prefabNameToUUID.erase(n.first);
 #else
                     prefabNameToUUID.unsafe_erase(n.first);
@@ -140,6 +140,8 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
     const auto enttemplate = EntityLoader::LoadTemplateFromSave(extractedPrefabData);
     prefabNameToUUID.insert(std::make_pair(std::string(prefabLocation), prefabID));
     prefabsByUUID.insert(std::make_pair(prefabID, enttemplate));
+
+    std::cout << "Loaded prefab: " << prefabID << " " << prefabLocation << std::endl;
 
     checkAllPrefabsLoaded(prefabLocation);
 
@@ -268,8 +270,16 @@ std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefab
     return std::pair(newInstance, instanceEntity);
 }
 
+std::string ensureEndsWithPrefabSpec(std::string str) {
+    const std::string suffix = "~3~.zip";
+    if (str.size() < suffix.size() || str.substr(str.size() - suffix.size()) != suffix) {
+        str += suffix;
+    }
+    return str;
+}
+
 std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefabByName(const std::string& Name) {
-    const auto it = prefabNameToUUID.find(Name);
+    const auto it = prefabNameToUUID.find(ensureEndsWithPrefabSpec(Name));
     if (it == prefabNameToUUID.end()) {
         return std::nullopt;
     }

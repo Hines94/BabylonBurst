@@ -16,8 +16,8 @@ struct playerConnectionDetails {
 class PlayerConnectionManager {
 public:
     PlayerConnectionManager();
-    static void ManagePlayers(bool firstTime, double dt);
-    static void UpdatePlayerNetworking(bool firstTime, double dt);
+    static void ManagePlayers(bool SystemInit, double dt);
+    static void UpdatePlayerNetworking(bool SystemInit, double dt);
 
     uint64_t GetPlayerEntity(std::string uuid);
 

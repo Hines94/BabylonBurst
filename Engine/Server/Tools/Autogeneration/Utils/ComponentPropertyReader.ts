@@ -119,8 +119,8 @@ function AddStructParams(structDetails:StructDetails) {
 
     for (var i = 0; i < properties.length; i++) {
         const type = getChildNodeBool(properties[i].property, isTypeNode);
-        const name = getChildNodeBool(properties[i].property, isNameNode);
-        if (type.length > 0 && name.length > 0) {
+        const propertyName = getChildNodeBool(properties[i].property, isNameNode);
+        if (type.length > 0 && propertyName.length > 0) {
             const tags: CompPropTags[] = [];
             //Get macro properties
             if (properties[i].macro !== null) {
@@ -128,13 +128,13 @@ function AddStructParams(structDetails:StructDetails) {
                 //@ts-ignore
                 const inner = tagRegex.exec(properties[i].macro?.text);
                 if(inner === null){
-                    throw new Error("Invalid macro found in component property " + name[0].text);
+                    console.error("Invalid macro found in component property " + propertyName[0].text);
+                    process.exit(1);
                 }
                 inner[1].split(',').forEach((tag) => {
                     var rawTag = tag.trim();
                     if (isValidCustomProperty(rawTag) === false) {
-                        console.error(`Invalid specifier for custom SFP '${rawTag}' found in component '${structDetails.name}' property '${name[0].text}'.`);
-                        //@ts-ignore
+                        console.error(`Invalid specifier for custom SFP '${rawTag}' found in component '${structDetails.name}' property '${propertyName[0].text}'.`);
                         process.exit(1);
                     }
                     else {
@@ -142,9 +142,9 @@ function AddStructParams(structDetails:StructDetails) {
                     }
                 });
             }
-            const isPointer = name[0].text.includes("*");
+            const isPointer = propertyName[0].text.includes("*");
             const propDetails: ComponentProperty = {
-                name: isPointer? name[0].text.replace("*", "").replace(" ", "") : name[0].text.replace(" ", ""),
+                name: isPointer? propertyName[0].text.replace("*", "").replace(" ", "") : propertyName[0].text.replace(" ", ""),
                 type: isPointer? type[0].text + "*" : type[0].text,
                 tags: tags,
                 //@ts-ignore
@@ -176,6 +176,7 @@ function findStructs(node:Parser.SyntaxNode,childIndex:number,basePath:string,he
         const cleanHeaderPath = RemovePlatformSpecificIncludePath(
             headerPath.replace(basePath + "/", "")
         );
+
         const details:StructDetails = {
             name: structName,
             headerPath:cleanHeaderPath,
@@ -225,7 +226,8 @@ function GetStructTags(structDetails:StructDetails,macroText:string) {
     const tagRegex = /\(([^)]+)\)/;
     const inner = tagRegex.exec(macroText);
     if(inner === null){
-        throw new Error("Invalid macro found in component property " + name[0].text);
+        console.error("Invalid macro found in component property " + structDetails.name);
+        process.exit(1);
     }
     inner[1].split(',').forEach((tag) => {
         var rawTag = tag.trim();

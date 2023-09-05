@@ -8,6 +8,7 @@
         "esnext",
         "es2020"
       ],
+      "types": ["node"],
       "allowJs": true,
       "skipLibCheck": true,
       "esModuleInterop": true,

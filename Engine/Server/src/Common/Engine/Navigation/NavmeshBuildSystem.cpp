@@ -9,6 +9,7 @@
 #include "Engine/Rendering/ModelLoader.h"
 #include "Engine/Utils/VisualMessageShower.h"
 #include "NavmeshBuildSystemDebugMethods.cpp"
+#include <algorithm>
 #include <recastnavigation/DetourNavMesh.h>
 #include <recastnavigation/DetourNavMeshBuilder.h>
 #include <recastnavigation/Recast.h>
@@ -55,6 +56,10 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
     }
 }
 
+bool compareByMeshName(const NavigatableEntitySurface* a, const NavigatableEntitySurface* b) {
+    return a->MeshName < b->MeshName;
+}
+
 void NavmeshBuildSystem::PerformNavmeshRebuild() {
     const auto allEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface)}, {});
     NavmeshBuildSetup* buildSettings = EntityComponentSystem::GetSingleton<NavmeshBuildSetup>();
@@ -65,39 +70,50 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     std::vector<float> verts;
     std::vector<int> tris;
 
+    //Get data in
+    std::vector<NavigatableEntitySurface*> orderedSurfaces;
     EntityTaskRunners::AutoPerformTasksSeries(
-        "rasteriseHeightfield", allEnts,
+        "navGetEnts", allEnts,
         [&](double Dt, EntityData* ent) {
-            NavigatableEntitySurface* nm = EntityComponentSystem::GetComponent<NavigatableEntitySurface>(ent);
-            const auto extractedData = nm->extractedModelData;
-            if (!nm->extractedModelData) {
-                std::cerr << "Null extracted data" << std::endl;
-                return;
-            }
-            for (const auto& tri : extractedData->triangles) {
-                // Vertex 1
-                verts.push_back(extractedData->vertices[tri.v1].x);
-                verts.push_back(extractedData->vertices[tri.v1].y);
-                verts.push_back(extractedData->vertices[tri.v1].z);
-
-                // Vertex 2
-                verts.push_back(extractedData->vertices[tri.v2].x);
-                verts.push_back(extractedData->vertices[tri.v2].y);
-                verts.push_back(extractedData->vertices[tri.v2].z);
-
-                // Vertex 3
-                verts.push_back(extractedData->vertices[tri.v3].x);
-                verts.push_back(extractedData->vertices[tri.v3].y);
-                verts.push_back(extractedData->vertices[tri.v3].z);
-            }
-
-            for (size_t i = 0; i < extractedData->triangles.size(); ++i) {
-                tris.push_back(i * 3);
-                tris.push_back(i * 3 + 1);
-                tris.push_back(i * 3 + 2);
-            }
+            orderedSurfaces.push_back(EntityComponentSystem::GetComponent<NavigatableEntitySurface>(ent));
         },
         0);
+    std::sort(orderedSurfaces.begin(), orderedSurfaces.end(), compareByMeshName);
+
+    //Set verts and tris
+    std::vector<unsigned char> triAreas;
+    for (const auto& nm : orderedSurfaces) {
+        const auto extractedData = nm->extractedModelData;
+        if (!nm->extractedModelData) {
+            std::cerr << "Null extracted data" << std::endl;
+            return;
+        }
+        //TODO: user specified areas
+        triAreas.insert(triAreas.end(), extractedData->triangles.size(), RC_WALKABLE_AREA);
+        for (const auto& tri : extractedData->triangles) {
+
+            // Vertex 1
+            verts.push_back(extractedData->vertices[tri.v1].x);
+            verts.push_back(extractedData->vertices[tri.v1].y);
+            verts.push_back(extractedData->vertices[tri.v1].z);
+
+            // Vertex 2
+            verts.push_back(extractedData->vertices[tri.v2].x);
+            verts.push_back(extractedData->vertices[tri.v2].y);
+            verts.push_back(extractedData->vertices[tri.v2].z);
+
+            // Vertex 3
+            verts.push_back(extractedData->vertices[tri.v3].x);
+            verts.push_back(extractedData->vertices[tri.v3].y);
+            verts.push_back(extractedData->vertices[tri.v3].z);
+        }
+
+        for (size_t i = 0; i < extractedData->triangles.size(); ++i) {
+            tris.push_back(i * 3);
+            tris.push_back(i * 3 + 1);
+            tris.push_back(i * 3 + 2);
+        }
+    }
 
     float bmin[3] = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
     float bmax[3] = {std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()};
@@ -160,6 +176,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         config.walkableHeight = buildSettings->WalkableHeight;
         config.minRegionArea = buildSettings->MinRegionArea;
         config.mergeRegionArea = buildSettings->MergeRegionArea;
+        std::cout << "Navmesh built with existing settings. CS: " << buildSettings->CellSize << std::endl;
     }
 
     // Create a heightfield
@@ -170,8 +187,6 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
     std::cout << "Verts into navmesh: " << verts.size() << std::endl;
 
-    // Assume all triangles are walkable for now
-    std::vector<unsigned char> triAreas(tris.size(), RC_WALKABLE_AREA);
     rcRasterizeTriangles(&context, &verts[0], verts.size() / 3, &tris[0], &triAreas[0], tris.size() / 3, hf, config.walkableClimb);
     int spanCount = 0;
     for (int y = 0; y < hf.height; ++y) {

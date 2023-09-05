@@ -1,7 +1,7 @@
 #include "PlayerMessageProcessor.h"
 #include "Engine/Networking/NetworkingManager.h"
 
-void PlayerMessageProcessor::processPlayerMessages(bool FirstTime, double deltaTime) {
+void PlayerMessageProcessor::processPlayerMessages(bool SystemInit, double deltaTime) {
     //Get messages
     std::map<uint, std::vector<std::pair<std::string, std::string>>> playerMessages = NetworkingManager::instance->GetClearPlayerMessages();
 

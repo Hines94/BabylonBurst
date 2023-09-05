@@ -55,7 +55,7 @@ export function RunColliderVisualSystem(ecosystem: GameEcosystem) {
     //Perform setup for data
     entities.forEach(ent => {
         const entKey = parseInt(ent);
-        const collideItem = GetComponent(allInstEntities[entKey], PhysicsCollider);
+        const collideItem = GetComponent(allInstEntities[entKey], PhysicsCollider) as any;
         const runnerID = getRunnerID(collideItem);
         //Create render runner if not exists
         if (ecosystem.dynamicProperties[loadedVisuals][runnerID] === undefined) {

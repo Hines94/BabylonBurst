@@ -19,12 +19,12 @@ bool updateIfInMode(bool init, std::string modeName, std::function<void(double)>
 
 namespace TestingController {
     bool testingEnabled = false;
-    void UpdateTesting(bool FirstTime, double dt) {
-        if (FirstTime == false && testingEnabled == false) {
+    void UpdateTesting(bool SystemInit, double dt) {
+        if (SystemInit && testingEnabled == false) {
             return;
         }
         //All of our testing senarios below here
-        testingEnabled = updateIfInMode(FirstTime, "TestBoxPingPong", TestBoxPingPong::update, TestBoxPingPong::setup, dt, testingEnabled);
-        testingEnabled = updateIfInMode(FirstTime, "TestCreationDeletion", TestCreationDeletion::update, TestCreationDeletion::setup, dt, testingEnabled);
+        testingEnabled = updateIfInMode(SystemInit, "TestBoxPingPong", TestBoxPingPong::update, TestBoxPingPong::setup, dt, testingEnabled);
+        testingEnabled = updateIfInMode(SystemInit, "TestCreationDeletion", TestCreationDeletion::update, TestCreationDeletion::setup, dt, testingEnabled);
     }
 } // namespace TestingController

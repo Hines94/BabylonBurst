@@ -99,7 +99,7 @@ void EntityComponentSystem::RemoveEntity(double deltaTime, EntityData* data) {
     delete (data);
 
     // Next remove from all entities
-#ifdef __EMSCRIPTEN__
+#ifdef BBCLIENT
     ActiveEntitySystem->AllEntities.erase(entId);
     // Ensure we are not networking this down
     ActiveEntitySystem->EntDataToNetwork.erase(data);
@@ -206,7 +206,7 @@ void EntityComponentSystem::DeleteEntityComponent(const std::type_index& compTyp
         auto bitsetIndex = GetBitsetIndex(compType);
         data->componentBitset[bitsetIndex] = 0;
         //Remove from components in our entity data
-#ifdef __EMSCRIPTEN__
+#ifdef BBCLIENT
         data->components.erase(it);
 #else
         data->components.unsafe_erase(it);

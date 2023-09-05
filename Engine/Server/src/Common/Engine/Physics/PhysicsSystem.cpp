@@ -18,7 +18,7 @@ PhysicsSystem::PhysicsSystem() {
     physSystem = this;
 }
 
-void PhysicsSystem::RebuildRigidBods(bool FirstTime, double deltaTime) {
+void PhysicsSystem::RebuildRigidBods(bool SystemInit, double deltaTime) {
     //Reset all physics bodies
     EntityTaskRunners::AutoPerformTasksParallel("BuildPhysBods", EntityComponentSystem::GetEntitiesWithData({typeid(RigidBody), typeid(DirtyRigidBody)}, {}), BuildPhysicsBody, deltaTime);
 }
@@ -27,12 +27,12 @@ void PhysicsSystem::BuildPhysicsBody(double dt, EntityData* ent) {
     EntityComponentSystem::GetComponent<RigidBody>(ent)->RebuildPhysicsBody(ent);
 }
 
-void PhysicsSystem::UpdatePhysicsSystem(bool FirstTime, double deltaTime) {
+void PhysicsSystem::UpdatePhysicsSystem(bool SystemInit, double deltaTime) {
     //Update physics system
     physSystem->dynamicsWorld->stepSimulation(deltaTime, 10, 1.0 / 128.0);
 }
 
-void PhysicsSystem::PostPhysicsSystem(bool FirstTime, double deltaTime) {
+void PhysicsSystem::PostPhysicsSystem(bool SystemInit, double deltaTime) {
     //Copy positions across for all physics entities
     EntityTaskRunners::AutoPerformTasksParallel("CopyPhysMove", EntityComponentSystem::GetEntitiesWithData({typeid(RigidBody), typeid(EntTransform)}, {}), CopyPhysicsBody, deltaTime);
 }

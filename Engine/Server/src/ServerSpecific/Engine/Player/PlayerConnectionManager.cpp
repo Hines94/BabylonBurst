@@ -78,7 +78,7 @@ void PlayerConnectionManager::addNewPlayers(std::unordered_set<std::string> newS
     }
 }
 
-void PlayerConnectionManager::ManagePlayers(bool firstTime, double dt) {
+void PlayerConnectionManager::ManagePlayers(bool SystemInit, double dt) {
     //Get new sessions copy
     const std::pair<std::unordered_set<std::string>, std::unordered_set<std::string>> newSessions = getNewRemovedPlayers();
     removeOldPlayers(newSessions.second);
@@ -196,7 +196,7 @@ void getPlayerDeleteData(const std::unordered_map<uint64_t, std::vector<std::str
     changeSize += deletions.size();
 }
 
-void PlayerConnectionManager::UpdatePlayerNetworking(bool firstTime, double dt) {
+void PlayerConnectionManager::UpdatePlayerNetworking(bool SystemInit, double dt) {
     auto& inst = getInstance();
     auto additions = EntityComponentSystem::GetNetworkData();
     auto deletions = EntityComponentSystem::GetDeletedNetworkData();

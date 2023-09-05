@@ -8,9 +8,9 @@ public:
     static PhysicsSystem* physSystem;
     btDiscreteDynamicsWorld* dynamicsWorld;
 
-    static void RebuildRigidBods(bool FirstTime, double deltaTime);
-    static void UpdatePhysicsSystem(bool FirstTime, double deltaTime);
-    static void PostPhysicsSystem(bool FirstTime, double deltaTime);
+    static void RebuildRigidBods(bool SystemInit, double deltaTime);
+    static void UpdatePhysicsSystem(bool SystemInit, double deltaTime);
+    static void PostPhysicsSystem(bool SystemInit, double deltaTime);
 
 private:
     static void BuildPhysicsBody(double dt, EntityData* ent);

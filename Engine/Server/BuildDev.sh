@@ -141,41 +141,51 @@ fi
 
 # --- END WASM SECTION --- #
 
-# --- TEST SECTION --- #
+# --- TEST/FINISH SECTION --- #
 
-if [ $? -eq 0 ]
-then
-  #Run tests?
-  if [ $run_tests -eq 1 ]; then
-    echo -e "${MAGENTA}Running Unit Tests...${RESET}"
-    cd "$server_build_dir"
-    ./runUnitTests --output-on-failure  --gtest_also_run_disabled_tests
-    if [ $? -ne 0 ]; then
-      echo -e "${RED}Server Unit Tests failed${RESET}"
-      exit 1
+# Check the previous command's exit code and the content of .env
+if [ $? -eq 0 ]; then
+
+    # Check if tests should be run
+    if [ $run_tests -eq 1 ] && ! grep -q "^NO_TESTS_BUILD=true$" "${base_path}/.env"; then
+        echo -e "${MAGENTA}Running Unit Tests...${RESET}"
+
+        # Run server unit tests
+        cd "$server_build_dir"
+        ./runUnitTests --output-on-failure --gtest_also_run_disabled_tests
+
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Server Unit Tests failed${RESET}"
+            exit 1
+        fi
+
+        # Run WASM tests if not omitted
+        if [ -z "$no_wasm" ]; then
+            cd "$wasm_build_dir"
+            ctest -V
+        fi
     fi
 
-    if [ -z "$no_wasm" ]; then
-      cd "$wasm_build_dir"
-      ctest -V
+    # Output warnings if builds are omitted
+    if grep -q "^NO_TESTS_BUILD=true$" "${base_path}/.env"; then
+        echo -e "${RED}--- Set to not build tests in .env ---${RESET}"
     fi
-    
-  fi
-  ##All good - start server
-  echo -e "${MAGENTA}Build Done${RESET}"
-  #Warning if omitting builds (in case forget)
-  if grep -q "^NO_SERVER_BUILD=true$" ${base_path}/.env; then
-  echo -e "${RED}--- Set to not build Server in .env ---${RESET}"
-  fi
-  if grep -q "^NO_WASM_BUILD=true$" ${base_path}/.env; then
-    echo -e "${RED}--- Set to not build WASM in .env ---${RESET}"
-  fi
+    if grep -q "^NO_SERVER_BUILD=true$" "${base_path}/.env"; then
+        echo -e "${RED}--- Set to not build Server in .env ---${RESET}"
+    fi
+    if grep -q "^NO_WASM_BUILD=true$" "${base_path}/.env"; then
+        echo -e "${RED}--- Set to not build WASM in .env ---${RESET}"
+    fi
 
-  exit 0
+    # Output build completion message
+    echo -e "${MAGENTA}Build Done${RESET}"
+
+    #Regular exit
+    exit 0
 else
-  #Failed - exit
-  echo -e "${RED}Build failed${RESET}"
-  exit 1
+    # Build failed, exit with an error
+    echo -e "${RED}Build failed${RESET}"
+    exit 1
 fi
 
-# --- END TEST SECTION --- #
+# --- END TEST/FINISH SECTION --- #

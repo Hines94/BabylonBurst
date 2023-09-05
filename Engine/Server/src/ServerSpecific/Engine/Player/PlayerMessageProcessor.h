@@ -9,7 +9,7 @@ namespace PlayerMessageProcessor {
 
     inline std::map<int, std::function<void(double, std::pair<std::string, std::string>)>> registeredPlayerMessages;
 
-    void processPlayerMessages(bool FirstTime, double deltaTime);
+    void processPlayerMessages(bool SystemInit, double deltaTime);
 
     class Registrar {
     public:

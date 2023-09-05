@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "@types/node": "^20.4.2",
+    "@types/node": "^16.18.48",
     "prettier": "^3.0.0"
   },
   "dependencies": {

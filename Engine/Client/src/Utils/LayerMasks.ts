@@ -1,8 +1,8 @@
+var existingLayers: number[] = [];
+
+/** Default layer that meshes will be loaded into. Create extra layers with getUniqueLayer(2) etc */
 export var defaultLayerMask = getUniqueLayer(0);
-export var vfxLayer = getUniqueLayer(1);
-export var damageIndicatorMask = getUniqueLayer(2);
-export var uiLayerMask = getUniqueLayer(3);
-export var workshopLayer = getUniqueLayer(4);
+export var uiLayerMask = getUniqueLayer(1);
 
 // Use powers of two for additional layers:
 // 0x00000001 - 2^0
@@ -14,7 +14,10 @@ export var workshopLayer = getUniqueLayer(4);
 // 0x00000040 - 2^6
 // 0x00000080 - 2^7
 
-function getUniqueLayer(num: number) {
+export function getUniqueLayer(num: number) {
+    if (existingLayers.includes(num)) {
+        console.error("Requested two render layers of the same: " + num);
+    }
     return Math.pow(2, num);
 }
 

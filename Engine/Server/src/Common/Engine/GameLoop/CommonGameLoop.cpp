@@ -42,7 +42,7 @@ void CommonGameLoop::UpdateSystem(bool systemInit, double deltaTime, SystemUpdat
     }
     auto StartTime = std::chrono::system_clock::now();
 
-    op(!systemInit, deltaTime);
+    op(systemInit, deltaTime);
     EntityComponentSystem::FlushEntitySystem();
 
     auto endTime = std::chrono::system_clock::now();

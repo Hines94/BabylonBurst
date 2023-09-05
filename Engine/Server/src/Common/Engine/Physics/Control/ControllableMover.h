@@ -12,7 +12,7 @@ struct ControllableMover : public Component {
     CPROPERTY(NET, SAVE)
     std::vector<EntityData*> ControllableForceAppliers;
 
-    static void UpdateMovementControllers(bool firstTime, double deltaTime);
+    static void UpdateMovementControllers(bool SystemInit, double deltaTime);
 
     DECLARE_COMPONENT_METHODS(ControllableMover)
 

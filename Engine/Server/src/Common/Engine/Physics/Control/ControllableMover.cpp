@@ -2,7 +2,7 @@
 #include "Engine/Entities/EntityTaskRunners.hpp"
 #include "Engine/Physics/LinearForceEngine.hpp"
 
-void ControllableMover::UpdateMovementControllers(bool firstTime, double deltaTime) {
+void ControllableMover::UpdateMovementControllers(bool SystemInit, double deltaTime) {
     auto rotatorControls = EntityComponentSystem::GetEntitiesWithData({typeid(ControllableMover)}, {});
     EntityTaskRunners::AutoPerformTasksParallel("MoveControllers", rotatorControls, UpdateMovementController, deltaTime);
 }

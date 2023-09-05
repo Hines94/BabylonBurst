@@ -4,6 +4,7 @@
 #define TINYGLTF_ENABLE_DRACO
 #include "ModelLoader.h"
 #include "Engine/Aws/AwsManager.h"
+#include "Engine/Rendering/ExtractedMeshSerializer.h"
 #include <iostream>
 
 void SwapToLeftHanded(tinygltf::Model model) {
@@ -106,13 +107,13 @@ ExtractedModelData* ModelLoader::getMeshDataFromModel(std::string modelName, std
 
     const auto& model = modelIt->second;
     for (const auto& node : model.nodes) {
-        if (node.mesh == 0) {
+        if (node.name != meshName) {
+            continue;
+        }
+        if (node.mesh < 0) {
             continue;
         }
         const auto& mesh = model.meshes[node.mesh];
-        if (mesh.name != meshName) {
-            continue;
-        }
         ExtractedModelData result;
         for (size_t i = 0; i < mesh.primitives.size(); i++) {
             const tinygltf::Primitive& primitive = mesh.primitives[i];
@@ -134,18 +135,39 @@ ExtractedModelData* ModelLoader::getMeshDataFromModel(std::string modelName, std
                 result.vertices.push_back({vertices[v * 3], vertices[v * 3 + 1], vertices[v * 3 + 2]});
             }
 
-            // Assuming the primitive mode is TRIANGLES (i.e., 3 indices per triangle)
-            for (size_t t = 0; t < accessor.count; t += 3) {
-                result.triangles.push_back({indices[t], indices[t + 1], indices[t + 2]});
+            // Extract indices based on the component type
+            if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+                const uint32_t* indices = reinterpret_cast<const uint32_t*>(buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+                for (size_t t = 0; t < accessor.count; t += 3) {
+                    result.triangles.push_back({indices[t], indices[t + 1], indices[t + 2]});
+                }
+            } else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+                const uint16_t* indices = reinterpret_cast<const uint16_t*>(buffer.data.data() + bufferView.byteOffset + accessor.byteOffset);
+                for (size_t t = 0; t < accessor.count; t += 3) {
+                    result.triangles.push_back({indices[t], indices[t + 1], indices[t + 2]});
+                }
+            } else {
+                std::cerr << "Unsupported model component type: " << accessor.componentType << std::endl;
+                exit(EXIT_FAILURE);
             }
 
             extractedModels.insert(std::pair(name, result));
+
+            //Useful if we ever want to manually check if two are the same (see ModelLoaderSetup.ts)
+            // const auto sbuf = ExtractedMeshSerializer::GetBufferForExtractedMesh(result);
+            // std::cout << "Mesh data " << name << std::endl;
+            // for (size_t i = 0; i < sbuf.size(); i++) {
+            //     uint8_t byte_value = static_cast<uint8_t>(sbuf.data()[i]);
+            //     std::cout << static_cast<int>(byte_value) << " "; // Print as integers with spaces in between
+            // }
+            // std::cout << std::endl;
 
             return &extractedModels.find(name)->second;
         }
     }
 
-    std::cerr << "No mesh data for " << modelName << meshName << std::endl;
+    //Fall through - not find any models with same name
+    std::cerr << "No mesh data for " << modelName << "  " << meshName << std::endl;
 
     return nullptr;
 }
