@@ -24,7 +24,7 @@ struct PackerDetails {
     //Pack size of this specific message
     uint packSize = 0;
     std::vector<std::string> names;
-    EntityUnorderedSet<std::string> propsToNetwork;
+    EntityUnorderedSet<std::string> propsToPack;
     msgpack::packer<msgpack::sbuffer>* packer;
     ComponentDataType dt;
     //So we can pre-determine num of vars and create map upfront
@@ -41,7 +41,7 @@ struct PackerDetails {
             return false;
         }
         compPropertyNum++; //Increment so we know what id we are in the map
-        if (propsToNetwork.size() > 0 && propsToNetwork.find(propName) == propsToNetwork.end()) {
+        if (propsToPack.size() > 0 && propsToPack.find(propName) == propsToPack.end()) {
             return false;
         }
         //Naming pass to get typings?

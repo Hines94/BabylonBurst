@@ -35,7 +35,7 @@ else
 fi
 
 #--- Start client ---
-mkdir ${base_path}/Engine/tmp
+mkdir -p ${base_path}/Engine/tmp
 PIDFILE="${base_path}/Engine/tmp/editor_launch_info.pid"
 CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs.log"
 

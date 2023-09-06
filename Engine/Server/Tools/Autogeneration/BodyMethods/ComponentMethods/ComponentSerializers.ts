@@ -50,7 +50,7 @@ export function GenerateCustomSerializationMethods() : string {
         structMethods += `\t${comp}* comparisonComp = new ${comp}();\n`;
         structMethods += `\tbool childComponentIsUnique = false;\n`
         structMethods += `\tif(childComponent != nullptr) {\n`;
-        structMethods += `\t\tchildComponentIsUnique = false;`
+        structMethods += `\t\tchildComponentIsUnique = false;\n`
         structMethods += `\t\tdelete (comparisonComp);\n`;
         structMethods += `\t\tcomparisonComp = dynamic_cast<${comp}*>(childComponent);\n`;
         structMethods += `\t}\n`;
@@ -73,12 +73,12 @@ export function GenerateCustomSerializationMethods() : string {
 
         //Create load if default
         structMethods += `\nvoid ${comp}::LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) { \n`;
-        structMethods += `\tconst auto defaultItem = new ${comp};`;
+        structMethods += `\tconst auto defaultItem = new ${comp}; \n`;
         compData.properties.forEach((param) => {
             structMethods = GeneratePropertyLoadNetwork(structMethods, param,true);
         })
-        structMethods += `\tdelete(defaultItem);`;
-        structMethods += `} \n`;
+        structMethods += `\tdelete(defaultItem);\n`;
+        structMethods += `}\n`;
     })
 
     return structMethods;

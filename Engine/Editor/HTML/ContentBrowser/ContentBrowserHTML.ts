@@ -208,8 +208,8 @@ export class ContentBrowserHTML {
     }
 
     autoselectItem: ContentItem;
-    addNewItem(item: ContentItem) {
-        this.storageBackend.saveItem(item);
+    async addNewItem(item: ContentItem) {
+        await this.storageBackend.saveItem(item);
         item.data = undefined; //Reset data so load method inits correctly
         const currentLevel = GetCurrentLevelItem(this.storageBackend);
         currentLevel.containedItems[GetContentItemNameInclType(item)] = item;

@@ -20,7 +20,7 @@ msgpack::sbuffer* EntitySaver::GetSpecificSavePack(const std::vector<EntityData*
     packer->pack_map(2);
     packer->pack("T");
     //TODO: We pack all parameters. Could be better to pack just the ones we need to save space? (just a small thing)
-    packer->pack(EntityComponentSystem::GetParameterMappings());
+    packer->pack(EntityComponentSystem::ActiveEntitySystem->GetParameterMappings(ComponentDataType::Saving));
 
     packer->pack("C");
     std::vector<std::pair<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>>> ents;
@@ -40,7 +40,7 @@ std::vector<uint8_t> EntitySaver::SBufferToUintVector(msgpack::sbuffer* save) {
     return arr;
 }
 
-void EntitySaver::PackEntitiesData(const std::vector<std::pair<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>>>& NetworkedEnts, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues) {
+void EntitySaver::PackEntitiesData(const std::vector<std::pair<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>>>& NetworkedEnts, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues, bool UseNetworkingPacker) {
     auto numEnts = NetworkedEnts.size();
     if (numEnts == 0) {
         packer->pack("");
@@ -50,7 +50,7 @@ void EntitySaver::PackEntitiesData(const std::vector<std::pair<EntityData*, Enti
     //Add the data we want
     packer->pack_array(numEnts);
     for (auto ent : NetworkedEnts) {
-        PackEntityData(ent.first, ent.second, packer, ignoreDefaultValues);
+        PackEntityData(ent.first, ent.second, packer, ignoreDefaultValues, UseNetworkingPacker);
     }
 }
 
@@ -61,7 +61,7 @@ struct entPackInfo {
     Component* comp;
 };
 
-void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>& comps, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues) {
+void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>& comps, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues, bool UseNetworkingPacker) {
     auto componentMappings = EntityComponentSystem::GetBitsetMappings();
 
     //Pack a map with components and owning ent
@@ -83,11 +83,14 @@ void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::
         if (!ComponentLoader::ShouldSaveComponent(c.first)) {
             continue;
         }
-        PackerDetails p = {.dt = ComponentDataType::Network, .isSizingPass = true};
+        PackerDetails p = {.dt = ComponentDataType::Saving, .isSizingPass = true};
+        if (UseNetworkingPacker) {
+            p.dt = ComponentDataType::Network;
+        }
         //Sepecific properties?
         auto it = comps.find(c.first);
         if (it != comps.end()) {
-            p.propsToNetwork = it->second;
+            p.propsToPack = it->second;
         }
 
         //If part of prefab get component comparison against
@@ -122,11 +125,14 @@ void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::
         }
         packer->pack_map(c.numParams);
         //Now pack actual data
-        PackerDetails pDet = {.packer = packer, .dt = ComponentDataType::Network};
+        PackerDetails pDet = {.packer = packer, .dt = ComponentDataType::Saving};
+        if (UseNetworkingPacker) {
+            pDet.dt = ComponentDataType::Network;
+        }
         //Sepecific properties?
         auto it = comps.find(c.compId);
         if (it != comps.end()) {
-            pDet.propsToNetwork = it->second;
+            pDet.propsToPack = it->second;
         }
 
         const auto defaultComp = PrefabManager::getInstance().TryGetDefaultPrefabComp(ent, ComponentLoader::GetNameFromComponent(c.comp));

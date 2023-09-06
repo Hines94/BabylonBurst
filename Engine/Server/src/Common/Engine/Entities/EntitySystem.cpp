@@ -406,10 +406,8 @@ void EntityComponentSystem::ensureBitsetContains(std::type_index compType, Compo
         std::cout << "ERROR: TOO MANY COMPONENTS. UP MAX COMPONENT TYPES!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    //Add to component index mappings
-    PackerDetails p = {.dt = ComponentDataType::Network, .isNamingPass = true};
-    comp->GetComponentData(p, false);
-    ActiveEntitySystem->ComponentNumerisedParams.push_back(std::make_pair(StringUtils::RemoveNumericPrefix(compType.name()), p.names));
+    ActiveEntitySystem->OrderedComponentParams.push_back(ComponentLoader::GetComponentFromName(ComponentLoader::GetComponentNameFromType(compType)));
+    //Check if component loader can pickup these items (as a test)
     if (ActiveEntitySystem->checkComponentCompLoader) {
         auto compName = StringUtils::RemoveNumericPrefix(compType.name());
         auto spawned = ComponentLoader::GetComponentFromName(compName);
@@ -417,6 +415,16 @@ void EntityComponentSystem::ensureBitsetContains(std::type_index compType, Compo
             delete (spawned);
         }
     }
+}
+
+std::vector<std::pair<std::string, std::vector<std::string>>> EntityComponentSystem::GetParameterMappings(ComponentDataType packType) {
+    std::vector<std::pair<std::string, std::vector<std::string>>> Ret;
+    for (const auto& comp : OrderedComponentParams) {
+        PackerDetails p = {.dt = packType, .isNamingPass = true};
+        comp->GetComponentData(p, false);
+        Ret.push_back(std::make_pair(ComponentLoader::GetNameFromComponent(comp), p.names));
+    }
+    return Ret;
 }
 
 int EntityComponentSystem::GetBitsetIndex(std::type_index type, bool lock) {

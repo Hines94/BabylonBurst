@@ -4,6 +4,7 @@ import { ExitPointerLock } from "../Utils/SceneUtils";
 import { GameEcosystem } from "../GameEcosystem";
 import { PlayerCamera } from "./PlayerCamera";
 
+/** TODO: Fix this class after componentization */
 export class PlayerOrbitalCamera {
     offset = new Vector3();
     priorFistPerson = false;

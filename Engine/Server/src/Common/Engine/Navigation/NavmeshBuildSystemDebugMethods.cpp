@@ -1,9 +1,50 @@
 #include "Engine/Rendering/ExtractedMeshData.h"
+#include "recastnavigation/DetourNavMeshQuery.h"
 #include <iostream>
 #include <recastnavigation/Recast.h>
 #include <unordered_map>
 
 namespace NavmeshDebugMethods {
+
+    inline std::string GetFailStatusForStatus(dtStatus status) {
+        std::string errorMessage;
+
+        if (status & DT_WRONG_MAGIC) {
+            errorMessage += "Invalid Input; ";
+        }
+        if (status & DT_WRONG_VERSION) {
+            errorMessage += "Wrong Version; ";
+        }
+        if (status & DT_OUT_OF_MEMORY) {
+            errorMessage += "Out of Memory; ";
+        }
+        if (status & DT_INVALID_PARAM) {
+            errorMessage += "Invalid Parameter; ";
+        }
+        if (status & DT_BUFFER_TOO_SMALL) {
+            errorMessage += "Buffer Too Small; ";
+        }
+        if (status & DT_OUT_OF_NODES) {
+            errorMessage += "Out of Nodes During Search; ";
+        }
+        if (status & DT_PARTIAL_RESULT) {
+            errorMessage += "Partial Result; ";
+        }
+        if (status & DT_ALREADY_OCCUPIED) {
+            errorMessage += "Tile Already Occupied; ";
+        }
+
+        // If no messages were appended, set a default message.
+        if (errorMessage.empty()) {
+            errorMessage = "Unknown Error";
+        } else {
+            // Remove the last two characters "; " from the string to clean it up
+            errorMessage = errorMessage.substr(0, errorMessage.length() - 2);
+        }
+
+        return errorMessage;
+    }
+
     inline ExtractedModelData GetModelFromDetailedMesh(const rcPolyMeshDetail& dmesh) {
         ExtractedModelData extractedData;
         // extractedData.vertices.reserve(dmesh.nverts);

@@ -110,7 +110,7 @@ bool IsNetworkedForPlayer(EntityData* ent, const tbb::concurrent_unordered_map<s
         //If specific properties check those?
         auto it = comps.find(c.first);
         if (it != comps.end()) {
-            p.propsToNetwork = it->second;
+            p.propsToPack = it->second;
         }
         const auto defaultComp = PrefabManager::getInstance().TryGetDefaultPrefabComp(ent, ComponentLoader::GetNameFromComponent(c.second));
         c.second->GetComponentData(p, true, defaultComp);
@@ -125,7 +125,7 @@ bool IsNetworkedForPlayer(EntityData* ent, const tbb::concurrent_unordered_map<s
 
 void packPlayerData(const std::vector<std::pair<EntityData*, tbb::concurrent_unordered_map<std::type_index, tbb::concurrent_unordered_set<std::string>>>>& NetworkedEnts, msgpack::packer<msgpack::sbuffer>* packer, std::shared_ptr<playerConnectionDetails> player) {
     //TODO: Relevant for player?
-    EntitySaver::PackEntitiesData(NetworkedEnts, packer, true);
+    EntitySaver::PackEntitiesData(NetworkedEnts, packer, true, true);
 }
 
 int getPlayerInitData(msgpack::packer<msgpack::sbuffer>* packer, std::shared_ptr<playerConnectionDetails> player) {
@@ -216,7 +216,7 @@ void PlayerConnectionManager::UpdatePlayerNetworking(bool SystemInit, double dt)
             auto changeSize = 0;
 
             //First param details
-            auto paramsSend = EntityComponentSystem::GetParameterMappings();
+            auto paramsSend = EntityComponentSystem::ActiveEntitySystem->GetParameterMappings(ComponentDataType::Network);
             if (player->second.get()->bInit) {
                 paramsSend = parameterChanges;
             }
@@ -263,7 +263,7 @@ void PlayerConnectionManager::UpdatePlayerNetworking(bool SystemInit, double dt)
 }
 
 std::vector<std::pair<std::string, std::vector<std::string>>> PlayerConnectionManager::getNumerisedChanges() {
-    auto numerisedParams = EntityComponentSystem::GetParameterMappings();
+    auto numerisedParams = EntityComponentSystem::ActiveEntitySystem->GetParameterMappings(ComponentDataType::Network);
     if (numerisedParams.size() == numberNumerisedParams) {
         return {};
     }

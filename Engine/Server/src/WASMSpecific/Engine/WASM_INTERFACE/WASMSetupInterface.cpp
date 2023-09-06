@@ -1,5 +1,6 @@
 #include "WASMSetupInterface.h"
 #include "Engine/Entities/Prefabs/PrefabManager.h"
+#include "Engine/Navigation/NavmeshBuildSetup.h"
 #include "Engine/Navigation/NavmeshBuildSystem.h"
 #include "Engine/Rendering/ExtractedMeshSerializer.h"
 #include "Engine/Rendering/ModelLoader.h"
@@ -66,6 +67,12 @@ void WASMSetup::callWASMSetupComplete() {
     emscripten::val::global("WASMSetupComplete")(WASMSetup::WASMModuleIdentifier);
 }
 
+void RegenerateNavmesh() {
+    EntityComponentSystem::GetOrCreateSingleton<NavmeshBuildSetup>()->performRebuild = true;
+    std::cout << "Performing Navigation Rebuild" << std::endl;
+}
+
 EMSCRIPTEN_BINDINGS(WASMSetupInterface) {
     function("SetupWASMModule", &SetupWASMModule);
+    function("RegenerateNavmesh", &RegenerateNavmesh);
 }

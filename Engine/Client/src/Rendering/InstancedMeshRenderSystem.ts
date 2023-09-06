@@ -47,6 +47,7 @@ export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
 
     //Get data from instances
     const entities = Object.keys(allInstEntities);
+
     //Perform setup for data
     entities.forEach(ent => {
         const entKey = parseInt(ent);

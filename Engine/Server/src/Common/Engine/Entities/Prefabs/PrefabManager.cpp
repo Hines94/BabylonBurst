@@ -203,6 +203,9 @@ bool PrefabManager::SpawnPrefabComponents(PrefabInstance* instance, EntityData* 
     //Setup freshly spawned entities
     for (const auto& e : loadedPrefabEntities) {
         const auto entPrefabComp = EntityComponentSystem::GetComponent<Prefab>(e.second);
+        if (!entPrefabComp) {
+            continue;
+        }
         EntityComponentSystem::GetComponent<Prefab>(e.second)->InstanceOwner = instanceOwner;
         instance->PrefabEntities.push_back(e.second);
     }

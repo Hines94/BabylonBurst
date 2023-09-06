@@ -11,7 +11,13 @@ std::map<std::string, msgpack::object> EntityTemplate::GetComponentDataFromMsgpa
     auto comp_map = data.via.map;
     for (uint32_t i = 0; i < comp_map.size; ++i) {
         //This could be a str if saved or sent TS or could be int if staying c++ -  safer to convert in case
-        compData.insert(std::make_pair(compMappings.second[std::stoull(MsgpackHelpers::ensureKeyIsString(comp_map.ptr[i].key))], comp_map.ptr[i].val.as<msgpack::object>()));
+        const auto compKey = std::stoull(MsgpackHelpers::ensureKeyIsString(comp_map.ptr[i].key));
+        if (compMappings.second.size() <= compKey) {
+            std::cerr << "ERROR: Invalid typings prop key requested: " << compKey << " for " << compMappings.first << std::endl;
+            continue;
+        }
+        const auto compName = compMappings.second[compKey];
+        compData.insert(std::make_pair(compName, comp_map.ptr[i].val.as<msgpack::object>()));
     }
     return compData;
 }

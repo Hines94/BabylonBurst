@@ -63,6 +63,12 @@ Extend Code C++:
 - Register systems to update by including "Engine/GameLoop/CommonGameLoop.h" and using REGISTER_MIDDLE_SYSTEM_UPDATE (START/MIDDLE/END)
 - Register messages from players (clients) by REGISTER_PLAYER_MESSAGE(id for message, function to process)
 - TODO: Custom messages to players from Server
+- Any custom data structures to be saved/networked will require:
+    - bool operator==(const CachedNavElement& rhs) const
+    - bool operator!=(const CachedNavElement& other) const 
+    - `template <typename Packer>`
+        - void msgpack_pack(Packer& pk) const 
+    - void msgpack_unpack(msgpack::object const& o)
 
 Extend Code Typescript:
 - Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 

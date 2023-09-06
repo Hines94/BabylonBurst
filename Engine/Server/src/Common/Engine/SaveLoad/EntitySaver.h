@@ -13,8 +13,8 @@ namespace EntitySaver {
     std::vector<uint8_t> SBufferToUintVector(msgpack::sbuffer* save);
 
     //Pack multiple entities into
-    void PackEntitiesData(const std::vector<std::pair<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>>>& NetworkedEnts, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues);
+    void PackEntitiesData(const std::vector<std::pair<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>>>& NetworkedEnts, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues, bool UseNetworkingPacker = false);
 
     //Pack a single ent's data into the msgpack
-    void PackEntityData(EntityData* ent, const EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>& comps, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues);
+    void PackEntityData(EntityData* ent, const EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>& comps, msgpack::packer<msgpack::sbuffer>* packer, bool ignoreDefaultValues, bool UseNetworkingPacker = false);
 } // namespace EntitySaver

@@ -14,7 +14,26 @@
 #include <recastnavigation/DetourNavMeshBuilder.h>
 #include <recastnavigation/Recast.h>
 
+//Utils
+
 static NavmeshBuildSystem instance;
+
+std::vector<CachedNavElement> ExtractCachedData(std::vector<NavigatableEntitySurface*> surfaces) {
+    std::vector<CachedNavElement> ret;
+    for (const auto& surf : surfaces) {
+        CachedNavElement ele;
+        ele.AwsPath = surf->AwsPath;
+        ele.MeshName = surf->MeshName;
+        ret.push_back(ele);
+    }
+    return ret;
+}
+
+bool compareByMeshName(const NavigatableEntitySurface* a, const NavigatableEntitySurface* b) {
+    return a->MeshName < b->MeshName;
+}
+
+//Methods
 
 NavmeshBuildSystem::NavmeshBuildSystem() {
     // Initialization logic (if any) goes here.
@@ -42,22 +61,21 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
 
     //Different geom require rebuild?
     if (unbuiltEnts.get()->size() > 0 && NavmeshBuildSystem::getInstance().meshUnbuilt == false) {
-        NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
+        if (!IsNavmeshLatest()) {
+            NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
+        } else {
+            std::cout << "Using cached navmesh data!" << std::endl;
+        }
     } else {
-        const auto settings = EntityComponentSystem::GetEntitiesWithData({typeid(NavmeshBuildSetup)}, {});
+        const auto settings = EntityComponentSystem::GetSingleton<NavmeshBuildSetup>();
         //Request rebuild from settings?
-        if (settings.get()->size() > 0 && unbuiltEnts.get()->size() == 0) {
-            const auto firstNavSettings = EntityComponentSystem::GetComponent<NavmeshBuildSetup>(settings.get()->GetLimitedNumber(1)[0]);
-            if (firstNavSettings->performRebuild) {
-                firstNavSettings->performRebuild = false;
+        if (settings && unbuiltEnts.get()->size() == 0) {
+            if (settings->performRebuild) {
+                settings->performRebuild = false;
                 NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
             }
         }
     }
-}
-
-bool compareByMeshName(const NavigatableEntitySurface* a, const NavigatableEntitySurface* b) {
-    return a->MeshName < b->MeshName;
 }
 
 void NavmeshBuildSystem::PerformNavmeshRebuild() {
@@ -71,13 +89,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     std::vector<int> tris;
 
     //Get data in
-    std::vector<NavigatableEntitySurface*> orderedSurfaces;
-    EntityTaskRunners::AutoPerformTasksSeries(
-        "navGetEnts", allEnts,
-        [&](double Dt, EntityData* ent) {
-            orderedSurfaces.push_back(EntityComponentSystem::GetComponent<NavigatableEntitySurface>(ent));
-        },
-        0);
+    std::vector<NavigatableEntitySurface*> orderedSurfaces = allEnts->GetAllComponents<NavigatableEntitySurface>();
     std::sort(orderedSurfaces.begin(), orderedSurfaces.end(), compareByMeshName);
 
     //Set verts and tris
@@ -293,6 +305,8 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     //Set data saved for later
     LoadedNavmeshData* load = EntityComponentSystem::GetOrCreateSingleton<LoadedNavmeshData>();
     load->navmeshData = std::string(reinterpret_cast<char*>(navData), navDataSize);
+    load->savedSetup = ExtractCachedData(orderedSurfaces);
+    std::cout << "Set load data: " << load->savedSetup.size();
     load->onComponentAdded(nullptr); //This is a bit sneaky but we want to init the loadednavmeshdata with out set string
 
     //TODO: Generate navmesh useable object
@@ -304,4 +318,26 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
     }
 
     std::cout << "Navmesh Generated" << std::endl;
+}
+
+bool NavmeshBuildSystem::IsNavmeshLatest() {
+    const auto builtNamesh = EntityComponentSystem::GetSingleton<LoadedNavmeshData>();
+    if (!builtNamesh) {
+        std::cout << "no built namvehs" << std::endl;
+        return false;
+    }
+    const auto currentSurfaces = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface)}, {});
+    std::vector<NavigatableEntitySurface*> orderedSurfaces = currentSurfaces->GetAllComponents<NavigatableEntitySurface>();
+
+    //Check same size at least
+    if (orderedSurfaces.size() != builtNamesh->savedSetup.size()) {
+        std::cout << "not same length: " << orderedSurfaces.size() << " vs " << builtNamesh->savedSetup.size() << std::endl;
+        return false;
+    }
+
+    //Extract
+    std::sort(orderedSurfaces.begin(), orderedSurfaces.end(), compareByMeshName);
+    const auto currentElements = ExtractCachedData(orderedSurfaces);
+
+    return std::equal(currentElements.begin(), currentElements.end(), builtNamesh->savedSetup.begin());
 }

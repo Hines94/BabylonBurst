@@ -58,6 +58,8 @@ public:
     bool operator==(const TypeName& other) const;                                                                                                            \
     bool isEqual(const Component* other) const override;
 
+//Use this macro to define a custom property for autogeneration system
+#define CPROPERTY(...) // CPROPERTY(__VA_ARGS__)
 //Custom property flags to be used with CPROPERTY
 namespace PropertyFlags {
     enum Flags {
@@ -74,10 +76,10 @@ namespace PropertyFlags {
     };
 }
 
-//Use this macro to define a custom property for autogeneration system
-#define CPROPERTY(...) // CPROPERTY(__VA_ARGS__)
+//Use this macro to define a custom component for autogeneration system
+#define CCOMPONENT(...) // CCOMPONENT(__VA_ARGS__)
+//Custom property flags to be used with CCOMPONENT
 namespace ComponentFlags {
-    //Custom property flags to be used with CPROPERTY
     enum Flags {
         //Do not type this property for client
         NOTYPINGS = 1 << 0,
@@ -85,9 +87,6 @@ namespace ComponentFlags {
         NONETWORK = 1 << 2,
     };
 } // namespace ComponentFlags
-
-//Use this macro to define a custom component for autogeneration system
-#define CCOMPONENT(...) // CCOMPONENT(__VA_ARGS__)
 
 //In editor we require another component to be present?
 #define REQUIRE_OTHER_COMPONENTS(...) // REQUIRE_OTHER_COMPONENTS(__VA_ARGS__)
@@ -101,35 +100,6 @@ struct RemoveCompData {
 //Bucket which holds pointers to all entities with this mixture of components
 struct BitsetBucket {
     EntityVector<EntityData*> data;
-};
-
-//Result of entity query, contains all the differing types of Ents
-struct EntityQueryResult {
-    std::vector<BitsetBucket*> buckets;
-
-    size_t size() {
-        size_t val = 0;
-        if (buckets.size() == 0) {
-            return 0;
-        }
-        for (auto& bucket : buckets) {
-            val += bucket->data.size();
-        }
-        return val;
-    }
-
-    std::vector<EntityData*> GetLimitedNumber(size_t num) {
-        std::vector<EntityData*> ret;
-        for (auto& bucket : buckets) {
-            for (auto& ent : bucket->data) {
-                ret.push_back(ent);
-                if (ret.size() == num) {
-                    return ret;
-                }
-            }
-        }
-        return ret;
-    }
 };
 
 CCOMPONENT(NOTYPINGS)
@@ -176,6 +146,49 @@ struct EntityData : public ICustomMsgpack {
     }
 };
 
+//Result of entity query, contains all the differing types of Ents
+struct EntityQueryResult {
+    std::vector<BitsetBucket*> buckets;
+
+    size_t size() {
+        size_t val = 0;
+        if (buckets.size() == 0) {
+            return 0;
+        }
+        for (auto& bucket : buckets) {
+            val += bucket->data.size();
+        }
+        return val;
+    }
+
+    std::vector<EntityData*> GetLimitedNumber(size_t num) {
+        std::vector<EntityData*> ret;
+        for (auto& bucket : buckets) {
+            for (auto& ent : bucket->data) {
+                ret.push_back(ent);
+                if (ret.size() == num) {
+                    return ret;
+                }
+            }
+        }
+        return ret;
+    }
+
+    template <typename T>
+    std::vector<T*> GetAllComponents() {
+        std::type_index compType = typeid(T);
+        std::vector<T*> ret;
+        for (auto& bucket : buckets) {
+            for (auto& ent : bucket->data) {
+                if (ent->components.find(compType) != ent->components.end()) {
+                    ret.push_back(dynamic_cast<T*>(ent->components[compType]));
+                }
+            }
+        }
+        return ret;
+    }
+};
+
 //Note: this is not a "full" ECS system - we do not use the proper memory techniques, all data is on the heap.
 //However, we get the other benefits of the ECS style such as easy saving and networking and it makes things far easier for parallelistation
 class EntityComponentSystem {
@@ -203,8 +216,8 @@ public:
     static bool HasComponent(EntityData* data, std::type_index compType);
     static void DelayedRemoveComponent(EntityData* Entity, std::type_index compType);
     static std::vector<std::type_index> GetBitsetMappings() { return ActiveEntitySystem->ComponentBitsetValues; }
-    //For smaller networking
-    static std::vector<std::pair<std::string, std::vector<std::string>>>& GetParameterMappings() { return ActiveEntitySystem->ComponentNumerisedParams; }
+    //For smaller networking & saving
+    std::vector<std::pair<std::string, std::vector<std::string>>> GetParameterMappings(ComponentDataType packType);
 
     static void SetParallelMode(bool inParallel) { ActiveEntitySystem->inParallel = inParallel; }
 
@@ -297,7 +310,7 @@ private:
     EntityUnorderedMap<std::bitset<MAX_COMPONENT_TYPES>, BitsetBucket*> BitsetBucketData;
     std::vector<std::type_index> ComponentBitsetValues;
     //Using this mapping (and sending to client) we can send only a uint for comp/parameter id instead of name. Much smaller.
-    std::vector<std::pair<std::string, std::vector<std::string>>> ComponentNumerisedParams;
+    std::vector<Component*> OrderedComponentParams;
     // Entities to be removed at end of current system - safer than removing during system parallel tasks
     EntityUnorderedSet<EntityData*> DelayedRemoveEntities;
     // Components to be removed at end of current system - safer than removing during system parallel tasks

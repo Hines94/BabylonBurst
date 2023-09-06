@@ -255,6 +255,10 @@ export class ServerWASMModuleWrapper {
         return this.wasmModule.GetEstimatedLatency();
     }
 
+    RegenerateNavmesh() {
+        this.wasmModule.RegenerateNavmesh();
+    }
+
     /** Dispose of this WASM wrapper */
     dispose() {
         //@ts-ignore

@@ -1,15 +1,26 @@
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
-import { RefreshNavmeshVisualisationStage, navStageChangeDat, onNavmeshStageChange } from "@BabylonBurstClient/Rendering/NavmeshVisualRenderSystem";
+import { RefreshNavmeshVisualisationStage, navStageChangeDat, onContoursRebuild, onNavmeshStageChange } from "@BabylonBurstClient/Rendering/NavmeshVisualRenderSystem";
 import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 
 /** All visualistaion options such as view colliders etc */
 export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
+    SetupNavmeshRebuild(ecosystem)
     SetupWiremeshVisualistaion(ecosystem);
     SetupColliderVisualisation(ecosystem);
     onNavmeshStageChange.add(GenerateNavStageVisualistaion);
-    GenerateNavStageVisualistaion({ecosystem:ecosystem,stage:"Contours"})
+    onContoursRebuild.add((eco)=>{
+        GenerateNavStageVisualistaion({ecosystem:ecosystem,stage:"Contours"})  
+    })
+}
+
+function SetupNavmeshRebuild(ecosystem:GameEcosystem) {
+    const ddOption = AddOptionToEditorTopMenu(ecosystem, "Build", "Rebuild Nav");
+    ddOption.addEventListener("click", () => {
+        ecosystem.wasmWrapper.RegenerateNavmesh();
+    });
 }
 
 function SetupColliderVisualisation(ecosystem: GameEcosystem) {

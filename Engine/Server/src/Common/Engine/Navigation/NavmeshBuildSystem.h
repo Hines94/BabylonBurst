@@ -16,6 +16,7 @@ public:
     static void RunSystem(bool Init, double dt);
 
     void PerformNavmeshRebuild();
+    static bool IsNavmeshLatest();
 
     std::atomic<bool> meshUnbuilt;
 
