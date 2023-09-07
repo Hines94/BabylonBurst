@@ -91,6 +91,7 @@
         "regex": "cpp",
         "source_location": "cpp",
         "valarray": "cpp",
-        "scoped_allocator": "cpp"
+        "scoped_allocator": "cpp",
+        "*.inc": "cpp"
     }
 }

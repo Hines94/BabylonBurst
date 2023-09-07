@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 #include <string>
 
+//TODO: Fix this test
 const std::string prefabData = "82a87072656661624944d92464653635656534372d333261302d346436622d626639312d306132303035366237636430aa70726566616244617461c5011382a1549392a650726566616292b05072656661624964656e746966696572ab456e74697479496e64657892ac456e745472616e73666f726d93a8506f736974696f6ea8526f746174696f6ea55363616c6592af496e7374616e63656452656e64657292a741777350617468a84d6573684e616d65a1439282a14f01a14381008200d92464653635656534372d333261302d346436622d626639312d306132303035366237636430010182a14f02a1438301810083a158cabe52e50ea159ca3ea5a87aa15a00028200b46275696c64696e672f426173696353686170657301a9426173696343756265008200d92464653635656534372d333261302d346436622d626639312d3061323030353662376364300102";
 
 std::vector<uint8_t> hexStringToBytes(const std::string& hex) {
@@ -68,13 +69,13 @@ TEST(PrefabsTest, ReSaveLoadPrefab) {
     EXPECT_EQ(EntityComponentSystem::GetNumberEntitiesSpawned(), 3);
     EXPECT_EQ(EntityComponentSystem::GetNumberActiveEntities(), 3);
     //Check default prefab data loaded
-    EXPECT_EQ(EntityComponentSystem::GetComponent<InstancedRender>(prefabInstancedRender)->MeshName, "BasicCube");
+    EXPECT_EQ(EntityComponentSystem::GetComponent<InstancedRender>(prefabInstancedRender)->ModelData.MeshName, "BasicCube");
 }
 
 TEST(PrefabsTest, SaveNonDefaultValueChanges) {
     //Change value
     const auto prefabInstanceEnt = EntityComponentSystem::GetEntitiesWithData({typeid(InstancedRender)}, {}).get()->GetLimitedNumber(1)[0];
-    EntityComponentSystem::GetComponent<InstancedRender>(prefabInstanceEnt)->MeshName = "Test";
+    EntityComponentSystem::GetComponent<InstancedRender>(prefabInstanceEnt)->ModelData.MeshName = "Test";
 
     //Check that save preserves non default value
     auto save = EntitySaver::GetFullSavePack();
@@ -88,7 +89,7 @@ TEST(PrefabsTest, SaveNonDefaultValueChanges) {
     EntityComponentSystem::FlushEntitySystem();
     const auto instRend = EntityComponentSystem::GetComponent<InstancedRender>(EntityComponentSystem::GetComponentDataForEntity(3));
     //Overriden value should be changed
-    EXPECT_EQ("Test", instRend->MeshName);
+    EXPECT_EQ("Test", instRend->ModelData.MeshName);
     //Default values should also be set
-    EXPECT_EQ("building/BasicShapes", instRend->AwsPath);
+    EXPECT_EQ("building/BasicShapes", instRend->ModelData.FilePath);
 }

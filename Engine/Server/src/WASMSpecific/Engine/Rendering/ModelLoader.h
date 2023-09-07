@@ -1,5 +1,6 @@
 #pragma once
 #include "Engine/Rendering/ExtractedMeshData.h"
+#include "Engine/Rendering/ModelSpecifier.hpp"
 #include <map>
 #include <mutex>
 #include <optional>
@@ -21,6 +22,7 @@ public:
     }
 
     ExtractedModelData* GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    ExtractedModelData* GetMeshFromFile(const ModelSpecifier& ms);
 
     void SetGetMeshCallback(std::function<std::vector<uint8_t>(std::string, std::string, int)> callback) {
         GetMeshCallback = callback;

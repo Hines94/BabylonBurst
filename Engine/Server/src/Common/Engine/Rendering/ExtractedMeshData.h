@@ -15,6 +15,7 @@ struct Triangle {
     void flipTriangleOrientation();
 };
 
+//Elements extracted from a mesh for easy diagnosis/feeding into nav etc
 struct ExtractedModelData {
     std::vector<Vertex> vertices;
     std::vector<Triangle> triangles;
@@ -23,6 +24,7 @@ struct ExtractedModelData {
     void ensureTrianglesUpwards();
 };
 
+//Specifier for a line segment. Useful for visualing data
 struct LineSegment {
     float startX, startY, startZ;
     float endX, endY, endZ;

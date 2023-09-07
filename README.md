@@ -14,7 +14,7 @@ Setup:
 - create an AWS S3 bucket to contain the data for your game
 - create an AWS global key in IAM (not safe for production)
 - Clone this directory (git clone https://github.com/Hines94/BabylonBurst.git) into WSL
-- run EngineSetup.sh
+- run 'bash EngineSetup.sh'
 - create .env at the same level as this README
     - See .env.sample for how to structure
     - Required: AWS_ID, AWS_KEY, AWS_BUCKET_NAME, AWS_BUCKET_REGION, DEBUG_MODE
@@ -27,13 +27,13 @@ Working With Examples:
 Simply copy the CppSource and TsSource folders into your Source folder and re-compile
 
 Start Editor:
-run StartEditor.sh
+run 'bash bbStartEditor.sh'
 
 Start Development:
 On vscode + wsl extension:
 run debug mode to debug server (F5)
 No vscode:
-run bash StartDev.sh
+run 'bash bbStartDev.sh'
 
 Check Backend Performance:
 Open Prometheus to see graphed data (localhost:3000)
@@ -47,7 +47,7 @@ Git & Engine Upgrades:
     - (OPTIONAL) - delete this
     - (OPTIONAL) - work from a branch
 - Upgrading from any git history
-    - Run 'bash EngineUpgrade.sh' 
+    - Run 'bash bbEngineUpgrade.sh' 
     - Should automatically merge in changes from the engine
     - If you have changed Engine code you may need to resolve any conflicts
 
@@ -69,6 +69,7 @@ Extend Code C++:
     - `template <typename Packer>`
         - void msgpack_pack(Packer& pk) const 
     - void msgpack_unpack(msgpack::object const& o)
+    - And for now they need to pack into map with SAME NAME param in msgpack (eg TestParam -> {"TestParam",value}) to be compatible with Editor
 
 Extend Code Typescript:
 - Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 

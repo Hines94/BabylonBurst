@@ -4,6 +4,10 @@
 #include <iostream>
 #include <msgpack.hpp>
 
+ExtractedModelData* ModelLoader::GetMeshFromFile(const ModelSpecifier& ms) {
+    return GetMeshFromFile(ms.FilePath, ms.MeshName, ms.FileIndex);
+}
+//Unfortunatly needed as Draco extractor not available for WASM (so need seperate method that uses BabylonJs to get mesh)
 ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex) {
 
     const auto name = filePath + "_" + std::to_string(fileIndex) + "_" + meshName;

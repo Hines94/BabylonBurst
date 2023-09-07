@@ -132,20 +132,25 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
                 Key: location,
                 ResponseCacheControl: "no-cache",
             });
-            storage.s3.send(
-                request,
-                //our callback for after S3 has done its thing
-                async function (err: any, data: any) {
+            try {
+                storage.s3.send(request, (err: any, data: any) => {
                     if (err !== null) {
-                        //TODO offline here??
-                        console.error("Error fetching async data asset: " + err);
+                        console.warn("Warning: Failed to fetch async data asset: " + location); // Log a warning.
                         reject(null);
                     } else {
-                        //Wait for our data to complete and send
-                        resolve(await data["Body"].transformToByteArray());
+                        data["Body"]
+                            .transformToByteArray()
+                            .then((result: any) => resolve(result))
+                            .catch((error: any) => {
+                                console.warn("Warning: Failed to transform data.");
+                                reject(null);
+                            });
                     }
-                }
-            );
+                });
+            } catch (err) {
+                console.warn("Warning: Error while sending s3 request for " + location);
+                reject(null);
+            }
         });
     }
 

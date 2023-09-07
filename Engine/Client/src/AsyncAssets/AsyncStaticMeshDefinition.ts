@@ -9,6 +9,8 @@ import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
 import { GetAssetFullPath } from "./Utils/ZipUtils";
 import { AsyncAssetManager } from ".";
+import { DebugMode, environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
+import { GetBadMeshMaterial } from "@engine/Utils/MeshUtils";
 
 /** A Dictionary of all mesh definitions with details on if they are  */
 var AllMDefinitions: {
@@ -97,6 +99,12 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
     /** Generic method for making sure mesh is loaded from AWS and performing the combine method on seperate elements */
     async loadInMesh(scene: Scene) {
+        if (!this.desiredPath || this.desiredPath == "") {
+            return;
+        }
+        if (!this.meshName || this.meshName == "") {
+            return;
+        }
         //Already loaded?
         if (this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] !== undefined) {
             return;
@@ -150,9 +158,6 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
                     this.materials.length +
                     ". Cancelling description creation."
             );
-            if (AsyncAssetManager.GetAssetManager().printDebugStatements === true) {
-                console.log(asyncLoader.loadedGLTF);
-            }
             this.setReplacementErrorBox(scene);
             return;
         }
@@ -228,10 +233,10 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
     /** If something went wrong just show a simple box */
     setReplacementErrorBox(scene: Scene) {
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox");
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material = new StandardMaterial("ReplacementMat");
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material.alpha = 0.1;
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].isVisible = false;
+        if (environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light) {
+            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox");
+            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material = GetBadMeshMaterial(scene);
+        }
         this.onMeshReady.notifyObservers(this);
     }
 

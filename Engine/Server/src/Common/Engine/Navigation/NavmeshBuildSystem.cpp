@@ -18,19 +18,16 @@
 
 static NavmeshBuildSystem instance;
 
-std::vector<CachedNavElement> ExtractCachedData(std::vector<NavigatableEntitySurface*> surfaces) {
-    std::vector<CachedNavElement> ret;
+std::vector<ModelSpecifier> ExtractCachedData(std::vector<NavigatableEntitySurface*> surfaces) {
+    std::vector<ModelSpecifier> ret;
     for (const auto& surf : surfaces) {
-        CachedNavElement ele;
-        ele.AwsPath = surf->AwsPath;
-        ele.MeshName = surf->MeshName;
-        ret.push_back(ele);
+        ret.push_back(surf->surfaceMesh);
     }
     return ret;
 }
 
 bool compareByMeshName(const NavigatableEntitySurface* a, const NavigatableEntitySurface* b) {
-    return a->MeshName < b->MeshName;
+    return a->surfaceMesh.MeshName < b->surfaceMesh.MeshName;
 }
 
 //Methods
@@ -42,7 +39,7 @@ NavmeshBuildSystem::NavmeshBuildSystem() {
 
 void BuildEntity(double Dt, EntityData* ent) {
     NavigatableEntitySurface* nm = EntityComponentSystem::GetComponent<NavigatableEntitySurface>(ent);
-    const auto extractedData = ModelLoader::getInstance().GetMeshFromFile(nm->AwsPath, nm->MeshName, 0);
+    const auto extractedData = ModelLoader::getInstance().GetMeshFromFile(nm->surfaceMesh);
 
     if (!extractedData) {
         NavmeshBuildSystem::getInstance().meshUnbuilt = true;

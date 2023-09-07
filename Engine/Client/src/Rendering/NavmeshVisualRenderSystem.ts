@@ -128,6 +128,8 @@ export function SetupNavmeshVisualiser() {
         ecosystem.dynamicProperties[mesh] = MeshBuilder.CreateLines("lines", { points: lines }, ecosystem.scene);
 
         RefreshMeshVisual(ecosystem, "Contours", mesh);
+
+        onContoursRebuild.notifyObservers(ecosystem);
     };
 }
 

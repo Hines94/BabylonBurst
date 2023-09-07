@@ -1,14 +1,13 @@
 #pragma once
 #include "Engine/Entities/EntitySystem.h"
+#include "Engine/Rendering/ModelSpecifier.hpp"
 #include <string>
 class EntTransform;
 
 REQUIRE_OTHER_COMPONENTS(EntTransform)
 struct PhysicsCollider : public Component {
     CPROPERTY(NET, SAVE)
-    std::string AwsPath;
-    CPROPERTY(NET, SAVE)
-    std::string MeshName;
+    ModelSpecifier ColliderMesh;
 
     DECLARE_COMPONENT_METHODS(PhysicsCollider)
 };

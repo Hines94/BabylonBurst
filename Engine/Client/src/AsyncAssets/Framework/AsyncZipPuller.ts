@@ -25,6 +25,12 @@ export class AsyncZipPuller {
     }
 
     private async PerformLoadProcess() {
+        if (!this.filePath || this.filePath.replace(".zip", "") === "") {
+            this.completed = true;
+            this.onAssetLoad.notifyObservers(null);
+            return;
+        }
+
         var manager = AsyncAssetManager.GetAssetManager();
         const webWorker = await manager.GetWebWorker();
         if (webWorker !== undefined) {

@@ -1,5 +1,6 @@
 
 #include "StringUtils.h"
+#include <regex>
 #include <stdexcept>
 #include <string_view>
 #include <vector>
@@ -63,4 +64,10 @@ std::string StringUtils::EnsureZipExtension(const std::string& filename) {
         return filename + ".zip";
     }
     return filename;
+}
+
+bool StringUtils::CanConvertToLongLong(const std::string& str) {
+    // This regex matches an optional leading '-' followed by one or more digits
+    static const std::regex pattern("^-?\\d+$");
+    return std::regex_match(str, pattern);
 }

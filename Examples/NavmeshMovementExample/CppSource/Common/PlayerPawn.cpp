@@ -12,8 +12,8 @@ void PlayerPawn::SetupNewPawn(EntityData* pawn) {
 
     //Add Renderer
     const auto newRenderer = new InstancedRender();
-    newRenderer->AwsPath = "debug/TestHuman";
-    newRenderer->MeshName = "TestHuman";
+    newRenderer->ModelData.FilePath = "debug/TestHuman";
+    newRenderer->ModelData.MeshName = "TestHuman";
     EntityComponentSystem::AddSetComponentToEntity(pawn,newRenderer);
 
     //TODO: Add controllable Navigator

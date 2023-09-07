@@ -21,8 +21,8 @@ namespace TestCreationDeletion {
         if (!SpawnedEnt) {
             SpawnedEnt = EntityComponentSystem::AddEntity();
             auto boxVisual = new InstancedRender();
-            boxVisual->AwsPath = "debug/TestBox";
-            boxVisual->MeshName = "TestBox";
+            boxVisual->ModelData.FilePath = "debug/TestBox";
+            boxVisual->ModelData.MeshName = "TestBox";
             EntityComponentSystem::AddSetComponentToEntity(SpawnedEnt, boxVisual);
             auto transform = new EntTransform();
             transform->Position.Z = 5;

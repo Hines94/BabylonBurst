@@ -21,6 +21,11 @@ export function GetSceneLoader(path: string, fileIndex: number, scene: Scene): S
     }
 }
 
+function matchesMeshPattern(baseString: string, str: string) {
+    const pattern = new RegExp("^" + baseString + "(_primitive\\d+)?$");
+    return pattern.test(str);
+}
+
 /**
  * The acual "loader" for a GLTF scene. Will load from AWS and hide the loaded meshes via isVisible.
  */
@@ -73,7 +78,7 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
         var foundMeshElements: Mesh[] = [];
         const LoadedMeshes = this.loadedGLTF.meshes;
         for (var i = 0; i < LoadedMeshes.length; i++) {
-            if (LoadedMeshes[i].id.includes(meshName)) {
+            if (matchesMeshPattern(meshName, LoadedMeshes[i].id)) {
                 const asMesh = LoadedMeshes[i] as Mesh;
                 if (asMesh === null || asMesh === undefined) {
                     console.error("Mesh " + LoadedMeshes[i].name + " is not a mesh! Its abstract something...");

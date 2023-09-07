@@ -22,8 +22,8 @@ struct PlayerPawn : public Component {
 
         // Render
         auto tempRender = new InstancedRender();
-        tempRender->AwsPath = "debug/TestHuman";
-        tempRender->MeshName = "TestHuman";
+        tempRender->ModelData.FilePath = "debug/TestHuman";
+        tempRender->ModelData.MeshName = "TestHuman";
         EntityComponentSystem::AddSetComponentToEntity(pawnEnt, tempRender);
 
         // Physics

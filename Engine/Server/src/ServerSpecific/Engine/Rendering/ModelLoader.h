@@ -1,5 +1,6 @@
 #pragma once
 #include "Engine/Rendering/ExtractedMeshData.h"
+#include "Engine/Rendering/ModelSpecifier.hpp"
 #include "tiny_gltf.h"
 #include <mutex>
 #include <optional>
@@ -21,6 +22,7 @@ public:
     }
 
     ExtractedModelData* GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    ExtractedModelData* GetMeshFromFile(const ModelSpecifier& ms);
 
 private:
     // Private constructor so that no objects can be created

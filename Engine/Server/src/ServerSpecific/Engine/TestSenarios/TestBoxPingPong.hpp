@@ -12,8 +12,8 @@ namespace TestBoxPingPong {
         //Spawn
         BoxData = EntityComponentSystem::AddEntity();
         auto boxVisual = new InstancedRender();
-        boxVisual->AwsPath = "debug/TestBox";
-        boxVisual->MeshName = "TestBox";
+        boxVisual->ModelData.FilePath = "debug/TestBox";
+        boxVisual->ModelData.MeshName = "TestBox";
         EntityComponentSystem::AddSetComponentToEntity(BoxData, boxVisual);
         auto transform = new EntTransform();
         transform->Position.Z = 5;

@@ -16,7 +16,7 @@ const colliderMaterial = "___COLLIDERMATERIAL___";
 const loadedVisuals = "___LOADEDCOLLIDERMESHES___";
 
 function getRunnerID(rend: PhysicsCollider): string {
-    var ret: string = rend.AwsPath + "_" + rend.MeshName + "_" + 0 + "_";
+    var ret: string = rend.ColliderMesh.FilePath + "_" + rend.ColliderMesh.MeshName + "_" + 0 + "_";
     return ret;
 }
 
@@ -60,8 +60,8 @@ export function RunColliderVisualSystem(ecosystem: GameEcosystem) {
         //Create render runner if not exists
         if (ecosystem.dynamicProperties[loadedVisuals][runnerID] === undefined) {
             ecosystem.dynamicProperties[loadedVisuals][runnerID] = new AsyncStaticMeshInstanceRunner(
-                collideItem.AwsPath,
-                collideItem.MeshName,
+                collideItem.ColliderMesh.FilePath,
+                collideItem.ColliderMesh.MeshName,
                 [ecosystem.dynamicProperties[colliderMaterial]],
                 0,
                 uiLayerMask
