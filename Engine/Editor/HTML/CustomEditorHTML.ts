@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
 import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserHTML, ContentStorageBackend, GetCurrentLevelItem } from "./ContentBrowser/ContentBrowserHTML";
+import { GatherAllModelPaths } from "../Utils/EditorModelSpecifier";
 
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;
@@ -144,6 +145,7 @@ export class CustomEditorHTML extends BaseTickableObject {
             },
         };
         this.contentBrowser.setupStorage(this.editorStore);
+        GatherAllModelPaths(topLevelHigherarch,this.editor.scene);
     }
 
     async hardReloadContentBrowser() {
@@ -163,6 +165,7 @@ export class CustomEditorHTML extends BaseTickableObject {
         }
         this.editorStore.currentFolderLevel = newFolderLevel;
         this.contentBrowser.rebuildStoredItems();
+        GatherAllModelPaths(topLevelHigherarch,this.editor.scene);
     }
 
     performTick(ecosystem: GameEcosystem): void {}

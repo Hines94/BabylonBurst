@@ -1,5 +1,5 @@
 import { Observable } from "@babylonjs/core";
-import { AsyncDataType, GetAssetFullPath } from "../Utils/ZipUtils.js";
+import { AsyncDataType, GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils.js";
 import { AsyncAssetManager } from "./AsyncAssetManager.js";
 import { AsyncZipPuller } from "./AsyncZipPuller.js";
 
@@ -74,7 +74,7 @@ export abstract class AsyncAssetLoader {
 
     constructor(assetPath: string, fileIndex: number, startLoad = true, ignoreCache = false) {
         this.ignoreCache = ignoreCache;
-        this.requestedAssetPath = assetPath + ".zip";
+        this.requestedAssetPath = GetZipPath(assetPath);
         this.desiredFileIndex = fileIndex;
         if (startLoad === true) {
             this.performAsyncLoad();
@@ -106,7 +106,6 @@ export abstract class AsyncAssetLoader {
             this.GetDataLoadType(),
             this.ignoreCache
         );
-        this.PerformSpecificSetup(data);
 
         if (manager.printDebugStatements) {
             const loadTime = (performance.now() - this.startLoadTime) / 1000;
@@ -114,6 +113,8 @@ export abstract class AsyncAssetLoader {
         }
 
         DecrementCurrentlyLoadingAssets(ourAssetPath, manager);
+
+        await this.PerformSpecificSetup(data);
     }
 
     static RemovePriorCaching(location: string, fileIndex: number) {

@@ -15,6 +15,7 @@ export class AsyncZipPuller {
     onAssetLoad = new Observable();
     completed = false;
     success = true;
+    numFiles = 0;
 
     webWorkerObserve: Observer<CacheWorkerResult>;
 
@@ -53,10 +54,18 @@ export class AsyncZipPuller {
         delete existingZipPullers[location];
     }
 
+    static GetOrFindAsyncPuller(location: string, loadType: AsyncDataType) {
+        if (existingZipPullers[location]) {
+            return existingZipPullers[location];
+        }
+        return new AsyncZipPuller(location, loadType);
+    }
+
     //For online - process our AWS response and check for any cached so we don't need to re-download
     private async processBackendResponse(zipBytes: Uint8Array) {
         var manager = AsyncAssetManager.GetAssetManager();
-        this.success = await UnzipAndCacheData(zipBytes, manager.frontendCache, this.loadType, this.filePath);
+        this.numFiles = await UnzipAndCacheData(zipBytes, manager.frontendCache, this.loadType, this.filePath);
+        this.success = this.numFiles > 0;
 
         const loadTime = (performance.now() - this.startLoadTime) / 1000;
         if (manager.printDebugStatements) {

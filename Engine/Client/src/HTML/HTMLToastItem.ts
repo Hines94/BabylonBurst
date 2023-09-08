@@ -11,3 +11,8 @@ export function ShowToastNotification(message: string, durationMs = 2000, doc = 
         toast.classList.remove("visible");
     }, durationMs);
 }
+
+export function ShowToastError(message: string, doc = document) {
+    console.error(message);
+    ShowToastNotification(message, 3000, doc, "Red");
+}

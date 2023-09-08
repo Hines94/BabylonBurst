@@ -28,19 +28,7 @@ struct ModelSpecifier {
         return !(*this == other);
     }
 
-    template <typename Packer>
-    void msgpack_pack(Packer& pk) const {
-        pk.pack_map(3);
-
-        pk.pack("FilePath");
-        pk.pack(FilePath);
-
-        pk.pack("MeshName");
-        pk.pack(MeshName);
-
-        pk.pack("FileIndex");
-        pk.pack(FileIndex);
-    }
+    MSGPACK_PACK_FUNC(FilePath, MeshName, FileIndex)
 
     void msgpack_unpack(msgpack::object const& o) {
         // Ensure o is a map before proceeding.

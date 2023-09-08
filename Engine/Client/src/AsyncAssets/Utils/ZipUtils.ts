@@ -22,12 +22,13 @@ export function GetAssetFullPath(path: string, fileIndex: number) {
     return zipPath;
 }
 
+/** Returns number of files */
 export async function UnzipAndCacheData(
     zipBytes: Uint8Array,
     frontendCache: IFrontendStorageInterface,
     loadType: AsyncDataType,
     filePath: string
-): Promise<boolean> {
+): Promise<number> {
     // //Perform our deflate (best we can do on javascript - tried Brotli & LZMA libraries for many hours but no good libs)
     const { entries } = await unzip(zipBytes);
     //Add all found files to cache for offline etc
@@ -51,5 +52,5 @@ export async function UnzipAndCacheData(
         }
         i++;
     }
-    return success;
+    return i;
 }

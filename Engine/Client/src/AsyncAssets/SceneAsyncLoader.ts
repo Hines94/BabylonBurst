@@ -26,6 +26,10 @@ function matchesMeshPattern(baseString: string, str: string) {
     return pattern.test(str);
 }
 
+interface MeshCount {
+    [key: string]: number;
+}
+
 /**
  * The acual "loader" for a GLTF scene. Will load from AWS and hide the loaded meshes via isVisible.
  */
@@ -88,6 +92,37 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
             }
         }
         return foundMeshElements;
+    }
+
+    extractUniqueMeshes(): MeshCount {
+        let meshCount: MeshCount = {};
+        if (!this.loadedGLTF) {
+            return meshCount;
+        }
+
+        // RegExp to identify base mesh name and ignore _primitiveX
+        const pattern = /^(.*?)(_primitive(\d+))?$/;
+
+        this.loadedGLTF.meshes.forEach(mesh => {
+            const meshName = mesh.name;
+            if (meshName === "__root__") {
+                return;
+            }
+
+            const match = meshName.match(pattern);
+
+            if (match) {
+                const baseMesh = match[1]; // just the base name, ignoring primitive suffix
+
+                if (!meshCount[baseMesh]) {
+                    meshCount[baseMesh] = 0;
+                }
+
+                meshCount[baseMesh]++;
+            }
+        });
+
+        return meshCount;
     }
 
     override GetAssetFullPath(): string {

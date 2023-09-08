@@ -44,6 +44,8 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
     desiredPath: string;
     onMeshReady = new Observable<AsyncStaticMeshDefinition>();
     startedLoadingProcess = false;
+    /** Set to true if we want to accept different number of materials input vs actual mesh */
+    bNoFailMaterialDiff = false;
 
     //Details on this definition
     meshName: string;
@@ -147,19 +149,29 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
         //Validation
         if (foundMeshElements.length !== this.materials.length) {
-            console.error(
-                "Specified different number of materials for mesh: " +
-                    this.meshName +
-                    " in GLTF: " +
-                    asyncLoader.requestedAssetPath +
-                    ". Number of materials in GLTF: " +
-                    foundMeshElements.length +
-                    ". Number Specified: " +
-                    this.materials.length +
-                    ". Cancelling description creation."
-            );
-            this.setReplacementErrorBox(scene);
-            return;
+            if (this.bNoFailMaterialDiff) {
+                if (foundMeshElements.length > this.materials.length) {
+                    for (var m = this.materials.length - 1; m < foundMeshElements.length; m++) {
+                        this.materials.push(null);
+                    }
+                } else {
+                    this.materials = this.materials.slice(0, foundMeshElements.length);
+                }
+            } else {
+                console.error(
+                    "Specified different number of materials for mesh: " +
+                        this.meshName +
+                        " in GLTF: " +
+                        asyncLoader.requestedAssetPath +
+                        ". Number of materials in GLTF: " +
+                        foundMeshElements.length +
+                        ". Number Specified: " +
+                        this.materials.length +
+                        ". Cancelling description creation."
+                );
+                this.setReplacementErrorBox(scene);
+                return;
+            }
         }
 
         //Change to specified materials

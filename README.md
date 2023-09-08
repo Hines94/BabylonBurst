@@ -66,14 +66,16 @@ Extend Code C++:
 - Any custom data structures to be saved/networked will require:
     - bool operator==(const CachedNavElement& rhs) const
     - bool operator!=(const CachedNavElement& other) const 
-    - `template <typename Packer>`
-        - void msgpack_pack(Packer& pk) const 
+    - MSGPACK_PACK_FUNC(YOURPARAMS,HERE) - NOTE: Limit of 100 params max
     - void msgpack_unpack(msgpack::object const& o)
     - And for now they need to pack into map with SAME NAME param in msgpack (eg TestParam -> {"TestParam",value}) to be compatible with Editor
 
 Extend Code Typescript:
 - Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 
 - Send messages to Server - if(serverConnection) { serverConnection.SendMessageToServer() }
+
+Extend Editor:
+RegisterCustomInspectorComponent (call during TODO: OnEditorStart)
 
 Future ideas:
 - TODO: Future iterations include tools for login & account management on AWS & integrate directly into Engine

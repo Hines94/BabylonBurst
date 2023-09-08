@@ -11,6 +11,7 @@ export function SetupModelLoader(scene: Scene, manager: AsyncAssetManager) {
         const identifier: string = file + "_" + modelName + "_" + fileIndex;
         if (!requestedModels[identifier]) {
             requestedModels[identifier] = new AsyncStaticMeshDefinition(file, modelName, [null], fileIndex);
+            requestedModels[identifier].bNoFailMaterialDiff = true;
             requestedModels[identifier].loadInMesh(setupScene);
             return "";
         }

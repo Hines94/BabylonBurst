@@ -4,7 +4,7 @@
         {
             "type": "shell",
             "label": "build",
-            "command": "bash StartDev.sh -ns",
+            "command": "bash bbStartDev.sh -ns",
             "group": {
                 "kind": "build",
                 "isDefault": true
