@@ -14,8 +14,7 @@ namespace MsgpackHelpers {
     }
 } // namespace MsgpackHelpers
 
-//Useful macros for auto packing our data for any custom components
-
+// --- Useful macros for auto packing our data for any custom components ---
 #define PACK_SINGLE(VAR) \
     pk.pack(#VAR);       \
     pk.pack(VAR);
@@ -25,4 +24,20 @@ namespace MsgpackHelpers {
     void msgpack_pack(Packer& pk) const {     \
         pk.pack_map(COUNT_ARGS(__VA_ARGS__)); \
         APPLY(PACK_SINGLE, __VA_ARGS__)       \
+    }
+
+// --- Useful macros for auto unpacking our data for any custom components ---
+#define UNPACK_SINGLE(VAR)                       \
+    if (data.find(#VAR) != data.end()) {         \
+        VAR = data.at(#VAR).as<decltype(VAR)>(); \
+    }
+
+#define MSGPACK_UNPACK_FUNC(...)                     \
+    void msgpack_unpack(msgpack::object const& o) {  \
+        if (o.type != msgpack::type::MAP) {          \
+            return;                                  \
+        }                                            \
+        std::map<std::string, msgpack::object> data; \
+        o.convert(data);                             \
+        APPLY(UNPACK_SINGLE, __VA_ARGS__)            \
     }

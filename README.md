@@ -67,8 +67,7 @@ Extend Code C++:
     - bool operator==(const CachedNavElement& rhs) const
     - bool operator!=(const CachedNavElement& other) const 
     - MSGPACK_PACK_FUNC(YOURPARAMS,HERE) - NOTE: Limit of 100 params max
-    - void msgpack_unpack(msgpack::object const& o)
-    - And for now they need to pack into map with SAME NAME param in msgpack (eg TestParam -> {"TestParam",value}) to be compatible with Editor
+    - MSGPACK_UNPACK_FUNC(YOURPARAMS,HERE) - NOTE: Limit of 100 params max
 
 Extend Code Typescript:
 - Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 

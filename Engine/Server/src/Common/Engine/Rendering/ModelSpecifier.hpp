@@ -30,22 +30,5 @@ struct ModelSpecifier {
 
     MSGPACK_PACK_FUNC(FilePath, MeshName, FileIndex)
 
-    void msgpack_unpack(msgpack::object const& o) {
-        // Ensure o is a map before proceeding.
-        if (o.type != msgpack::type::MAP) {
-            return;
-        }
-        std::map<std::string, msgpack::object> data;
-        o.convert(data);
-
-        if (data.find("FilePath") != data.end()) {
-            FilePath = data.at("FilePath").as<std::string>();
-        }
-        if (data.find("MeshName") != data.end()) {
-            MeshName = data.at("MeshName").as<std::string>();
-        }
-        if (data.find("FileIndex") != data.end()) {
-            FileIndex = data.at("FileIndex").as<int>();
-        }
-    }
+    MSGPACK_UNPACK_FUNC(FilePath, MeshName, FileIndex)
 };
