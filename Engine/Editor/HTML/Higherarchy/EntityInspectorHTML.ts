@@ -102,22 +102,26 @@ export class EntityInspectorHTML {
         bindCustomComponentItems();
 
         function BindComponentChange() {
-            editor.on("change", function () {
-                const newData = editor.getValue();
-                const keys = Object.keys(newData);
-                var isNew = false;
-                keys.forEach(k => {
-                    if (higherarch.owner.allEntities[entityId][comp][k] !== newData[k]) {
-                        isNew = true;
+            editor.on("change", RefreshValues());
+
+            function RefreshValues(): any {
+                return function () {
+                    const newData = editor.getValue();
+                    const keys = Object.keys(newData);
+                    var isNew = false;
+                    keys.forEach(k => {
+                        if (higherarch.owner.allEntities[entityId][comp][k] !== newData[k]) {
+                            isNew = true;
+                        }
+                    });
+                    if (!isNew) {
+                        return;
                     }
-                });
-                if (!isNew) {
-                    return;
-                }
-                higherarch.owner.allEntities[entityId][comp] = newData;
-                higherarch.owner.RegenerateHigherarchy();
-                higherarch.runCustomComponentChanges(comp);
-            });
+                    higherarch.owner.allEntities[entityId][comp] = newData;
+                    higherarch.owner.RegenerateHigherarchy();
+                    higherarch.runCustomComponentChanges(comp);
+                };
+            }
         }
 
         function SetupComponentEditor() {

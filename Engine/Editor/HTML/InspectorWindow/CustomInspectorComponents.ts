@@ -1,6 +1,8 @@
+import { CustomInstancedRenderInspectorComp } from "./CustomInstancedRendererComponent";
+import { CustomMaterialInspectorComp } from "./CustomMaterialSpecifier";
 import { CustomModelInspectorComp } from "./CustomModelSpecifier";
 
-//TODO: Make this generic and easy to register (eg some sort of class base or something)
+
 function ProcessCustomElements(editor:JSONEditor) {
     if(!editor.original_schema.$ref) {
         return;
@@ -8,28 +10,32 @@ function ProcessCustomElements(editor:JSONEditor) {
     //Register any default engine items here
     if(!registeredDefaultComps) {
         RegisterCustomInspectorComponent(new CustomModelInspectorComp());
+        RegisterCustomInspectorComponent(new CustomMaterialInspectorComp());
+        RegisterCustomInspectorComponent(new CustomInstancedRenderInspectorComp());
 
         registeredDefaultComps = true;
     }
     //Run through any custom comps and see if we get a hit
     for(var c = 0; c < registeredCustomInspectorComps.length;c++){
-        if(registeredCustomInspectorComps[c].BuildCustomElement(editor)){
-            return;
-        }
+        registeredCustomInspectorComps[c].BuildCustomElement(editor);
     }
 }
 
 type originalSchema = {
     $ref?:string;
+    items?:{$ref?:string};
 }
 
 export type JSONEditor = {
     original_schema?:originalSchema;
     editors?:JSONEditor[];
+    rows?:JSONEditor[];
     container:HTMLElement;
     key:string;
     setValue:(val:any)=>void;
     getValue:()=>any;
+    on:(evName:string,evCallback:()=>void)=>void;
+    boundOn?:boolean;
 }
 
 export interface CustomInspectorComp {
@@ -83,10 +89,29 @@ export function CheckEditorForCustomElements(editor:JSONEditor) {
         //Find components
         ProcessCustomElements(editor);
     }
+    if(editor.constructor.name === "CustomArrayEditor" && !editor.boundOn) {
+        if(editor.on){
+            editor.on("change", function () {
+                processEditorRows()
+            })
+        }
+        editor.boundOn = true;
+    }
     if(editor.editors) {
         const keys = Object.keys(editor.editors);
         for(var k = 0; k < keys.length;k++) {
             CheckEditorForCustomElements(editor.editors[keys[k]])
+        }
+    }
+    processEditorRows();
+
+    function processEditorRows() {
+        if (editor.rows) {
+            const keys = Object.keys(editor.rows);
+            for (var k = 0; k < keys.length; k++) {
+                editor.rows[keys[k]].original_schema["$ref"] = editor.original_schema.items.$ref;
+                CheckEditorForCustomElements(editor.rows[keys[k]]);
+            }
         }
     }
 }

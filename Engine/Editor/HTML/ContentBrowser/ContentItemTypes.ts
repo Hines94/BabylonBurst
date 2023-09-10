@@ -1,3 +1,4 @@
+import { ContentBrowserMaterialHTML } from "./Specifics/ContentBrowserMaterialHTML";
 import { ContentBrowserHTML } from "./ContentBrowserHTML";
 import { ContentBrowserItemHTML } from "./ContentBrowserItemHTML";
 import { ContentItem, ContentItemType } from "./ContentItem";
@@ -34,6 +35,9 @@ export function GetContentItemHTMLSpecific(
     }
     if (item.category === ContentItemType.Model) {
         return new ContentBrowserModelHTML(item, div, ourContentHolder);
+    }
+    if (item.category === ContentItemType.Material) {
+        return new ContentBrowserMaterialHTML(item, div, ourContentHolder);
     }
     console.error("Cant find content browser item type for category: " + ContentItemType[item.category]);
     return null;

@@ -3,7 +3,7 @@ import { Color3, Color4, InputBlock, Material, NodeMaterial, Scene, Texture, Vec
 import { GetSimpleImageMaterial } from "./SimpleImageMaterial";
 import { AsyncImageDescription, AsyncMaterial } from "../AsyncAssets";
 
-/** A default implementation of our cell shaded material */
+/** A default implementation of our unlit material */
 export class AsyncSimpleImageMaterial extends AsyncMaterial {
     image: AsyncImageDescription;
     color: Color4;

@@ -67,6 +67,9 @@ interface ModelSpecifierEditor extends JSONEditor {
 }
 
 function GetModelSpecifierAbbrevText(element:ModelSpecifier) {
+    if(!element || !element.FilePath) {
+        return "";
+    }
     return  element.FilePath.replace("~7~","").replace(".zip","") + " - " + element.MeshName;
 }
 

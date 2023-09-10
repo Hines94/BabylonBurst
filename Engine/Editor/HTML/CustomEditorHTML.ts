@@ -10,7 +10,8 @@ import { v4 as uuidv4 } from "uuid";
 import { encode } from "@msgpack/msgpack";
 import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserHTML, ContentStorageBackend, GetCurrentLevelItem } from "./ContentBrowser/ContentBrowserHTML";
-import { GatherAllModelPaths } from "../Utils/EditorModelSpecifier";
+import { RefreshAllModelPaths } from "../Utils/EditorModelSpecifier";
+import { TrackAllObjectTypes } from "../Utils/ContentTypeTrackers";
 
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;
@@ -53,6 +54,7 @@ export class CustomEditorHTML extends BaseTickableObject {
             category: ContentItemType.BASEASSETSLAYER,
             containedItems: {},
             parent: undefined,
+            fileIndex:0
         };
         allObjects.forEach(item => {
             const folders = item.Key.split("/");
@@ -68,6 +70,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                         category: ContentItemType.Folder,
                         parent: currentLevel,
                         containedItems: {},
+                        fileIndex:0
                     };
                 }
                 currentLevel = currentLevel.containedItems[folder];
@@ -91,6 +94,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                     parent: currentLevel,
                     lastModified: item.LastModified,
                     size: item.Size,
+                    fileIndex:0
                 };
             }
         });
@@ -118,6 +122,20 @@ export class CustomEditorHTML extends BaseTickableObject {
                                 prefabData: SaveEntitiesToMsgpackIntArray({}),
                             }),
                         ],
+                        fileIndex:0
+                    },
+                    {
+                        nameExtension: "~" + ContentItemType.Material + "~.zip",
+                        readableName: "New Material",
+                        category: ContentItemType.Material,
+                        parent: currentLevel,
+                        lastModified: new Date(),
+                        data: 
+                            encode({
+                                MaterialShaderType: "PBRMaterialShader",
+                            }),
+                        fileIndex:0
+                        
                     },
                     {
                         nameExtension: "/",
@@ -125,6 +143,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                         category: ContentItemType.Folder,
                         parent: currentLevel,
                         containedItems: {},
+                        fileIndex:0
                     },
                 ];
             },
@@ -145,7 +164,8 @@ export class CustomEditorHTML extends BaseTickableObject {
             },
         };
         this.contentBrowser.setupStorage(this.editorStore);
-        GatherAllModelPaths(topLevelHigherarch,this.editor.scene);
+        TrackAllObjectTypes(topLevelHigherarch);
+        RefreshAllModelPaths(topLevelHigherarch,this.editor.scene);
     }
 
     async hardReloadContentBrowser() {
@@ -165,7 +185,7 @@ export class CustomEditorHTML extends BaseTickableObject {
         }
         this.editorStore.currentFolderLevel = newFolderLevel;
         this.contentBrowser.rebuildStoredItems();
-        GatherAllModelPaths(topLevelHigherarch,this.editor.scene);
+        RefreshAllModelPaths(topLevelHigherarch,this.editor.scene);
     }
 
     performTick(ecosystem: GameEcosystem): void {}

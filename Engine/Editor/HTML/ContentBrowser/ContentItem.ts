@@ -11,6 +11,7 @@ export enum ContentItemType {
     Datasheet,
     Audio,
     Model,
+    Material
 }
 
 export interface ContentItem {
@@ -22,6 +23,7 @@ export interface ContentItem {
     lastModified?: Date;
     data?: any;
     size?: number;
+    fileIndex:number;
     typeExtension?: string;
 }
 
