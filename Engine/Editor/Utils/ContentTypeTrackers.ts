@@ -19,7 +19,6 @@ export function GetAllEditorObjectsOfType(type:ContentItemType):ContentItem[] {
 }
 
 export function GetEditorObjectWithValues(contentType:ContentItemType,path:string,index:number) {
-    console.log(trackedObjects)
     return GetAllEditorObjectsOfType(contentType).find(v=>{
         return GetFullNameOfObject(v) === path && index === v.fileIndex;
     })

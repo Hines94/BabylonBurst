@@ -4,9 +4,6 @@ import { CustomModelInspectorComp } from "./CustomModelSpecifier";
 
 
 function ProcessCustomElements(editor:JSONEditor) {
-    if(!editor.original_schema.$ref) {
-        return;
-    }
     //Register any default engine items here
     if(!registeredDefaultComps) {
         RegisterCustomInspectorComponent(new CustomModelInspectorComp());
@@ -28,19 +25,47 @@ type originalSchema = {
 
 export type JSONEditor = {
     original_schema?:originalSchema;
+    schema?:originalSchema;
     editors?:JSONEditor[];
     rows?:JSONEditor[];
-    container:HTMLElement;
+    container?:HTMLElement;
+    root_container?:HTMLElement;
     key:string;
     setValue:(val:any)=>void;
     getValue:()=>any;
     on:(evName:string,evCallback:()=>void)=>void;
     boundOn?:boolean;
+    setupCustomEditorBB:string[];
 }
 
 export interface CustomInspectorComp {
     /** Returns if built */
     BuildCustomElement(editor:JSONEditor):boolean;
+}
+
+/** Is this custom setup valid and not already done? */
+export function RequiresSetupForCustom(comp:string, editor:JSONEditor) : boolean {
+    //Check schema if relevant
+    if(!editor.original_schema || !editor.original_schema.$ref) {
+        //In regular schema?
+        if(!editor.schema || !editor.schema.$ref || !editor.schema.$ref.includes(comp)){
+            return false;
+        }
+    } else {
+        if(!editor.original_schema.$ref.includes(comp)) {
+            return false;
+        }
+    }
+    //Passed name check - already setup?
+    if(!editor.setupCustomEditorBB) {
+        editor.setupCustomEditorBB = [];
+    }
+    if(editor.setupCustomEditorBB.includes(comp)) {
+        return false;
+    }
+    editor.setupCustomEditorBB.push(comp);
+    //Full pass
+    return true;
 }
 
 var registeredDefaultComps = false;
@@ -85,10 +110,10 @@ export function CreateHiddenComponentElements(modelEditor: JSONEditor, showButto
 }
 
 export function CheckEditorForCustomElements(editor:JSONEditor) {
-    if(editor.original_schema) {
-        //Find components
-        ProcessCustomElements(editor);
-    }
+    //Find components
+    ProcessCustomElements(editor);
+
+    //Is Array?
     if(editor.constructor.name === "CustomArrayEditor" && !editor.boundOn) {
         if(editor.on){
             editor.on("change", function () {
@@ -97,6 +122,7 @@ export function CheckEditorForCustomElements(editor:JSONEditor) {
         }
         editor.boundOn = true;
     }
+    //Children of this element
     if(editor.editors) {
         const keys = Object.keys(editor.editors);
         for(var k = 0; k < keys.length;k++) {

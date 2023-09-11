@@ -16,10 +16,24 @@ export const onModelPathsChangeObserver = new Observable<ModelInformation[]>();
 
 /** Given a way to get the model (file path etc) try to get information for it */
 export function FindModelForParams(data:ModelSpecifier) : ModelInformation {
-    if(!data) {
+    if(data === undefined || data === null) {
         return undefined;
     }
-    return ModelPaths.find(v=>{v.specifier.FilePath === data.FilePath && v.specifier.FileIndex === data.FileIndex && v.specifier.MeshName === data.MeshName});
+    for(var m = 0; m < ModelPaths.length;m++){
+        const model = ModelPaths[m];
+        if(model.specifier.FileIndex !== data.FileIndex) {
+            continue;
+        }
+        if(model.specifier.MeshName!== data.MeshName) {
+            continue;
+        }
+        if(model.specifier.FilePath !== data.FilePath) {
+            continue;
+        }
+        return model;
+    }
+
+    return undefined;
 }
 
 export function RefreshAllModelPaths(allItemsTopLevel:ContentItem,scene:Scene) {
