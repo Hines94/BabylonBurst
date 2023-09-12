@@ -20,3 +20,16 @@ export function GetMaterialDescriptions(): MateralDescription[] {
 export function RegisterMaterialDescription(desc: MateralDescription) {
     MaterialDescriptions.push(desc);
 }
+
+/** Get correct material type from shader name */
+export function GetMaterialDescription(shaderType: string) {
+    SetupDefaultMaterialDescriptions();
+    for (var m = 0; m < MaterialDescriptions.length; m++) {
+        if (MaterialDescriptions[m].constructor.name === shaderType) {
+            return MaterialDescriptions[m];
+        }
+    }
+
+    //Default PBR fallback
+    return GetMaterialDescription("PBRMaterialShader");
+}

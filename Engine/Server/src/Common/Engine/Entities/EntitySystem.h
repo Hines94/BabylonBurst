@@ -317,6 +317,8 @@ private:
     EntityUnorderedMap<EntityData*, EntityUnorderedSet<std::type_index>> DelayedRemoveComponents;
     // Entities/Entity components/properties to be networked to the player
     EntityUnorderedMap<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>> EntDataToNetwork;
+    // We can mark components as changed with this for systems that
+    EntityUnorderedMap<EntityData*, EntityUnorderedSet<std::type_index>> ChangedComponents;
     // Bitset items that need to be updated this frame due to additions/removals
     EntityUnorderedSet<EntityData*> dirtyBitsetItems;
     // Entities deleted this frame, to be networked to the player

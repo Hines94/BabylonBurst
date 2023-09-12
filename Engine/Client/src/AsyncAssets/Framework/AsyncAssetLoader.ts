@@ -93,6 +93,10 @@ export abstract class AsyncAssetLoader {
         if (GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileIndex) !== null) {
             //Add to our in memory cache
             loadedAssets[ourAssetPath] = this;
+            //tODO: Use already loaded asset!
+            console.error("Already loading asset!");
+        } else {
+            loadedAssets[ourAssetPath] = this;
         }
 
         if (manager.printDebugStatements) {
