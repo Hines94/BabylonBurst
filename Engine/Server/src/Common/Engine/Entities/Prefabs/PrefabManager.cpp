@@ -138,8 +138,8 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
     }
 
     const auto enttemplate = EntityLoader::LoadTemplateFromSave(extractedPrefabData);
-    prefabNameToUUID.insert(std::make_pair(std::string(prefabLocation), prefabID));
-    prefabsByUUID.insert(std::make_pair(prefabID, enttemplate));
+    prefabNameToUUID.insert({std::string(prefabLocation), prefabID});
+    prefabsByUUID.insert({prefabID, enttemplate});
 
     std::cout << "Loaded prefab: " << prefabID << " " << prefabLocation << std::endl;
 
@@ -168,8 +168,8 @@ bool PrefabManager::SpawnPrefabComponents(PrefabInstance* instance, EntityData* 
             continue;
         }
         existingPrefabComp->InstanceOwner = instanceOwner;
-        existingPrefabEntities.insert(std::pair(existingPrefabRelativeIndex, existingPrefabComp));
-        existingPrefabEntitiesMap.insert(std::pair(existingPrefabRelativeIndex, ent));
+        existingPrefabEntities.insert(std::make_pair(existingPrefabRelativeIndex, existingPrefabComp));
+        existingPrefabEntitiesMap.insert(std::make_pair(existingPrefabRelativeIndex, ent));
     }
 
     //Entities that are no longer in prefab?
@@ -270,7 +270,7 @@ std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefab
     PrefabInstance* newInstance = new PrefabInstance();
     newInstance->PrefabUUID = UUID;
     EntityComponentSystem::AddSetComponentToEntity(instanceEntity, newInstance);
-    return std::pair(newInstance, instanceEntity);
+    return std::make_pair(newInstance, instanceEntity);
 }
 
 std::string ensureEndsWithPrefabSpec(std::string str) {

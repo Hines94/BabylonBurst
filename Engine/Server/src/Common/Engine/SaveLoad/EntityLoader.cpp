@@ -64,7 +64,7 @@ void AddComponentsToEntities(EntityTemplate* data, const std::map<Entity, Entity
                     continue;
                 }
                 EntityComponentSystem::AddSetComponentToEntity(newData, newComp, true, false);
-                addedComponents.push_back(std::pair(newComp, newData));
+                addedComponents.push_back({newComp, newData});
             }
         }
     }
@@ -79,7 +79,7 @@ std::map<Entity, EntityData*> EntityLoader::LoadTemplateToNewEntities(const std:
     //Spawn new entities and make map of original -> new
     std::map<Entity, EntityData*> NewEntities;
     for (auto& ent : data->templatedEntities) {
-        NewEntities.insert(std::make_pair(ent.first, EntityComponentSystem::AddEntity()));
+        NewEntities.insert({ent.first, EntityComponentSystem::AddEntity()});
     }
     AddComponentsToEntities(data, NewEntities);
     return NewEntities;
@@ -106,9 +106,9 @@ std::map<Entity, EntityData*> EntityLoader::LoadTemplateToExistingEntities(const
             throw std::logic_error("Tried to add 0 entity! First valid ID is 1.");
         }
         if (EntityComponentSystem::DoesEntityExist(ent.first)) {
-            existingEntities.insert(std::make_pair(ent.first, EntityComponentSystem::GetComponentDataForEntity(ent.first)));
+            existingEntities.insert({ent.first, EntityComponentSystem::GetComponentDataForEntity(ent.first)});
         } else {
-            existingEntities.insert(std::make_pair(ent.first, EntityComponentSystem::EnsureEntity(ent.first)));
+            existingEntities.insert({ent.first, EntityComponentSystem::EnsureEntity(ent.first)});
         }
     }
     AddComponentsToEntities(data, existingEntities);

@@ -5,8 +5,7 @@
 struct PlayerMainSpawner : public Component {
     DECLARE_COMPONENT_METHODS(PlayerMainSpawner)
 
-    CPROPERTY(NET,SAVE)
-    EntityData* SpawnedEntity;
+    CPROPERTY(EntityData*, SpawnedEntity, NO_DEFAULT,NET,SAVE)
 
     void SetupNewPlayer(EntityData* player);
 };

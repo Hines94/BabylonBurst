@@ -26,7 +26,7 @@ msgpack::sbuffer* EntitySaver::GetSpecificSavePack(const std::vector<EntityData*
     std::vector<std::pair<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>>> ents;
     EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>> dummy;
     for (auto& ent : Ents) {
-        ents.push_back(std::make_pair(ent, dummy));
+        ents.push_back({ent, dummy});
     }
 
     PackEntitiesData(ents, packer, ignoreDefaultValues);

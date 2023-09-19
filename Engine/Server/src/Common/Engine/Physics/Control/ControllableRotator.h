@@ -7,8 +7,7 @@ struct ControllableRotator : public Component {
     float RequestedYaw;
     float RequestedRoll;
 
-    CPROPERTY(NET, SAVE)
-    std::vector<EntityData*> ControllableRotators;
+    CPROPERTY(std::vector<EntityData*>, ControllableRotators, NO_DEFAULT, NET, SAVE)
 
     static void UpdateRotationControllers(bool SystemInit, double deltaTime);
 

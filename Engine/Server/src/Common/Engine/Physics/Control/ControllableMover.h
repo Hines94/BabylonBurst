@@ -9,8 +9,7 @@ struct ControllableMover : public Component {
 
     bool InertialDamping;
 
-    CPROPERTY(NET, SAVE)
-    std::vector<EntityData*> ControllableForceAppliers;
+    CPROPERTY(std::vector<EntityData*>, ControllableForceAppliers, NO_DEFAULT, NET, SAVE)
 
     static void UpdateMovementControllers(bool SystemInit, double deltaTime);
 

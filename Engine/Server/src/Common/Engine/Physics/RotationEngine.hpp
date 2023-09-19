@@ -7,13 +7,10 @@
 
 //A rotation "engine" that can be used to rotate an object about using physics
 struct RotationEngine : public Component {
-    CPROPERTY(NET, SAVE)
-    bool Enabled = true;
+    CPROPERTY(bool, Enabled, true, NET, SAVE)
     //TODO: Replace this with axis - eg pitch up/down
-    CPROPERTY(NET, SAVE)
-    float RotationPower = 100;
-    CPROPERTY(NET, SAVE)
-    float StabilityMultiplier = 3;
+    CPROPERTY(float, RotationPower, 100, NET, SAVE)
+    CPROPERTY(float, StabilityMultiplier, 3, NET, SAVE)
 
     DECLARE_COMPONENT_METHODS(RotationEngine)
 

@@ -10,17 +10,14 @@ REQUIRE_OTHER_COMPONENTS(EntTransform)
 //Render a static mesh in world view by adding this
 struct InstancedRender : public Component {
 
-    CPROPERTY(NET, SAVE)
     //Model to render - will be influenced by pos/scaling/rotation from EntTransform
-    ModelSpecifier ModelData;
+    CPROPERTY(ModelSpecifier, ModelData, NO_DEFAULT, NET, SAVE)
 
-    CPROPERTY(NET, SAVE)
-    //Materials to render for our
-    std::vector<MaterialSpecifier> MaterialData;
+    //Materials to render for our model
+    CPROPERTY(std::vector<MaterialSpecifier>, MaterialData, NO_DEFAULT, NET, SAVE)
 
-    CPROPERTY(NET, SAVE)
     //Layermask to use - can set custom laermasks for rendering
-    uint LayerMask;
+    CPROPERTY(uint, LayerMask, NO_DEFAULT, NET, SAVE)
 
     DECLARE_COMPONENT_METHODS(InstancedRender)
 };

@@ -5,8 +5,7 @@
 struct ControllableEntity : public Component {
 
     //The controller that controls this controllable entity
-    CPROPERTY(NET, SAVE)
-    EntityData* CurrentController;
+    CPROPERTY(EntityData*, CurrentController, NO_DEFAULT, NET, SAVE)
 
     //All Linear engines under the control of this Entity
 

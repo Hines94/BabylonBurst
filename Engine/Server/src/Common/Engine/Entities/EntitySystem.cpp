@@ -114,7 +114,7 @@ void EntityComponentSystem::RemoveEntity(double deltaTime, EntityData* data) {
         ActiveEntitySystem->DeletedEntDataToNetwork[entId].clear();
     }
     auto fullDelete = std::vector<std::string>({"__F__"});
-    ActiveEntitySystem->DeletedEntDataToNetwork.insert(std::pair(entId, fullDelete));
+    ActiveEntitySystem->DeletedEntDataToNetwork.insert({entId, fullDelete});
 }
 
 //ASSUMES SERIES RUNNING
@@ -222,7 +222,7 @@ void EntityComponentSystem::DeleteEntityComponent(const std::type_index& compTyp
         if (p.compPropertyNum > 0) {
             if (ActiveEntitySystem->DeletedEntDataToNetwork.find(entId) == ActiveEntitySystem->DeletedEntDataToNetwork.end()) {
                 auto fullDelete = std::vector<std::string>({compName});
-                ActiveEntitySystem->DeletedEntDataToNetwork.insert(std::pair(entId, fullDelete));
+                ActiveEntitySystem->DeletedEntDataToNetwork.insert({entId, fullDelete});
             } else {
                 ActiveEntitySystem->DeletedEntDataToNetwork[entId].push_back(compName);
             }
@@ -260,7 +260,7 @@ void EntityComponentSystem::MarkCompToNetwork(EntityData* entityId, std::type_in
     auto it = comps.find(compType);
     bool existing = true;
     if (it == comps.end()) {
-        comps.insert(std::make_pair(compType, EntityUnorderedSet<std::string>()));
+        comps.insert({compType, EntityUnorderedSet<std::string>()});
         existing = false;
     }
     //"Blank" vector means All properties - therefore, if already blank no need
@@ -289,6 +289,8 @@ void EntityComponentSystem::MarkCompToNetwork(EntityData* entityId, std::type_in
  */
 std::shared_ptr<EntityQueryResult> EntityComponentSystem::GetEntitiesWithData(std::vector<std::type_index> includeTypes, std::vector<std::type_index> excludeTypes) {
     std::shared_ptr<EntityQueryResult> queryResult = std::make_shared<EntityQueryResult>();
+    queryResult.get()->includedComponents = includeTypes;
+    queryResult.get()->excludedComponents = includeTypes;
 
     //Create a bitset so we can rapidly compare without too much iteration
     std::bitset<MAX_COMPONENT_TYPES> includeComponentsBitset;
@@ -318,6 +320,86 @@ std::shared_ptr<EntityQueryResult> EntityComponentSystem::GetEntitiesWithData(st
         }
     }
     return queryResult;
+}
+
+void EntityQueryResult::AddChangedOnlyQuery_Any(std::vector<std::type_index> specificComps) {
+    entityFilters.push_back([specificComps](EntityData* data, EntityQueryResult* result) -> bool {
+        if (specificComps.size() > 0) {
+            for (const auto comp : specificComps) {
+                if (EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            for (const auto comp : result->includedComponents) {
+                if (EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    });
+}
+
+void EntityQueryResult::AddChangedOnlyQuery_All(std::vector<std::type_index> specificComps) {
+    entityFilters.push_back([specificComps](EntityData* data, EntityQueryResult* result) -> bool {
+        if (specificComps.size() > 0) {
+            for (const auto comp : specificComps) {
+                if (!EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            for (const auto comp : result->includedComponents) {
+                if (!EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    });
+}
+
+void EntityQueryResult::AddUnchangedOnlyQuery_Any(std::vector<std::type_index> specificComps) {
+    entityFilters.push_back([specificComps](EntityData* data, EntityQueryResult* result) -> bool {
+        if (specificComps.size() > 0) {
+            for (const auto comp : specificComps) {
+                if (EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            for (const auto comp : result->includedComponents) {
+                if (EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    });
+}
+
+void EntityQueryResult::AddUnchangedOnlyQuery_All(std::vector<std::type_index> specificComps) {
+    entityFilters.push_back([specificComps](EntityData* data, EntityQueryResult* result) -> bool {
+        if (specificComps.size() > 0) {
+            for (const auto comp : specificComps) {
+                if (!EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            for (const auto comp : result->includedComponents) {
+                if (!EntityComponentSystem::CheckComponentChanged(data, comp)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    });
 }
 
 //Create a fresh entity with data holder
@@ -379,6 +461,7 @@ void EntityComponentSystem::AddSetComponentToEntity(EntityData* entityData, Comp
 
     //Set data in entity
     entityData->components[compType] = comp;
+    comp->SetupTrackedVariables(entityData);
 
     //Added method
     if (callAdded) {
@@ -406,7 +489,18 @@ void EntityComponentSystem::ensureBitsetContains(std::type_index compType, Compo
         std::cout << "ERROR: TOO MANY COMPONENTS. UP MAX COMPONENT TYPES!" << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    ActiveEntitySystem->OrderedComponentParams.push_back(ComponentLoader::GetComponentFromName(ComponentLoader::GetComponentNameFromType(compType)));
+    //Try get component to put into our ordered comps
+    const auto compName = ComponentLoader::GetComponentNameFromType(compType);
+    if (compName == "") {
+        std::cerr << "ERROR: Could not get component name for comp" << compType.name() << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    const auto paramType = ComponentLoader::GetComponentFromName(compName);
+    if (!paramType) {
+        std::cerr << "ERROR: Could not get component for name" << compName << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    ActiveEntitySystem->OrderedComponentParams.push_back(paramType);
     //Check if component loader can pickup these items (as a test)
     if (ActiveEntitySystem->checkComponentCompLoader) {
         auto compName = StringUtils::RemoveNumericPrefix(compType.name());
@@ -422,7 +516,7 @@ std::vector<std::pair<std::string, std::vector<std::string>>> EntityComponentSys
     for (const auto& comp : OrderedComponentParams) {
         PackerDetails p = {.dt = packType, .isNamingPass = true};
         comp->GetComponentData(p, false);
-        Ret.push_back(std::make_pair(ComponentLoader::GetNameFromComponent(comp), p.names));
+        Ret.push_back({ComponentLoader::GetNameFromComponent(comp), p.names});
     }
     return Ret;
 }
@@ -443,4 +537,21 @@ void EntityComponentSystem::ensureBucketExists(std::bitset<MAX_COMPONENT_TYPES> 
     if (ActiveEntitySystem->BitsetBucketData.find(components) == ActiveEntitySystem->BitsetBucketData.end()) {
         ActiveEntitySystem->BitsetBucketData.insert(std::pair<std::bitset<MAX_COMPONENT_TYPES>, BitsetBucket*>(components, new BitsetBucket()));
     }
+}
+
+void EntityComponentSystem::OnComponentChanged(EntityData* ent, std::type_index compType) {
+    if (!ent) {
+        return;
+    }
+    if (ActiveEntitySystem->ChangedComponents.find(ent) == ActiveEntitySystem->ChangedComponents.end()) {
+        ActiveEntitySystem->ChangedComponents.insert({ent, {}});
+    }
+    ActiveEntitySystem->ChangedComponents[ent].insert(compType);
+}
+
+bool EntityComponentSystem::CheckComponentChanged(EntityData* ent, std::type_index compType) {
+    if (ActiveEntitySystem->ChangedComponents.find(ent) == ActiveEntitySystem->ChangedComponents.end()) {
+        return false;
+    }
+    return ActiveEntitySystem->ChangedComponents[ent].find(compType) != ActiveEntitySystem->ChangedComponents[ent].end();
 }

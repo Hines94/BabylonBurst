@@ -14,18 +14,15 @@ struct LoadedNavmeshData : public Component {
 
     DECLARE_COMPONENT_METHODS(LoadedNavmeshData)
 
-    CPROPERTY(NOTYPINGS, SAVE)
-    std::string navmeshData;
+    //Data generated from navmesh setup
+    CPROPERTY(std::string, navmeshData, NO_DEFAULT, NOTYPINGS, SAVE)
 
-    //TODO: Add options saved with in case those change
-    CPROPERTY(NOTYPINGS, SAVE)
-    std::vector<ModelSpecifier> savedSetup;
+    //The params used to generate this nav data
+    CPROPERTY(std::vector<ModelSpecifier>, savedSetup, NO_DEFAULT, NOTYPINGS, SAVE)
 
     dtNavMesh loadednavmesh;
 
     //Helper functions
-
-    //Could be anywhere on the navmesh
     bool IsNavmeshValid();
     std::optional<EntVector3> GetRandomPointOnNavmesh();
     dtNavMeshQuery* GetPremadeQuery(int maxNodes = 2048);

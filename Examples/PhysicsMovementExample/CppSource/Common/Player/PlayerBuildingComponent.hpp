@@ -3,8 +3,7 @@
 
 // Manages building controls for the player
 struct PlayerBuildingComponent : public Component {
-    CPROPERTY(NET, SAVE)
-    EntityData* CurrentBuildItem;
+    CPROPERTY(EntityData*, CurrentBuildItem, NO_DEFAULT, NET, SAVE)
 
     DECLARE_COMPONENT_METHODS(PlayerBuildingComponent)
 };

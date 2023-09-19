@@ -6,8 +6,7 @@ class EntTransform;
 
 REQUIRE_OTHER_COMPONENTS(EntTransform)
 struct PhysicsCollider : public Component {
-    CPROPERTY(NET, SAVE)
-    ModelSpecifier ColliderMesh;
+    CPROPERTY(ModelSpecifier, ColliderMesh, NO_DEFAULT, NET, SAVE)
 
     DECLARE_COMPONENT_METHODS(PhysicsCollider)
 };

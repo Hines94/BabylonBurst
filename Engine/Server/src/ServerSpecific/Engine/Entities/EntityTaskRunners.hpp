@@ -74,18 +74,15 @@ namespace EntityTaskRunners {
     static void AutoPerformTasksParallel(std::string taskName, std::shared_ptr<EntityQueryResult> job, std::function<void(double, EntityData*)> workerOp, double deltaTime) {
         auto startTime = std::chrono::system_clock::now();
 
-        auto jobs = job.get();
-        size_t numJobs = jobs->buckets.size();
-        if (numJobs == 0) {
+        auto jobs = job.get()->GetLimitedNumber();
+        if (jobs.size() == 0) {
             return;
         }
 
         EntityComponentSystem::SetParallelMode(true);
 
         //Queue up our jobs
-        for (auto& entities : jobs->buckets) {
-            ThreadPool::parallelRunFallback(entities->data, workerOp, deltaTime);
-        }
+        ThreadPool::parallelRunFallback(jobs, workerOp, deltaTime);
 
         EntityComponentSystem::SetParallelMode(false);
 

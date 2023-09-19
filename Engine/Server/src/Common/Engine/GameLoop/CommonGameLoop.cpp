@@ -96,6 +96,9 @@ void CommonGameLoop::UpdateSingleGameLoop() {
         UpdateSystem(systemInit, deltaTime, sys.systemFunction, sys.systemName, sys.systemRateLimit);
     }
 
+    //This means that we must run any looking for changes after potential changes, but is easy and simple
+    EntityComponentSystem::ResetChangedEntities();
+
     // Calculate delta time and wait
     UpdateDeltaTime();
 }

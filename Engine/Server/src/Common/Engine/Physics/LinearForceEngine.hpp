@@ -13,8 +13,7 @@ struct LinearForceEngineAxis {
 
 //Applies liner forces to one or several rigidbodies per frame
 struct LinearForceEngine : public Component {
-    CPROPERTY(NET, SAVE)
-    bool Enabled = true;
+    CPROPERTY(bool, Enabled, true, NET, SAVE)
     float DampingPowerMulti = 2;
     std::vector<float> Throttles;
     std::vector<LinearForceEngineAxis> ForceAppliers;

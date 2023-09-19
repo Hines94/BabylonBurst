@@ -63,7 +63,7 @@ ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::stri
 
     //First - get the file with the data
     if (cachedModelData.find(path) == cachedModelData.end()) {
-        cachedModelData.insert(std::pair(path, std::vector<uint8_t>()));
+        cachedModelData.insert({path, std::vector<uint8_t>()});
         AwsManager::getInstance().GetFileFromS3(filePath, fileIndex,
                                                 [path, this](std::vector<uint8_t> vec) {
                                                     cachedModelData[path] = vec;
@@ -94,7 +94,7 @@ ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::stri
         return nullptr;
     }
     SwapToLeftHanded(model);
-    loadedModels.insert(std::pair(path, model));
+    loadedModels.insert({path, model});
     return getMeshDataFromModel(path, meshName);
 }
 
@@ -155,7 +155,7 @@ ExtractedModelData* ModelLoader::getMeshDataFromModel(std::string modelName, std
                 exit(EXIT_FAILURE);
             }
 
-            extractedModels.insert(std::pair(name, result));
+            extractedModels.insert({name, result});
 
             //Useful if we ever want to manually check if two are the same (see ModelLoaderSetup.ts)
             // const auto sbuf = ExtractedMeshSerializer::GetBufferForExtractedMesh(result);

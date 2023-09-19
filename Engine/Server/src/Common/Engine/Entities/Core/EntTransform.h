@@ -21,12 +21,12 @@ enum RotationAxis {
 
 // Generic transform struct which can be added to any component
 struct EntTransform : public Component {
-    CPROPERTY(NET, SAVE)
-    EntVector3 Position;
-    CPROPERTY(NET, SAVE)
-    EntVector4 Rotation;
-    CPROPERTY(NET, SAVE)
-    EntVector3 Scale;
+    //Spatial position
+    CPROPERTY(EntVector3, Position, NO_DEFAULT, NET, SAVE)
+    //Spatial quaternion
+    CPROPERTY(EntVector4, Rotation, NO_DEFAULT, NET, SAVE)
+    //Spatial 3d scaling
+    CPROPERTY(EntVector3, Scale, NO_DEFAULT, NET, SAVE)
 
     EntTransform()
         : Scale{1, 1, 1},

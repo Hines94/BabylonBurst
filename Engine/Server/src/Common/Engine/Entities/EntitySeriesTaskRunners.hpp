@@ -31,10 +31,8 @@ namespace EntityTaskRunners {
     static void AutoPerformTasksSeries(std::string taskName, std::shared_ptr<EntityQueryResult> job, std::function<void(double, EntityData*)> workerOp, double deltaTime) {
         auto startTime = std::chrono::system_clock::now();
         auto entHolder = job.get()->buckets;
-        for (auto& entities : entHolder) {
-            for (auto& ent : entities->data) {
-                workerOp(deltaTime, ent);
-            }
+        for (auto& ent : job.get()->GetLimitedNumber()) {
+            workerOp(deltaTime, ent);
         }
 
         //Record performance for prometheus

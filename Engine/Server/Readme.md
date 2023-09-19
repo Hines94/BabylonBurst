@@ -43,6 +43,9 @@ void UpdateTestSystem(bool alreadyInit, double deltaTime) {
     //Rapidly find entities with our component
     auto ourEntities = EntityComponentSystem::GetEntitiesWithData({typeid(myComponent)}, {});
 
+    //Get only those entities where myComponent has changed already this frame
+    ourEntities.get().AddChangedOnlyQuery_Any();
+
     //This will run 'myTask' for each entity (and will be tracked in perf)
     EntityTaskRunners::AutoPerformTasksParallel("myTask", ourEntities , myTask, deltaTime);
 

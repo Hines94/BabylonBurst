@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/StorageTypes.hpp"
+#include "EntityMacros.hpp"
 #include "ICustomMsgpack.h"
 #include "PackerDetails.hpp"
 #include <atomic>
@@ -33,6 +34,9 @@ public:
 
     virtual void onComponentOverwritten(EntityData* entData, Component* newComp){};
 
+    //Setup variables so we know when something has changed
+    virtual void SetupTrackedVariables(EntityData* Owner) = 0;
+
     virtual bool isEqual(const Component* other) const = 0;
 
     /// @brief Note: No vars returned will not be networked or saved
@@ -49,47 +53,6 @@ public:
     //Helper function for loading data
     const msgpack::object* GetCompData(const std::string& key, const std::map<std::string, msgpack::object>& compData);
 };
-
-//Base methods for a component. Allows networking, saving and loading of data
-#define DECLARE_COMPONENT_METHODS(TypeName)                                                                                                                  \
-    void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) override;          \
-    void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) override; \
-    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent = nullptr) override;                                         \
-    bool operator==(const TypeName& other) const;                                                                                                            \
-    bool isEqual(const Component* other) const override;
-
-//Use this macro to define a custom property for autogeneration system
-#define CPROPERTY(...) // CPROPERTY(__VA_ARGS__)
-//Custom property flags to be used with CPROPERTY
-namespace PropertyFlags {
-    enum Flags {
-        //Network this property
-        NET = 1 << 0,
-        //Save this property
-        SAVE = 1 << 1,
-        //Do not type this property for client
-        NOTYPINGS = 1 << 2,
-        //Read only in Editor
-        EDREAD = 1 << 3,
-        //Not counted when checking if components are equal
-        NOEQUALITY = 1 << 4
-    };
-}
-
-//Use this macro to define a custom component for autogeneration system
-#define CCOMPONENT(...) // CCOMPONENT(__VA_ARGS__)
-//Custom property flags to be used with CCOMPONENT
-namespace ComponentFlags {
-    enum Flags {
-        //Do not type this property for client
-        NOTYPINGS = 1 << 0,
-        NOSAVE = 1 << 1,
-        NONETWORK = 1 << 2,
-    };
-} // namespace ComponentFlags
-
-//In editor we require another component to be present?
-#define REQUIRE_OTHER_COMPONENTS(...) // REQUIRE_OTHER_COMPONENTS(__VA_ARGS__)
 
 //Used when we are removing components to work around TBB structures
 struct RemoveCompData {
@@ -148,6 +111,9 @@ struct EntityData : public ICustomMsgpack {
 
 //Result of entity query, contains all the differing types of Ents
 struct EntityQueryResult {
+    std::vector<std::type_index> includedComponents;
+    std::vector<std::type_index> excludedComponents;
+    std::vector<std::function<bool(EntityData*, EntityQueryResult*)>> entityFilters;
     std::vector<BitsetBucket*> buckets;
 
     size_t size() {
@@ -161,16 +127,45 @@ struct EntityQueryResult {
         return val;
     }
 
-    std::vector<EntityData*> GetLimitedNumber(size_t num) {
+    std::vector<EntityData*> GetLimitedNumber(int num = -1) {
         std::vector<EntityData*> ret;
-        for (auto& bucket : buckets) {
-            for (auto& ent : bucket->data) {
-                ret.push_back(ent);
-                if (ret.size() == num) {
-                    return ret;
+
+        //Reserve for performance
+        int size = 0;
+        for (const auto& bucket : buckets) {
+            size += bucket->data.size();
+        }
+        ret.reserve(size);
+
+        //Inserts
+        for (const auto& bucket : buckets) {
+            ret.insert(ret.end(), bucket->data.begin(), bucket->data.end());
+        }
+
+        //Filters
+        if (entityFilters.size() > 0) {
+            std::vector<EntityData*> filtered;
+            filtered.reserve(ret.size());
+            for (const auto& e : ret) {
+                bool pass = true;
+                for (const auto& f : entityFilters) {
+                    if (!f(e, this)) {
+                        pass = false;
+                        break;
+                    }
+                }
+                if (pass) {
+                    filtered.push_back(e);
                 }
             }
+            ret = filtered;
         }
+
+        //Max size?
+        if (num > 0 && ret.size() > num) {
+            ret.resize(num);
+        }
+
         return ret;
     }
 
@@ -187,6 +182,16 @@ struct EntityQueryResult {
         }
         return ret;
     }
+
+    //Only entities with changed components (any of them) will be included
+    void AddChangedOnlyQuery_Any(std::vector<std::type_index> specificComps = {});
+    //Only entities with changed components (all of them) will be included
+    void AddChangedOnlyQuery_All(std::vector<std::type_index> specificComps = {});
+
+    //Only entities with Unchanged components (any of them) will be included
+    void AddUnchangedOnlyQuery_Any(std::vector<std::type_index> specificComps = {});
+    //Only entities with Unchanged components (all of them) will be included
+    void AddUnchangedOnlyQuery_All(std::vector<std::type_index> specificComps = {});
 };
 
 //Note: this is not a "full" ECS system - we do not use the proper memory techniques, all data is on the heap.
@@ -219,6 +224,9 @@ public:
     //For smaller networking & saving
     std::vector<std::pair<std::string, std::vector<std::string>>> GetParameterMappings(ComponentDataType packType);
 
+    //For our callback from Entity system
+    static void OnComponentChanged(EntityData* ent, std::type_index compType);
+
     static void SetParallelMode(bool inParallel) { ActiveEntitySystem->inParallel = inParallel; }
 
     static EntityUnorderedMap<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>> GetNetworkData() {
@@ -242,8 +250,14 @@ public:
         RemoveDelayedEntities();
     }
 
+    //Called at end of frame
+    static void ResetChangedEntities() {
+        ActiveEntitySystem->ChangedComponents.clear();
+    }
+
     //For tests etc when we want to remove everything
     static void ResetEntitySystem();
+    void SetupTrackedVaraibles(EntityData* Owner);
 
     //Templated
 public:
@@ -301,6 +315,14 @@ public:
         return GetComponent<T>(query.get()->GetLimitedNumber(1)[0]);
     }
 
+    //NOTE: Only valid after changes (eg if we check before a system run then will not count)
+    template <typename T>
+    static bool CheckComponentChanged(EntityData* ent) {
+        const std::type_index typeC = typeid(T);
+        return CheckComponentChanged(ent, typeC);
+    }
+    static bool CheckComponentChanged(EntityData* ent, std::type_index compType);
+
     static Component* GetComponent(EntityData* data, std::type_index compType);
 
 private:
@@ -317,12 +339,12 @@ private:
     EntityUnorderedMap<EntityData*, EntityUnorderedSet<std::type_index>> DelayedRemoveComponents;
     // Entities/Entity components/properties to be networked to the player
     EntityUnorderedMap<EntityData*, EntityUnorderedMap<std::type_index, EntityUnorderedSet<std::string>>> EntDataToNetwork;
-    // We can mark components as changed with this for systems that
-    EntityUnorderedMap<EntityData*, EntityUnorderedSet<std::type_index>> ChangedComponents;
     // Bitset items that need to be updated this frame due to additions/removals
     EntityUnorderedSet<EntityData*> dirtyBitsetItems;
     // Entities deleted this frame, to be networked to the player
     std::unordered_map<uint64_t, std::vector<std::string>> DeletedEntDataToNetwork;
+    // Entities that have changed in this frame
+    EntityUnorderedMap<EntityData*, EntityUnorderedSet<std::type_index>> ChangedComponents;
 
     EntityData* createEntity(Entity entId);
 

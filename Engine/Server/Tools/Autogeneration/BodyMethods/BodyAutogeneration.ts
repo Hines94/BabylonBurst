@@ -6,6 +6,7 @@ import { FileComponentsProperties } from "../Utils/ComponentPropertyReader";
 import { WriteFileIfChanged } from "../Utils/InvalidFileRemover";
 import { RemovePlatformSpecificIncludePath } from "../Utils/PlatformUtils";
 import { GenerateEqualityChecks } from "./ComponentMethods/ComponentEquality";
+import { GenerateTrackedSetup } from "./ComponentMethods/ComponentTrackedSetup";
 
 //This file deals with any autogeneration that is body specific
 
@@ -40,6 +41,7 @@ export function RunBodyAutogeneration(fileCode:any,basePath:string,filePath:stri
     let output = createCppAutogenBase(relativeDir, fileNameExten, outputFile);
     output += GenerateCustomSerializationMethods();
     output += GenerateEqualityChecks();
+    output += GenerateTrackedSetup();
 
     //Write output
     WriteFileIfChanged(outputFile,output);

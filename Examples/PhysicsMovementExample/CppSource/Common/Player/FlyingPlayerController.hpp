@@ -16,12 +16,11 @@ struct PlayerRequestingMessage {
 };
 
 struct FlyingPlayerController : public Component {
-    CPROPERTY(NET, SAVE)
-    EntityData* ControlledPawn;
-    CPROPERTY(NET, SAVE)
-    EntityData* CurrentControllingEntity;
-    CPROPERTY(NOTYPINGS)
-    PlayerRequestingMessage playerRequests;
+    CPROPERTY(EntityData*, ControlledPawn, NO_DEFAULT, NET, SAVE)
+
+    CPROPERTY(EntityData*, CurrentControllingEntity, NO_DEFAULT, NET, SAVE)
+
+    CPROPERTY(PlayerRequestingMessage, playerRequests, NO_DEFAULT, NOTYPINGS)
 
     DECLARE_COMPONENT_METHODS(FlyingPlayerController)
 

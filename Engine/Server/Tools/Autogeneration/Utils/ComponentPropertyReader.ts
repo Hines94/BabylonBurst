@@ -37,6 +37,7 @@ function isValidCustomProperty(value: string): boolean {
 export type ComponentProperty = {
     name: string;
     type: string;
+    default:string;
     tags: CompPropTags[];
     comment: string;
 };
@@ -114,49 +115,51 @@ function AddStructParams(structDetails:StructDetails) {
     if(structDetails.body === undefined || structDetails.body === null){
         return;
     }
-    const properties = findPropertiesInStruct(structDetails.body, 'CPROPERTY');
+    const properties = findMacroSpecifications(structDetails.body, 'CPROPERTY');
     const inheritsFromComponent = StructInheritsFromComponent(structDetails);
 
     for (var i = 0; i < properties.length; i++) {
-        const type = getChildNodeBool(properties[i].property, isTypeNode);
-        const propertyName = getChildNodeBool(properties[i].property, isNameNode);
-        if (type.length > 0 && propertyName.length > 0) {
-            const tags: CompPropTags[] = [];
-            //Get macro properties
-            if (properties[i].macro !== null) {
-                const tagRegex = /\(([^)]+)\)/;
-                //@ts-ignore
-                const inner = tagRegex.exec(properties[i].macro?.text);
-                if(inner === null){
-                    console.error("Invalid macro found in component property " + propertyName[0].text);
+        const tags: CompPropTags[] = [];
+        //Get macro properties
+        const tagRegex = /\(([^)]+)\)/;
+        //@ts-ignore
+        const inner = tagRegex.exec(properties[i].macro?.text);
+        if(inner === null){
+            console.error("Invalid CPROPERTY found: " + properties[i].macro?.text + " " + structDetails.name);
+            process.exit(1);
+        }
+        const innerMacroVals = inner[1].split(',');
+        const type = innerMacroVals[0];
+        const propertyName = innerMacroVals[1];
+        const defaultValue = innerMacroVals[2];
+        if(innerMacroVals.length > 3) {
+            for(var p = 3; p < innerMacroVals.length;p++){
+                const tag = innerMacroVals[p];
+                var rawTag = tag.trim();
+                if (isValidCustomProperty(rawTag) === false) {
+                    console.error(`Invalid specifier for custom CPROPERTY tag: '${rawTag}' found in component '${structDetails.name}' property '${propertyName}'.`);
                     process.exit(1);
                 }
-                inner[1].split(',').forEach((tag) => {
-                    var rawTag = tag.trim();
-                    if (isValidCustomProperty(rawTag) === false) {
-                        console.error(`Invalid specifier for custom SFP '${rawTag}' found in component '${structDetails.name}' property '${propertyName[0].text}'.`);
-                        process.exit(1);
-                    }
-                    else {
-                        tags.push(CompPropTags[rawTag as keyof typeof CompPropTags]);
-                    }
-                });
-            }
-            const isPointer = propertyName[0].text.includes("*");
-            const propDetails: ComponentProperty = {
-                name: isPointer? propertyName[0].text.replace("*", "").replace(" ", "") : propertyName[0].text.replace(" ", ""),
-                type: isPointer? type[0].text + "*" : type[0].text,
-                tags: tags,
-                //@ts-ignore
-                comment: properties[i].comment !== null ? properties[i].comment.text : ""
-            };
-            //Add property
-            if (inheritsFromComponent) {
-                structDetails.properties.push(propDetails);
-            } else {
-                structDetails.properties.push(propDetails);
+                else {
+                    tags.push(CompPropTags[rawTag as keyof typeof CompPropTags]);
+                }
             }
         }
+
+        const propDetails: ComponentProperty = {
+            name: propertyName,
+            type: type,
+            tags: tags,
+            default: defaultValue,
+            //@ts-ignore
+            comment: properties[i].comment !== null ? properties[i].comment.text : ""
+        };
+        //Add property
+        if (inheritsFromComponent) {
+            structDetails.properties.push(propDetails);
+        } else {
+            structDetails.properties.push(propDetails);
+        } 
     }
 }
 
@@ -168,9 +171,21 @@ function findStructs(node:Parser.SyntaxNode,childIndex:number,basePath:string,he
         }
     }
 
+    if(node.type === "ERROR") {
+        if(!node.parent || !node.parent.parent || !node.parent.parent.text.includes("CPROPERTY")) {
+            console.error("ERROR with tree sitter for autogeneration in file " +headerPath);
+            console.error("PLEASE NOTE: current bug with 2+ structs defined in same file - break them up!")
+            console.error(node.text);
+            process.exit(1);
+        }
+    }
+
     const ret:StructDetails[] = [];
     if (node.type === 'struct_specifier' || node.type === 'class_specifier') {
         const structNameNode = getChildNode(node, 'type_identifier');
+        if(structNameNode.length === 0) {
+            return [];
+        }
         const structName = structNameNode[0].text;
         const structBody = getChildNode(node, 'field_declaration_list')[0];
         const cleanHeaderPath = RemovePlatformSpecificIncludePath(
@@ -280,6 +295,33 @@ function getChildNode(node: Parser.SyntaxNode, type: string): Parser.SyntaxNode[
     return getChildNodeBool(node, childType => childType === type);
 }
 
+function findMacroSpecifications(node: Parser.SyntaxNode, macroName: string) : { macro: Parser.SyntaxNode | null, comment: Parser.SyntaxNode | null }[] {
+    let ret: { macro: Parser.SyntaxNode | null, comment: Parser.SyntaxNode | null  }[] = [];
+
+    for (let i = 0; i < node.children.length; i++) {
+        const childNode = node.children[i];
+        if(childNode.type !== "declaration") {
+            continue;
+        }
+        if(!childNode.text.startsWith(macroName)) {
+            continue;
+        }
+
+        const found:any = {macro:childNode,comment:null};
+
+        for (const child of childNode.children) {
+            if (child.type === 'comment') {
+                found.comment = child;
+                break;
+            }
+        }
+
+        ret.push(found);
+    }
+    return ret;
+}
+
+//Plain properties with comment and potential macro
 function findPropertiesInStruct(node: Parser.SyntaxNode, macroName: string): { macro: Parser.SyntaxNode | null, property: Parser.SyntaxNode, comment: Parser.SyntaxNode | null }[] {
     let ret: { macro: Parser.SyntaxNode | null, property: Parser.SyntaxNode, comment: Parser.SyntaxNode | null  }[] = [];
 

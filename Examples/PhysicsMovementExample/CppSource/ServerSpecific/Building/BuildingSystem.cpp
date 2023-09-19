@@ -10,8 +10,8 @@ void BuildingSystem::UpdateBuildSystem(bool SystemInit, double dt) {
         // AwsManager::getInstance().GetJsonFromS3("stats/BaseBuildableStats.zip",
         // 0); for (auto it = data.begin(); it != data.end(); ++it) {
         //     std::string name = it.key();
-        //     Buildables.insert(std::make_pair(name, new BuildableObject(name,
-        //     it.value())));
+        //     Buildables.insert({name, new BuildableObject(name,
+        //     it.value())});
         //     // do something with the key
         // }
     }

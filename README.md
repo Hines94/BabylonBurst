@@ -68,6 +68,7 @@ Extend Code C++:
     - bool operator!=(const CachedNavElement& other) const 
     - MSGPACK_PACK_FUNC(YOURPARAMS,HERE) - NOTE: Limit of 100 params max
     - MSGPACK_UNPACK_FUNC(YOURPARAMS,HERE) - NOTE: Limit of 100 params max
+- NOTE: Any custom components or data structures need to be in a .h or .hpp (not .cpp)
 
 Extend Code Typescript:
 - Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 

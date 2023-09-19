@@ -1,6 +1,7 @@
 node_modules
 /dist
 /.vs
+/build
 
 /node_modules
 .env

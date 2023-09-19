@@ -6,8 +6,7 @@
 
 //Core component - Added to our player entity once spawned so we can track players & connections
 struct PlayerCoreComponent : public Component {
-    CPROPERTY(NET, SAVE)
-    std::string Playeruuid;
+    CPROPERTY(std::string, Playeruuid, NO_DEFAULT, NET, SAVE)
 
     DECLARE_COMPONENT_METHODS(PlayerCoreComponent)
 

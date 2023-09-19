@@ -80,8 +80,8 @@ void NetworkingManager::handleOpen(uWS::WebSocket<false, true, ActiveSocketData>
         return;
     }
     //TODO: Check last log in via prior (rate limit)
-    sockets_.insert(std::make_pair(TEMP_FakeAccountId, ws));
-    reverse_sockets_.insert(std::make_pair(ws, TEMP_FakeAccountId));
+    sockets_.insert({TEMP_FakeAccountId, ws});
+    reverse_sockets_.insert({ws, TEMP_FakeAccountId});
     //Insert as new connection so player can be made
     std::lock_guard<std::mutex> lock(newSocketMut);
     newSockets_.insert(TEMP_FakeAccountId);
@@ -93,7 +93,7 @@ void NetworkingManager::handleOpen(uWS::WebSocket<false, true, ActiveSocketData>
 std::pair<msgpack::sbuffer*, msgpack::packer<msgpack::sbuffer>*> NetworkingManager::GetBufferToSend() {
     msgpack::sbuffer* sbuf = new msgpack::sbuffer();
     msgpack::packer<msgpack::sbuffer>* packer = new msgpack::packer<msgpack::sbuffer>(sbuf);
-    auto pair = std::make_pair(sbuf, packer);
+    std::pair<msgpack::sbuffer*, msgpack::packer<msgpack::sbuffer>*> pair = {sbuf, packer};
     //Precreate a map - the other details aWre filled out later
     packer->pack_map(3);
     //Preset that we will be filling the Payload in
@@ -173,9 +173,9 @@ void NetworkingManager::recieveMessage(uWS::WebSocket<false, true, ActiveSocketD
     }
     std::unique_lock lock(newMessageMut);
     if (playerMessages.find(requestMess.MessageType) == playerMessages.end()) {
-        playerMessages.insert(std::pair(requestMess.MessageType, std::vector<std::pair<std::string, std::string>>()));
+        playerMessages.insert({requestMess.MessageType, std::vector<std::pair<std::string, std::string>>()});
     }
-    playerMessages[requestMess.MessageType].push_back(std::pair(uuid, requestMess.Payload));
+    playerMessages[requestMess.MessageType].push_back({uuid, requestMess.Payload});
 }
 
 void NetworkingManager::handleClose(uWS::WebSocket<false, true, ActiveSocketData>* ws, int code, std::string_view message) {

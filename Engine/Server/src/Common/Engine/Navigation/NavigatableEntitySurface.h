@@ -6,8 +6,8 @@
 //A mesh that can be used to move about a Navigatable Pawn
 REQUIRE_OTHER_COMPONENTS(EntTransform)
 struct NavigatableEntitySurface : public Component {
-    CPROPERTY(NET, SAVE)
-    ModelSpecifier surfaceMesh;
+    //Specific model to use for generating a nav surface
+    CPROPERTY(ModelSpecifier, surfaceMesh, NO_DEFAULT, NET, SAVE)
 
     ExtractedModelData* extractedModelData;
 

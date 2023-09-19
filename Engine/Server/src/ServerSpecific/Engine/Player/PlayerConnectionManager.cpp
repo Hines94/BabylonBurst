@@ -64,7 +64,7 @@ void PlayerConnectionManager::addNewPlayers(std::unordered_set<std::string> newS
             PlayerCoreComponent::createNewPlayer(newPlayer, playerUuid);
             std::shared_ptr<playerConnectionDetails> newConnectData = std::make_shared<playerConnectionDetails>();
             newConnectData->playerEnt = newPlayer->owningEntity;
-            inst.connectedPlayers.insert(std::pair(playerUuid, newConnectData));
+            inst.connectedPlayers.insert({playerUuid, newConnectData});
         }
 
         inst.connectedPlayers[playerUuid].get()->bInit = false;
@@ -139,7 +139,7 @@ int getPlayerInitData(msgpack::packer<msgpack::sbuffer>* packer, std::shared_ptr
     for (auto bucket : allEnts->buckets) {
         for (auto ent : bucket->data) {
             if (IsNetworkedForPlayer(ent, dummy)) {
-                NetworkedEnts.push_back(std::make_pair(ent, dummy));
+                NetworkedEnts.push_back({ent, dummy});
                 player.get()->NetworkedEntities.insert(ent->owningEntity);
             }
         }
@@ -157,7 +157,7 @@ int getPlayerAddData(const tbb::concurrent_unordered_map<EntityData*, tbb::concu
     std::vector<std::pair<EntityData*, tbb::concurrent_unordered_map<std::type_index, tbb::concurrent_unordered_set<std::string>>>> NetworkedEnts;
     for (auto ent : additions) {
         if (IsNetworkedForPlayer(ent.first, ent.second)) {
-            NetworkedEnts.push_back(std::make_pair(ent.first, ent.second));
+            NetworkedEnts.push_back({ent.first, ent.second});
             player.get()->NetworkedEntities.insert(ent.first->owningEntity);
         }
     }

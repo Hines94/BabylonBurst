@@ -8,15 +8,10 @@ class EntTransform;
 REQUIRE_OTHER_COMPONENTS(EntTransform)
 //Acts as rigdbody base to interact with bullet
 struct RigidBody : public Component {
-    CPROPERTY(NET, SAVE)
-    //Mass in kg
-    float Mass = 100;
+    CPROPERTY(float, Mass, 100.f, NET, SAVE)
 
-    CPROPERTY(SAVE, NOTYPINGS)
-    EntVector3 Velocity;
+    CPROPERTY(EntVector3, Velocity, NO_DEFAULT, SAVE, NOTYPINGS)
 
-    CPROPERTY(NOTYPINGS)
-    //This is rebuilt on load etc
     btRigidBody* ItemRigidBody;
 
     DECLARE_COMPONENT_METHODS(RigidBody)

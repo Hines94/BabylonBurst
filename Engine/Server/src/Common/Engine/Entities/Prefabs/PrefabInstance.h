@@ -10,9 +10,9 @@ struct PrefabInstance : public Component {
 
     void onComponentRemoved(EntityData* entData) override;
 
-    CPROPERTY(NET, SAVE)
-    std::string PrefabUUID;
+    //Used to identify the type of prefab to spawn
+    CPROPERTY(std::string, PrefabUUID, NO_DEFAULT, NET, SAVE)
 
-    CPROPERTY(NET, SAVE, EDREAD)
-    std::vector<EntityData*> PrefabEntities;
+    //Spawned in current Entities
+    CPROPERTY(std::vector<EntityData*>, PrefabEntities, NO_DEFAULT, NET, SAVE, EDREAD)
 };

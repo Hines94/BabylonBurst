@@ -17,7 +17,7 @@ std::map<std::string, msgpack::object> EntityTemplate::GetComponentDataFromMsgpa
             continue;
         }
         const auto compName = compMappings.second[compKey];
-        compData.insert(std::make_pair(compName, comp_map.ptr[i].val.as<msgpack::object>()));
+        compData.insert({compName, comp_map.ptr[i].val.as<msgpack::object>()});
     }
     return compData;
 }

@@ -5,8 +5,7 @@
 struct PlayerPawn : public Component {
     DECLARE_COMPONENT_METHODS(PlayerPawn)
 
-    CPROPERTY(NET,SAVE)
-    EntityData* SpawnedEntity;
+    CPROPERTY(EntityData*, SpawnedEntity, NO_DEFAULT, NET,SAVE)
 
     void SetupNewPawn(EntityData* pawn);
 };

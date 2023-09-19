@@ -5,10 +5,9 @@
 
 //A directional light
 struct DirectionalLight : public Component {
-    CPROPERTY(NET, SAVE)
-    EntVector3 Position;
-    CPROPERTY(NET, SAVE)
-    EntVector3 Direction;
+    CPROPERTY(EntVector3, Position, NO_DEFAULT, NET, SAVE)
+
+    CPROPERTY(EntVector3, Direction, NO_DEFAULT, NET, SAVE)
 
     DECLARE_COMPONENT_METHODS(DirectionalLight)
 };

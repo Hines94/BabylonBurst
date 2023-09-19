@@ -18,7 +18,7 @@ namespace PlayerMessageProcessor {
                 std::cerr << "Tried to double register for player message type: " << msgId << std::endl;
                 exit(EXIT_FAILURE); // Exit with an error code
             }
-            PlayerMessageProcessor::registeredPlayerMessages.insert(std::pair(msgId, func));
+            PlayerMessageProcessor::registeredPlayerMessages.insert({msgId, func});
             std::cout << "Registered new client message type: " << msgId << std::endl;
         }
     };

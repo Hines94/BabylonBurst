@@ -1,60 +1,10 @@
-#include "Engine/Entities/EntitySystem.h"
 #include "Engine/Entities/EntityTaskRunners.hpp"
 #include "Engine/Utils/Settings.h"
+#include "Engine/Utils/Testing/TestComp.h"
+#include "Engine/Utils/Testing/TestComp2.hpp"
 #include "Engine/Utils/ThreadPool.h"
 #include "gtest/gtest.h"
-
-//NOTE: GTEST GIVES ISSUES WITH RUNNING TBB PARALLEL FOR!
-//WE CAN ONLY RUN GTEST IN PRODUCTION MODE DUE TO ASSERTION!
-
-struct TestComp : public Component {
-public:
-    static int removedNum;
-    static int addedNum;
-    std::string val;
-
-    void onComponentAdded(EntityData* entData) {
-        addedNum++;
-    }
-
-    void onComponentRemoved(EntityData* entData) {
-        removedNum++;
-    }
-
-    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComp) {
-    }
-
-    void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
-    }
-
-    void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
-    }
-
-    virtual bool isEqual(const Component* other) const {
-        return false;
-    }
-};
-
-int TestComp::removedNum = 0;
-int TestComp::addedNum = 0;
-
-struct TestComp2 : public Component {
-public:
-    std::string val;
-
-    void GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComp) {
-        if (p.Include("val", PackType::SaveAndNetwork, val == "")) {
-            p.packer->pack(val);
-        }
-    }
-    void LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
-    }
-    void LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) {
-    }
-    virtual bool isEqual(const Component* other) const {
-        return false;
-    }
-};
+#include <typeinfo>
 
 struct TestMethods {
     const static int numThreads = 4;
@@ -257,4 +207,35 @@ TEST(EntitiesTest, ResetECSS) {
     EntityComponentSystem::FlushEntitySystem();
     EntityComponentSystem::ResetEntitySystem();
     EXPECT_EQ(EntityComponentSystem::GetEntitiesWithData({}, {}).get()->size(), 0);
+}
+
+TEST(EntitiesTest, ChangeSystem) {
+    const auto ent = EntityComponentSystem::AddEntity();
+    const auto newTC = new TestComp2();
+    EntityComponentSystem::AddSetComponentToEntity(ent, newTC);
+    const auto unchangedEnt = EntityComponentSystem::AddEntity();
+    EntityComponentSystem::AddSetComponentToEntity(unchangedEnt, new TestComp2());
+    const auto unchangedEnt2 = EntityComponentSystem::AddEntity();
+    EntityComponentSystem::AddSetComponentToEntity(unchangedEnt2, new TestComp2());
+    EntityComponentSystem::FlushEntitySystem();
+
+    newTC->val = "TestChangeSystem";
+    //Expect change system to pick this up
+    EXPECT_EQ(EntityComponentSystem::CheckComponentChanged<TestComp2>(ent), true);
+    EXPECT_EQ(EntityComponentSystem::CheckComponentChanged<TestComp2>(unchangedEnt), false);
+    //Test query with filter for changed
+    const auto changedQ = EntityComponentSystem::GetEntitiesWithData({typeid(TestComp2)}, {});
+    changedQ.get()->AddChangedOnlyQuery_Any();
+    EXPECT_EQ(changedQ.get()->GetLimitedNumber().size(), 1);
+
+    //Test query with filtered for unchanged
+    const auto unchangedQ = EntityComponentSystem::GetEntitiesWithData({typeid(TestComp2)}, {});
+    unchangedQ.get()->AddUnchangedOnlyQuery_Any();
+    EXPECT_EQ(unchangedQ.get()->GetLimitedNumber().size(), 2);
+
+    //TODO: Test with nested data structures etc
+
+    //Check reset works correctly
+    EntityComponentSystem::ResetChangedEntities();
+    EXPECT_EQ(EntityComponentSystem::CheckComponentChanged<TestComp2>(ent), false);
 }

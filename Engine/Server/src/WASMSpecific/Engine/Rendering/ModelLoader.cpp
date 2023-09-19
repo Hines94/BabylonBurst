@@ -27,7 +27,7 @@ ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::stri
 
     msgpack::object_handle oh = msgpack::unpack(reinterpret_cast<const char*>(data.data()), data.size());
 
-    extractedModels.insert(std::pair(name, ExtractedMeshSerializer::GetDataFromMsgpackData(oh)));
+    extractedModels.insert({name, ExtractedMeshSerializer::GetDataFromMsgpackData(oh)});
 
     return &extractedModels.find(name)->second;
 }
