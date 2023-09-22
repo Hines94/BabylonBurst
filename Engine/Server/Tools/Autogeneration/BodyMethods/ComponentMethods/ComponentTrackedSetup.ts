@@ -1,11 +1,15 @@
-import { CompPropTags, FileComponentsProperties } from "../../Utils/ComponentPropertyReader";
+import { CompPropTags, FileStructs } from "../../Utils/ComponentPropertyReader";
 
 
-export function GenerateTrackedSetup() : string {
+export function GenerateComponentTracking() : string {
     var ret = "";
-    const compNames = Object.keys(FileComponentsProperties);
+    const compNames = Object.keys(FileStructs);
     compNames.forEach(comp=>{
-        const compData = FileComponentsProperties[comp];
+        const compData = FileStructs[comp];
+        if(!compData.isComponent) {
+            return;
+        }
+
         //Create Save serialization method
         ret += `\nvoid ${comp}::SetupTrackedVariables(EntityData* Owner) { \n`;
 
@@ -14,6 +18,9 @@ export function GenerateTrackedSetup() : string {
         ret += `\t};\n`;
 
         compData.properties.forEach(property=>{
+            if(!property.isCPROPERTY) {
+                return;
+            }
             ret += `\t${property.name}.setCallback(changeLambda);\n`;
         })
 

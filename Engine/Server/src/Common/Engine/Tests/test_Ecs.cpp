@@ -1,3 +1,4 @@
+#include "Engine/Entities/Core/EntTransform.h"
 #include "Engine/Entities/EntityTaskRunners.hpp"
 #include "Engine/Utils/Settings.h"
 #include "Engine/Utils/Testing/TestComp.h"
@@ -233,7 +234,14 @@ TEST(EntitiesTest, ChangeSystem) {
     unchangedQ.get()->AddUnchangedOnlyQuery_Any();
     EXPECT_EQ(unchangedQ.get()->GetLimitedNumber().size(), 2);
 
-    //TODO: Test with nested data structures etc
+    //Test with nested data structures etc
+    const auto transformEnt = EntityComponentSystem::AddEntity();
+    const auto transComp = new EntTransform();
+    EntityComponentSystem::AddSetComponentToEntity(transformEnt, transComp);
+    EntityComponentSystem::FlushEntitySystem();
+    transComp->Position.X = 20;
+
+    EXPECT_EQ(EntityComponentSystem::CheckComponentChanged<EntTransform>(transformEnt), true);
 
     //Check reset works correctly
     EntityComponentSystem::ResetChangedEntities();

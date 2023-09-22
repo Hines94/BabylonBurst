@@ -2,11 +2,11 @@ import { GenerateCustomSerializationMethods, PerformSerializerPrepass } from "./
 import { CreateAutogenFile } from "../Autogenerator"
 //@ts-ignore
 import * as fs from 'fs';
-import { FileComponentsProperties } from "../Utils/ComponentPropertyReader";
+import { FileStructs } from "../Utils/ComponentPropertyReader";
 import { WriteFileIfChanged } from "../Utils/InvalidFileRemover";
 import { RemovePlatformSpecificIncludePath } from "../Utils/PlatformUtils";
 import { GenerateEqualityChecks } from "./ComponentMethods/ComponentEquality";
-import { GenerateTrackedSetup } from "./ComponentMethods/ComponentTrackedSetup";
+import { GenerateComponentTracking } from "./ComponentMethods/ComponentTrackedSetup";
 
 //This file deals with any autogeneration that is body specific
 
@@ -28,9 +28,11 @@ function createCppAutogenBase(relativeDir: string, fileNameExten: string, output
 
 //Run the autogeneration for a cpp body based on the file we are currently running
 export function RunBodyAutogeneration(fileCode:any,basePath:string,filePath:string) {
-    if(Object.keys(FileComponentsProperties).length == 0){
+    const structNames = Object.keys(FileStructs);
+    if(structNames.length == 0){
         return;
     }
+
     //Create the autogen file
     let { relativeDir, fileNameExten, outputFile } = CreateAutogenFile(basePath,filePath);
 
@@ -38,11 +40,14 @@ export function RunBodyAutogeneration(fileCode:any,basePath:string,filePath:stri
     relativeDir = RemovePlatformSpecificIncludePath(relativeDir);
 
     //Populate content
-    let output = createCppAutogenBase(relativeDir, fileNameExten, outputFile);
-    output += GenerateCustomSerializationMethods();
+    let output = GenerateCustomSerializationMethods();
     output += GenerateEqualityChecks();
-    output += GenerateTrackedSetup();
+    output += GenerateComponentTracking();
+
+    if(output == "") {
+        return;
+    }
 
     //Write output
-    WriteFileIfChanged(outputFile,output);
+    WriteFileIfChanged(outputFile,createCppAutogenBase(relativeDir, fileNameExten, outputFile)+output);
 }

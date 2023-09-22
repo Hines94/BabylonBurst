@@ -28,10 +28,10 @@ struct EntTransform : public Component {
     //Spatial 3d scaling
     CPROPERTY(EntVector3, Scale, NO_DEFAULT, NET, SAVE)
 
-    EntTransform()
-        : Scale{1, 1, 1},
-          Rotation{0, 0, 0, 1} {
-    }
+    // EntTransform()
+    //     : Scale{1, 1, 1},
+    //       Rotation{0, 0, 0, 1} {
+    // }
 
     DECLARE_COMPONENT_METHODS(EntTransform)
 

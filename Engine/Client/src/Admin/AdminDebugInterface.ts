@@ -44,6 +44,9 @@ export class AdminDebugInterface extends TransformNode {
 
     debugLayerSetup = false;
     async setupDebugLayer() {
+        if (this.debugLayerSetup) {
+            return;
+        }
         await import("@babylonjs/core/Debug/debugLayer");
         await import("@babylonjs/inspector");
         this.debugLayerSetup = true;

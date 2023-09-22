@@ -34,6 +34,8 @@ public:
 
     virtual void onComponentOverwritten(EntityData* entData, Component* newComp){};
 
+    virtual void onComponentChanged(EntityData* entData){};
+
     //Setup variables so we know when something has changed
     virtual void SetupTrackedVariables(EntityData* Owner) = 0;
 

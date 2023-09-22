@@ -1,4 +1,5 @@
 import { Material } from "@babylonjs/core";
+import { AsyncImageDescription } from "@engine/AsyncAssets";
 
 /** Generic parameter to set in our Material (eg image/float etc) */
 export abstract class MaterialSetupParameter {
@@ -10,44 +11,63 @@ export abstract class MaterialSetupParameter {
 
     /** Generic easy method for trying to set a parameter into a material instance */
     TrySetMatParameter(mat: any, paramName: string, param: any): boolean {
-        if (mat[paramName]) {
+        if (mat[paramName] !== undefined) {
             mat[paramName] = param;
             return true;
         }
         //TODO: If node material??
+
+        console.warn("Could not set param for mat: " + paramName);
+        return false;
     }
 }
 
 //Unfortunate but better than making messy Editor/Client code in one hit. Use values[paramName] to store data for asyncTexture
-var AsyncTextureSetupEditorCallback: (
+var AsyncRowSetupEditorCallback: (
     tableCell: HTMLTableCellElement,
     values: any,
     paramName: string,
-    param: AsyncTextureSetupParameter
+    param: MaterialSetupParameter
 ) => void;
 export function SetAsyncTextureSetupEditorCallback(
-    callback: (
-        tableCell: HTMLTableCellElement,
-        values: any,
-        paramName: string,
-        param: AsyncTextureSetupParameter
-    ) => void
+    callback: (tableCell: HTMLTableCellElement, values: any, paramName: string, param: MaterialSetupParameter) => void
 ) {
-    AsyncTextureSetupEditorCallback = callback;
+    AsyncRowSetupEditorCallback = callback;
 }
 
 /** Async load in a texture and set it into material (e.g Diffuse) */
 export class AsyncTextureSetupParameter extends MaterialSetupParameter {
     async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
-        console.log("Set param called for Texture");
-        //TODO: Try Get texture
-        //this.TrySetMatParameter(mat,paramName,)
+        const textureData = loadedData[paramName];
+        if (textureData === undefined || textureData.Path === undefined || textureData.Index === undefined) {
+            return;
+        }
+        //Try Get texture
+        const texture = new AsyncImageDescription(textureData.Path, textureData.Index);
+        const loadedTexture = await texture.GetImageAsTexture();
+        if (!loadedTexture) {
+            return;
+        }
+        this.TrySetMatParameter(mat, paramName, loadedTexture);
     }
 
     //TODO: This is within the client code but Editor specific?
     SetupEditorInputValue(tableCell: HTMLTableCellElement, values: any, paramName: string): void {
-        if (AsyncTextureSetupEditorCallback) {
-            AsyncTextureSetupEditorCallback(tableCell, values, paramName, this);
+        if (AsyncRowSetupEditorCallback) {
+            AsyncRowSetupEditorCallback(tableCell, values, paramName, this);
+        }
+    }
+}
+
+export class ScalarSetupParameter extends MaterialSetupParameter {
+    async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
+        this.TrySetMatParameter(mat, paramName, loadedData);
+    }
+
+    //TODO: This is within the client code but Editor specific?
+    SetupEditorInputValue(tableCell: HTMLTableCellElement, values: any, paramName: string): void {
+        if (AsyncRowSetupEditorCallback) {
+            AsyncRowSetupEditorCallback(tableCell, values, paramName, this);
         }
     }
 }

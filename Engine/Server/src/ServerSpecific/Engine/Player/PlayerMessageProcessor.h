@@ -28,3 +28,4 @@ namespace PlayerMessageProcessor {
 //The function includes: Delta time, Player connection Id (use PlayerConnectionManager::getInstance().GetPlayerEntity) and the JSON message.
 #define REGISTER_PLAYER_MESSAGE(MsgId, func) \
     static PlayerMessageProcessor::Registrar _registrar_##MsgId(MsgId, func);
+//

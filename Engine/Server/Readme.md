@@ -26,8 +26,8 @@ struct myComponent : public Component {
     DECLARE_COMPONENT_METHODS(myComponent)
 
     //This property will auto have networking and saving capability. No typings will be generated for client side.
-    CPROPERTY(NET,SAVE,NOTYPINGS)
-    int someProperty;
+    //Easy to access - just use component.someProperty - exactly the same as a normal property
+    CPROPERTY(int, someProperty, NO_DEFAULT, NET, SAVE, NOTYPINGS)
 }
 
 void CreateEntityAddComponent() {

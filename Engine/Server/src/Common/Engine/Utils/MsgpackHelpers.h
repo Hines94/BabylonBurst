@@ -41,3 +41,4 @@ namespace MsgpackHelpers {
         o.convert(data);                             \
         APPLY(UNPACK_SINGLE, __VA_ARGS__)            \
     }
+//

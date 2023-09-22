@@ -3,7 +3,7 @@ import * as fs from 'fs';
 
 //This file deals with serialization/deserialization of our components
 
-import { CompPropTags, ComponentProperty, FileComponentsProperties, StructDetails } from "../../Utils/ComponentPropertyReader";
+import { CompPropTags, ComponentProperty, FileStructs, StructDetails } from "../../Utils/ComponentPropertyReader";
 import { RecursiveDirectoryProcess, sourcePath, userSourcePath } from "../../Autogenerator";
 import { UpdateStructsProperties, AllOtherStructs } from "../../Utils/ComponentPropertyReader"
 
@@ -39,10 +39,13 @@ export function PerformSerializerPrepass() {
 }
 
 export function GenerateCustomSerializationMethods() : string {
-    const compNames = Object.keys(FileComponentsProperties);
+    const compNames = Object.keys(FileStructs);
     let structMethods = "";
     compNames.forEach((comp) => {
-        const compData = FileComponentsProperties[comp];
+        const compData = FileStructs[comp];
+        if(!compData.isComponent) {
+            return;
+        }
 
         //Create Save serialization method
         structMethods += `\nvoid ${comp}::GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent) { \n`;
@@ -56,6 +59,9 @@ export function GenerateCustomSerializationMethods() : string {
         structMethods += `\t}\n`;
         structMethods += `//Each networked parameter\n`;
         compData.properties.forEach((param) => {
+            if(!param.isCPROPERTY) {
+                return;
+            }
             structMethods = GeneratePropertySaveNetwork(structMethods, param);
         })
         structMethods += `//Default component cleanup\n`;
@@ -67,6 +73,9 @@ export function GenerateCustomSerializationMethods() : string {
         //Create Load
         structMethods += `\nvoid ${comp}::LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) { \n`;
         compData.properties.forEach((param) => {
+            if(!param.isCPROPERTY) {
+                return;
+            }
             structMethods = GeneratePropertyLoadNetwork(structMethods, param, false);
         })
         structMethods += `} \n`;
@@ -75,6 +84,9 @@ export function GenerateCustomSerializationMethods() : string {
         structMethods += `\nvoid ${comp}::LoadFromComponentDataIfDefault(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) { \n`;
         structMethods += `\tconst auto defaultItem = new ${comp}; \n`;
         compData.properties.forEach((param) => {
+            if(!param.isCPROPERTY) {
+                return;
+            }
             structMethods = GeneratePropertyLoadNetwork(structMethods, param,true);
         })
         structMethods += `\tdelete(defaultItem);\n`;

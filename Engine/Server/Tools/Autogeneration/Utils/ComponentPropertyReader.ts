@@ -40,18 +40,30 @@ export type ComponentProperty = {
     default:string;
     tags: CompPropTags[];
     comment: string;
+    isCPROPERTY: boolean;
 };
 
 export interface StructDetails {
     name:string;
     headerPath:string;
+    fullPath:string;
     structTags:CompTags[];
     properties: ComponentProperty[];
     inheritClasses: string[];
     body:Parser.SyntaxNode;
     comment:Parser.SyntaxNode | null;
     macros:Parser.SyntaxNode[];
-    isStruct:boolean
+    isStruct:boolean;
+    isComponent:boolean;
+}
+
+export function StructHasCproperty(compData:StructDetails) {
+    for(var p = 0; p < compData.properties.length;p++) {
+        if(compData.properties[p].isCPROPERTY) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export function StructInheritsFromComponent(details:StructDetails) : boolean {
@@ -63,7 +75,7 @@ export function StructInheritsFromComponent(details:StructDetails) : boolean {
 
 /** All structs and properties contained in the current file */
 export var AllComponents:{ [component: string] : StructDetails } = {};
-export var FileComponentsProperties:{ [component: string] : StructDetails } = {};
+export var FileStructs:{ [name: string] : StructDetails } = {};
 export var AllOtherStructs:{ [name: string] : StructDetails } = {};
 export var AllEnums: { [name: string] : string[] } = {};
 
@@ -78,7 +90,7 @@ function isNameNode(nodeType: string): boolean {
 
 //Reads over a file and gets any components and custom property specifiers for our structs
 export function UpdateStructsProperties(code:any,basePath:string,filePath:string)  {
-    FileComponentsProperties = {};
+    FileStructs = {};
 
     const tree = parser.parse(code);
     const structs = findStructs(tree.rootNode,0,basePath,filePath);
@@ -90,17 +102,18 @@ export function UpdateStructsProperties(code:any,basePath:string,filePath:string
 
         //Check if component inherits
         const inheritsFromComponent = StructInheritsFromComponent(struct);
-        if(inheritsFromComponent && FileComponentsProperties[structName] === undefined){
-            if(struct.isStruct === false){
+        if(FileStructs[structName] === undefined){
+            if(struct.isStruct === false && inheritsFromComponent ){
                 console.error(`Item '${struct.name}' found in header '${struct.headerPath}' is class. Please change to struct.`);
                 //@ts-ignore
                 process.exit(1);
             }
-            FileComponentsProperties[structName] = struct;
-            AllComponents[structName] = struct;
-        }
-        if(!inheritsFromComponent && AllOtherStructs[structName] === undefined){
-            AllOtherStructs[structName] = struct;
+            FileStructs[structName] = struct;
+            if(inheritsFromComponent) {
+                AllComponents[structName] = struct;
+            } else if(AllOtherStructs[structName] === undefined){
+                AllOtherStructs[structName] = struct;
+            }
         }
 
         //Add all properties
@@ -115,23 +128,22 @@ function AddStructParams(structDetails:StructDetails) {
     if(structDetails.body === undefined || structDetails.body === null){
         return;
     }
-    const properties = findMacroSpecifications(structDetails.body, 'CPROPERTY');
-    const inheritsFromComponent = StructInheritsFromComponent(structDetails);
 
-    for (var i = 0; i < properties.length; i++) {
+    const cproperties = findMacroSpecifications(structDetails.body, 'CPROPERTY');
+    for (var i = 0; i < cproperties.length; i++) {
         const tags: CompPropTags[] = [];
         //Get macro properties
         const tagRegex = /\(([^)]+)\)/;
         //@ts-ignore
-        const inner = tagRegex.exec(properties[i].macro?.text);
+        const inner = tagRegex.exec(cproperties[i].macro?.text);
         if(inner === null){
-            console.error("Invalid CPROPERTY found: " + properties[i].macro?.text + " " + structDetails.name);
+            console.error("Invalid CPROPERTY found: " + cproperties[i].macro?.text + " " + structDetails.name);
             process.exit(1);
         }
         const innerMacroVals = inner[1].split(',');
-        const type = innerMacroVals[0];
-        const propertyName = innerMacroVals[1];
-        const defaultValue = innerMacroVals[2];
+        const type = innerMacroVals[0].trim();
+        const propertyName = innerMacroVals[1].trim();
+        const defaultValue = innerMacroVals[2].trim();
         if(innerMacroVals.length > 3) {
             for(var p = 3; p < innerMacroVals.length;p++){
                 const tag = innerMacroVals[p];
@@ -152,15 +164,32 @@ function AddStructParams(structDetails:StructDetails) {
             tags: tags,
             default: defaultValue,
             //@ts-ignore
-            comment: properties[i].comment !== null ? properties[i].comment.text : ""
+            comment: cproperties[i].comment !== null ? cproperties[i].comment.text : "",
+            isCPROPERTY: true
         };
         //Add property
-        if (inheritsFromComponent) {
-            structDetails.properties.push(propDetails);
-        } else {
-            structDetails.properties.push(propDetails);
-        } 
+        structDetails.properties.push(propDetails);
     }
+
+    const regularProperties = findPropertiesInStruct(structDetails.body);
+    regularProperties.forEach(p=>{
+        const type = getChildNodeBool(p.property, isTypeNode);
+        const propertyName = getChildNodeBool(p.property, isNameNode);
+        if (type.length === 0 || propertyName.length === 0) {
+            return;
+        }
+        const isPointer = propertyName[0].text.includes("*");
+        const propDetails: ComponentProperty = {
+            name: isPointer? propertyName[0].text.replace("*", "").replace(" ", "") : propertyName[0].text.replace(" ", ""),
+            type: isPointer? type[0].text + "*" : type[0].text,
+            tags: [],
+            default: "",
+            //@ts-ignore
+            comment: p.comment !== null ?  p.comment.text : "",
+            isCPROPERTY: false
+        };
+        structDetails.properties.push(propDetails);
+    })
 }
 
 /** Main function to find any structs within our file that could be important */
@@ -195,13 +224,15 @@ function findStructs(node:Parser.SyntaxNode,childIndex:number,basePath:string,he
         const details:StructDetails = {
             name: structName,
             headerPath:cleanHeaderPath,
+            fullPath:headerPath,
             structTags:[],
             properties: [],
             inheritClasses: [],
             body: structBody,
             comment: null,
             macros: [],
-            isStruct: node.type === 'struct_specifier'
+            isStruct: node.type === 'struct_specifier',
+            isComponent: false
         }
         //Add parent classes
         const inheritedComps = getChildNode(node, 'base_class_clause');
@@ -220,6 +251,9 @@ function findStructs(node:Parser.SyntaxNode,childIndex:number,basePath:string,he
                 GetStructTags(details,macro.text);
             }
         });
+        //Add is component
+        details.isComponent = StructInheritsFromComponent(details)
+
         //Avoid forward declarations
         if(structBody){
             ret.push(details);   
@@ -308,21 +342,32 @@ function findMacroSpecifications(node: Parser.SyntaxNode, macroName: string) : {
         }
 
         const found:any = {macro:childNode,comment:null};
-
-        for (const child of childNode.children) {
-            if (child.type === 'comment') {
-                found.comment = child;
-                break;
-            }
+        
+        var priorNode = node;
+        if(i > 0) {
+            priorNode = node.children[i-1];
         }
-
+        if(priorNode.type == 'comment') {
+            found.comment = priorNode;
+        } else {
+            for (const child of priorNode.children) {
+                if(child === childNode) {
+                    break;
+                }
+                if (child.type === 'comment') {
+                    found.comment = child;
+                    break;
+                }
+            }    
+        }
+        
         ret.push(found);
     }
     return ret;
 }
 
 //Plain properties with comment and potential macro
-function findPropertiesInStruct(node: Parser.SyntaxNode, macroName: string): { macro: Parser.SyntaxNode | null, property: Parser.SyntaxNode, comment: Parser.SyntaxNode | null }[] {
+function findPropertiesInStruct(node: Parser.SyntaxNode): { macro: Parser.SyntaxNode | null, property: Parser.SyntaxNode, comment: Parser.SyntaxNode | null }[] {
     let ret: { macro: Parser.SyntaxNode | null, property: Parser.SyntaxNode, comment: Parser.SyntaxNode | null  }[] = [];
 
     // Iterate through the children of the given node
@@ -331,7 +376,7 @@ function findPropertiesInStruct(node: Parser.SyntaxNode, macroName: string): { m
 
         // Check if the current childNode is a property
         if (childNode.type === 'field_declaration') {
-            const {macros,comment} = FindMacroComment(node,i,[macroName])
+            const {macros,comment} = FindMacroComment(node,i,[])
             const macro = macros.length > 0 ? macros[0] : null;
             ret.push({ macro: macro, property: childNode,comment:comment });
         }

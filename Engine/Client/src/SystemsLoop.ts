@@ -8,6 +8,7 @@ import { GameEcosystem } from "./GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
 import { UpdateTick } from "@userCode/Main";
+import { RunLightsSystem } from "@engine/Rendering/LightsSystem";
 
 /** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
@@ -34,6 +35,7 @@ export function UpdateSystemsLoop(gameClient: GameEcosystem, specificSystems: (e
     specificSystems(gameClient);
     runSystem(gameClient, RunInstancedMeshRenderSystem);
     runSystem(gameClient, RunColliderVisualSystem);
+    runSystem(gameClient, RunLightsSystem);
 
     //Debug
     debugBoxVis.UpdateDebugItems(gameClient.deltaTime);

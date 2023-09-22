@@ -9,11 +9,11 @@ public:
     static int addedNum;
     std::string val;
 
-    void onComponentAdded(EntityData* entData) {
+    void onComponentAdded(EntityData* entData) override {
         addedNum++;
     }
 
-    void onComponentRemoved(EntityData* entData) {
+    void onComponentRemoved(EntityData* entData) override {
         removedNum++;
     }
 

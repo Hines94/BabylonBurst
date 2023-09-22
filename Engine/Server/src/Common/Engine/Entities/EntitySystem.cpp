@@ -546,7 +546,10 @@ void EntityComponentSystem::OnComponentChanged(EntityData* ent, std::type_index 
     if (ActiveEntitySystem->ChangedComponents.find(ent) == ActiveEntitySystem->ChangedComponents.end()) {
         ActiveEntitySystem->ChangedComponents.insert({ent, {}});
     }
-    ActiveEntitySystem->ChangedComponents[ent].insert(compType);
+    if (!ActiveEntitySystem->ChangedComponents[ent].contains(compType)) {
+        ActiveEntitySystem->ChangedComponents[ent].insert(compType);
+    }
+    EntityComponentSystem::GetComponent(ent, compType)->onComponentChanged(ent);
 }
 
 bool EntityComponentSystem::CheckComponentChanged(EntityData* ent, std::type_index compType) {

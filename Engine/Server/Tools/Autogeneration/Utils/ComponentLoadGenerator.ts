@@ -1,7 +1,7 @@
 //@ts-ignore
 import * as fs from 'fs';
 import { buildPath, sourcePath } from "../Autogenerator";
-import { AllComponents, CompTags, FileComponentsProperties } from "./ComponentPropertyReader";
+import { AllComponents, CompTags, FileStructs } from "./ComponentPropertyReader";
 import { AddValidFile } from "./InvalidFileRemover";
 import { RemovePlatformSpecificIncludePath } from './PlatformUtils';
 

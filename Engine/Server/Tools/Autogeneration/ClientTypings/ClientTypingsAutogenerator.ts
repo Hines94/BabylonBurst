@@ -116,6 +116,9 @@ function GenerateComponentDescription(compData: StructDetails, output: string) {
     //Add properties
     for (var j = 0; j < compData.properties.length; j++) {
         const property = compData.properties[j];
+        if(!property.isCPROPERTY) {
+            continue;
+        }
         if(property.tags.includes(CompPropTags.NOTYPINGS)) {
             continue;
         }

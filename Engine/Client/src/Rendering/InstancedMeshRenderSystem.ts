@@ -104,6 +104,9 @@ function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Mate
         if (!matLoader.AssetFullyLoaded) {
             return [];
         }
+        if (!matLoader.rawData) {
+            return [];
+        }
         //Try get material
         const data = decode(matLoader.rawData) as any;
         if (!data.MaterialShaderType) {

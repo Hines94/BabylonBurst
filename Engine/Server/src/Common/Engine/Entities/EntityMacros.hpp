@@ -1,3 +1,4 @@
+#pragma once
 #include "Engine/Utils/MacroHelpers.h"
 #include "TrackedVariable.hpp"
 
