@@ -1,9 +1,0 @@
-{
-    "compilerOptions": {
-      "baseUrl": "./",
-      "paths": {
-        "@BabylonBurstClient/*": ["../Client/src/*"],
-        "@userCode/*": ["../../Source/TsSource/*"]
-      }
-    }
-  }
