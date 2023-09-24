@@ -1,5 +1,6 @@
 ## Documentation:
-[Detailed Documentation](https://hines94.github.io/BabylonBurst/)
+[Detailed Documentation](https://hines94.github.io/BabylonBurst/) can be found hosted on Github Pages.
+Includes documents on the ECS structure, asset management, design docs and more.
 
 Goals:
 The overall goal is to take all of the "heavy lifting" away so that the developers can focus solely on making clean game related code.
