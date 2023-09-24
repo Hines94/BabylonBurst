@@ -1,5 +1,5 @@
 ## Documentation:
-    https://hines94.github.io/BabylonBurst/
+    [Link Text](https://hines94.github.io/BabylonBurst/)
 
 Goals:
 The overall goal is to take all of the "heavy lifting" away so that the developers can focus solely on making clean game related code.
