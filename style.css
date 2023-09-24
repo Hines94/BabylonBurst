@@ -1,0 +1,138 @@
+/* Reset some default styles in browsers */
+body, h1, h2, h3, p, ul, ol, li {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Set a background and text color, and set the font family for the body */
+  body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+    padding-top: 50px; /* Consider the height of the navbar */
+  }
+  
+  /* Container to wrap the content */
+  .container {
+    width: 80%;
+    margin: auto;
+  }
+  
+  /* Header styles */
+  header {
+    background: #50b3a2;
+    color: #ffffff;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  /* Navbar styles */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    background: #333;
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+  
+  nav ul {
+    display: flex;
+    list-style: none;
+  }
+  
+  nav ul li {
+    margin-right: 20px;
+  }
+  
+  nav ul li:last-child {
+    margin-right: 0;
+  }
+  
+  nav a {
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  
+  nav a:hover {
+    border-bottom: 2px solid white;
+  }
+  
+  /* Main content styles */
+  .main {
+    padding: 30px 0;
+  }
+  
+  /* Heading styles */
+  h1, h2, h3 {
+    padding-bottom: 20px;
+  }
+  
+  /* Paragraph styles */
+  p {
+    margin-bottom: 20px;
+  }
+  
+  /* Footer styles */
+  footer {
+    text-align: center;
+    padding: 30px 20px;
+    background: #333;
+    color: white;
+  }
+  
+  /* Navbar styling */
+.navbar {
+    background-color: #333;
+    overflow: hidden;
+  }
+  
+  /* Navbar links */
+  .navbar a, .dropbtn {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  /* Dropdown content */
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  }
+  
+  /* Dropdown links */
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+  
+  /* Show dropdown on hover */
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  /* Change color on hover */
+  .navbar a:hover, .dropdown:hover .dropbtn {
+    background-color: #ddd;
+    color: black;
+  }
+  
+  /* Prevent float clearing in the dropdown */
+  .dropdown {
+    float: left;
+  }
+  
+  
