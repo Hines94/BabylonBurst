@@ -20,9 +20,6 @@ sudo apt-get install valgrind
 sudo apt-get install libssl-dev
 
 #Node for autogenerator
-curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-sudo apt-get install -y nodejs
-sudo npm install -g typescript
 cd ../Tools/Autogeneration
 npm install
 cd ../../

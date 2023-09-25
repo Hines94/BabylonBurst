@@ -9,6 +9,9 @@ RESET='\033[0m'
 # Ensure the script stops if any command fails
 set -e
 
+# Get the current branch
+current_branch=$(git branch --show-current)
+
 # Step 1: Check for clean state
 if [[ -n $(git status -s) ]]; then
   echo -e ${RED}"Your project has uncommitted changes. Please commit or stash them before proceeding."${RESET}
@@ -37,9 +40,9 @@ echo "Restoring your 'Source' directory..."
 rm -rf Source
 mv "$BACKUP_DIR" Source
 
-# Merge the changes from the engine-upstream's main branch into the user's current branch
+# Merge the changes from the engine-upstream's current branch into the user's current branch
 echo "Merging changes from the latest engine version into your branch..."
-git merge engine-upstream/main
+git merge engine-upstream/$current_branch
 
 # Restore the Source folder from the backup (after merge just in case)
 echo "Restoring your 'Source' directory..."

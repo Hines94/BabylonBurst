@@ -12,19 +12,23 @@ cd ${base_path}
 clear
 print_cyan "--- Starting setup for Babylon Burst ---\n"
 
-# Install modules common to all packages
+print_cyan "--- Installing Node ---\n"
+curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo npm install -g typescript
+
 print_cyan "--- Installing Common Modules ---\n"
 npm install
 
 print_cyan "--- Installing Engine Modules ---\n"
+cd Engine/Server
+bash DevSetup.sh
+cd ${base_path}
 cd Engine/Client || exit
 npm install
 cd ${base_path}
 cd Engine/Editor
 npm install
-cd ${base_path}
-cd Engine/Server
-bash DevSetup.sh
 cd ${base_path}
 
 print_cyan "--- Installing git hooks for Engine ---\n"
