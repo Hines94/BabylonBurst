@@ -17,8 +17,9 @@ Using the combination of zipping and recycle/reuse techniques for models etc the
 
 ## Naming Conventions
 These conventions are used for asset selection/inspection in Editor. Not using this naming convention may still allow use of the asset but it is not recommended. 
-- `<ASSETNAME>~1~` Unknown
-- `<ASSETNAME>~2~` Folder (for Editor tidying) TODO: REPLACE!
+- `<ASSETNAME>~0~` Unknown
+- `<ASSETNAME>~1~` Placeholder (TODO: Replace)
+- `<ASSETNAME>~2~` Placeholder (TODO: Replace)
 - `<ASSETNAME>~3~` Prefab
 - `<ASSETNAME>~4~` Image
 - `<ASSETNAME>~5~` Datasheet
