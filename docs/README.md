@@ -6,6 +6,7 @@
 - [Install Quickstart](installQuickstart.md) - How to setup and run BabylonBurst for the first time
 - [Editor Quickstart](editor.md) - How to setup, launch and use the Editor
 - [Coding Quickstart](codeQuickstart.md) - How to setup and start modifying in the Source directory
+- [Game Ecosystem](ecosystemOverview.md) - The glue that ties BabylonJs scenes and our ECS infrastructure
 - [Engine Upgrade](engineUpgrade.md) - How to upgrade to the latest engine version
 
 ## Details
