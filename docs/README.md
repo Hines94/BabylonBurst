@@ -8,8 +8,8 @@
 - [Coding Quickstart](codeQuickstart.md) - How to setup and start modifying in the Source directory
 - [Engine Upgrade](engineUpgrade.md) - How to upgrade to the latest engine version
 
-## Detail
-Detailed explanations of how the underlying systems work in BabylonBoost.
+## Details
+Detailed explanations of how the underlying systems work in BabylonBoost. Includes further details and more technical segments to help provide context on technical decisions and how to use all engine features.
 ### Assets
 - [Assets Overview](assetsOverview.md) - Outline of how to bundle and access assets from s3
 
@@ -18,6 +18,12 @@ Detailed explanations of how the underlying systems work in BabylonBoost.
 
 ### Networking
 - [Networking Overview](networkingOverview.md) - Outline of how the networking system works and how to use it
+
+### Navigation
+- [Navigation Overview](navigationOverview.md) - Outline of how to use Recast & Detour with the ECS system
+
+### Physics
+- [Physics Overview](physicsOverview.md) - Outline of how to use the inbuilt Bullet Physics system
 
 ### Prefabs
 - [Prefab Instancing](prefabInstancing.md) - How to create and use Prefabs
