@@ -1,18 +1,21 @@
-import { decode } from "@msgpack/msgpack";
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { ContextMenuItem, ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { CloneTemplate, GetNewNameItem, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
-import { ContentBrowserItemHTML } from "./ContentBrowserItemHTML";
-import { ContentItem, ContentItemType, GetContentItemNameInclType } from "./ContentItem";
-import { GetContentItemHTMLSpecific } from "./ContentItemTypes";
+import { ContentItem, ContentItemType } from "./ContentItem";
+import { ContentBrowserVisualHTML } from "./ContentBrowserVisualHTML";
+import { ContentBrowserFolderHTML } from "./Specifics/ContentBrowserFolderHTML";
+import { VisualItem } from "./VisualItem";
+import { AssetFolder } from "./AssetFolder";
+import { ContentBrowserAssetBundleHTML } from "./Specifics/ContentBrowserAssetBundleHTML";
+import { AssetBundle } from "HTML/ContentBrowser/AssetBundle";
 
 /** This connects our content browser to the storage mechanism. Eg player blueprints or Editor S3.  */
 export interface ContentStorageBackend {
     /** All stored items from every level */
-    allStoredItems: ContentItem;
+    allStoredItems: AssetFolder;
     /** Way to drill down through selected folder levels */
-    currentFolderLevel: ContentItem[];
+    currentFolderLevel: AssetFolder[];
 
     /** Get all new options we have available -eg prefab, data sheet etc */
     getNewContentOptions(): ContentItem[];
@@ -20,15 +23,11 @@ export interface ContentStorageBackend {
     /** Provided for easy callback when want to save out to base */
     onContentChange: () => void;
 
+    /** Refresh currently loaded items */
     requestRefresh: () => void;
-
-    saveItem: (item: ContentItem) => Promise<boolean>;
-
-    /** Request delete of an object */
-    requestDelete: (object: ContentItem) => Promise<boolean>;
 }
 
-export function GetCurrentLevelItem(backend: ContentStorageBackend): ContentItem {
+export function GetCurrentLevelItem(backend: ContentStorageBackend): AssetFolder {
     if (backend.currentFolderLevel.length === 0) {
         return backend.allStoredItems;
     }
@@ -61,6 +60,8 @@ export class ContentBrowserHTML {
         //Setup existing items
         this.rebuildStoredItems();
 
+        const browser = this;
+
         //Right click context menu
         this.browserBase.addEventListener("contextmenu", event => {
             if (
@@ -71,13 +72,18 @@ export class ContentBrowserHTML {
                 return;
             }
             const contextItems: ContextMenuItem[] = [];
+            contextItems.push({name:"Create New Folder",callback:()=>{
+                const currentLevel = GetCurrentLevelItem(store);
+                currentLevel.GenerateNewFolder();
+                browser.rebuildStoredItems();
+            }})
             const newItems = store.getNewContentOptions();
             newItems.forEach(newItem => {
                 contextItems.push({
                     name: "Create New " + ContentItemType[newItem.category],
                     callback: () => {
-                        const currentLevelItems = GetCurrentLevelItem(this.storageBackend).containedItems;
-                        newItem.readableName = GetNewNameItem(currentLevelItems, newItem.readableName);
+                        const currentLevelItems = GetCurrentLevelItem(store).containedItems;
+                        newItem.name = GetNewNameItem(currentLevelItems, newItem.name);
                         this.addNewItem(newItem);
                     },
                 });
@@ -96,6 +102,7 @@ export class ContentBrowserHTML {
                 return;
             }
             this.unclickAllItems();
+            this.hideInspector();
         });
     }
 
@@ -103,52 +110,71 @@ export class ContentBrowserHTML {
         RemoveClassFromAllItems("selectedContent", this.contentGrid);
     }
 
-    buildItems: ContentBrowserItemHTML[];
+    hideInspector() {
+        this.browserBase.ownerDocument.getElementById('InspectorPanel').classList.add('hidden');
+    }
+
+    buildItems: ContentBrowserVisualHTML[];
     rebuildStoredItems() {
         //Unbind and close old items
         if (this.buildItems) {
             this.buildItems.forEach(item => {
-                item.cleanupItem();
+                item.CleanupItem();
+            });
+        }
+        const browser = this;
+        this.buildItems = [];
+        this.contentGrid.innerHTML = "";
+
+        //Draw folders
+        rebuildFolders();
+        rebuildAssetBundles();
+
+        //Rebuild breadcrumbs
+        rebuildBreadcrumbs();
+
+        function rebuildFolders() {
+            const levelItems = GetCurrentLevelItem(browser.storageBackend).containedFolders;
+            const keys = Object.keys(levelItems);
+            keys.forEach(key => {
+                browser.buildItems.push(new ContentBrowserFolderHTML(browser, levelItems[key]));
             });
         }
 
-        this.buildItems = [];
-        //Rebuild items
-        this.contentGrid.innerHTML = "";
-        const levelItems = GetCurrentLevelItem(this.storageBackend).containedItems;
-        const keys = Object.keys(levelItems);
-        keys.forEach(key => {
-            const element = levelItems[key];
-            const container = CloneTemplate("ContentItem");
-            this.contentGrid.appendChild(container);
-            this.buildItems.push(GetContentItemHTMLSpecific(element, container, this));
-        });
+        function rebuildAssetBundles() {
+            const levelItems = GetCurrentLevelItem(browser.storageBackend).containedItems;
+            const keys = Object.keys(levelItems);
+            keys.forEach(key => {
+                browser.buildItems.push(new ContentBrowserAssetBundleHTML(browser, levelItems[key]));
+            });
+        }
 
-        //Rebuild breadcrumbs
-        this.breadcrumbFolders.innerHTML = "";
-        //Breadcrumb base
-        const AssetsOverall = this.ecosystem.doc.createElement("b");
-        AssetsOverall.className = "folderLink";
-        AssetsOverall.innerHTML = "Assets";
-        AssetsOverall.onclick = () => {
-            this.storageBackend.currentFolderLevel = [];
-            this.rebuildStoredItems();
-        };
-        this.breadcrumbFolders.appendChild(AssetsOverall);
-        //Breadcrumb children
-        const currentLevel: ContentItem[] = [];
-        this.storageBackend.currentFolderLevel.forEach(fold => {
-            currentLevel.push(fold);
-            const FolderLevel = this.ecosystem.doc.createElement("b");
-            FolderLevel.className = "folderLink";
-            const currentLevelCopy = [...currentLevel];
-            FolderLevel.onclick = () => {
-                this.storageBackend.currentFolderLevel = currentLevelCopy;
-                this.rebuildStoredItems();
+        function rebuildBreadcrumbs() {
+            browser.breadcrumbFolders.innerHTML = "";
+            //Breadcrumb base
+            const AssetsOverall = browser.ecosystem.doc.createElement("b");
+            AssetsOverall.className = "folderLink";
+            AssetsOverall.innerHTML = "Assets";
+            AssetsOverall.onclick = () => {
+                browser.storageBackend.currentFolderLevel = [];
+                browser.rebuildStoredItems();
             };
-            FolderLevel.innerHTML = "> " + fold.readableName;
-            this.breadcrumbFolders.appendChild(FolderLevel);
-        });
+            browser.breadcrumbFolders.appendChild(AssetsOverall);
+            //Breadcrumb children
+            const currentLevel: AssetFolder[] = [];
+            browser.storageBackend.currentFolderLevel.forEach(fold => {
+                currentLevel.push(fold);
+                const FolderLevel = browser.ecosystem.doc.createElement("b");
+                FolderLevel.className = "folderLink";
+                const currentLevelCopy = [...currentLevel];
+                FolderLevel.onclick = () => {
+                    browser.storageBackend.currentFolderLevel = currentLevelCopy;
+                    browser.rebuildStoredItems();
+                };
+                FolderLevel.innerHTML = "> " + fold.name;
+                browser.breadcrumbFolders.appendChild(FolderLevel);
+            });
+        }
     }
 
     protected bindUploadButton() {
@@ -203,16 +229,22 @@ export class ContentBrowserHTML {
     protected handleFileDrop(e: DragEvent) {
         let dt = e.dataTransfer;
         let files = dt.files;
-
+        //@ts-ignore
         [...files].forEach(this.processDragDropFile.bind(this));
     }
 
-    autoselectItem: ContentItem;
+    autoselectItem: VisualItem;
     async addNewItem(item: ContentItem) {
-        await this.storageBackend.saveItem(item);
-        item.data = undefined; //Reset data so load method inits correctly
-        const currentLevel = GetCurrentLevelItem(this.storageBackend);
-        currentLevel.containedItems[GetContentItemNameInclType(item)] = item;
+        //First generate new asset store
+        const folderLevel = GetCurrentLevelItem(this.storageBackend);
+        const newAssetStore = folderLevel.GenerateNewAssetBundle();
+        item.parent = newAssetStore;
+        newAssetStore.storedItems.push(item);
+        if(!await newAssetStore.SaveItemOut()){
+            console.error("Error saving new item!");
+            return;
+        }
+        await newAssetStore.refreshContainedItems();
         this.autoselectItem = item;
         this.rebuildStoredItems();
         this.autoselectItem = undefined;
@@ -221,17 +253,7 @@ export class ContentBrowserHTML {
 
     /** For an individual drag and drop file, handle what we do with it */
     protected processDragDropFile(file: File) {
-        processFileType(
-            file,
-            this,
-            [
-                { mimeType: "image/png", extension: ".png" },
-                { mimeType: "image/jpeg", extension: ".jpg" },
-            ],
-            ContentItemType.Image
-        );
-
-        processFileType(file, this, [{ mimeType: "audio/wav", extension: ".wav" }], ContentItemType.Audio);
+        console.error("TODO: Fix this, use GetContentTypeFromFilename")
     }
 }
 
@@ -251,17 +273,19 @@ function processFileType(
         return;
     }
 
+    console.error("TODO: Fix upload drop")
+
     const currentLevel = GetCurrentLevelItem(browser.storageBackend);
     const readName = file.name.replace(extensionMatch.extension, "");
-    var newItem: ContentItem = {
-        nameExtension: "~" + type + "~.zip",
-        readableName: readName,
-        category: type,
-        parent: currentLevel,
-        lastModified: new Date(),
-        data: [file],
-        typeExtension: extensionMatch.extension,
-    };
+    console.error("TODO: Fix")
+    var newItem = new ContentItem();
+    // nameExtension: "~" + type + "~.zip",
+    // name: readName,
+    // category: type,
+    // parent: undefined,
+    // lastModified: new Date(),
+    // data: [file],
+    // typeExtension: extensionMatch.extension,
     browser.addNewItem(newItem);
     ShowToastNotification(`${ContentItemType[type]}: ${file.name} Uploaded Successfully!`);
 }

@@ -9,35 +9,32 @@ import { ContentBrowserImageHTML } from "./Specifics/ContentBrowserImageHTML";
 import { ContentBrowserModelHTML } from "./Specifics/ContentBrowserModelHTML";
 import { ContentBrowserPrefabHTML } from "./Specifics/ContentBrowserPrefabHTML";
 import { ContentBrowserUnknownHTML } from "./Specifics/ContentBrowserUnknownHTML";
+import { ContentBrowserIconedItemHTML } from "HTML/ContentBrowser/Specifics/ContentBrowserIconedItemHTML";
 
 export function GetContentItemHTMLSpecific(
     item: ContentItem,
-    div: HTMLElement,
     ourContentHolder: ContentBrowserHTML
-): ContentBrowserItemHTML {
+): ContentBrowserIconedItemHTML {
     if (item.category === ContentItemType.Unknown) {
-        return new ContentBrowserUnknownHTML(item, div, ourContentHolder);
-    }
-    if (item.category === ContentItemType.Folder) {
-        return new ContentBrowserFolderHTML(item, div, ourContentHolder);
+        return new ContentBrowserUnknownHTML(ourContentHolder,item);
     }
     if (item.category === ContentItemType.Prefab) {
-        return new ContentBrowserPrefabHTML(item, div, ourContentHolder);
+        return new ContentBrowserPrefabHTML(ourContentHolder,item);
     }
     if (item.category === ContentItemType.Image) {
-        return new ContentBrowserImageHTML(item, div, ourContentHolder);
+        return new ContentBrowserImageHTML(ourContentHolder,item);
     }
     if (item.category === ContentItemType.Datasheet) {
-        return new ContentBrowserDatasheetHTML(item, div, ourContentHolder);
+        return new ContentBrowserDatasheetHTML(ourContentHolder,item);
     }
     if (item.category === ContentItemType.Audio) {
-        return new ContentBrowserAudioClipHTML(item, div, ourContentHolder);
+        return new ContentBrowserAudioClipHTML(ourContentHolder,item);
     }
     if (item.category === ContentItemType.Model) {
-        return new ContentBrowserModelHTML(item, div, ourContentHolder);
+        return new ContentBrowserModelHTML(ourContentHolder,item);
     }
     if (item.category === ContentItemType.Material) {
-        return new ContentBrowserMaterialHTML(item, div, ourContentHolder);
+        return new ContentBrowserMaterialHTML(ourContentHolder,item);
     }
     console.error("Cant find content browser item type for category: " + ContentItemType[item.category]);
     return null;

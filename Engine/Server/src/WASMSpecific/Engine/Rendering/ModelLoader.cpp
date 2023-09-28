@@ -5,12 +5,12 @@
 #include <msgpack.hpp>
 
 ExtractedModelData* ModelLoader::GetMeshFromFile(const ModelSpecifier& ms) {
-    return GetMeshFromFile(ms.FilePath, ms.MeshName, ms.FileIndex);
+    return GetMeshFromFile(ms.FilePath, ms.MeshName, ms.FileName);
 }
 //Unfortunatly needed as Draco extractor not available for WASM (so need seperate method that uses BabylonJs to get mesh)
-ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex) {
+ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::string fileName, std::string meshName) {
 
-    const auto name = filePath + "_" + std::to_string(fileIndex) + "_" + meshName;
+    const auto name = filePath + "_" + fileName + "_" + meshName;
     if (extractedModels.find(name) != extractedModels.end()) {
         return &extractedModels.find(name)->second;
     }
@@ -19,7 +19,7 @@ ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::stri
         return nullptr;
     }
 
-    const auto data = GetMeshCallback(filePath, meshName, fileIndex);
+    const auto data = GetMeshCallback(filePath, fileName, meshName);
 
     if (data.empty()) {
         return nullptr;

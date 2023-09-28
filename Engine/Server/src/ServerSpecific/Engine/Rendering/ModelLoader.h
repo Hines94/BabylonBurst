@@ -21,7 +21,7 @@ public:
         return instance;
     }
 
-    ExtractedModelData* GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    ExtractedModelData* GetMeshFromFile(std::string filePath, std::string fileName, std::string meshName);
     ExtractedModelData* GetMeshFromFile(const ModelSpecifier& ms);
 
 private:

@@ -3,12 +3,12 @@ import { AsyncAssetLoader, GetPreviouslyLoadedAWSAssetCustomPath } from "./Frame
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 import { AsyncDataType } from "./Utils/ZipUtils.js";
 
-export function GetSceneLoader(path: string, fileIndex: number, scene: Scene): SceneAsyncLoader {
+export function GetSceneLoader(path: string, fileName: string, scene: Scene): SceneAsyncLoader {
     //NOTE: This relies on us setting up a seperate sceneID if we have multiple scenes
     //const customPath = GetAsyncSceneIdentifier(scene) + AsyncZipPuller.GetAssetFullPath(path,fileIndex);
     var ret = GetPreviouslyLoadedAWSAssetCustomPath(path);
     if (ret === null) {
-        return new SceneAsyncLoader(path, fileIndex, scene);
+        return new SceneAsyncLoader(path, fileName, scene);
     } else {
         const gltf = ret as SceneAsyncLoader;
         if (gltf === null) {
@@ -39,8 +39,8 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
     extensionType: string;
     desiredScene: Scene = null;
 
-    constructor(assetPath: string, fileIndex: number, scene: Scene) {
-        super(assetPath, fileIndex, false);
+    constructor(assetPath: string, fileName: string, scene: Scene) {
+        super(assetPath, fileName, false);
         this.desiredScene = scene;
         if (scene !== undefined) {
             this.performAsyncLoad();

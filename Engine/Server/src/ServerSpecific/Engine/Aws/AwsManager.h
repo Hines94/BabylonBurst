@@ -19,7 +19,7 @@ public:
     void operator=(AwsManager const&) = delete;
 
     //Get raw bytes from S3
-    void GetFileFromS3(const std::string& key, int fileIndex, std::function<void(std::vector<uint8_t>)> readyCallback);
+    void GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback);
     void GetAllObjectsInS3(std::function<void(std::vector<std::string>)> readyCallback);
 
 private:

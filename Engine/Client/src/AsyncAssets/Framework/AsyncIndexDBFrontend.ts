@@ -1,4 +1,4 @@
-import { GetAssetFullPath } from "../Utils/ZipUtils";
+import { GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils";
 import { FrontendSetup, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 
 //TODO move this into global accessable in case we want to access from another system
@@ -18,9 +18,9 @@ export class IndexDBSetup extends FrontendSetup {
 export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
     frontendCache: IDBObjectStore = null;
 
-    async RemoveCacheAtLocation(loc: string, fileIndex: number): Promise<void> {
+    async RemoveCacheAtLocation(loc: string): Promise<void> {
         await this.OpenWriteTransaction();
-        const fullPath = GetAssetFullPath(loc, fileIndex);
+        const fullPath = GetZipPath(loc);
         this.frontendCache.delete(fullPath);
     }
 

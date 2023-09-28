@@ -14,8 +14,8 @@ namespace WASMSetup {
 
 using namespace emscripten;
 
-std::vector<uint8_t> GetModelCallback(std::string file, std::string modelName, int fileIndex) {
-    emscripten::val jsArray = emscripten::val::global("RequestModelData")(file, modelName, fileIndex, WASMSetup::WASMModuleIdentifier);
+std::vector<uint8_t> GetModelCallback(std::string file, std::string fileName, std::string modelName) {
+    emscripten::val jsArray = emscripten::val::global("RequestModelData")(file, fileName, modelName, WASMSetup::WASMModuleIdentifier);
     std::vector<uint8_t> data;
     unsigned length = jsArray["length"].as<unsigned>();
     for (unsigned i = 0; i < length; ++i) {

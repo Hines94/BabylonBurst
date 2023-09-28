@@ -21,10 +21,10 @@ public:
         return instance;
     }
 
-    ExtractedModelData* GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex);
+    ExtractedModelData* GetMeshFromFile(std::string filePath, std::string fileName, std::string meshName);
     ExtractedModelData* GetMeshFromFile(const ModelSpecifier& ms);
 
-    void SetGetMeshCallback(std::function<std::vector<uint8_t>(std::string, std::string, int)> callback) {
+    void SetGetMeshCallback(std::function<std::vector<uint8_t>(std::string, std::string, std::string)> callback) {
         GetMeshCallback = callback;
     }
 
@@ -32,7 +32,7 @@ private:
     // Private constructor so that no objects can be created
     ModelLoader() {}
 
-    std::function<std::vector<uint8_t>(std::string, std::string, int)> GetMeshCallback;
+    std::function<std::vector<uint8_t>(std::string, std::string, std::string)> GetMeshCallback;
 
     std::map<std::string, ExtractedModelData> extractedModels;
 

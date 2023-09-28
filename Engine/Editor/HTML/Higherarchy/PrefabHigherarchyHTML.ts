@@ -1,5 +1,5 @@
 import { HigherarchyHTML } from "./HigherarchyHTML";
-import { ContentItem, GetFullNameOfObject } from "../ContentBrowser/ContentItem";
+import { ContentItem } from "../ContentBrowser/ContentItem";
 import { OpenNewWindow } from "@BabylonBurstClient/HTML/HTMLWindowManager";
 import { WaitForEvent } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
@@ -27,9 +27,9 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         const higherarchy = this;
 
         this.Displayer = OpenNewWindow(
-            "PrefabWindows_" + prefab.readableName,
+            "PrefabWindows_" + prefab.name,
             "EditorSections/PrefabDisplayer",
-            prefab.readableName
+            prefab.name
         );
         if (!this.Displayer) {
             return;
@@ -47,7 +47,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         const prefabData = decode(prefab.data) as PrefabPackedType;
         this.prefabUUID = prefabData.prefabID;
         this.allEntities = LoadEntitiesFromMsgpackFormat(prefabData.prefabData);
-        (this.higherarchPanel.querySelector("#HigherarchTitle") as HTMLElement).innerText = prefab.readableName;
+        (this.higherarchPanel.querySelector("#HigherarchTitle") as HTMLElement).innerText = prefab.name;
 
         await this.ecosystem.waitLoadedPromise;
 
@@ -85,7 +85,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 storageBackend.saveItem(prefab);
                 //Reset for each current WASM system
                 GetAllWasmModules().forEach(w => {
-                    w.ReloadPrefabData(GetFullNameOfObject(prefab), prefab.data);
+                    w.ReloadPrefabData(prefab.parent.getItemLocation(), prefab.data);
                 });
                 ShowToastNotification("Entity Saved", 3000, higherarchy.windowDoc);
             });

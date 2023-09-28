@@ -1,5 +1,7 @@
-import { unzip } from "unzipit";
+import { ZipEntry, unzip } from "unzipit";
 import { IFrontendStorageInterface } from "../Framework/StorageInterfaceTypes";
+
+export type ZippedEntry = ZipEntry;
 
 export enum AsyncDataType {
     string,
@@ -16,41 +18,47 @@ export function GetZipPath(path: string) {
     return zipPath;
 }
 
-export function GetAssetFullPath(path: string, fileIndex: number) {
+export function GetAssetFullPath(path: string, fileName: string) {
     var zipPath = GetZipPath(path);
-    zipPath = fileIndex.toFixed(0) + "_" + zipPath;
+    zipPath = fileName + "_" + zipPath;
     return zipPath;
 }
 
-/** Returns number of files */
-export async function UnzipAndCacheData(
-    zipBytes: Uint8Array,
-    frontendCache: IFrontendStorageInterface,
-    loadType: AsyncDataType,
-    filePath: string
-): Promise<number> {
-    // //Perform our deflate (best we can do on javascript - tried Brotli & LZMA libraries for many hours but no good libs)
-    const { entries } = await unzip(zipBytes);
-    //Add all found files to cache for offline etc
-    //NOTE: This assumes that all files are of the same type!
-    var success = true;
-    var i = 0;
-    for (const [name, entry] of Object.entries(entries)) {
-        //allow specify type of file (text, blob etc)
-        var data = null;
-        if (loadType === AsyncDataType.string) {
-            data = await entry.text();
-        } else if (loadType === AsyncDataType.arrayBuffer) {
-            data = await entry.arrayBuffer();
-        } else if (loadType === AsyncDataType.blob) {
-            data = await entry.blob();
-        } else {
-            data = await entry.json();
+export async function GetZippedFile(zipBytes: Uint8Array, loadType: AsyncDataType, desiredFile: string) {
+    try {
+        const { entries } = await unzip(zipBytes);
+        for (const [name, entry] of Object.entries(entries)) {
+            if (name !== desiredFile) {
+                continue;
+            }
+            //allow specify type of file (text, blob etc)
+            var data = null;
+            if (loadType === AsyncDataType.string) {
+                return await entry.text();
+            } else if (loadType === AsyncDataType.arrayBuffer) {
+                return await entry.arrayBuffer();
+            } else if (loadType === AsyncDataType.blob) {
+                return await entry.blob();
+            } else {
+                return await entry.json();
+            }
         }
-        if ((await frontendCache.Put(data, GetAssetFullPath(filePath, i))) === false) {
-            success = false;
-        }
-        i++;
+        return null;
+    } catch {
+        return null;
     }
-    return i;
+}
+
+export async function GetNumberFilesFromZipped(zipBytes: Uint8Array): Promise<number> {
+    const { entries } = await unzip(zipBytes);
+    return Object.entries(entries).length;
+}
+
+export async function GetAllZippedFileDatas(zipBytes: Uint8Array): Promise<{ name: string; entry: ZipEntry }[]> {
+    const { entries } = await unzip(zipBytes);
+    var ret: { name: string; entry: ZipEntry }[] = [];
+    for (const [name, entry] of Object.entries(entries)) {
+        ret.push({ name: name, entry: entry });
+    }
+    return ret;
 }

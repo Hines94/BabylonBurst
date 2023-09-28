@@ -1,17 +1,23 @@
 
 import { AsyncAudioClipDefinition } from "@BabylonBurstClient/AsyncAssets/index";
-import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
-import { GetFullNameOfObject } from "../ContentItem";
+import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ContentItem } from "../ContentItem";
+import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 
-export class ContentBrowserAudioClipHTML extends ContentBrowserItemHTML {
-    protected performPrimaryMethod(): void {
+
+export class ContentBrowserAudioClipHTML extends  ContentBrowserSpecificItem {
+
+    outItem:ContentItem;
+
+    cleanupItem(): void {
+        throw new Error("Method not implemented.");
+    }
+
+    performPrimaryMethod(): void {
         this.playAudioSound();
     }
 
-    protected override getContextMenuItems(): {
-        name: string;
-        callback: () => void;
-    }[] {
+    override getContextMenuItems(): ContextMenuItem[] {
         return [
             {
                 name: "Play",
@@ -19,7 +25,7 @@ export class ContentBrowserAudioClipHTML extends ContentBrowserItemHTML {
                     this.performPrimaryMethod();
                 },
             },
-        ].concat(super.getContextMenuItems());
+        ];
     }
 
     async playAudioSound() {
@@ -27,17 +33,14 @@ export class ContentBrowserAudioClipHTML extends ContentBrowserItemHTML {
             return;
         }
         //TODO: Set data
-        const clip = new AsyncAudioClipDefinition(GetFullNameOfObject(this.ourItem).replace(".zip", ""));
+        const clip = new AsyncAudioClipDefinition(GetFullPathOfObject(this.ourItem).replace(".zip", ""));
         clip.GetSoundInstance(this.ourContentHolder.ecosystem.scene, {
             loop: false,
             autoplay: true,
         });
     }
 
-    protected override async drawInspectorInfo(): Promise<boolean> {
-        if ((await super.drawInspectorInfo()) === false) {
-            return false;
-        }
+    override async drawInspectorInfo(): Promise<void> {
         const inspector = this.ourContentHolder.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         const playB = this.ourContentHolder.ecosystem.doc.createElement("button");
         playB.innerText = "Play";

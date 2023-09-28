@@ -1,17 +1,19 @@
 import { AsyncArrayBufferLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
-import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
-import { GetFullNameOfObject } from "../ContentItem";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { decode } from "@msgpack/msgpack";
 import { PrefabPackedType } from "@BabylonBurstClient/EntitySystem/PrefabPackedType";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 
-export class ContentBrowserPrefabHTML extends ContentBrowserItemHTML {
-    protected performPrimaryMethod(): void {
+export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
+    protected cleanupItem(): void {
+        
+    }
+    performPrimaryMethod(): void {
         this.EnterPrefabInspection();
     }
 
-    protected override getContextMenuItems(): {
+    override getContextMenuItems(): {
         name: string;
         callback: () => void;
     }[] {
@@ -28,7 +30,7 @@ export class ContentBrowserPrefabHTML extends ContentBrowserItemHTML {
                     alert("Not implemented yet");
                 },
             },
-        ].concat(super.getContextMenuItems());
+        ];
     }
 
     /** Primary method for editing and inspecting a prefab */
@@ -43,16 +45,12 @@ export class ContentBrowserPrefabHTML extends ContentBrowserItemHTML {
         if (this.ourItem.data) {
             return;
         }
-        const ourPath = GetFullNameOfObject(this.ourItem).replace(".zip", "");
-        const loader = new AsyncArrayBufferLoader(ourPath, 0);
+        const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.name);
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;
     }
 
-    protected override async drawInspectorInfo(): Promise<boolean> {
-        if ((await super.drawInspectorInfo()) === false) {
-            return false;
-        }
+    override async drawInspectorInfo(): Promise<void> {
         const inspector = this.ourContentHolder.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         await this.loadContent();
         const prefabData = decode(this.ourItem.data) as PrefabPackedType;

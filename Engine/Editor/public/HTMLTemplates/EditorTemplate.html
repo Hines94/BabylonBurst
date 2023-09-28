@@ -51,10 +51,22 @@
             grid-template-columns: repeat(10, 1fr); 
         }
 
+        .asset-bundle {
+            grid-column: span 10;
+            grid-row: span 1;
+            background-color: #303030;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            display: grid;
+            grid-gap: 5px;
+            grid-template-columns: repeat(10, 1fr);
+        }
+
         .content-item {
-            position: relative; /* this is important */
+            position: relative;
             color: #f0f0f0;
-            overflow: hidden; /* Optional: in case content is larger than the container */
+            overflow: hidden; /* In case content is larger than the container */
             pointer-events: all;
         }
 
@@ -86,7 +98,7 @@
             width: 100%;
         }
 
-        #ContentItemName {
+        .ContentItemName {
             bottom: 2px;
             pointer-events: none;
             width:100%;
@@ -94,9 +106,10 @@
             background: none;
             color:white;
             border:none;
+            text-align: center;
         }
 
-        #ContentItemName:active {
+        .ContentItemName:active {
             background: #444654;
         }
 
@@ -149,7 +162,7 @@
             <div class="content-item-content" id="selectableContentItem">
                 <img style="pointer-events: none;" id="ContentItemThumbnail" src="https://via.placeholder.com/100x100">
             </div>
-            <input type="text" class="text-center" id="ContentItemName"></input>
+            <input type="text" class="ContentItemName" id="ContentItemName"></input>
         </div>
     </template>
 

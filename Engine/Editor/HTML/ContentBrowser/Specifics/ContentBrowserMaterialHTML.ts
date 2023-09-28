@@ -1,19 +1,29 @@
 import { decode } from "@msgpack/msgpack";
 import { OpenMaterial } from "../../Materials/MaterialEditor";
 import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
-import { GetFullNameOfObject } from "../ContentItem";
 import { AsyncArrayBufferLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
+import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
+import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 
-export class ContentBrowserMaterialHTML extends ContentBrowserItemHTML {
+export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
 
+    getContextMenuItems(): ContextMenuItem[] {
+        return [];
+    }
+    async drawInspectorInfo(): Promise<void> {
+        
+    }
+    protected cleanupItem(): void {
+        
+    }
 
-    protected performPrimaryMethod(): void {
+    performPrimaryMethod(): void {
         this.openMaterial();
     }
 
     async openMaterial() {
         await this.loadContentMaterial();
-        OpenMaterial(decode(this.ourItem.data), this.ourItem.readableName, (newData: any) => {
+        OpenMaterial(decode(this.ourItem.data), this.ourItem.name, (newData: any) => {
             //Request save
             this.ourItem.data = newData;
             this.ourContentHolder.storageBackend.saveItem(this.ourItem);
@@ -24,8 +34,7 @@ export class ContentBrowserMaterialHTML extends ContentBrowserItemHTML {
         if (this.ourItem.data) {
             return;
         }
-        const ourPath = GetFullNameOfObject(this.ourItem).replace(".zip", "");
-        const loader = new AsyncArrayBufferLoader(ourPath, 0);
+        const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.name);
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;
     }

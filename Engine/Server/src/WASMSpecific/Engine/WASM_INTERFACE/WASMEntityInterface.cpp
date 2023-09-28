@@ -131,8 +131,8 @@ void LoadMsgpackDataToExistingEntities(std::vector<uint8_t> entityData, bool ove
     const auto newEnts = EntityLoader::LoadTemplateToExistingEntities(templateData, overwrite);
 }
 
-void ReloadPrefabData(std::string prefabLocation, std::vector<uint8_t> prefabData) {
-    PrefabManager::getInstance().SetupPrefabFromBinary(prefabLocation, prefabData);
+void ReloadPrefabData(std::string prefabLocation, std::string prefabName, std::vector<uint8_t> prefabData) {
+    PrefabManager::getInstance().SetupPrefabFromBinary(prefabLocation, prefabName, prefabData);
 }
 
 //TODO: Add client entity with offset

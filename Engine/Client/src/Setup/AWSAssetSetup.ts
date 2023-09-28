@@ -49,9 +49,9 @@ export async function setupAsyncManager() {
 
 function setupAWSWASMHooks(manager: AsyncAssetManager) {
     //@ts-ignore
-    window.RequestAwsAsset = async function (url: string, fileIndex: number, module: string) {
+    window.RequestAwsAsset = async function (url: string, fileName: string, module: string) {
         console.log("Request AWS Asset: " + url);
-        const data = await AsyncZipPuller.LoadFileData(url, fileIndex, AsyncDataType.arrayBuffer, false);
+        const data = await AsyncZipPuller.LoadFileData(url, fileName, AsyncDataType.arrayBuffer, false);
         GetWasmModule(module).AwsGetItemDataCallback(data, url);
     };
     //@ts-ignore

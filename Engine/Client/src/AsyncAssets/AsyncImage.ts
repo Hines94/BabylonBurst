@@ -7,19 +7,19 @@ import { AsyncDataType } from "./Utils/ZipUtils.js";
 export class AsyncImageDescription extends BackgroundCacher {
     loadingImage: AsyncImageLoader = null;
     ourPath: string;
-    ourFileIndex: number;
+    ourFileName: string;
     hasAlpha = true;
 
-    constructor(path: string, fileIndex = 0, hasAlpha = true) {
+    constructor(path: string, fileName: string, hasAlpha = true) {
         super();
         this.hasAlpha = hasAlpha;
         this.ourPath = path;
-        this.ourFileIndex = fileIndex;
+        this.ourFileName = fileName;
     }
 
     async WaitForImageToLoad() {
         if (this.loadingImage === null) {
-            this.loadingImage = new AsyncImageLoader(this.ourPath, this.ourFileIndex);
+            this.loadingImage = new AsyncImageLoader(this.ourPath, this.ourFileName);
         }
 
         if (this.loadingImage.AssetFullyLoaded === false) {
@@ -40,7 +40,7 @@ export class AsyncImageDescription extends BackgroundCacher {
     }
 
     async GetBackgroundCacheTask(): Promise<string> {
-        const task = new AsyncImageLoader(this.ourPath, this.ourFileIndex, false);
+        const task = new AsyncImageLoader(this.ourPath, this.ourFileName, false);
         await task.PerformBackgroundCache();
         return this.ourPath;
     }

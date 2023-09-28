@@ -31,7 +31,7 @@ export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
         const LoadedScene = AsyncStaticMeshDefinition.GetAsyncMeshLoader(
             this.GetScene(),
             this.definition.desiredPath,
-            this.definition.fileIndex
+            this.definition.fileName
         ).loadedGLTF;
 
         this.tempSkeleton = LoadedScene.skeletons[0].clone("Clone_" + LoadedScene.skeletons[0].name);
@@ -119,7 +119,7 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
 
     /** Verifies that the skeletal mesh defi that we made is correct! */
     verifySkeletalMeshDefinition(scene: Scene): boolean {
-        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex);
+        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileName);
         const LoadedScene = asyncLoader.loadedGLTF;
         if (LoadedScene.skeletons.length === 0) {
             console.error(

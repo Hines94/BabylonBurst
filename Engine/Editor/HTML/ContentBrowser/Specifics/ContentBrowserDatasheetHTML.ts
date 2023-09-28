@@ -1,11 +1,12 @@
 import { AsyncStringLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
 import { ConvertDataBackToCSV } from "@BabylonBurstClient/Utils/DataToCSV";
 import { OpenDatasheet, SetupDatasheet as SetupDatasheet } from "../../Datasheets/DatasheetEditor";
-import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
-import { GetFullNameOfObject } from "../ContentItem";
+import { ContentItem } from "../ContentItem";
+import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 
-export class ContentBrowserDatasheetHTML extends ContentBrowserItemHTML {
-    protected override getContextMenuItems(): {
+export class ContentBrowserDatasheetHTML extends ContentBrowserSpecificItem {
+    ourItem:ContentItem;
+    override getContextMenuItems(): {
         name: string;
         callback: () => void;
     }[] {
@@ -16,15 +17,18 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserItemHTML {
                     this.createClone();
                 },
             },
-        ].concat(super.getContextMenuItems());
+        ];
+    }
+
+    protected cleanupItem(): void {
+        throw new Error("Method not implemented.");
     }
 
     protected override async createClone(): Promise<void> {
         await this.loadContentDatasheet();
-        super.createClone();
     }
 
-    protected performPrimaryMethod(): void {
+    performPrimaryMethod(): void {
         this.openCSVPanel();
     }
 
@@ -32,18 +36,15 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserItemHTML {
         if (!this.ourItem.data) {
             await this.loadContentDatasheet();
         }
-        OpenDatasheet(JSON.parse(this.ourItem.data), this.ourItem.readableName + "_Datasheet", (newData: any) => {
+        OpenDatasheet(JSON.parse(this.ourItem.data), this.ourItem.name + "_Datasheet", (newData: any) => {
             //Request save
             this.ourItem.data = JSON.stringify(newData);
             this.ourContentHolder.storageBackend.saveItem(this.ourItem);
         });
     }
 
-    protected override async drawInspectorInfo(): Promise<boolean> {
-        if ((await super.drawInspectorInfo()) === false) {
-            return false;
-        }
-        const inspector = this.ourDiv.ownerDocument.getElementById("InspectorPanel") as HTMLElement;
+    override async drawInspectorInfo(): Promise<void> {
+        const inspector = this.ourSelectable.ownerDocument.getElementById("InspectorPanel") as HTMLElement;
 
         await this.loadContentDatasheet();
 
@@ -52,29 +53,29 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserItemHTML {
         const cols = Object.keys(ourData[rows[0]]);
 
         //Size
-        const numRows = this.ourDiv.ownerDocument.createElement("p");
+        const numRows = this.ourSelectable.ownerDocument.createElement("p");
         numRows.innerText = "Num Rows: " + rows.length;
         inspector.appendChild(numRows);
 
-        const numCols = this.ourDiv.ownerDocument.createElement("p");
+        const numCols = this.ourSelectable.ownerDocument.createElement("p");
         numCols.innerText = "Num Cols: " + cols.length;
         inspector.appendChild(numCols);
 
-        const sizeString = this.ourDiv.ownerDocument.createElement("p");
+        const sizeString = this.ourSelectable.ownerDocument.createElement("p");
         sizeString.innerText = "Total Entries: " + rows.length * cols.length;
         inspector.appendChild(sizeString);
 
         //Download datasheet as CSV
-        const downloadCSV = this.ourDiv.ownerDocument.createElement("button");
+        const downloadCSV = this.ourSelectable.ownerDocument.createElement("button");
         downloadCSV.style.pointerEvents = "all";
         downloadCSV.innerText = "Download CSV";
         downloadCSV.addEventListener("click", () => {
             const blob = new Blob([ConvertDataBackToCSV(JSON.parse(this.ourItem.data), "ID")], { type: "text/csv" });
             const downloadUrl = URL.createObjectURL(blob);
 
-            const link = this.ourDiv.ownerDocument.createElement("a");
+            const link = this.ourSelectable.ownerDocument.createElement("a");
             link.href = downloadUrl;
-            link.download = this.ourItem.readableName + ".csv";
+            link.download = this.ourItem.name + ".csv";
 
             // Trigger the download
             link.click();
@@ -86,8 +87,7 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserItemHTML {
         if (this.ourItem.data) {
             return;
         }
-        const ourPath = GetFullNameOfObject(this.ourItem).replace(".zip", "");
-        const loader = new AsyncStringLoader(ourPath, 0);
+        const loader = new AsyncStringLoader(this.ourItem.parent.getItemLocation(), this.ourItem.name);
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;
     }

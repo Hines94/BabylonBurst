@@ -12,6 +12,11 @@ std::unique_ptr<PrefabManager> PrefabManager::instance = nullptr;
 
 void PrefabManager::RefreshPrefabs() {
     AwsManager::getInstance().GetAllObjectsInS3([this](std::vector<std::string> allItems) {
+        std::cerr << "TODO: Fix prefab load at start" << std::endl;
+        onAllPrefabsLoaded.triggerEvent(this);
+        return;
+
+        //TODO: Fix this up and Instead search all bundles?
         const std::string prefabItemType = "~3~";
         std::vector<std::string> prefabItems;
         for (const auto& item : allItems) {

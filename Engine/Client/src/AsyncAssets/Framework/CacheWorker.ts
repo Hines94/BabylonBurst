@@ -1,4 +1,3 @@
-import { UnzipAndCacheData } from "../Utils/ZipUtils";
 import { CacheWorkerDirective, CacheWorkerSetup, GetBackendSetup, GetFrontendSetup } from "./CacheWorkerTypes";
 import { IBackendStorageInterface, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 
@@ -22,7 +21,7 @@ self.addEventListener("message", function (e) {
 
 async function processCacheRequest(data: CacheWorkerDirective) {
     const bytes = await backend.GetItemAtLocation(data.path);
-    const success = await UnzipAndCacheData(bytes, frontend, data.loadType, data.path);
+    const success = frontend.Put(bytes, data.path);
     if (success) {
         self.postMessage("STORAGESUCCESS__" + data.path);
     } else {

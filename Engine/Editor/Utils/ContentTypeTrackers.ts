@@ -1,5 +1,5 @@
 import { Observable } from "@babylonjs/core";
-import { ContentItem, ContentItemType, GetFullNameOfObject } from "../HTML/ContentBrowser/ContentItem";
+import { ContentItem, ContentItemType } from "../HTML/ContentBrowser/ContentItem";
 
 
 
@@ -18,9 +18,9 @@ export function GetAllEditorObjectsOfType(type:ContentItemType):ContentItem[] {
     return [];
 }
 
-export function GetEditorObjectWithValues(contentType:ContentItemType,path:string,index:number) {
+export function GetEditorObjectWithValues(contentType:ContentItemType,path:string,fileName:string) {
     return GetAllEditorObjectsOfType(contentType).find(v=>{
-        return GetFullNameOfObject(v) === path && index === v.fileIndex;
+        return v.parent.getItemLocation() === path && fileName === v.name;
     })
 }
 
@@ -28,7 +28,7 @@ export function SetInputValueFromDatalist(dropdownSelector:HTMLInputElement, ite
     if(!item) {
         return;
     }
-    dropdownSelector.value = item.readableName + " - " + item.fileIndex;
+    dropdownSelector.value = item.parent.name + " - " + item.name;
 }
 
 /** Easy way of automatically setting up dropdown to select a file */
@@ -40,8 +40,8 @@ export function SetupInputWithDatalist(contentType:ContentItemType,dropdownSelec
         const allItems = GetAllEditorObjectsOfType(contentType);
         allItems.forEach(i=>{
             const opt =  dropdownSelector.ownerDocument.createElement("option");
-            opt.value = i.readableName + " - " + i.fileIndex;
-            opt.setAttribute("dataItem",JSON.stringify({Path:GetFullNameOfObject(i),Index:i.fileIndex}))
+            opt.value = i.parent.name + " - " + i.name;
+            opt.setAttribute("dataItem",JSON.stringify({Path:i.parent.getItemLocation(),FileName:i.name}))
             datalist.appendChild(opt);
         })
         dropdownSelector.ownerDocument.body.appendChild(datalist);
@@ -53,7 +53,7 @@ export function SetupInputWithDatalist(contentType:ContentItemType,dropdownSelec
         const option = Array.from(datalist.querySelectorAll('option')).find(opt => opt.value === dropdownSelector.value);
         if (option) {
             const value = JSON.parse(option.getAttribute("dataItem"));
-            const editorObject = GetEditorObjectWithValues(contentType,value.Path,value.Index);
+            const editorObject = GetEditorObjectWithValues(contentType,value.Path,value.FileName);
             if(editorObject) {
                 onChange(editorObject);
             }
@@ -61,27 +61,34 @@ export function SetupInputWithDatalist(contentType:ContentItemType,dropdownSelec
     })
 }
 
-export function TrackAllObjectTypes(topLevel:ContentItem) {
+export async function TrackAllObjectTypes(topLevel:AssetFolder) : Promise<void> {
     //TODO: For items with multiple bundled together seperate them somehow
     trackedObjects = {};
-    GetAllObjectTypesPathsRecurs(topLevel);
+    await GetAllObjectTypesPathsRecurs(topLevel);
     if(editorObjectCategoriesChange) {
         editorObjectCategoriesChange.notifyObservers(trackedObjects);
     }
 }
 
-function GetAllObjectTypesPathsRecurs(itemsFolder:ContentItem) {
+async function GetAllObjectTypesPathsRecurs(itemsFolder:AssetFolder) : Promise<void>{
     //Recursive check all
     const itemsId = Object.keys(itemsFolder.containedItems);
     
-    itemsId.forEach(element => {
+    for(var i = 0; i < itemsId.length;i++) {
+        const element = itemsId[i];
         const item = itemsFolder.containedItems[element];
-        if(item.category === ContentItemType.Folder) {
-            GetAllObjectTypesPathsRecurs(item);
+        //Is folder?
+        if('containedItems' in item) {
+            await GetAllObjectTypesPathsRecurs(item);
+            return;
         }
+        //Is asset bundle
         if(!trackedObjects[item.category]){
             trackedObjects[item.category] = [];
         }
-        trackedObjects[item.category].push(item);
-    });
+        console.log("TODO: Finish tracking recursive!")
+        // const zippedFile = AsyncZipPuller.GetOrFindAsyncPuller()
+        // const items = await GetAllZippedFileNames(await )
+        // trackedObjects[item.category].push(item);
+    }
 }

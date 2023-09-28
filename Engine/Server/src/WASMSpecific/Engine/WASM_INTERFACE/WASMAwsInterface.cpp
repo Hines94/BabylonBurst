@@ -19,10 +19,10 @@ void AwsGetItemDataCallback(std::vector<uint8_t> data, std::string url) {
     awsDataReadyCallbacks.erase(url);
 }
 
-void RequestAwsAsset(std::string url, int fileIndex, std::function<void(std::vector<uint8_t>)> readyCallback) {
+void RequestAwsAsset(std::string url, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback) {
     // This function is implemented client side
     awsDataReadyCallbacks.insert({url, readyCallback});
-    emscripten::val::global("RequestAwsAsset")(url, fileIndex, WASMSetup::WASMModuleIdentifier);
+    emscripten::val::global("RequestAwsAsset")(url, fileName, WASMSetup::WASMModuleIdentifier);
 }
 
 std::function<void(std::vector<std::string>)> awsFindDataCallback;

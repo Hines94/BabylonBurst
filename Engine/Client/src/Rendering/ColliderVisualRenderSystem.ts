@@ -63,7 +63,7 @@ export function RunColliderVisualSystem(ecosystem: GameEcosystem) {
                 collideItem.ColliderMesh.FilePath,
                 collideItem.ColliderMesh.MeshName,
                 [ecosystem.dynamicProperties[colliderMaterial]],
-                0,
+                collideItem.ColliderMesh.FileName,
                 uiLayerMask
             );
         }

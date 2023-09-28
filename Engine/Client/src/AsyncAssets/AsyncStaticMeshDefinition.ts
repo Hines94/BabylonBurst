@@ -7,8 +7,7 @@ import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
 import { GetSceneLoader, SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
-import { GetAssetFullPath } from "./Utils/ZipUtils";
-import { AsyncAssetManager } from ".";
+import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
 import { DebugMode, environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
 import { GetBadMeshMaterial } from "@engine/Utils/MeshUtils";
 
@@ -50,14 +49,14 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
     //Details on this definition
     meshName: string;
     materials: any[];
-    fileIndex: number;
+    fileName: string;
     layerMask: number;
 
-    static GetAsyncMeshLoader(scene: Scene, desiredPath: string, fileIndex: number): SceneAsyncLoader {
+    static GetAsyncMeshLoader(scene: Scene, desiredPath: string, fileName: string): SceneAsyncLoader {
         if (asyncMeshLoaders[GetAsyncSceneIdentifier(scene)] === undefined) {
             return undefined;
         }
-        return asyncMeshLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(desiredPath, fileIndex)];
+        return asyncMeshLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(desiredPath, fileName)];
     }
 
     /** Final combined meshes for each scene */
@@ -70,21 +69,21 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
     extensionType = ".glb";
 
     /**
-     * @param awsPath Path to the asset in AWS (including folder - eg. mechs/SilverbackMechOverall)
+     * @param awsPath Path to the asset bundle in AWS (including folder - eg. levels/levelAData)
      * @param meshName The name of this specific mesh in the gltf - eg. SilverbackArms
      * @param materials An array of materials to use. Use null to keep the gltf material. MUST be same length as material num.
-     * @param fileIndex optional if there are multiple files in the zip bundle
+     * @param fileName Name of the file that contains our mesh
      */
-    constructor(awsPath: string, meshName: string, materials: any[], fileIndex = 0, layerMask = 0x00000001) {
+    constructor(awsPath: string, meshName: string, materials: any[], fileName: string, layerMask = 0x00000001) {
         super();
-        this.fileIndex = fileIndex;
+        this.fileName = fileName;
         this.desiredPath = awsPath;
         this.meshName = meshName;
         this.materials = materials;
         this.layerMask = layerMask;
 
         //Add to our mesh definitions so networked etc can find this definition
-        const meshPath = awsPath + "_" + fileIndex;
+        const meshPath = awsPath + "_" + fileName;
         if (AllMDefinitions[meshPath] === undefined) {
             AllMDefinitions[meshPath] = {};
         }
@@ -95,7 +94,7 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
     /** Background cache as game is running to reduce asset load times */
     async GetBackgroundCacheTask(): Promise<string> {
-        await GetSceneLoader(this.desiredPath, this.fileIndex, undefined).PerformBackgroundCache();
+        await GetSceneLoader(this.desiredPath, this.fileName, undefined).PerformBackgroundCache();
         return this.desiredPath;
     }
 
@@ -131,17 +130,17 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
         }
 
         //Check if a similar asset has loaded yet?
-        if (AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex) === undefined) {
+        if (AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileName) === undefined) {
             if (asyncMeshLoaders[GetAsyncSceneIdentifier(scene)] === undefined) {
                 asyncMeshLoaders[GetAsyncSceneIdentifier(scene)] = {};
             }
-            asyncMeshLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(this.desiredPath, this.fileIndex)] =
-                GetSceneLoader(this.desiredPath, this.fileIndex, scene);
-            AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex).extensionType =
+            asyncMeshLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(this.desiredPath, this.fileName)] =
+                GetSceneLoader(this.desiredPath, this.fileName, scene);
+            AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileName).extensionType =
                 this.extensionType;
         }
         //Make sure actual mesh is loaded
-        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex);
+        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileName);
         await asyncLoader.getWaitForFullyLoadPromise();
 
         //Extract submeshes that we want

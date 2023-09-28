@@ -1,58 +1,61 @@
-import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
-import { ContentItemType, GetAllParentLevels } from "../ContentItem";
+import { ContentBrowserIconedItemHTML } from "./ContentBrowserIconedItemHTML";
+import { ContentBrowserHTML } from "../ContentBrowserHTML";
+import { AssetFolder } from "../AssetFolder";
+import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ContentItemType } from "../ContentItem";
 
-export class ContentBrowserFolderHTML extends ContentBrowserItemHTML {
-    protected performPrimaryMethod(): void {
-        this.openFolder();
+export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
+    ourFolder:AssetFolder;
+    ourItem:AssetFolder;
+    
+    constructor(ourContentHolder: ContentBrowserHTML, folder: AssetFolder) {
+        super(ourContentHolder,folder);
+        this.ourFolder = folder;
+
+        this.SetIcon("Folder");
     }
 
-    protected override getContextMenuItems(): {
-        name: string;
-        callback: () => void;
-    }[] {
+    override setupOurSelectable(): void {
+        super.setupOurSelectable();
+        this.ourContentHolder.contentGrid.appendChild(this.ourItemContainer);
+    }
+
+    cleanupItem(): void {
+        console.log("TODO: Cleanup!");
+    }
+
+    getDraggingText(): string {
+        return this.ourFolder.GetFullFolderPath();
+    }
+
+    getContextMenuItems(): ContextMenuItem[] {
         return [
-            {
-                name: "Open",
-                callback: () => {
-                    this.openFolder();
-                },
-            },
-        ].concat(super.getContextMenuItems());
+        ]
     }
 
-    protected override contextMenuDelete(): void {
+    attemptDeletion(): void {
         var result = window.confirm(
             "Really delete " +
-                this.ourItem.readableName +
+                this.ourItem.name +
                 " AND all " +
-                this.getAllContainedAssets().length +
+                this.ourItem.getAllContainedAssets().length +
                 " assets inside " +
                 "?"
         );
         if (result) {
-            this.DeleteItem();
+            this.ourItem.DeleteItem();
         }
     }
 
-    protected override DeleteItem(): Promise<void> {
-        //Delete all contained items
-        const allcontained = this.getAllContainedAssets();
-        allcontained.forEach(asset => {
-            this.ourContentHolder.storageBackend.requestDelete(asset);
-        });
-        return super.DeleteItem();
-    }
+    async drawInspectorInfo(): Promise<void> {
+        const inspector = this.ourItemContainer.ownerDocument.getElementById("InspectorPanel") as HTMLElement;
+        (inspector.querySelector("#ItemType") as HTMLElement).innerText = "Folder";
+        this.SetIcon("Folder",inspector.querySelector("#ItemImage"));
 
-    protected override async drawInspectorInfo(): Promise<boolean> {
-        if ((await super.drawInspectorInfo()) === false) {
-            return false;
-        }
-        const inspector = this.ourDiv.ownerDocument.getElementById("InspectorPanel") as HTMLElement;
-
-        const containedItems = this.getAllContainedAssets();
+        const containedItems = this.ourItem.getAllContainedAssets();
 
         //Total num assets
-        const numItems = this.ourDiv.ownerDocument.createElement("p");
+        const numItems = this.ourItemContainer.ownerDocument.createElement("p");
         numItems.innerText = "Num Contained Assets: " + containedItems.length;
         numItems.style.paddingBottom = "0px";
         numItems.style.marginBottom = "0px";
@@ -72,7 +75,7 @@ export class ContentBrowserFolderHTML extends ContentBrowserItemHTML {
         }
         const types = Object.keys(containedTypes);
         for (var i = 0; i < types.length; i++) {
-            const typeItem = this.ourDiv.ownerDocument.createElement("p");
+            const typeItem = this.ourItemContainer.ownerDocument.createElement("p");
             typeItem.style.padding = "0px";
             typeItem.style.margin = "0px";
             typeItem.style.paddingLeft = "20px";
@@ -82,10 +85,8 @@ export class ContentBrowserFolderHTML extends ContentBrowserItemHTML {
         }
 
         //Size
-        const containedSize = this.ourDiv.ownerDocument.createElement("p");
-        containedSize.innerText = "Assets Size: " + totalSize.toFixed(2) + "mb";
-        containedSize.style.paddingTop = "20px";
-        inspector.appendChild(containedSize);
+        (inspector.querySelector("#ItemSize") as HTMLElement).innerText =
+                "Size: " + (totalSize).toFixed(2) + "mb";
 
         //Children number
         // const directChild = document.createElement('p');
@@ -93,10 +94,9 @@ export class ContentBrowserFolderHTML extends ContentBrowserItemHTML {
         // inspector.appendChild(directChild);
     }
 
-    openFolder() {
-        this.ourContentHolder.storageBackend.currentFolderLevel = GetAllParentLevels(this.ourItem).concat([
-            this.ourItem,
-        ]);
+    performPrimaryMethod(): void {
+        this.ourContentHolder.storageBackend.currentFolderLevel = this.ourFolder.GetAllParentFolders().concat([this.ourFolder]);
         this.ourContentHolder.rebuildStoredItems();
     }
+
 }

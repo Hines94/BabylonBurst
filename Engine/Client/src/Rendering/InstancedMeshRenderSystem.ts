@@ -15,7 +15,7 @@ function getRunnerID(rend: InstancedRender): string {
     ret += rend.LayerMask;
     ret += "_MATS_";
     for (var m = 0; m < rend.MaterialData.length; m++) {
-        ret += "_" + rend.MaterialData[m].FileIndex + "_" + rend.MaterialData[m].FilePath;
+        ret += "_" + rend.MaterialData[m].FileName + "_" + rend.MaterialData[m].FilePath;
     }
     return ret;
 }
@@ -68,7 +68,7 @@ export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
                 rendItem.ModelData.FilePath,
                 rendItem.ModelData.MeshName,
                 mats,
-                0,
+                rendItem.ModelData.FileName,
                 GetLayerMask(rendItem)
             );
         }
@@ -96,9 +96,9 @@ function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Mate
     for (var m = 0; m < mats.length; m++) {
         const spec = mats[m];
         //Load material identifier from async
-        var matLoader = GetPreviouslyLoadedAWSAsset(spec.FilePath, spec.FileIndex) as AsyncArrayBufferLoader;
+        var matLoader = GetPreviouslyLoadedAWSAsset(spec.FilePath, spec.FileName) as AsyncArrayBufferLoader;
         if (!matLoader) {
-            matLoader = new AsyncArrayBufferLoader(spec.FilePath, spec.FileIndex);
+            matLoader = new AsyncArrayBufferLoader(spec.FilePath, spec.FileName);
             return [];
         }
         if (!matLoader.AssetFullyLoaded) {

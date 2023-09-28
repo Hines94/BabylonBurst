@@ -9,11 +9,12 @@ import {
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import JSZip from "jszip";
 import { BackendSetup, FileZipData, IBackendStorageInterface } from "./StorageInterfaceTypes";
+import { GetZipPath } from "@engine/AsyncAssets/Utils/ZipUtils";
 
 async function createZip(data: FileZipData[], filename: string) {
     const zip = new JSZip();
     for (var i = 0; i < data.length; i++) {
-        zip.file(i + "_" + filename, data[i]);
+        zip.file(data[i].name, data[i].data);
     }
     const content = await zip.generateAsync({ type: "uint8array" });
     return content;
@@ -93,7 +94,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         const compressedBlob = new Blob([zipData], { type: "application/zip" });
         const uploadParams = {
             Bucket: this.bucketName,
-            Key: location + ".zip",
+            Key: GetZipPath(location),
             Body: compressedBlob,
             ContentType: "application/zip",
         };

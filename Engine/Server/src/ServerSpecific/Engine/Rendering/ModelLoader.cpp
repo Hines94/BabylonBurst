@@ -45,9 +45,9 @@ ExtractedModelData* ModelLoader::GetMeshFromFile(const ModelSpecifier& ms) {
     return GetMeshFromFile(ms.FilePath, ms.MeshName, ms.FileIndex);
 }
 
-ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::string meshName, int fileIndex) {
+ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::string fileName, std::string meshName) {
 
-    const auto path = filePath + "_" + std::to_string(fileIndex);
+    const auto path = filePath + "_" + fileName;
 
     //Already loaded mesh?
     const auto name = path + "_" + meshName;
@@ -64,7 +64,7 @@ ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::stri
     //First - get the file with the data
     if (cachedModelData.find(path) == cachedModelData.end()) {
         cachedModelData.insert({path, std::vector<uint8_t>()});
-        AwsManager::getInstance().GetFileFromS3(filePath, fileIndex,
+        AwsManager::getInstance().GetFileFromS3(filePath, fileName,
                                                 [path, this](std::vector<uint8_t> vec) {
                                                     cachedModelData[path] = vec;
                                                 });

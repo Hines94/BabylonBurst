@@ -18,11 +18,11 @@ public:
     void operator=(AwsManager const&) = delete;
 
     //Get raw bytes from S3
-    void GetFileFromS3(const std::string& key, int fileIndex, std::function<void(std::vector<uint8_t>)> readyCallback);
+    void GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback);
     void GetAllObjectsInS3(std::function<void(std::vector<std::string>)> readyCallback);
 
     //Set from WASM sepecific (as this is our 'core' library and we don't have access to Emscripten)
-    void SetGetFileCallback(std::function<void(std::string, int, std::function<void(std::vector<uint8_t>)>)> callback) {
+    void SetGetFileCallback(std::function<void(std::string, std::string, std::function<void(std::vector<uint8_t>)>)> callback) {
         getFileCallback = callback;
     }
 
@@ -31,6 +31,6 @@ public:
     }
 
 private:
-    std::function<void(std::string, int, std::function<void(std::vector<uint8_t>)>)> getFileCallback;
+    std::function<void(std::string, std::string, std::function<void(std::vector<uint8_t>)>)> getFileCallback;
     std::function<void(std::function<void(std::vector<std::string>)>)> getAllObjectsCallback;
 };

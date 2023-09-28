@@ -7,17 +7,17 @@ import { AsyncDataType } from "./Utils/ZipUtils.js";
 export class AsyncGUIDescription extends BackgroundCacher {
     loadingGUI: AsyncGUILoader = null;
     ourPath: string;
-    ourFileIndex: number;
+    ourFileName: string;
 
-    constructor(path: string, fileIndex = 0) {
+    constructor(path: string, fileName: string) {
         super();
         this.ourPath = path;
-        this.ourFileIndex = fileIndex;
+        this.ourFileName = fileName;
     }
 
     async GetGUICopy(advancedTexture: AdvancedDynamicTexture) {
         if (this.loadingGUI === null) {
-            this.loadingGUI = new AsyncGUILoader(this.ourPath, this.ourFileIndex);
+            this.loadingGUI = new AsyncGUILoader(this.ourPath, this.ourFileName);
         }
 
         if (this.loadingGUI.AssetFullyLoaded === false) {
@@ -28,7 +28,7 @@ export class AsyncGUIDescription extends BackgroundCacher {
     }
 
     async GetBackgroundCacheTask(): Promise<string> {
-        const task = new AsyncGUILoader(this.ourPath, this.ourFileIndex, false);
+        const task = new AsyncGUILoader(this.ourPath, this.ourFileName, false);
         await task.PerformBackgroundCache();
         return this.ourPath;
     }

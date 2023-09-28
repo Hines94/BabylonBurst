@@ -144,9 +144,9 @@ export class AsyncAssetManager {
     }
 
     /** Remove frontend cache (loaded asset) and backend cache (bytes) */
-    async ResetAnyCaching(location: string, fileIndex: number) {
+    async ResetAnyCaching(location: string, fileName: string) {
         AsyncZipPuller.RemoveCacheAtLocation(location);
-        AsyncAssetLoader.RemovePriorCaching(location, fileIndex);
-        this.frontendCache.RemoveCacheAtLocation(location, fileIndex);
+        AsyncAssetLoader.RemovePriorCaching(location, fileName);
+        this.frontendCache.RemoveCacheAtLocation(location);
     }
 }

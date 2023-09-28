@@ -227,12 +227,12 @@ export class ServerWASMModuleWrapper {
     }
 
     /** When in Editor and we want to refresh a prefab's data */
-    ReloadPrefabData(prefabLocation: string, data: ArrayBuffer) {
+    ReloadPrefabData(prefabLocation: string, prefabName: string, data: ArrayBuffer) {
         let prefabData: WASMUint8Array = new this.wasmModule.VectorUint8();
         new Uint8Array(data).forEach(val => {
             prefabData.push_back(val);
         });
-        this.wasmModule.ReloadPrefabData(prefabLocation, prefabData);
+        this.wasmModule.ReloadPrefabData(prefabLocation, prefabName, prefabData);
         prefabData.delete();
     }
 

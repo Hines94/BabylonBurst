@@ -8,8 +8,8 @@ import { AsyncDataType } from "./Utils/ZipUtils.js";
 class AudioClipLoader extends AsyncAssetLoader {
     options: ISoundOptions = null;
 
-    constructor(path: string, fileIndex: number, bWaitForLoad: boolean) {
-        super(path, fileIndex, false, false);
+    constructor(path: string, fileName: string, bWaitForLoad: boolean) {
+        super(path, fileName, false, false);
         if (bWaitForLoad === false) this.performAsyncLoad();
     }
 
@@ -72,25 +72,25 @@ export class AudioClipInstance {
 
 export class AsyncAudioClipDefinition extends BackgroundCacher {
     awsPath: string = null;
-    fileIndex: number = 0;
+    fileName: string;
 
-    constructor(awsPath: string, fileIndex = 0) {
+    constructor(awsPath: string, fileName: string) {
         super();
         this.awsPath = awsPath;
-        this.fileIndex = fileIndex;
+        this.fileName = fileName;
     }
     loader: AudioClipLoader;
     GetSoundInstance(scene: Scene, overwriteOptions: ISoundOptions = null) {
         const id = GetAsyncSceneIdentifier(scene);
         if (this.loader === undefined) {
-            this.loader = new AudioClipLoader(this.awsPath, this.fileIndex, false);
+            this.loader = new AudioClipLoader(this.awsPath, this.fileName, false);
         }
 
         return new AudioClipInstance(this.loader, scene, overwriteOptions);
     }
 
     async GetBackgroundCacheTask(): Promise<string> {
-        const task = new AudioClipLoader(this.awsPath, this.fileIndex, true);
+        const task = new AudioClipLoader(this.awsPath, this.fileName, true);
         await task.PerformBackgroundCache();
         return this.awsPath;
     }

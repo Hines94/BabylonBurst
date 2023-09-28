@@ -32,7 +32,7 @@ AwsManager::AwsManager() : bucketName{Environment::GetEnvironmentVariable("AWS_B
     std::cout << "Aws Client setup" << std::endl;
 }
 
-void AwsManager::GetFileFromS3(const std::string& key, int fileIndex, std::function<void(std::vector<uint8_t>)> readyCallback) {
+void AwsManager::GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback) {
     Aws::S3::Model::GetObjectRequest object_request;
     object_request.WithBucket(bucketName.c_str()).WithKey(StringUtils::EnsureZipExtension(key).c_str());
     auto get_object_outcome = s3Client->GetObject(object_request);
@@ -67,6 +67,12 @@ void AwsManager::GetFileFromS3(const std::string& key, int fileIndex, std::funct
         }
 
         // Access the file in the archive at fileIndex
+        const auto fileIndex = zip_name_locate(archive, fileName.c_str(), 0);
+        if (fileIndex < 0) {
+            std::cout << "Error unzipping S3 file: " << key << std::endl;
+            // handle error
+            readyCallback(std::vector<uint8_t>());
+        }
         zip_file* file = zip_fopen_index(archive, fileIndex, 0);
         if (!file) {
             std::cout << "Error unzipping S3 file: " << key << std::endl;
