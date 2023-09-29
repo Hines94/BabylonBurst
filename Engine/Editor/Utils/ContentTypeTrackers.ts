@@ -1,5 +1,6 @@
 import { Observable } from "@babylonjs/core";
 import { ContentItem, ContentItemType } from "../HTML/ContentBrowser/ContentItem";
+import { topLevelEditorFolder } from "../HTML/CustomEditorHTML";
 
 
 
@@ -61,34 +62,17 @@ export function SetupInputWithDatalist(contentType:ContentItemType,dropdownSelec
     })
 }
 
-export async function TrackAllObjectTypes(topLevel:AssetFolder) : Promise<void> {
-    //TODO: For items with multiple bundled together seperate them somehow
+export async function RefreshObjectTypeTracking() : Promise<void> {
     trackedObjects = {};
-    await GetAllObjectTypesPathsRecurs(topLevel);
-    if(editorObjectCategoriesChange) {
-        editorObjectCategoriesChange.notifyObservers(trackedObjects);
-    }
-}
-
-async function GetAllObjectTypesPathsRecurs(itemsFolder:AssetFolder) : Promise<void>{
-    //Recursive check all
-    const itemsId = Object.keys(itemsFolder.containedItems);
-    
-    for(var i = 0; i < itemsId.length;i++) {
-        const element = itemsId[i];
-        const item = itemsFolder.containedItems[element];
-        //Is folder?
-        if('containedItems' in item) {
-            await GetAllObjectTypesPathsRecurs(item);
-            return;
-        }
-        //Is asset bundle
+    const allItems = topLevelEditorFolder.getAllContainedAssets();
+    for(var i = 0; i < allItems.length;i++){
+        const item = allItems[i];
         if(!trackedObjects[item.category]){
             trackedObjects[item.category] = [];
         }
-        console.log("TODO: Finish tracking recursive!")
-        // const zippedFile = AsyncZipPuller.GetOrFindAsyncPuller()
-        // const items = await GetAllZippedFileNames(await )
-        // trackedObjects[item.category].push(item);
+        trackedObjects[item.category].push(item);
+    }
+    if(editorObjectCategoriesChange) {
+        editorObjectCategoriesChange.notifyObservers(trackedObjects);
     }
 }

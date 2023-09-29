@@ -33,14 +33,15 @@ export class ContentBrowserAudioClipHTML extends  ContentBrowserSpecificItem {
             return;
         }
         //TODO: Set data
-        const clip = new AsyncAudioClipDefinition(GetFullPathOfObject(this.ourItem).replace(".zip", ""));
-        clip.GetSoundInstance(this.ourContentHolder.ecosystem.scene, {
+        const clip = new AsyncAudioClipDefinition(this.ourItem.parent.getItemLocation(),this.ourItem.GetSaveName());
+        const instance = clip.GetSoundInstance(this.ourContentHolder.ecosystem.scene, {
             loop: false,
             autoplay: true,
         });
     }
 
     override async drawInspectorInfo(): Promise<void> {
+        await super.drawInspectorInfo();
         const inspector = this.ourContentHolder.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         const playB = this.ourContentHolder.ecosystem.doc.createElement("button");
         playB.innerText = "Play";

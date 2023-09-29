@@ -28,15 +28,6 @@ export abstract class ContentBrowserIconedItemHTML extends ContentBrowserVisualH
 
     abstract getDraggingText():string;
 
-    itemNameChange() {
-        // this.ourContentHolder.storageBackend.requestDelete(this.ourItem);
-        // const inputValue: string = this.ourName.value;
-        // this.ourName.blur();
-        // this.ourItem.name = inputValue;
-        // this.SaveItem();
-        // this.drawInspectorInfo();
-    }
-
     protected async SetIcon(iconCategory:string,iconImg:HTMLImageElement = this.iconImg) {
         if (icons[iconCategory] !== undefined) {
             iconImg.src = icons[iconCategory];

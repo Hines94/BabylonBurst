@@ -39,11 +39,12 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserSpecificItem {
         OpenDatasheet(JSON.parse(this.ourItem.data), this.ourItem.name + "_Datasheet", (newData: any) => {
             //Request save
             this.ourItem.data = JSON.stringify(newData);
-            this.ourContentHolder.storageBackend.saveItem(this.ourItem);
+            this.ourItem.SaveItemOut();
         });
     }
 
     override async drawInspectorInfo(): Promise<void> {
+        await super.drawInspectorInfo();
         const inspector = this.ourSelectable.ownerDocument.getElementById("InspectorPanel") as HTMLElement;
 
         await this.loadContentDatasheet();
@@ -87,7 +88,7 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserSpecificItem {
         if (this.ourItem.data) {
             return;
         }
-        const loader = new AsyncStringLoader(this.ourItem.parent.getItemLocation(), this.ourItem.name);
+        const loader = new AsyncStringLoader(this.ourItem.parent.getItemLocation(), this.ourItem.GetSaveName());
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;
     }

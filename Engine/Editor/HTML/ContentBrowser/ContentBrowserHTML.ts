@@ -1,7 +1,7 @@
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { ContextMenuItem, ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { CloneTemplate, GetNewNameItem, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
+import { CloneTemplate, DraggedElement, GetNewNameItem, MakeDroppableGenericElement, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ContentItem, ContentItemType } from "./ContentItem";
 import { ContentBrowserVisualHTML } from "./ContentBrowserVisualHTML";
 import { ContentBrowserFolderHTML } from "./Specifics/ContentBrowserFolderHTML";
@@ -74,7 +74,8 @@ export class ContentBrowserHTML {
             const contextItems: ContextMenuItem[] = [];
             contextItems.push({name:"Create New Folder",callback:()=>{
                 const currentLevel = GetCurrentLevelItem(store);
-                currentLevel.GenerateNewFolder();
+                const folder = currentLevel.GenerateNewFolder();
+                this.autoselectItem = folder; 
                 browser.rebuildStoredItems();
             }})
             const newItems = store.getNewContentOptions();
@@ -162,7 +163,8 @@ export class ContentBrowserHTML {
             browser.breadcrumbFolders.appendChild(AssetsOverall);
             //Breadcrumb children
             const currentLevel: AssetFolder[] = [];
-            browser.storageBackend.currentFolderLevel.forEach(fold => {
+            for(var i = 0; i < browser.storageBackend.currentFolderLevel.length;i++) {
+                const fold = browser.storageBackend.currentFolderLevel[i];
                 currentLevel.push(fold);
                 const FolderLevel = browser.ecosystem.doc.createElement("b");
                 FolderLevel.className = "folderLink";
@@ -173,7 +175,19 @@ export class ContentBrowserHTML {
                 };
                 FolderLevel.innerHTML = "> " + fold.name;
                 browser.breadcrumbFolders.appendChild(FolderLevel);
-            });
+                if(i !== browser.storageBackend.currentFolderLevel.length-1) {
+                    MakeDroppableGenericElement(FolderLevel,
+                        (ele:any)=>{
+                            if(ele.AssetBundle !== undefined) {
+                                fold.MoveAssetBundle(ele.AssetBundle);
+                            }
+                        },
+                        (ele:any)=>{
+                            if(ele.AssetBundle !== undefined) { return false;}
+                            return true;
+                        })
+                }
+            };
         }
     }
 
@@ -195,12 +209,15 @@ export class ContentBrowserHTML {
         ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
             this.browserBase.addEventListener(eventName, PreventDefaults, false);
         });
-
+        
         ["dragenter", "dragover"].forEach(eventName => {
             //@ts-ignore
             this.browserBase.addEventListener(
                 eventName,
                 (event: DragEvent) => {
+                    if(DraggedElement !== undefined && (DraggedElement as any).AssetBundle !== undefined) {
+                        return;
+                    }
                     if (!event.dataTransfer.types.includes("text/plain")) {
                         this.browserBase.classList.add("dragover");
                     } else {
@@ -227,6 +244,9 @@ export class ContentBrowserHTML {
 
     /** For drag and drop file functionality */
     protected handleFileDrop(e: DragEvent) {
+        if(DraggedElement !== undefined && (DraggedElement as any).AssetBundle !== undefined) {
+            return;
+        }
         let dt = e.dataTransfer;
         let files = dt.files;
         //@ts-ignore

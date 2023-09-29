@@ -39,7 +39,7 @@ export function WaitForEvent(eventName: string, doc: Document) {
 }
 
 /** Method to make text input accept drag/drop text and highlight on hover */
-export function MakeDroppableElement(element: HTMLInputElement, getData: () => string) {
+export function MakeDroppableTextElement(element: HTMLInputElement, getData: () => string) {
     element.addEventListener("dragover", function (event: DragEvent) {
         event.preventDefault();
         element.classList.add("dragover");
@@ -57,6 +57,34 @@ export function MakeDroppableElement(element: HTMLInputElement, getData: () => s
     });
 }
 
+/** Will simply return the vent rather than any transfer */
+export function MakeDroppableGenericElement(
+    element: HTMLElement,
+    callback: (DraggedElement: EventTarget) => void,
+    dragoverCheck: (DraggedElement: EventTarget) => boolean
+) {
+    element.addEventListener("dragover", function (event: DragEvent) {
+        if (dragoverCheck(DraggedElement)) {
+            event.preventDefault(); // Allow drop by preventing default behavior
+            event.stopPropagation();
+            element.classList.add("dragover");
+        }
+    });
+
+    element.addEventListener("dragleave", function (event: DragEvent) {
+        element.classList.remove("dragover");
+    });
+
+    element.addEventListener("drop", function (event: DragEvent) {
+        event.preventDefault(); // Prevent default action, e.g., open as link
+        callback(DraggedElement);
+        element.classList.remove("dragover");
+    });
+}
+
+export var DraggedElement: EventTarget;
+
+/** Make a draggable element that can set text in inputs */
 export function MakeDraggableElement(element: HTMLElement, getData: () => string) {
     var clone: HTMLElement;
     let offsetX = 0;
@@ -81,8 +109,10 @@ export function MakeDraggableElement(element: HTMLElement, getData: () => string
         offsetY = event.clientY - element.getBoundingClientRect().top;
 
         event.dataTransfer.setData("text/plain", getData());
-        event.dataTransfer.effectAllowed = "link";
+        event.dataTransfer.effectAllowed = "all";
         event.dataTransfer.setDragImage(new Image(), 0, 0); // hide the default drag image
+
+        DraggedElement = element;
     }
 
     function dragMiddle(event: DragEvent) {
@@ -104,6 +134,7 @@ export function MakeDraggableElement(element: HTMLElement, getData: () => string
             clone.remove();
             clone = null;
         }
+        DraggedElement = undefined;
     }
 }
 

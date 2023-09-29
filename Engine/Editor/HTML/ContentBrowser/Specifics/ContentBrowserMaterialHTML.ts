@@ -11,7 +11,7 @@ export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
         return [];
     }
     async drawInspectorInfo(): Promise<void> {
-        
+        await super.drawInspectorInfo();
     }
     protected cleanupItem(): void {
         
@@ -26,7 +26,7 @@ export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
         OpenMaterial(decode(this.ourItem.data), this.ourItem.name, (newData: any) => {
             //Request save
             this.ourItem.data = newData;
-            this.ourContentHolder.storageBackend.saveItem(this.ourItem);
+            this.ourItem.SaveItemOut();
         });
     }
 
@@ -34,7 +34,7 @@ export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
         if (this.ourItem.data) {
             return;
         }
-        const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.name);
+        const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.GetSaveName());
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;
     }

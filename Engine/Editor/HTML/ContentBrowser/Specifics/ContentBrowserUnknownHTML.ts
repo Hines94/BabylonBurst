@@ -7,7 +7,7 @@ export class ContentBrowserUnknownHTML extends ContentBrowserSpecificItem {
         return [];
     }
     async drawInspectorInfo(): Promise<void> {
-        
+        await super.drawInspectorInfo();
     }
     protected cleanupItem(): void {
         

@@ -1,6 +1,6 @@
 //@ts-ignore
 import { JSONEditor } from "@json-editor/json-editor";
-import { MakeDroppableElement } from "@BabylonBurstClient/HTML/HTMLUtils";
+import { MakeDroppableTextElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 
 interface JSONSchema {
     title?: string;
@@ -16,7 +16,7 @@ class CustomStringEditor extends JSONEditor.defaults.editors.string {
     postBuild() {
         super.postBuild();
         //@ts-ignore
-        MakeDroppableElement(this.input, () => this.getValue());
+        MakeDroppableTextElement(this.input, () => this.getValue());
         setupForEditorOnly(this);
     }
 }

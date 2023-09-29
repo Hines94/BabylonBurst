@@ -11,12 +11,16 @@ import JSZip from "jszip";
 import { BackendSetup, FileZipData, IBackendStorageInterface } from "./StorageInterfaceTypes";
 import { GetZipPath } from "@engine/AsyncAssets/Utils/ZipUtils";
 
-async function createZip(data: FileZipData[], filename: string) {
+async function createZip(data: FileZipData[]) {
     const zip = new JSZip();
     for (var i = 0; i < data.length; i++) {
         zip.file(data[i].name, data[i].data);
     }
-    const content = await zip.generateAsync({ type: "uint8array" });
+    const content = await zip.generateAsync({
+        compression: "DEFLATE",
+        compressionOptions: { level: 9 },
+        type: "uint8array",
+    });
     return content;
 }
 
@@ -89,8 +93,8 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         }
     }
 
-    async StoreZipAtLocation(data: FileZipData[], location: string, extension: string): Promise<boolean> {
-        const zipData = await createZip(data, "babylonburstUpload" + extension);
+    async StoreZipAtLocation(data: FileZipData[], location: string): Promise<boolean> {
+        const zipData = await createZip(data);
         const compressedBlob = new Blob([zipData], { type: "application/zip" });
         const uploadParams = {
             Bucket: this.bucketName,

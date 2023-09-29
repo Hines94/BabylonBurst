@@ -50,6 +50,9 @@ export function GetContentTypeFromExtension(extension:string) : ContentItemType{
     if(str === "wav") {
         return ContentItemType.Audio;
     }
+    if(str === "gltf" || str === "glb" || str === ".babylon") {
+        return ContentItemType.Model;
+    }
     return ContentItemType.Unknown;
 }
 
@@ -78,22 +81,14 @@ export class ContentItem extends VisualItem {
         }
     }
 
-    async SaveItemOut(): Promise<boolean> {
-        console.error("TODO: Fix with asset bundle type")
-        // var type = ".txt";
-        // if (item.typeExtension) {
-        //     type = item.typeExtension;
-        // }
-        // var array = item.data;
-        // if (!Array.isArray(array)) {
-        //     array = [item.data];
-        // }
-        // return backend.StoreZipAtLocation(array, GetFullPathOfObject(item).replace(".zip", ""), type);
-        return false;
+    SaveItemOut(): Promise<boolean> {
+        //TODO: Ensure our data is up to date?
+        return this.parent.SaveItemOut();
     }
 
     DeleteItem(): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        this.parent.storedItems = this.parent.storedItems.filter(i=>{return i !== this});
+        return this.parent.SaveItemOut();
     }
 
     GetAllParentLevels(): AssetFolder[] {
@@ -107,11 +102,11 @@ export class ContentItem extends VisualItem {
     }
 
     async GetData() : Promise<any> {
-        if(this.data) {
+        if(this.data !== undefined && this.data !== null) {
             return this.data;
         }
         //Try load data
-        return await GetZippedFile(await AsyncZipPuller.GetCachedFile(this.parent.getItemLocation()),AsyncDataType.blob,this.name);
+        return await AsyncZipPuller.LoadFileData(this.parent.getItemLocation(),this.GetSaveName(),AsyncDataType.blob,false);
     }
 
     /** Fallback default if no extension set! */

@@ -3,6 +3,7 @@ import { ContentBrowserHTML } from "../ContentBrowserHTML";
 import { AssetFolder } from "../AssetFolder";
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentItemType } from "../ContentItem";
+import { MakeDroppableGenericElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 
 export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
     ourFolder:AssetFolder;
@@ -18,6 +19,55 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
     override setupOurSelectable(): void {
         super.setupOurSelectable();
         this.ourContentHolder.contentGrid.appendChild(this.ourItemContainer);
+        MakeDroppableGenericElement(this.ourSelectable,this.onElementDragover.bind(this),this.isDroppableElement.bind(this))
+    }
+
+    async onElementDragover(ele:any) {
+        if(ele.AssetBundle === undefined) {
+            return;
+        }
+        if(this.ourItem.GetBundleWithName(ele.AssetBundle.name)) {
+            alert("This folder already has an item with that bundle name: " + ele.AssetBundle.name);
+            return;
+        }
+        await this.ourItem.MoveAssetBundle(ele.AssetBundle);
+        this.ourContentHolder.rebuildStoredItems();
+    }
+
+    isDroppableElement(ele:any) {
+        if(ele.AssetBundle === undefined) {
+            return false;
+        }
+        return true;
+    }
+
+    async itemNameChange(): Promise<boolean> {
+        //Check that name change is valid
+        for(var e=0; e < this.ourItem.parent.containedFolders.length;e++){
+            if(this.ourItem.parent.containedFolders[e].name === this.ourName.value){
+                alert("Existing folder with same name at level: " + this.ourName.value);
+                return false;
+            }
+        }
+        //Ensure all contained items have updated data
+        const allcontainedItems = this.ourItem.getAllContainedBundles();
+        for(var i = 0; i < allcontainedItems.length;i++) {
+            await allcontainedItems[i].updateStoredItemsData();
+        }
+        //Delete all contained items
+        for(var i = 0; i < allcontainedItems.length;i++) {
+            await allcontainedItems[i].DeleteItem();
+        }
+        //Change name
+        this.ourItem.name = this.ourName.value;
+        //Save all contained items
+        for(var i = 0; i < allcontainedItems.length;i++) {
+            if(!await allcontainedItems[i].SaveItemOut()){
+                console.error("Error saving our bundle for name change: " + allcontainedItems[i].name);
+                return false;
+            }
+        }
+        return true;
     }
 
     cleanupItem(): void {
@@ -33,7 +83,7 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
         ]
     }
 
-    attemptDeletion(): void {
+    async attemptDeletion(): Promise<boolean> {
         var result = window.confirm(
             "Really delete " +
                 this.ourItem.name +
@@ -43,8 +93,13 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
                 "?"
         );
         if (result) {
-            this.ourItem.DeleteItem();
+            if(await this.ourItem.DeleteItem()){
+                this.ourItem.parent.containedFolders = this.ourItem.parent.containedFolders.filter(i=>{return i !== this.ourItem});
+                this.ourContentHolder.rebuildStoredItems();
+                return true;
+            }
         }
+        return false;
     }
 
     async drawInspectorInfo(): Promise<void> {

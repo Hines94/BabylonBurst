@@ -1,4 +1,4 @@
-import { CloneTemplate, MakeDraggableElement } from "@BabylonBurstClient/HTML/HTMLUtils";
+import { CloneTemplate } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ContentBrowserHTML } from "./ContentBrowserHTML";
 import { VisualItem } from "./VisualItem";
 import { SetInspectorOwner } from "../InspectorWindow/InspectorHTML";
@@ -30,11 +30,14 @@ export abstract class ContentBrowserVisualHTML {
             this.selectThisItem();
         }
         //Setup name
-        this.ourName.addEventListener("change", this.itemNameChange.bind(this));
+        this.ourName.addEventListener("change", this.ItemNameChange.bind(this));
         this.ourName.value = this.ourItem.name;
         this.ourName.blur();
         //Setup context menu
         this.ourSelectable.addEventListener("contextmenu", event => {
+            if(event.target !== this.ourSelectable) {
+                return;
+            }
             this.ourContentHolder.unclickAllItems();
             this.ourSelectable.classList.add("selectedContent");
             ShowContextMenu(event, this.getContextMenuItems().concat(this.getStandardContextMenuItems()), this.ourSelectable.ownerDocument);
@@ -59,12 +62,20 @@ export abstract class ContentBrowserVisualHTML {
         ]
     }
 
+    private async ItemNameChange(): Promise<boolean> {
+        if(await this.itemNameChange()) {
+            this.ourName.blur();
+            this.DrawInspectorInfo();   
+        }
+        return false;
+    }
+
     /** Attempt to change the name of the item */
-    abstract itemNameChange():void;
+    abstract itemNameChange():Promise<boolean>;
     /** Get context menu items specific for this item type */
     abstract getContextMenuItems():ContextMenuItem[];
     /** Requested delete for this item */
-    abstract attemptDeletion():void;
+    abstract attemptDeletion(): Promise<boolean>;
 
     /** Select this item if we are clicked on */
     private selectThisItem() {

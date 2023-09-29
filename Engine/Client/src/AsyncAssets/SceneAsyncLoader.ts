@@ -1,25 +1,7 @@
 import { ISceneLoaderAsyncResult, Observable, SceneLoader, DracoCompression, Mesh, Scene } from "@babylonjs/core";
 import { AsyncAssetLoader, GetPreviouslyLoadedAWSAssetCustomPath } from "./Framework/AsyncAssetLoader.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
-import { AsyncDataType } from "./Utils/ZipUtils.js";
-
-export function GetSceneLoader(path: string, fileName: string, scene: Scene): SceneAsyncLoader {
-    //NOTE: This relies on us setting up a seperate sceneID if we have multiple scenes
-    //const customPath = GetAsyncSceneIdentifier(scene) + AsyncZipPuller.GetAssetFullPath(path,fileIndex);
-    var ret = GetPreviouslyLoadedAWSAssetCustomPath(path);
-    if (ret === null) {
-        return new SceneAsyncLoader(path, fileName, scene);
-    } else {
-        const gltf = ret as SceneAsyncLoader;
-        if (gltf === null) {
-            console.error(
-                "AWS Asset has been loaded incorrectly? Should be a GLTF? " + path + " Aborting loading process!"
-            );
-            return;
-        }
-        return gltf;
-    }
-}
+import { AsyncDataType, GetAssetFullPath } from "./Utils/ZipUtils.js";
 
 function matchesMeshPattern(baseString: string, str: string) {
     const pattern = new RegExp("^" + baseString + "(_primitive\\d+)?$");
@@ -30,6 +12,10 @@ interface MeshCount {
     [key: string]: number;
 }
 
+var asyncSceneLoaders: {
+    [sceneid: string]: { [loaderID: string]: SceneAsyncLoader };
+} = {};
+
 /**
  * The acual "loader" for a GLTF scene. Will load from AWS and hide the loaded meshes via isVisible.
  */
@@ -39,12 +25,30 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
     extensionType: string;
     desiredScene: Scene = null;
 
-    constructor(assetPath: string, fileName: string, scene: Scene) {
+    constructor(assetPath: string, fileName: string, scene: Scene, extensionType: string) {
         super(assetPath, fileName, false);
         this.desiredScene = scene;
+        this.extensionType = extensionType;
+
+        //To avoid repeatedly getting same
+        const sceneId = GetAsyncSceneIdentifier(scene);
+        if (asyncSceneLoaders[sceneId] === undefined) {
+            asyncSceneLoaders[sceneId] = {};
+        }
+        asyncSceneLoaders[sceneId][GetAssetFullPath(assetPath, fileName)] = this;
+
+        //Start loading in models
         if (scene !== undefined) {
             this.performAsyncLoad();
         }
+    }
+
+    /** Get an existing one if possible */
+    static GetAsyncSceneLoader(scene: Scene, desiredPath: string, fileName: string): SceneAsyncLoader {
+        if (asyncSceneLoaders[GetAsyncSceneIdentifier(scene)] === undefined) {
+            return undefined;
+        }
+        return asyncSceneLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(desiredPath, fileName)];
     }
 
     GetDataLoadType(): AsyncDataType {

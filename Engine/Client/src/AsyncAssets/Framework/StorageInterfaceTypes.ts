@@ -10,7 +10,7 @@ export interface IBackendStorageInterface {
     /** Returns byte array promise. Location is "folder/file" */
     GetItemAtLocation(location: string): Promise<Uint8Array>;
     GetWebWorkerSetup(): BackendSetup;
-    StoreZipAtLocation(data: FileZipData[], location: string, extension: string): Promise<boolean>;
+    StoreZipAtLocation(data: FileZipData[], location: string): Promise<boolean>;
     StoreDataAtLocation(data: string, location: string, extension: string): Promise<boolean>;
     GetAllBackendItems(): Promise<string[]>;
 }

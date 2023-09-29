@@ -65,10 +65,12 @@ export abstract class AsyncAssetLoader {
     ignoreCache = false;
     requestedAssetPath: string;
     AssetFullyLoaded = false;
+    AssetStartedLoading = false;
     onAssetFullyLoaded = new Observable<AsyncAssetLoader>();
 
     startLoadTime: number;
     desiredFileName: string;
+    loadedAsyncData: any;
 
     abstract GetDataLoadType(): AsyncDataType;
 
@@ -82,6 +84,11 @@ export abstract class AsyncAssetLoader {
     }
 
     async performAsyncLoad() {
+        if (this.AssetStartedLoading === true) {
+            await this.getWaitForFullyLoadPromise();
+            return;
+        }
+        this.AssetStartedLoading = true;
         const manager = AsyncAssetManager.GetAssetManager();
         if (manager.printDebugStatements) {
             console.log("Requested asset at path: " + this.requestedAssetPath);
@@ -90,11 +97,14 @@ export abstract class AsyncAssetLoader {
         const ourAssetPath = this.GetAssetFullPath();
         IncrementCurrentlyLoadingAssets(ourAssetPath, manager);
         //If first then cache in case we want to perform a get unique
-        if (GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileName) !== null) {
-            //Add to our in memory cache
-            loadedAssets[ourAssetPath] = this;
-            //tODO: Use already loaded asset!
-            console.error("Already loading asset!");
+        const priorLoad = GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileName);
+        //Can use data from existing asset?
+        if (priorLoad !== null) {
+            await priorLoad.getWaitForFullyLoadPromise();
+            this.loadedAsyncData = priorLoad.loadedAsyncData;
+            await this.PerformSpecificSetup(this.loadedAsyncData);
+            console.log("found existing asset data for: " + this.requestedAssetPath);
+            return;
         } else {
             loadedAssets[ourAssetPath] = this;
         }
@@ -104,7 +114,7 @@ export abstract class AsyncAssetLoader {
         }
 
         //Get the data we are looking for and perform load
-        const data = await AsyncZipPuller.LoadFileData(
+        this.loadedAsyncData = await AsyncZipPuller.LoadFileData(
             this.requestedAssetPath,
             this.desiredFileName,
             this.GetDataLoadType(),
@@ -118,7 +128,7 @@ export abstract class AsyncAssetLoader {
 
         DecrementCurrentlyLoadingAssets(ourAssetPath, manager);
 
-        await this.PerformSpecificSetup(data);
+        await this.PerformSpecificSetup(this.loadedAsyncData);
     }
 
     static RemovePriorCaching(location: string, fileName: string) {

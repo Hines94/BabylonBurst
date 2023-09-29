@@ -2,6 +2,7 @@ import { VisualItem } from "./VisualItem";
 import { AssetBundle } from "./AssetBundle";
 import { IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
 import { ContentItem } from "HTML/ContentBrowser/ContentItem";
+import { RefreshObjectTypeTracking } from "../../Utils/ContentTypeTrackers";
 
 
 
@@ -21,8 +22,16 @@ export class AssetFolder extends VisualItem {
         throw new Error("Method not implemented.");
     }
 
-    DeleteItem(): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    async DeleteItem(): Promise<boolean> {
+        const allBundles = this.getAllContainedBundles();
+        for(var b = 0; b < allBundles.length;b++){
+            if(!await allBundles[b].DeleteItem()) {
+                console.error("Error deleting asset bundle: " + allBundles[b].name);
+                return false;
+            }
+        }
+        RefreshObjectTypeTracking();
+        return true;
     }
 
     GetFullFolderPath():string {
@@ -47,6 +56,18 @@ export class AssetFolder extends VisualItem {
 
     getAllContainedAssets():ContentItem[] {
         return recursiveGetAllContentItems(this);
+    }
+
+    getAllContainedBundles():AssetBundle[] {
+        return recursiveGetAllContainedBundles(this);
+    }
+
+    GetBundleWithName(name:string) {
+        const test = this.containedItems.filter(b=>{return b.name === name});
+        if(test.length > 0) {
+            return test[0];
+        }
+        return undefined;
     }
 
     getNewAssetBundleName():string {
@@ -87,6 +108,37 @@ export class AssetFolder extends VisualItem {
         this.containedFolders.push(newFolder);
         return newFolder;
     }
+
+    async RemoveBundle(bundle:AssetBundle, bSaveOut = true) : Promise<boolean> {
+        if(!this.containedItems.includes(bundle)) {
+            return false;
+        }
+        this.containedItems = this.containedItems.filter(i=>{return i !== bundle});
+        if(bSaveOut) {
+            return await bundle.DeleteItem();
+        }
+        return true;
+    }
+    
+    /** Move a bundle into this folder */
+    async MoveAssetBundle(bundle:AssetBundle) : Promise<boolean> {
+        if(bundle.parent === this) {
+            return true;
+        }
+        await bundle.updateStoredItemsData();
+        await bundle.parent.RemoveBundle(bundle);
+        bundle.parent = this;
+        this.containedItems.push(bundle);
+        return await bundle.SaveItemOut();
+    }
+}
+
+function recursiveGetAllContainedBundles(item:AssetFolder):AssetBundle[] {
+    var ret:AssetBundle[] = item.containedItems;
+    for(var f= 0; f < item.containedFolders.length;f++){
+        ret = ret.concat(recursiveGetAllContainedBundles(item.containedFolders[f]));
+    }
+    return ret;
 }
 
 function recursiveGetAllContentItems(item:AssetFolder):ContentItem[] {
