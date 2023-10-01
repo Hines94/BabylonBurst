@@ -1,14 +1,15 @@
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { ContextMenuItem, ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
-import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { CloneTemplate, DraggedElement, GetNewNameItem, MakeDroppableGenericElement, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
-import { ContentItem, ContentItemType } from "./ContentItem";
+import { ContentItem, ContentItemType, GetContentTypeFromFilename } from "./ContentItem";
 import { ContentBrowserVisualHTML } from "./ContentBrowserVisualHTML";
 import { ContentBrowserFolderHTML } from "./Specifics/ContentBrowserFolderHTML";
 import { VisualItem } from "./VisualItem";
 import { AssetFolder } from "./AssetFolder";
 import { ContentBrowserAssetBundleHTML } from "./Specifics/ContentBrowserAssetBundleHTML";
 import { AssetBundle } from "HTML/ContentBrowser/AssetBundle";
+import { GetFileExtension } from "@BabylonBurstClient/Utils/StringUtils";
 
 /** This connects our content browser to the storage mechanism. Eg player blueprints or Editor S3.  */
 export interface ContentStorageBackend {
@@ -161,6 +162,7 @@ export class ContentBrowserHTML {
                 browser.rebuildStoredItems();
             };
             browser.breadcrumbFolders.appendChild(AssetsOverall);
+            setupBreadcumbElement(AssetsOverall,browser.storageBackend.allStoredItems,browser);
             //Breadcrumb children
             const currentLevel: AssetFolder[] = [];
             for(var i = 0; i < browser.storageBackend.currentFolderLevel.length;i++) {
@@ -175,17 +177,8 @@ export class ContentBrowserHTML {
                 };
                 FolderLevel.innerHTML = "> " + fold.name;
                 browser.breadcrumbFolders.appendChild(FolderLevel);
-                if(i !== browser.storageBackend.currentFolderLevel.length-1) {
-                    MakeDroppableGenericElement(FolderLevel,
-                        (ele:any)=>{
-                            if(ele.AssetBundle !== undefined) {
-                                fold.MoveAssetBundle(ele.AssetBundle);
-                            }
-                        },
-                        (ele:any)=>{
-                            if(ele.AssetBundle !== undefined) { return false;}
-                            return true;
-                        })
+                if(i !== browser.storageBackend.currentFolderLevel.length) {
+                    setupBreadcumbElement(FolderLevel,fold,browser);
                 }
             };
         }
@@ -200,7 +193,7 @@ export class ContentBrowserHTML {
         uploader.addEventListener("change", event => {
             //@ts-ignore
             [...event.target.files].forEach(f => {
-                browser.processDragDropFile(f);
+                browser.processUploadFile(f);
             });
         });
     }
@@ -250,7 +243,7 @@ export class ContentBrowserHTML {
         let dt = e.dataTransfer;
         let files = dt.files;
         //@ts-ignore
-        [...files].forEach(this.processDragDropFile.bind(this));
+        [...files].forEach(this.processUploadFile.bind(this));
     }
 
     autoselectItem: VisualItem;
@@ -272,40 +265,60 @@ export class ContentBrowserHTML {
     }
 
     /** For an individual drag and drop file, handle what we do with it */
-    protected processDragDropFile(file: File) {
-        console.error("TODO: Fix this, use GetContentTypeFromFilename")
+    protected async processUploadFile(file: File) {
+        const contentType = GetContentTypeFromFilename(file.name);
+        if(contentType === undefined) { return; }
+        const folderLevel = GetCurrentLevelItem(this.storageBackend);
+        const newAssetStore = folderLevel.GenerateNewAssetBundle();
+        const ext = GetFileExtension(file.name);
+        const plainName = file.name.replace("."+ext,"");
+        var newItem = new ContentItem(undefined,undefined);
+        newItem.category = contentType;
+        newItem.name = plainName;
+        newItem.extension = ext;
+        newItem.data = file;
+        newItem.parent = newAssetStore;
+        newAssetStore.storedItems.push(newItem);
+        newItem.storedBackend = newAssetStore.storedBackend;
+
+        if(!await newItem.SaveItemOut()) {
+            ShowToastError(`${ContentItemType[contentType]}: ${file.name} Upload Failed!`);
+        } else {
+            ShowToastNotification(`${ContentItemType[contentType]}: ${file.name} Uploaded Successfully!`);
+            this.rebuildStoredItems();
+        }
     }
 }
 
-/** Check if the file is of type and perform a new creation if so */
-function processFileType(
-    file: File,
-    browser: ContentBrowserHTML,
-    extensionTypes: { mimeType: string; extension: string }[],
-    type: ContentItemType
-) {
-    const extensionMatch = extensionTypes.find(obj => obj.mimeType === file.type);
-    if (!extensionMatch) {
-        return;
-    }
+function setupBreadcumbElement(FolderLevel:HTMLElement, folder: AssetFolder, browser:ContentBrowserHTML) {
+    MakeDroppableGenericElement(FolderLevel,
+        (ele:any)=>{
+            if(ele.AssetBundle !== undefined) {
+                if(folder.GetBundleWithName(ele.AssetBundle.name)) {
+                    alert("Bundle already in folder with this name: " + ele.AssetBundle.name);
+                    return;
+                }
+                folder.MoveAssetBundle(ele.AssetBundle);
+                browser.rebuildStoredItems();
 
-    if (!window.confirm(`Upload ${ContentItemType[type]} ${file.name}? (size ${file.size / 1000000} mb)`)) {
-        return;
-    }
-
-    console.error("TODO: Fix upload drop")
-
-    const currentLevel = GetCurrentLevelItem(browser.storageBackend);
-    const readName = file.name.replace(extensionMatch.extension, "");
-    console.error("TODO: Fix")
-    var newItem = new ContentItem();
-    // nameExtension: "~" + type + "~.zip",
-    // name: readName,
-    // category: type,
-    // parent: undefined,
-    // lastModified: new Date(),
-    // data: [file],
-    // typeExtension: extensionMatch.extension,
-    browser.addNewItem(newItem);
-    ShowToastNotification(`${ContentItemType[type]}: ${file.name} Uploaded Successfully!`);
+            }
+            if(ele.AssetFolder !== undefined) {
+                if(folder.GetFolderWithName(ele.AssetFolder.name)) {
+                    alert("Folder already in folder with this name: " + ele.AssetFolder.name);
+                    return;
+                }
+                folder.MoveAssetFolder(ele.AssetFolder);
+                browser.rebuildStoredItems();
+            }
+        },
+        (ele:any)=>{
+            if(ele.AssetBundle !== undefined) { 
+                return true;
+            }
+            if(ele.AssetFolder !== undefined) { 
+                return true;
+            }
+            return false;
+        }
+    )
 }

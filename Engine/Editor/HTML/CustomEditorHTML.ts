@@ -95,10 +95,12 @@ export class CustomEditorHTML extends BaseTickableObject {
                 const newPrefab = new ContentItem(undefined,undefined);
                 newPrefab.name = "New Prefab";
                 newPrefab.category = ContentItemType.Prefab;
+                newPrefab.data = "";
 
                 const newMaterial = new ContentItem(undefined,undefined);
                 newMaterial.name = "New Material";
                 newMaterial.category = ContentItemType.Material;
+                newMaterial.data = "";
 
                 return [
                     newPrefab,

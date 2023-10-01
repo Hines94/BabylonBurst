@@ -64,7 +64,7 @@ export function MakeDroppableGenericElement(
     dragoverCheck: (DraggedElement: EventTarget) => boolean
 ) {
     element.addEventListener("dragover", function (event: DragEvent) {
-        if (dragoverCheck(DraggedElement)) {
+        if (DraggedElement !== undefined && DraggedElement !== null && dragoverCheck(DraggedElement)) {
             event.preventDefault(); // Allow drop by preventing default behavior
             event.stopPropagation();
             element.classList.add("dragover");
@@ -76,6 +76,9 @@ export function MakeDroppableGenericElement(
     });
 
     element.addEventListener("drop", function (event: DragEvent) {
+        if (DraggedElement === undefined || DraggedElement === null) {
+            return;
+        }
         event.preventDefault(); // Prevent default action, e.g., open as link
         callback(DraggedElement);
         element.classList.remove("dragover");
@@ -96,6 +99,9 @@ export function MakeDraggableElement(element: HTMLElement, getData: () => string
     element.addEventListener("dragend", dragEnd);
 
     function dragStart(event: DragEvent) {
+        if (event.target !== element) {
+            return;
+        }
         clone = element.cloneNode(true) as HTMLElement; // clone the element
         clone.style.position = "absolute";
         clone.style.pointerEvents = "none"; // disable pointer events

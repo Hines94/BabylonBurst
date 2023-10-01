@@ -18,24 +18,32 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
 
     override setupOurSelectable(): void {
         super.setupOurSelectable();
+        (this.ourSelectable as any).AssetFolder = this.ourItem;
         this.ourContentHolder.contentGrid.appendChild(this.ourItemContainer);
         MakeDroppableGenericElement(this.ourSelectable,this.onElementDragover.bind(this),this.isDroppableElement.bind(this))
     }
 
     async onElementDragover(ele:any) {
-        if(ele.AssetBundle === undefined) {
-            return;
+        if(ele.AssetBundle !== undefined) {
+            if(this.ourItem.GetBundleWithName(ele.AssetBundle.name)) {
+                alert("This folder already has an item with that bundle name: " + ele.AssetBundle.name);
+                return;
+            }
+            await this.ourItem.MoveAssetBundle(ele.AssetBundle);
+            this.ourContentHolder.rebuildStoredItems();
         }
-        if(this.ourItem.GetBundleWithName(ele.AssetBundle.name)) {
-            alert("This folder already has an item with that bundle name: " + ele.AssetBundle.name);
-            return;
+        if(ele.AssetFolder !== undefined) {
+            if(this.ourItem.GetBundleWithName(ele.AssetFolder.name)) {
+                alert("This folder already has an folder with that name: " + ele.AssetFolder.name);
+                return;
+            }
+            await this.ourItem.MoveAssetFolder(ele.AssetFolder);
+            this.ourContentHolder.rebuildStoredItems();
         }
-        await this.ourItem.MoveAssetBundle(ele.AssetBundle);
-        this.ourContentHolder.rebuildStoredItems();
     }
 
     isDroppableElement(ele:any) {
-        if(ele.AssetBundle === undefined) {
+        if(ele.AssetBundle === undefined && ele.AssetFolder === undefined && ele.AssetFolder !== this.ourItem) {
             return false;
         }
         return true;

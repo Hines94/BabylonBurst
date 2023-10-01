@@ -98,6 +98,12 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
                     await bundle.ourItem.CloneBundle();
                     bundle.ourContentHolder.rebuildStoredItems();
                 }
+            },
+            {
+                name:"Change Folder",
+                callback:async()=>{
+                    alert("TODO: ")
+                }
             }
         ];
     }

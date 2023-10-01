@@ -18,8 +18,14 @@ export class AssetFolder extends VisualItem {
         this.storedBackend = backend;
     }
 
-    SaveItemOut(): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    async SaveItemOut(): Promise<boolean> {
+        const allBundles = this.getAllContainedBundles();
+        for(var b = 0; b < allBundles.length;b++) {
+            if(!await allBundles[b].SaveItemOut()) {
+                console.error("Error saving bundle for folder: " + allBundles[b].name);
+            }
+        }
+        return true;
     }
 
     async DeleteItem(): Promise<boolean> {
@@ -35,6 +41,10 @@ export class AssetFolder extends VisualItem {
     }
 
     GetFullFolderPath():string {
+        //Top level folder?
+        if(this.name === undefined) {
+            return "";
+        }
         var ret = this.name + "/";
         var item:AssetFolder = this;
         while(item.parent !== undefined && item.parent.name !== undefined) {
@@ -64,6 +74,14 @@ export class AssetFolder extends VisualItem {
 
     GetBundleWithName(name:string) {
         const test = this.containedItems.filter(b=>{return b.name === name});
+        if(test.length > 0) {
+            return test[0];
+        }
+        return undefined;
+    }
+
+    GetFolderWithName(name:string) {
+        const test = this.containedFolders.filter(b=>{return b.name === name});
         if(test.length > 0) {
             return test[0];
         }
@@ -119,6 +137,14 @@ export class AssetFolder extends VisualItem {
         }
         return true;
     }
+
+    RemoveFolder(folder:AssetFolder) {
+        if(!this.containedFolders.includes(folder)) {
+            return false;
+        }
+        this.containedFolders = this.containedFolders.filter(i=>{return i !== folder});
+        return true;
+    }
     
     /** Move a bundle into this folder */
     async MoveAssetBundle(bundle:AssetBundle) : Promise<boolean> {
@@ -130,6 +156,26 @@ export class AssetFolder extends VisualItem {
         bundle.parent = this;
         this.containedItems.push(bundle);
         return await bundle.SaveItemOut();
+    }
+
+    async MoveAssetFolder(folder:AssetFolder) : Promise<boolean> {
+        if(folder.parent === this) {
+            return true;
+        }
+        if(folder === this) {
+            return false;
+        }
+        //First update data for all bundles inside
+        const allBundles = folder.getAllContainedBundles();
+        for(var b = 0; b < allBundles.length;b++) {
+            await allBundles[b].updateStoredItemsData();
+            await allBundles[b].DeleteItem();
+        }
+        folder.parent.RemoveFolder(folder);
+        folder.parent = this;
+        this.containedFolders.push(folder);
+        await folder.SaveItemOut();
+        return true;
     }
 }
 
