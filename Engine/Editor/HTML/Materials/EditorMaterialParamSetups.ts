@@ -1,6 +1,6 @@
 import {AsyncTextureSetupParameter,MaterialSetupParameter,ScalarSetupParameter,SetAsyncTextureSetupEditorCallback} from "@BabylonBurstClient/Materials/MaterialSetupParameter"
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
-import { GetEditorObjectWithValues, SetInputValueFromDatalist, SetupInputWithDatalist } from "../../Utils/ContentTypeTrackers";
+import { GetEditorObjectWithValues, SetInputValueFromDatalist, SetupContentInputWithDatalist } from "../../Utils/ContentTypeTrackers";
 export function bindEditorMaterialParamSetupCallbacks() {
     SetAsyncTextureSetupEditorCallback(setupMaterialParameterType);
 }
@@ -24,7 +24,7 @@ function setupAsyncTexture(tableCell:HTMLTableCellElement, values: any, paramNam
     //Create datalist with all possible image paths
     const datalistInput = tableCell.ownerDocument.createElement("input");
     tableCell.appendChild(datalistInput);
-    SetupInputWithDatalist(ContentItemType.Image,datalistInput,(val:ContentItem) => {
+    SetupContentInputWithDatalist(ContentItemType.Image,datalistInput,(val:ContentItem) => {
         if(!val) {
             values[paramName]["FilePath"] = "";
             values[paramName]["FileName"] = "";

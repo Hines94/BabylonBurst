@@ -10,14 +10,14 @@ export class ContentBrowserDatasheetHTML extends ContentBrowserSpecificItem {
         name: string;
         callback: () => void;
     }[] {
-        return [
+        return super.getContextMenuItems().concat([
             {
                 name: "Clone",
                 callback: () => {
                     this.createClone();
                 },
             },
-        ];
+        ]);
     }
 
     protected cleanupItem(): void {

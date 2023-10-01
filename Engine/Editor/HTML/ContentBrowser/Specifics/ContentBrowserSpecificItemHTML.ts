@@ -1,6 +1,10 @@
 import { MakeDraggableElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ContentItem, ContentItemType } from "../ContentItem";
 import { ContentBrowserIconedItemHTML } from "./ContentBrowserIconedItemHTML";
+import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ShowNotificationWindow } from "@BabylonBurstClient/HTML/HTMLNotificationWindow";
+import { AssetBundle } from "../AssetBundle";
+import { SetupBundleInputWithDatalist } from "../../../Utils/ContentTypeTrackers";
 
 
 export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedItemHTML {
@@ -49,6 +53,43 @@ export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedIte
         this.SetIcon(ContentItemType[this.ourItem.category]);
         MakeDraggableElement(this.ourSelectable,()=>{return "item"; });
         (this.ourSelectable as any).contentItem = this.ourItem;
+    }
+    override getContextMenuItems(): ContextMenuItem[] {
+        return [
+            {
+                name:"Change Bundle",
+                callback:async()=>{
+                    const window = ShowNotificationWindow(this.ourContentHolder.ecosystem.doc);
+                    const title = this.ourContentHolder.ecosystem.doc.createElement("h3");
+                    title.innerText = "Change asset bundle for: " + this.ourItem.name;
+                    window.appendChild(title);
+                    const dropdown = this.ourContentHolder.ecosystem.doc.createElement("input");
+                    var desiredMove:AssetBundle;
+                    SetupBundleInputWithDatalist(dropdown,(fold)=>{
+                        desiredMove = fold;
+                    })
+                    dropdown.style.display = "block";
+                    dropdown.style.width = "100%";
+                    window.appendChild(dropdown);
+                    const confirm = this.ourContentHolder.ecosystem.doc.createElement("button");
+                    confirm.style.display = "block";
+                    confirm.innerText = "Confirm";
+                    confirm.addEventListener("click",async ()=>{
+                        if(desiredMove === undefined) {
+                            return;
+                        }
+                        if(desiredMove.GetItemByName(this.ourItem.name)) {
+                            alert("Already asset with name in bundle: " + this.ourItem.name);
+                            return;
+                        }
+                        await desiredMove.MoveItemIntoThisBundle(this.ourItem);
+                        this.ourContentHolder.rebuildStoredItems();
+                        window.parentElement.classList.remove("visible");
+                    })
+                    window.appendChild(confirm);
+                }
+            }
+        ]
     }
 
     protected async createClone() {

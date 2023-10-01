@@ -8,7 +8,7 @@ import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
 
     getContextMenuItems(): ContextMenuItem[] {
-        return [];
+        return super.getContextMenuItems().concat([]);
     }
     async drawInspectorInfo(): Promise<void> {
         await super.drawInspectorInfo();

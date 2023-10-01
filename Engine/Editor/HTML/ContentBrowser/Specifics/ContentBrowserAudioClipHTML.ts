@@ -18,14 +18,14 @@ export class ContentBrowserAudioClipHTML extends  ContentBrowserSpecificItem {
     }
 
     override getContextMenuItems(): ContextMenuItem[] {
-        return [
+        return super.getContextMenuItems().concat([
             {
                 name: "Play",
                 callback: () => {
                     this.performPrimaryMethod();
                 },
             },
-        ];
+        ]);
     }
 
     async playAudioSound() {

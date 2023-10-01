@@ -14,7 +14,7 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
         name: string;
         callback: () => void;
     }[] {
-        return [
+        return super.getContextMenuItems().concat([
             {
                 name: "Edit",
                 callback: () => {
@@ -27,7 +27,7 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
                     alert("Not implemented yet");
                 },
             },
-        ];
+        ]);
     }
 
     /** Primary method for editing and inspecting a prefab */

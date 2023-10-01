@@ -1,0 +1,43 @@
+<style>
+    #notification {
+        visibility: hidden;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 30px;
+        background-color: #1e1e1e;
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75);
+        opacity: 0;
+        transition: visibility 0s 0.5s, opacity 0.5s;
+    }
+
+    #notification.visible {
+        visibility: visible;
+        opacity: 1;
+        transition: visibility 0s, opacity 0.5s;
+    }
+
+    #notificationCloser {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 15px;
+        color: white;
+    }
+</style>
+
+<div id="notification">
+    <button id="notificationCloser" onclick="closeNotification()">&times;</button>
+    <div id="notificationInner"></div>
+</div>
+
+<script>
+    function closeNotification() {
+        document.getElementById('notification').classList.remove("visible");
+    }
+</script>

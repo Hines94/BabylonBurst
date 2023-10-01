@@ -7,7 +7,7 @@ export class ContentBrowserImageHTML extends ContentBrowserSpecificItem {
     performPrimaryMethod(): void {}
 
     getContextMenuItems(): ContextMenuItem[] {
-        return [];
+        return super.getContextMenuItems().concat([]);
     }
     protected cleanupItem(): void {
         

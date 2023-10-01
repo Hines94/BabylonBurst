@@ -47,7 +47,7 @@ export class AssetFolder extends VisualItem {
         }
         var ret = this.name + "/";
         var item:AssetFolder = this;
-        while(item.parent !== undefined && item.parent.name !== undefined) {
+        while(item.parent !== undefined && item.parent.name !== "ASSETS_ROOT") {
             ret = item.parent.name + "/" + ret;
             item = item.parent;
         }
@@ -70,6 +70,10 @@ export class AssetFolder extends VisualItem {
 
     getAllContainedBundles():AssetBundle[] {
         return recursiveGetAllContainedBundles(this);
+    }
+
+    getAllContainedFolders():AssetFolder[] {
+        return recursiveGetAllContainedFolders(this);
     }
 
     GetBundleWithName(name:string) {
@@ -183,6 +187,14 @@ function recursiveGetAllContainedBundles(item:AssetFolder):AssetBundle[] {
     var ret:AssetBundle[] = item.containedItems;
     for(var f= 0; f < item.containedFolders.length;f++){
         ret = ret.concat(recursiveGetAllContainedBundles(item.containedFolders[f]));
+    }
+    return ret;
+}
+
+function recursiveGetAllContainedFolders(item:AssetFolder):AssetFolder[] {
+    var ret:AssetFolder[] = item.containedFolders;
+    for(var f= 0; f < item.containedFolders.length;f++){
+        ret = ret.concat(recursiveGetAllContainedFolders(item.containedFolders[f]));
     }
     return ret;
 }

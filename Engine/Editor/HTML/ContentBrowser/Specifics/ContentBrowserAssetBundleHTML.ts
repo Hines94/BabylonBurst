@@ -4,6 +4,9 @@ import { AssetBundle } from "../AssetBundle";
 import { GetContentItemHTMLSpecific } from "../ContentItemTypes";
 import { MakeDraggableElement, MakeDroppableGenericElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ContentItem } from "../ContentItem";
+import {ShowNotificationWindow} from "@BabylonBurstClient/HTML/HTMLNotificationWindow"
+import { SetupFolderInputWithDatalist } from "../../../Utils/ContentTypeTrackers";
+import { AssetFolder } from "../AssetFolder";
 
 
 export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
@@ -102,7 +105,34 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
             {
                 name:"Change Folder",
                 callback:async()=>{
-                    alert("TODO: ")
+                    const window = ShowNotificationWindow(this.ourContentHolder.ecosystem.doc);
+                    const title = this.ourContentHolder.ecosystem.doc.createElement("h3");
+                    title.innerText = "Change location for: " + this.ourItem.name;
+                    window.appendChild(title);
+                    const dropdown = this.ourContentHolder.ecosystem.doc.createElement("input");
+                    var desiredMove:AssetFolder;
+                    SetupFolderInputWithDatalist(dropdown,(fold)=>{
+                        desiredMove = fold;
+                    })
+                    dropdown.style.display = "block";
+                    dropdown.style.width = "100%";
+                    window.appendChild(dropdown);
+                    const confirm = this.ourContentHolder.ecosystem.doc.createElement("button");
+                    confirm.style.display = "block";
+                    confirm.innerText = "Confirm";
+                    confirm.addEventListener("click",async ()=>{
+                        if(desiredMove === undefined) {
+                            return;
+                        }
+                        if(desiredMove.GetBundleWithName(this.ourItem.name)) {
+                            alert("Already asset bundle with name in folder: " + this.ourItem.name);
+                            return;
+                        }
+                        await desiredMove.MoveAssetBundle(this.ourItem);
+                        this.ourContentHolder.rebuildStoredItems();
+                        window.parentElement.classList.remove("visible");
+                    })
+                    window.appendChild(confirm);
                 }
             }
         ];

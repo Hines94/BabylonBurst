@@ -3,7 +3,7 @@ import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 
 export class ContentBrowserModelHTML extends ContentBrowserSpecificItem {
     getContextMenuItems(): ContextMenuItem[] {
-        return [];
+        return super.getContextMenuItems().concat([]);
     }
     async drawInspectorInfo(): Promise<void> {
         await super.drawInspectorInfo();
