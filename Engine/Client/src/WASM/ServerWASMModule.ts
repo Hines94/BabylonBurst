@@ -216,6 +216,15 @@ export class ServerWASMModuleWrapper {
         dataWASM.delete();
     }
 
+    AwsFilenamesCallback(itemName: string, data: string[]) {
+        var dataWASM: WASMStringArray = new this.wasmModule.VectorString();
+        data.forEach(val => {
+            dataWASM.push_back(val);
+        });
+        this.wasmModule.AwsFilenamesCallback(itemName, dataWASM);
+        dataWASM.delete();
+    }
+
     /** Callback from WASM->AssetManager->WASM */
     AwsGetItemDataCallback(data: ArrayBuffer, itemPath: string) {
         let itemData: WASMUint8Array = new this.wasmModule.VectorUint8();

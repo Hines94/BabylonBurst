@@ -7,7 +7,7 @@ export type FileZipData = {
 export interface IBackendStorageInterface {
     /** General setup for backend. After this should be ready to process requests.  */
     InitializeBackend(): Promise<null>;
-    /** Returns byte array promise. Location is "folder/file" */
+    /** Returns byte array promise. Retuns null if no data */
     GetItemAtLocation(location: string): Promise<Uint8Array>;
     GetWebWorkerSetup(): BackendSetup;
     StoreZipAtLocation(data: FileZipData[], location: string): Promise<boolean>;

@@ -283,7 +283,8 @@ public:
         }
         data.clear();
         for (const auto& val : newValues) {
-            TrackedVariable<T> tracked(val);
+            TrackedVariable<T> tracked;
+            tracked = val;
             data.push_back(tracked);
         }
         return *this;
@@ -501,7 +502,9 @@ public:
         o.convert(plainData);
         data.clear();
         for (const auto& [key, value] : plainData) {
-            data[key] = TrackedVariable<V>(value);
+            TrackedVariable<V> newval;
+            newval = value;
+            data[key] = newval;
         }
     }
 };

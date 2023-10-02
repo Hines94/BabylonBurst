@@ -106,7 +106,7 @@ export class ContentItem extends VisualItem {
             return this.data;
         }
         //Try load data
-        return await AsyncZipPuller.LoadFileData(this.parent.getItemLocation(),this.GetSaveName(),AsyncDataType.blob,false);
+        return await this.parent.GetDataForItem(this.GetSaveName(),AsyncDataType.blob,false);
     }
 
     /** Fallback default if no extension set! */

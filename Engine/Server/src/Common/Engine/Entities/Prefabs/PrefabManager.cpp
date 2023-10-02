@@ -12,32 +12,42 @@ std::unique_ptr<PrefabManager> PrefabManager::instance = nullptr;
 
 void PrefabManager::RefreshPrefabs() {
     AwsManager::getInstance().GetAllObjectsInS3([this](std::vector<std::string> allItems) {
-        std::cerr << "TODO: Fix prefab load at start" << std::endl;
-        onAllPrefabsLoaded.triggerEvent(this);
-        return;
-
         //TODO: Fix this up and Instead search all bundles?
-        const std::string prefabItemType = "~3~";
+        const std::string prefabItemType = "~p~";
         std::vector<std::string> prefabItems;
         for (const auto& item : allItems) {
             if (item.find(prefabItemType) != std::string::npos) {
                 prefabItems.push_back(item);
             }
         }
-
         prefabNameToUUID.clear();
         prefabsByUUID.clear();
 
-        std::cout << "Stored Content Item Number: " << allItems.size() << std::endl;
+        for (const auto& fileName : prefabItems) {
+            this->filesAwaitingCallback.push_back(fileName);
 
-        for (const auto& prefabName : prefabItems) {
-            this->prefabsAwaitingCallback.push_back(prefabName);
-            AwsManager::getInstance().GetFileFromS3(prefabName, 0,
-                                                    [prefabName, this](std::vector<uint8_t> vec) {
-                                                        SetupPrefabFromBinary(prefabName, vec);
-                                                    });
+            std::cout << "Checking for prefab in file: " << fileName << std::endl;
+
+            AwsManager::getInstance().GetFilenamesOfBundle(fileName,
+                                                           [fileName, this](std::vector<std::string> vec) {
+                                                               const auto it = std::find(filesAwaitingCallback.begin(), filesAwaitingCallback.end(), fileName);
+                                                               this->filesAwaitingCallback.erase(it);
+                                                               this->checkFilenamesForPrefab(vec, fileName);
+                                                           });
         }
     });
+}
+
+void PrefabManager::checkFilenamesForPrefab(std::vector<std::string> names, std::string mainPath) {
+    for (const auto& n : names) {
+        if (n.find(".Prefab") != std::string::npos) {
+            this->prefabsAwaitingCallback.push_back(mainPath);
+            AwsManager::getInstance().GetFileFromS3(mainPath, n,
+                                                    [mainPath, n, this](std::vector<uint8_t> vec) {
+                                                        SetupPrefabFromBinary(mainPath, n, vec);
+                                                    });
+        }
+    }
 }
 
 Component* PrefabManager::TryGetDefaultPrefabComp(EntityData* ent, std::string Component) {
@@ -69,7 +79,7 @@ Component* PrefabManager::TryGetDefaultPrefabComp(EntityData* ent, std::string C
     return prefabIt->second.get()->GetComponentFromTemplatedEntity(PrefabComp->EntityIndex, Component, dummyMap);
 }
 
-std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocation, const std::vector<uint8_t>& prefabData) {
+std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocation, const std::string& prefabName, const std::vector<uint8_t>& prefabData) {
     bool validPrefabData = true;
     msgpack::object_handle oh;
     try {
@@ -143,10 +153,10 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
     }
 
     const auto enttemplate = EntityLoader::LoadTemplateFromSave(extractedPrefabData);
-    prefabNameToUUID.insert({std::string(prefabLocation), prefabID});
+    prefabNameToUUID.insert({std::string(prefabLocation) + prefabName, prefabID});
     prefabsByUUID.insert({prefabID, enttemplate});
 
-    std::cout << "Loaded prefab: " << prefabID << " " << prefabLocation << std::endl;
+    std::cout << "Loaded prefab: " << prefabID << " " << prefabLocation << " " << prefabName << std::endl;
 
     checkAllPrefabsLoaded(prefabLocation);
 
@@ -279,15 +289,15 @@ std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefab
 }
 
 std::string ensureEndsWithPrefabSpec(std::string str) {
-    const std::string suffix = "~3~.zip";
+    const std::string suffix = "~p~.zip";
     if (str.size() < suffix.size() || str.substr(str.size() - suffix.size()) != suffix) {
         str += suffix;
     }
     return str;
 }
 
-std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefabByName(const std::string& Name) {
-    const auto it = prefabNameToUUID.find(ensureEndsWithPrefabSpec(Name));
+std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefabByName(const std::string& filePath, const std::string& prefabName) {
+    const auto it = prefabNameToUUID.find(ensureEndsWithPrefabSpec(filePath) + prefabName);
     if (it == prefabNameToUUID.end()) {
         return std::nullopt;
     }

@@ -16,6 +16,14 @@ void AwsManager::GetAllObjectsInS3(std::function<void(std::vector<std::string>)>
     }
 }
 
+void AwsManager::GetFilenamesOfBundle(const std::string& key, std::function<void(std::vector<std::string>)> readyCallback) {
+    if (getFilenamesOfBundleCallback) {
+        getFilenamesOfBundleCallback(key, readyCallback);
+    } else {
+        readyCallback(std::vector<std::string>());
+    }
+}
+
 void AwsManager::GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback) {
     if (getFileCallback) {
         getFileCallback(StringUtils::EnsureZipExtension(key), fileName, readyCallback);

@@ -38,7 +38,7 @@ export function GetTrackedVariablesHSetup() : string {
             compData.properties.forEach(property=>{
                 ret += `\t\t${property.name} = item.${property.name};\n`;
             })
-            ret += `return *this;`;
+            ret += `\t\treturn *this;\n`;
         ret += `\t}\n`;
 
         ret += `};\n`;

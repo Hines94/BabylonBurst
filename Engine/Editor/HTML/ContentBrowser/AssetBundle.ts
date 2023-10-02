@@ -1,8 +1,8 @@
 import { VisualItem } from "./VisualItem";
 import { AssetFolder } from "./AssetFolder";
-import { ContentItem } from "./ContentItem";
-import { AsyncAWSBackend, IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
-import { GetAllZippedFileDatas } from "@BabylonBurstClient/AsyncAssets/Utils/ZipUtils";
+import { ContentItem, ContentItemType } from "./ContentItem";
+import { AsyncAWSBackend, AsyncZipPuller, IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
+import { AsyncDataType, GetAllZippedFileDatas } from "@BabylonBurstClient/AsyncAssets/Utils/ZipUtils";
 import { FileZipData } from "@BabylonBurstClient/AsyncAssets/Framework/StorageInterfaceTypes";
 import { RefreshObjectTypeTracking } from "../../Utils/ContentTypeTrackers";
 
@@ -43,19 +43,55 @@ export class AssetBundle extends VisualItem {
         return result;
     }
     async DeleteItem(): Promise<boolean> {
-        const result = await (this.storedBackend as AsyncAWSBackend).deleteObject(this.getItemLocation());
-        if(result) {
-            RefreshObjectTypeTracking();
+        var result = await (this.storedBackend as AsyncAWSBackend).deleteObject(this.getItemLocation());
+        if(result === false) {
+            result = await (this.storedBackend as AsyncAWSBackend).deleteObject(this.getPredownloadOpposite());
         }
+        RefreshObjectTypeTracking();
         return result;
     }
+
+    getContainsItemType(type:ContentItemType):boolean {
+        for(var i = 0; i < this.storedItems.length;i++) {
+            if(this.storedItems[i].category === type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isPredownloadAsset() : boolean {
+        if(this.getContainsItemType(ContentItemType.Prefab)) {
+            return true;
+        }
+        return false;
+    }
+
+    private getPredownloadOpposite() {
+        var location = this.getItemLocation();
+        if(this.isPredownloadAsset()) {
+            return location.replace("~p~","");
+        }
+        return location.replace(".zip","") + "~p~.zip";
+    }
+
+    //If we have a prefab need to save as a prefab due to predownloading reasons
     getItemLocation():string {
+        if(this.isPredownloadAsset()) {
+            return this.parent.GetFullFolderPath() + this.name + "~p~" + ".zip";
+        }
         return this.parent.GetFullFolderPath() + this.name + ".zip";
     }
 
     async refreshContainedItems() {
         this.storedItems = [];
-        const contained = await GetAllZippedFileDatas(await this.storedBackend.GetItemAtLocation(this.getItemLocation()));
+        var ourData = null;
+        try {
+            ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
+        } catch {
+            ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
+        }
+        const contained = await GetAllZippedFileDatas(ourData);
         contained.forEach(d=>{
             this.storedItems.push(new ContentItem(d,this));
         })
@@ -66,8 +102,16 @@ export class AssetBundle extends VisualItem {
     async updateStoredItemsData() {
         for(var i = 0; i < this.storedItems.length;i++) {
             //Should download if we don't already have the data!
-            this.storedItems[i].data = this.storedItems[i].GetData();
+            this.storedItems[i].data = await this.storedItems[i].GetData();
         }
+    }
+
+    async GetDataForItem(itemSaveName:string,type:AsyncDataType,bIgnoreCache:boolean) {
+        const result = await AsyncZipPuller.LoadFileData(this.getItemLocation(),itemSaveName,type,bIgnoreCache);
+        if(result !== null) {
+            return result;
+        }
+        return await AsyncZipPuller.LoadFileData(this.getPredownloadOpposite(),itemSaveName,type,bIgnoreCache);
     }
 
     RemoveItem(item:ContentItem,bSave = true) {

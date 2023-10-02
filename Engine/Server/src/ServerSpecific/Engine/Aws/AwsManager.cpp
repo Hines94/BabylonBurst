@@ -32,6 +32,57 @@ AwsManager::AwsManager() : bucketName{Environment::GetEnvironmentVariable("AWS_B
     std::cout << "Aws Client setup" << std::endl;
 }
 
+void AwsManager::GetFilenamesOfBundle(const std::string& key, std::function<void(std::vector<std::string>)> readyCallback) {
+    Aws::S3::Model::GetObjectRequest object_request;
+    object_request.WithBucket(bucketName.c_str()).WithKey(StringUtils::EnsureZipExtension(key).c_str());
+    auto get_object_outcome = s3Client->GetObject(object_request);
+
+    if (get_object_outcome.IsSuccess()) {
+        auto& retrieved_file = get_object_outcome.GetResultWithOwnership().GetBody();
+
+        // Read data from stream
+        std::istreambuf_iterator<char> begin(retrieved_file), end;
+        std::vector<uint8_t> buffer(begin, end);
+
+        zip_error_t error;
+        zip_source_t* src = zip_source_buffer_create(buffer.data(), buffer.size(), 0, &error);
+
+        if (src == nullptr) {
+            zip_error_fini(&error);
+            std::cout << "Error unzipping S3 file: " << key << std::endl;
+            readyCallback(std::vector<std::string>());
+        }
+
+        // Open the zip archive from the source
+        int flags = ZIP_CHECKCONS;
+        zip_t* archive = zip_open_from_source(src, flags, &error);
+
+        if (archive == nullptr) {
+            zip_source_free(src);
+            zip_error_fini(&error);
+            std::cout << "Error unzipping S3 file archive: " << key << std::endl;
+            readyCallback(std::vector<std::string>());
+        }
+
+        // Get the names of files in the zip archive
+        std::vector<std::string> fileNames;
+        zip_int64_t num_entries = zip_get_num_entries(archive, 0);
+        for (zip_int64_t i = 0; i < num_entries; i++) {
+            const char* name = zip_get_name(archive, i, 0);
+            if (name) {
+                fileNames.push_back(std::string(name));
+            }
+        }
+
+        zip_close(archive);
+
+        readyCallback(fileNames);
+    } else {
+        std::cout << "Error getting object from S3: " << get_object_outcome.GetError().GetMessage() << std::endl;
+        readyCallback(std::vector<std::string>());
+    }
+}
+
 void AwsManager::GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback) {
     Aws::S3::Model::GetObjectRequest object_request;
     object_request.WithBucket(bucketName.c_str()).WithKey(StringUtils::EnsureZipExtension(key).c_str());

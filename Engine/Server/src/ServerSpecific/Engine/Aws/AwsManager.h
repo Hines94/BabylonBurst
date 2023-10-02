@@ -18,6 +18,8 @@ public:
     AwsManager(AwsManager const&) = delete;
     void operator=(AwsManager const&) = delete;
 
+    //Get the names of the files
+    void GetFilenamesOfBundle(const std::string& key, std::function<void(std::vector<std::string>)> readyCallback);
     //Get raw bytes from S3
     void GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback);
     void GetAllObjectsInS3(std::function<void(std::vector<std::string>)> readyCallback);

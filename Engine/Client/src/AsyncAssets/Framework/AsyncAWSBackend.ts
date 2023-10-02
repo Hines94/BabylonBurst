@@ -5,6 +5,7 @@ import {
     ListObjectsV2Command,
     _Object,
     DeleteObjectCommand,
+    HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import JSZip from "jszip";
@@ -85,7 +86,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         };
         try {
             const response = await this.s3.send(new PutObjectCommand(uploadParams));
-            console.log(`File uploaded successfully. ETag: ${response.ETag}`);
+            console.log(`File uploaded successfully: ${location}`);
             return true;
         } catch (error: any) {
             console.error(`Error uploading file: ${error.message}`);
@@ -143,6 +144,9 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
                         console.warn("Warning: Failed to fetch async data asset: " + location); // Log a warning.
                         reject(null);
                     } else {
+                        if (data.$metadata.httpStatusCode !== 200) {
+                            resolve(null);
+                        }
                         data["Body"]
                             .transformToByteArray()
                             .then((result: any) => resolve(result))
@@ -189,27 +193,35 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         });
     }
 
-    deleteObject(objectPath: string): Promise<boolean> {
+    async deleteObject(objectPath: string): Promise<boolean> {
         var storage = this;
-        return new Promise((resolve, reject) => {
+        try {
+            // Construct the HeadObjectCommand
+            const checkCommand = new HeadObjectCommand({
+                Bucket: storage.bucketName,
+                Key: objectPath,
+            });
+
+            // Send the command to check if the object exists
+            await storage.s3.send(checkCommand);
+
+            // If the object exists, construct and send the DeleteObjectCommand
             const deleteCommand = new DeleteObjectCommand({
                 Bucket: storage.bucketName,
                 Key: objectPath,
             });
-            storage.s3.send(
-                deleteCommand,
-                //our callback for after S3 has done its thing
-                async function (err: any, data: any) {
-                    if (err !== null) {
-                        console.error("Error deleting asset: " + err);
-                        reject(false);
-                    } else {
-                        console.log(data);
-                        //Wait for delete to finish
-                        resolve(true);
-                    }
-                }
-            );
-        });
+
+            await storage.s3.send(deleteCommand);
+            console.log(`Item deleted: ${objectPath}`);
+            return true;
+        } catch (error: any) {
+            if (error.name === "NotFound") {
+                console.warn(`Object does not exist: ${objectPath}`);
+                return false; // Or reject, based on your use case
+            } else {
+                console.warn(`Error: ${error} ${objectPath}`);
+                return false;
+            }
+        }
     }
 }

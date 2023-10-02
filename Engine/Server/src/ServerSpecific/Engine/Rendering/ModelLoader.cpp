@@ -42,7 +42,7 @@ void SwapToLeftHanded(tinygltf::Model model) {
 }
 
 ExtractedModelData* ModelLoader::GetMeshFromFile(const ModelSpecifier& ms) {
-    return GetMeshFromFile(ms.FilePath, ms.MeshName, ms.FileIndex);
+    return GetMeshFromFile(ms.FilePath, ms.FileName, ms.MeshName);
 }
 
 ExtractedModelData* ModelLoader::GetMeshFromFile(std::string filePath, std::string fileName, std::string meshName) {

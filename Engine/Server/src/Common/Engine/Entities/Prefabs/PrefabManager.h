@@ -22,7 +22,7 @@ public:
     }
 
     std::optional<std::pair<PrefabInstance*, EntityData*>> LoadPrefabByUUID(const std::string& UUID);
-    std::optional<std::pair<PrefabInstance*, EntityData*>> LoadPrefabByName(const std::string& Name);
+    std::optional<std::pair<PrefabInstance*, EntityData*>> LoadPrefabByName(const std::string& filePath, const std::string& prefabName);
 
     //Reload from S3 all prefabs
     void RefreshPrefabs();
@@ -31,7 +31,7 @@ public:
     Component* TryGetDefaultPrefabComp(EntityData* ent, std::string Component);
 
     //Returns UUID - NOTE: Not safe for parallel
-    std::string SetupPrefabFromBinary(const std::string& prefabLocation, const std::vector<uint8_t>& prefabData);
+    std::string SetupPrefabFromBinary(const std::string& prefabLocation, const std::string& prefabName, const std::vector<uint8_t>& prefabData);
 
     //Should ONLY be called by prefab Instance
     bool SpawnPrefabComponents(PrefabInstance* instance, EntityData* instanceOwner);
@@ -42,9 +42,10 @@ public:
 private:
     PrefabManager() {} // Private constructor
     static std::unique_ptr<PrefabManager> instance;
-
+    std::vector<std::string> filesAwaitingCallback;
     std::vector<std::string> prefabsAwaitingCallback;
     void checkAllPrefabsLoaded(std::string prefab);
+    void checkFilenamesForPrefab(std::vector<std::string> names, std::string mainPath);
 
     EntityUnorderedMap<std::string, std::shared_ptr<EntityTemplate>> prefabsByUUID;
     EntityUnorderedMap<std::string, std::string> prefabNameToUUID;

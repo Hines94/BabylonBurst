@@ -18,6 +18,7 @@ public:
     void operator=(AwsManager const&) = delete;
 
     //Get raw bytes from S3
+    void GetFilenamesOfBundle(const std::string& key, std::function<void(std::vector<std::string>)> readyCallback);
     void GetFileFromS3(const std::string& key, std::string fileName, std::function<void(std::vector<uint8_t>)> readyCallback);
     void GetAllObjectsInS3(std::function<void(std::vector<std::string>)> readyCallback);
 
@@ -30,7 +31,12 @@ public:
         getAllObjectsCallback = callback;
     }
 
+    void SetGetFilenamesOfBundleCallback(std::function<void(const std::string, std::function<void(std::vector<std::string>)>)> callback) {
+        getFilenamesOfBundleCallback = callback;
+    }
+
 private:
+    std::function<void(const std::string, std::function<void(std::vector<std::string>)>)> getFilenamesOfBundleCallback;
     std::function<void(std::string, std::string, std::function<void(std::vector<uint8_t>)>)> getFileCallback;
     std::function<void(std::function<void(std::vector<std::string>)>)> getAllObjectsCallback;
 };

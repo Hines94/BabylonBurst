@@ -1,3 +1,4 @@
+import { GetAllZippedFileDatas } from "@engine/AsyncAssets/Utils/ZipUtils";
 import {
     AsyncAWSBackend,
     AsyncAssetManager,
@@ -53,6 +54,17 @@ function setupAWSWASMHooks(manager: AsyncAssetManager) {
         console.log("Request AWS Asset: " + url);
         const data = await AsyncZipPuller.LoadFileData(url, fileName, AsyncDataType.arrayBuffer, false);
         GetWasmModule(module).AwsGetItemDataCallback(data, url);
+    };
+    //@ts-ignore
+    window.RequestAWSBundleName = async function (url: string, module: string) {
+        console.log("Request AWS Asset: " + url);
+        const data = await AsyncAssetManager.GetAssetManager().backendStorage.GetItemAtLocation(url);
+        const datas = await GetAllZippedFileDatas(data);
+        var ret: string[] = [];
+        datas.forEach(d => {
+            ret.push(d.name);
+        });
+        GetWasmModule(module).AwsFilenamesCallback(url, ret);
     };
     //@ts-ignore
     window.RequestAllAwsAssets = async function (module: string) {

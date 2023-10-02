@@ -11,6 +11,9 @@ import { SetupForModelTrackingRefresh } from "../Utils/EditorModelSpecifier";
 import { AssetFolder } from "./ContentBrowser/AssetFolder";
 import { AssetBundle } from "./ContentBrowser/AssetBundle";
 import { Scene } from "@babylonjs/core";
+import { encode } from "@msgpack/msgpack";
+import { v4 as uuidv4 } from "uuid";
+import { SaveEntitiesToMsgpackIntArray } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 
 //This assumes only one editor per time - pretty reasonable
 export var topLevelEditorFolder:AssetFolder;
@@ -58,7 +61,7 @@ export class CustomEditorHTML extends BaseTickableObject {
         for(var i = 0; i < allObjects.length;i++) {
             const item = allObjects[i];
             const folders = item.Key.split("/");
-            const objectName = folders.pop().replace(".zip", "");
+            const objectName = folders.pop().replace(".zip", "").replace("~p~","");
             var currentLevel = topLevelHigherarch;
             //Check folders exist
             folders.forEach(folder => {
@@ -96,12 +99,17 @@ export class CustomEditorHTML extends BaseTickableObject {
                 const newPrefab = new ContentItem(undefined,undefined);
                 newPrefab.name = "New Prefab";
                 newPrefab.category = ContentItemType.Prefab;
-                newPrefab.data = "";
+                newPrefab.data = encode({
+                    prefabID: uuidv4(),
+                    prefabData: SaveEntitiesToMsgpackIntArray({}),
+                });
 
                 const newMaterial = new ContentItem(undefined,undefined);
                 newMaterial.name = "New Material";
                 newMaterial.category = ContentItemType.Material;
-                newMaterial.data = "";
+                newMaterial.data = encode({
+                    MaterialShaderType: "PBRMaterialShader",
+                });
 
                 return [
                     newPrefab,

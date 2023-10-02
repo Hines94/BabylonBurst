@@ -85,8 +85,8 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
                 return;
             }
         }
-        this.ourItem.updateStoredItemsData();
-        this.ourItem.DeleteItem();
+        await this.ourItem.updateStoredItemsData();
+        await this.ourItem.DeleteItem();
 
         this.ourItem.name = this.ourName.value;
         return await this.ourItem.SaveItemOut();
@@ -141,7 +141,7 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
         if(!confirm(`Really delete ${this.ourItem.name}.zip and the ${this.ourItem.storedItems.length} items contained inside?`)) {
             return;
         }
-        if(!await this.ourItem.DeleteItem()){
+        if(await this.ourItem.DeleteItem() === false){
             return false;
         }
         this.ourItem.parent.containedItems = this.ourItem.parent.containedItems.filter(i=>i !== this.ourItem);

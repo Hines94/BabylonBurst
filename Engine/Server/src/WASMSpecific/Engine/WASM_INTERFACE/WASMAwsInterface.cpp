@@ -36,7 +36,25 @@ void RequestAllAwsAssets(std::function<void(std::vector<std::string>)> readyCall
     emscripten::val::global("RequestAllAwsAssets")(WASMSetup::WASMModuleIdentifier);
 }
 
+std::map<std::string, std::function<void(std::vector<std::string>)>> awsBundleFilenameCallbacks;
+
+void AwsFilenamesCallback(std::string fileName, std::vector<std::string> data) {
+    if (awsBundleFilenameCallbacks.find(fileName) == awsBundleFilenameCallbacks.end()) {
+        std::cerr << "Callback for data asset " << fileName << " not found!" << std::endl;
+        return;
+    }
+    awsBundleFilenameCallbacks[fileName](data);
+    awsBundleFilenameCallbacks.erase(fileName);
+}
+
+void RequestBundleNames(const std::string& fileName, std::function<void(std::vector<std::string>)> readyCallback) {
+    awsBundleFilenameCallbacks.insert({fileName, readyCallback});
+    awsFindDataCallback = readyCallback;
+    emscripten::val::global("RequestAWSBundleName")(fileName, WASMSetup::WASMModuleIdentifier);
+}
+
 void WASMAws::setupAwsWASMInterface() {
+    AwsManager::getInstance().SetGetFilenamesOfBundleCallback(RequestBundleNames);
     AwsManager::getInstance().SetGetFileCallback(RequestAwsAsset);
     AwsManager::getInstance().SetGetAllObjectsCallback(RequestAllAwsAssets);
     std::cout << "Setup AWS Interface" << std::endl;
@@ -45,4 +63,5 @@ void WASMAws::setupAwsWASMInterface() {
 EMSCRIPTEN_BINDINGS(WASMAwsInterface) {
     function("AwsGetAllDataCallback", &AwsGetAllDataCallback);
     function("AwsGetItemDataCallback", &AwsGetItemDataCallback);
+    function("AwsFilenamesCallback", &AwsFilenamesCallback);
 }
