@@ -27,6 +27,7 @@ export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedIte
             }
         }
         //Rename
+        await this.ourItem.parent.updateStoredItemsData();
         this.ourItem.name = this.ourName.value;
         return await this.ourItem.SaveItemOut();
     }

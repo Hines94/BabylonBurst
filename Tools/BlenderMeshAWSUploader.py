@@ -21,8 +21,6 @@ import zipfile
 import os
 import subprocess
 import sys
-
-modelTypeSuffix = 7
  
 #Setup so we can install any packages we need!
 python_exe = os.path.join(sys.prefix, 'bin', 'python.exe')
@@ -47,7 +45,17 @@ from botocore.exceptions import ClientError
 def GetFilePath():
     path = (bpy.path.basename(bpy.context.blend_data.filepath)).replace('$','/')
     path = path.replace('.blend','')
+    path = path.split('~')[0]
     return path
+
+def GetObjectName():
+    path = (bpy.path.basename(bpy.context.blend_data.filepath)).replace('$','/')
+    path = path.replace('.blend','')
+    split_path = path.split('~')
+    if len(split_path) > 1:
+        return split_path[1]
+    else:
+        return "BB_ModelUpload"
 
 #Easily create a little popup so we can notify the user
 def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
@@ -90,7 +98,8 @@ def GetSizeOfFile(path):
 #Generic method for uploading to S3. Could be for either GLTF or Babylon exporter.
 def ZipAndUploadToS3(fileExt, tempDirPath,self, context):  
     with zipfile.ZipFile(tempDirPath +'.zip', 'w', compression=zipfile.ZIP_DEFLATED,compresslevel=9) as zipBlend:
-        zipBlend.write(tempDirPath + fileExt)
+        desiredObjectName = GetObjectName() + fileExt
+        zipBlend.write(tempDirPath + fileExt, arcname=desiredObjectName)
 
     zipMbSize =GetSizeOfFile(tempDirPath + ".zip")
     self.report({'INFO'}, "Saved Zip. File size is: " + str(zipMbSize) + "mb")
@@ -102,7 +111,7 @@ def ZipAndUploadToS3(fileExt, tempDirPath,self, context):
     #Replace - just an easy upload
     if(context.scene.versioning == 'REPLACE'):
         try:
-            objectName = GetFilePath() + '~'+ str(modelTypeSuffix) + '~' + ".zip"
+            objectName = GetFilePath() + ".zip"
             response = s3_client.upload_file(tempDirPath + ".zip", context.scene.awsBucket, objectName)
             ShowMessageBox("Replaced in S3 at location: " + objectName + ". File Size: " + str(zipMbSize) + "mb",
                             "Success!")
@@ -224,6 +233,7 @@ class ExamplePanel(bpy.types.Panel):
 
         layout = self.layout
         layout.label(text="Path: " + GetFilePath())
+        layout.label(text="FileName: " + GetObjectName())
         col = self.layout.column()
         for (prop_name, _) in PROPS:
             row = col.row()

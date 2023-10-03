@@ -3,6 +3,8 @@ import { ContentItem, ContentItemType } from "../HTML/ContentBrowser/ContentItem
 import { topLevelEditorFolder } from "../HTML/CustomEditorHTML";
 import { AssetFolder } from "../HTML/ContentBrowser/AssetFolder";
 import { AssetBundle } from "../HTML/ContentBrowser/AssetBundle";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { decode } from "@msgpack/msgpack";
 
 
 
@@ -23,12 +25,13 @@ export function GetAllEditorObjectsOfType(type:ContentItemType):ContentItem[] {
 
 export function GetEditorObjectWithValues(contentType:ContentItemType,path:string,fileName:string) {
     return GetAllEditorObjectsOfType(contentType).find(v=>{
-        return v.parent.getItemLocation() === path && fileName === v.name;
+        return v.parent.getItemLocation() === path && fileName === v.GetSaveName();
     })
 }
 
 export function SetInputValueFromDatalist(dropdownSelector:HTMLInputElement, item:ContentItem) {
     if(!item) {
+        dropdownSelector.value = "";
         return;
     }
     dropdownSelector.value = item.parent.name + " - " + item.name;
@@ -44,7 +47,7 @@ export function SetupContentInputWithDatalist(contentType:ContentItemType,dropdo
         allItems.forEach(i=>{
             const opt =  dropdownSelector.ownerDocument.createElement("option");
             opt.value = i.parent.name + " - " + i.name;
-            opt.setAttribute("dataItem",JSON.stringify({Path:i.parent.getItemLocation(),FileName:i.name}))
+            (opt as any).dataItem = i;
             datalist.appendChild(opt);
         })
         dropdownSelector.ownerDocument.body.appendChild(datalist);
@@ -55,11 +58,11 @@ export function SetupContentInputWithDatalist(contentType:ContentItemType,dropdo
     dropdownSelector.addEventListener("change",()=>{
         const option = Array.from(datalist.querySelectorAll('option')).find(opt => opt.value === dropdownSelector.value);
         if (option) {
-            const value = JSON.parse(option.getAttribute("dataItem"));
-            const editorObject = GetEditorObjectWithValues(contentType,value.Path,value.FileName);
-            if(editorObject) {
-                onChange(editorObject);
-            }
+            ShowToastNotification("Changed data item to " + option.value,3000,dropdownSelector.ownerDocument);
+            onChange((option as any).dataItem);
+        } else {
+            ShowToastNotification("Changed data item to UNDEFINED",3000,dropdownSelector.ownerDocument);
+            onChange(undefined);
         }
     })
 }
@@ -85,7 +88,11 @@ export function SetupBundleInputWithDatalist(dropdownSelector:HTMLInputElement, 
     dropdownSelector.addEventListener("change",()=>{
         const option = Array.from(datalist.querySelectorAll('option')).find(opt => opt.value === dropdownSelector.value);
         if (option) {
+            ShowToastNotification("Changed data item to " + option.value,3000,dropdownSelector.ownerDocument);
             onChange((option as any).BUNDLE);
+        } else {
+            ShowToastNotification("Changed data item to UNDEFINED",3000,dropdownSelector.ownerDocument);
+            onChange(undefined);
         }
     })
 }
@@ -112,7 +119,11 @@ export function SetupFolderInputWithDatalist(dropdownSelector:HTMLInputElement, 
     dropdownSelector.addEventListener("change",()=>{
         const option = Array.from(datalist.querySelectorAll('option')).find(opt => opt.value === dropdownSelector.value);
         if (option) {
+            ShowToastNotification("Changed data item to " + option.value,3000,dropdownSelector.ownerDocument);
             onChange((option as any).ASSETFOLDER);
+        } else {
+            ShowToastNotification("Changed data item to UNDEFINED",3000,dropdownSelector.ownerDocument);
+            onChange(undefined);
         }
     })
 }
@@ -127,12 +138,26 @@ export async function RefreshObjectTypeTracking() : Promise<void> {
         }
         trackedObjects[item.category].push(item);
     }
+    RefreshFolderTracking(false);
+    RefreshBundleTracking(false);
+    if(editorObjectCategoriesChange) {
+        editorObjectCategoriesChange.notifyObservers(trackedObjects);
+    }
+}
+
+export function RefreshFolderTracking(bCallEvent = true) {
     const allFolders = topLevelEditorFolder.getAllContainedFolders();
     trackedObjects["FOLDERS"] = allFolders;
     trackedObjects["FOLDERS"].push(topLevelEditorFolder);
+    if(bCallEvent && editorObjectCategoriesChange) {
+        editorObjectCategoriesChange.notifyObservers(trackedObjects);
+    }
+}
+
+export function RefreshBundleTracking(bCallEvent = true) {
     const allBundles = topLevelEditorFolder.getAllContainedBundles();
     trackedObjects["BUNDLES"] = allBundles;
-    if(editorObjectCategoriesChange) {
+    if(bCallEvent && editorObjectCategoriesChange) {
         editorObjectCategoriesChange.notifyObservers(trackedObjects);
     }
 }

@@ -1,3 +1,4 @@
+import { CustomPrefabIdentifierInspectorComp } from "./CustomPrefabIdentifier";
 import { CustomInstancedRenderInspectorComp } from "./CustomInstancedRendererComponent";
 import { CustomMaterialInspectorComp } from "./CustomMaterialSpecifier";
 import { CustomModelInspectorComp } from "./CustomModelSpecifier";
@@ -9,6 +10,7 @@ function ProcessCustomElements(editor:JSONEditor) {
         RegisterCustomInspectorComponent(new CustomModelInspectorComp());
         RegisterCustomInspectorComponent(new CustomMaterialInspectorComp());
         RegisterCustomInspectorComponent(new CustomInstancedRenderInspectorComp());
+        RegisterCustomInspectorComponent(new CustomPrefabIdentifierInspectorComp());
 
         registeredDefaultComps = true;
     }
@@ -29,6 +31,7 @@ export type JSONEditor = {
     editors?:JSONEditor[];
     rows?:JSONEditor[];
     container?:HTMLElement;
+    input?:HTMLInputElement;
     root_container?:HTMLElement;
     key:string;
     setValue:(val:any)=>void;

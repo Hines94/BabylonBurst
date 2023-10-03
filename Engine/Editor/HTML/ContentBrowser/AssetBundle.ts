@@ -107,6 +107,7 @@ export class AssetBundle extends VisualItem {
     }
 
     async GetDataForItem(itemSaveName:string,type:AsyncDataType,bIgnoreCache:boolean) {
+        console.log("LOC: " + itemSaveName);
         const result = await AsyncZipPuller.LoadFileData(this.getItemLocation(),itemSaveName,type,bIgnoreCache);
         if(result !== null) {
             return result;

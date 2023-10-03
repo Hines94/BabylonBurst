@@ -14,6 +14,7 @@ import { Scene } from "@babylonjs/core";
 import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
 import { SaveEntitiesToMsgpackIntArray } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
+import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
 
 //This assumes only one editor per time - pretty reasonable
 export var topLevelEditorFolder:AssetFolder;
@@ -117,7 +118,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                 ];
             },
             onContentChange: () => {
-                return;
+                RefreshObjectTypeTracking();
             },
             requestRefresh: () => {
                 this.hardReloadContentBrowser();

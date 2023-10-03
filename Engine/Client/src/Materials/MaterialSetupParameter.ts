@@ -39,11 +39,11 @@ export function SetAsyncTextureSetupEditorCallback(
 export class AsyncTextureSetupParameter extends MaterialSetupParameter {
     async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
         const textureData = loadedData[paramName];
-        if (textureData === undefined || textureData.Path === undefined || textureData.Index === undefined) {
+        if (textureData === undefined || textureData.FilePath === undefined || textureData.FileName === undefined) {
             return;
         }
         //Try Get texture
-        const texture = new AsyncImageDescription(textureData.Path, textureData.Index);
+        const texture = new AsyncImageDescription(textureData.FilePath, textureData.FileName);
         const loadedTexture = await texture.GetImageAsTexture();
         if (!loadedTexture) {
             return;

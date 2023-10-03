@@ -22,7 +22,7 @@ function ProcessMaterialSpecifierComp(materialEditor:JSONEditor){
     input.classList.add('form-control');
     input.style.marginBottom = '5px';
     SetupContentInputWithDatalist(ContentItemType.Material,input,(val:ContentItem) =>{
-        materialEditor.setValue({FilePath:val.parent.getItemLocation(),FileName:val.name})
+        materialEditor.setValue({FilePath:val.parent.getItemLocation(),FileName:val.GetSaveName()})
     })
     materialEditor.container.appendChild(input);
     const exist = materialEditor.getValue();

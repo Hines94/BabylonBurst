@@ -1,15 +1,15 @@
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { ContextMenuItem, ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { CloneTemplate, DraggedElement, GetNewNameItem, MakeDroppableGenericElement, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
+import { DraggedElement, GetNewNameItem, MakeDroppableGenericElement, PreventDefaults, RemoveClassFromAllItems } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ContentItem, ContentItemType, GetContentTypeFromFilename } from "./ContentItem";
 import { ContentBrowserVisualHTML } from "./ContentBrowserVisualHTML";
 import { ContentBrowserFolderHTML } from "./Specifics/ContentBrowserFolderHTML";
 import { VisualItem } from "./VisualItem";
 import { AssetFolder } from "./AssetFolder";
 import { ContentBrowserAssetBundleHTML } from "./Specifics/ContentBrowserAssetBundleHTML";
-import { AssetBundle } from "HTML/ContentBrowser/AssetBundle";
 import { GetFileExtension } from "@BabylonBurstClient/Utils/StringUtils";
+import { RefreshFolderTracking } from "../../Utils/ContentTypeTrackers";
 
 /** This connects our content browser to the storage mechanism. Eg player blueprints or Editor S3.  */
 export interface ContentStorageBackend {
@@ -78,6 +78,7 @@ export class ContentBrowserHTML {
                 const folder = currentLevel.GenerateNewFolder();
                 this.autoselectItem = folder; 
                 browser.rebuildStoredItems();
+                RefreshFolderTracking();
             }})
             const newItems = store.getNewContentOptions();
             newItems.forEach(newItem => {

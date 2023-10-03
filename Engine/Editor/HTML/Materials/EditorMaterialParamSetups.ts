@@ -15,8 +15,8 @@ function setupMaterialParameterType(tableCell:HTMLTableCellElement, values: any,
 
 function setupAsyncTexture(tableCell:HTMLTableCellElement, values: any, paramName: string,param:AsyncTextureSetupParameter) {
     var existingItem:ContentItem = undefined;
-    if(values[paramName]) {
-        existingItem = GetEditorObjectWithValues(ContentItemType.Image,values[paramName]["Path"],values[paramName]["Index"]);
+    if(values[paramName] !== undefined) {
+        existingItem = GetEditorObjectWithValues(ContentItemType.Image,values[paramName]["FilePath"],values[paramName]["FileName"]);
     } else {
         values[paramName] = {};
     }
@@ -25,12 +25,12 @@ function setupAsyncTexture(tableCell:HTMLTableCellElement, values: any, paramNam
     const datalistInput = tableCell.ownerDocument.createElement("input");
     tableCell.appendChild(datalistInput);
     SetupContentInputWithDatalist(ContentItemType.Image,datalistInput,(val:ContentItem) => {
-        if(!val) {
+        if(val === undefined) {
             values[paramName]["FilePath"] = "";
             values[paramName]["FileName"] = "";
         } else {
             values[paramName]["FilePath"] = val.parent.getItemLocation();
-            values[paramName]["FileName"] = val.name;
+            values[paramName]["FileName"] = val.GetSaveName();
         }
     });
     SetInputValueFromDatalist(datalistInput,existingItem);

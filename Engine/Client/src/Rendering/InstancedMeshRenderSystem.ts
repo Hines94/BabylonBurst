@@ -105,24 +105,28 @@ function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Mate
             return [];
         }
         if (!matLoader.rawData) {
+            console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
             return [];
         }
         //Try get material
         const data = decode(matLoader.rawData) as any;
         if (!data.MaterialShaderType) {
             ret.push(null);
+            console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
             continue;
         }
 
         //No shader found?
         const shader = GetMaterialDescription(data.MaterialShaderType);
         if (!shader) {
+            console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
             ret.push(null);
             continue;
         }
 
         //Full success
-        ret.push(shader.LoadMaterial(data, ecosystem.scene));
+        const mat = shader.LoadMaterial(data, ecosystem.scene);
+        ret.push(mat);
     }
     return ret;
 }
