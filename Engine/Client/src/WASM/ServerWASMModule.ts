@@ -235,6 +235,11 @@ export class ServerWASMModuleWrapper {
         itemData.delete();
     }
 
+    /** Load a prefab from ID into existing ents */
+    LoadPrefabByIdToExisting(prefabId: string, overwrite: boolean) {
+        this.wasmModule.LoadPrefabByIdToExisting(prefabId, overwrite);
+    }
+
     /** When in Editor and we want to refresh a prefab's data */
     ReloadPrefabData(prefabLocation: string, prefabName: string, data: ArrayBuffer) {
         let prefabData: WASMUint8Array = new this.wasmModule.VectorUint8();

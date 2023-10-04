@@ -114,6 +114,13 @@ void ResetEntitySystem() {
     EntityComponentSystem::ResetEntitySystem();
 }
 
+void LoadPrefabByIdToExisting(std::string Id, bool overwrite) {
+    const auto entTemp = PrefabManager::getInstance().GetPrefabTemplateById(Id);
+    if (entTemp) {
+        EntityLoader::LoadTemplateToExistingEntities(entTemp.value(), overwrite);
+    }
+}
+
 std::vector<JSEntity> LoadMsgpackDataToNewEntities(std::vector<uint8_t> entityData) {
     const auto templateData = EntityLoader::LoadTemplateFromSave(entityData);
     const auto newEnts = EntityLoader::LoadTemplateToNewEntities(templateData);
@@ -151,4 +158,5 @@ EMSCRIPTEN_BINDINGS(WASMEntityInterface) {
     function("ResetEntitySystem", &ResetEntitySystem);
     function("GetDefaultComponentsForEntity", &GetDefaultComponentsForEntity);
     function("ReloadPrefabData", &ReloadPrefabData);
+    function("LoadPrefabByIdToExisting", &LoadPrefabByIdToExisting);
 }

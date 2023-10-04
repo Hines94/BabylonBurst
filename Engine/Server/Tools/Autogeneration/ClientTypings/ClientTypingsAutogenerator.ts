@@ -188,6 +188,9 @@ function convertTypeToTypescript(type:string) {
     if(type == "std::string" || type == "std::wstring" || type == "std::u16string" || type == "std::u32string") {
         return "string";
     }
+    if(type == "unsigned char") {
+        return "number";
+    }
 
     //All fail
     if(customDataItems.includes(type) == false){customDataItems.push(type);}

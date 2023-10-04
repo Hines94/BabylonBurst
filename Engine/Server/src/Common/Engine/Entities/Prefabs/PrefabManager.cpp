@@ -288,6 +288,14 @@ std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefab
     return std::make_pair(newInstance, instanceEntity);
 }
 
+std::optional<std::shared_ptr<EntityTemplate>> PrefabManager::GetPrefabTemplateById(const std::string& UUID) {
+    const auto it = prefabsByUUID.find(UUID);
+    if (it == prefabsByUUID.end()) {
+        return std::nullopt;
+    }
+    return prefabsByUUID.find(UUID)->second;
+}
+
 std::string ensureEndsWithPrefabSpec(std::string str) {
     const std::string suffix = "~p~.zip";
     if (str.size() < suffix.size() || str.substr(str.size() - suffix.size()) != suffix) {
@@ -296,9 +304,19 @@ std::string ensureEndsWithPrefabSpec(std::string str) {
     return str;
 }
 
+std::string ensureEndsWithDotPrefab(std::string str) {
+    const std::string suffix = ".Prefab";
+    if (str.size() < suffix.size() || str.substr(str.size() - suffix.size()) != suffix) {
+        str += suffix;
+    }
+    return str;
+}
+
 std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefabByName(const std::string& filePath, const std::string& prefabName) {
-    const auto it = prefabNameToUUID.find(ensureEndsWithPrefabSpec(filePath) + prefabName);
+    const auto check = ensureEndsWithPrefabSpec(filePath) + ensureEndsWithDotPrefab(prefabName);
+    const auto it = prefabNameToUUID.find(check);
     if (it == prefabNameToUUID.end()) {
+        std::cerr << "Failed to get prefab for params: " << check << std::endl;
         return std::nullopt;
     }
     return LoadPrefabByUUID(it->second);

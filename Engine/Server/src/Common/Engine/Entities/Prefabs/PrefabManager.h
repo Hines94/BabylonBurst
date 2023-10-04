@@ -30,6 +30,8 @@ public:
     //For networking/saving so we are not sending unneccesary data. Looks for Prefab component and gets original prefab from there
     Component* TryGetDefaultPrefabComp(EntityData* ent, std::string Component);
 
+    std::optional<std::shared_ptr<EntityTemplate>> GetPrefabTemplateById(const std::string& UUID);
+
     //Returns UUID - NOTE: Not safe for parallel
     std::string SetupPrefabFromBinary(const std::string& prefabLocation, const std::string& prefabName, const std::vector<uint8_t>& prefabData);
 

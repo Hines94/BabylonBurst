@@ -123,6 +123,10 @@ function setupForEditorOnly(item: any) {
 }
 
 function setInputAsReadOnly(input: HTMLInputElement) {
+    if(input === undefined || input === null) {
+        console.warn("No input for read only setting!");
+        return;
+    }
     input.style.backgroundColor = "darkgrey";
     input.style.color = "white";
     input.title = "Read Only";

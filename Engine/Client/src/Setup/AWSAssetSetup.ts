@@ -10,6 +10,7 @@ import {
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 import { GetWasmModule } from "../WASM/ServerWASMModule";
 import { setupGeneralWASMCallbacks } from "@engine/Setup/WASMCallbacksSetup";
+import { decode } from "@msgpack/msgpack";
 
 //Since manager is global we just check if setup
 export async function setupAsyncManager() {

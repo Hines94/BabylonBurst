@@ -98,20 +98,20 @@ namespace NavmeshDebugMethods {
         return extractedData;
     }
 
-    inline std::vector<ExtractedModelData> ExtractMeshDataFromCompactHeightfieldRegions(const rcCompactHeightfield& chf) {
+    inline std::vector<ExtractedModelData> ExtractMeshDataFromCompactHeightfieldRegions(const rcCompactHeightfield* chf) {
         std::unordered_map<int, ExtractedModelData> regionToMeshDataMap;
-        const float cs = chf.cs;
-        const float ch = chf.ch;
+        const float cs = chf->cs;
+        const float ch = chf->ch;
 
-        for (int y = 0; y < chf.height; ++y) {
-            for (int x = 0; x < chf.width; ++x) {
-                const float fx = chf.bmin[0] + x * cs;
-                const float fz = chf.bmin[2] + y * cs;
-                const rcCompactCell& c = chf.cells[x + y * chf.width];
+        for (int y = 0; y < chf->height; ++y) {
+            for (int x = 0; x < chf->width; ++x) {
+                const float fx = chf->bmin[0] + x * cs;
+                const float fz = chf->bmin[2] + y * cs;
+                const rcCompactCell& c = chf->cells[x + y * chf->width];
 
                 for (unsigned i = c.index, ni = c.index + c.count; i < ni; ++i) {
-                    const rcCompactSpan& s = chf.spans[i];
-                    const float fy = chf.bmin[1] + (s.y) * ch;
+                    const rcCompactSpan& s = chf->spans[i];
+                    const float fy = chf->bmin[1] + (s.y) * ch;
 
                     if (s.reg) {
                         Vertex v1 = {fx, fy, fz};
@@ -188,10 +188,10 @@ namespace NavmeshDebugMethods {
         return data;
     }
 
-    inline void printNumCells(rcCompactHeightfield& chf, std::string prefix) {
+    inline void printNumCells(rcCompactHeightfield* chf, std::string prefix) {
         int walkableCells = 0;
-        for (int i = 0; i < chf.spanCount; ++i) {
-            if (chf.areas[i] != RC_NULL_AREA) {
+        for (int i = 0; i < chf->spanCount; ++i) {
+            if (chf->areas[i] != RC_NULL_AREA) {
                 walkableCells++;
             }
         }

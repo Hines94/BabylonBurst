@@ -117,6 +117,15 @@ export class EntityInspectorHTML {
                     if (!isNew) {
                         return;
                     }
+                    //Preserve any hidden items (eg items that have no comp typings)
+                    const existingKeys = Object.keys(higherarch.owner.allEntities[entityId][comp]);
+                    for(var ek = 0; ek < existingKeys.length;ek++) {
+                        const existKey = existingKeys[ek];
+                        if(newData[existKey] === undefined) {
+                            newData[existKey] = higherarch.owner.allEntities[entityId][comp][existKey];
+                        }
+                    }
+                    //Set new data into owner
                     higherarch.owner.allEntities[entityId][comp] = newData;
                     higherarch.owner.RegenerateHigherarchy();
                     higherarch.runCustomComponentChanges(comp);

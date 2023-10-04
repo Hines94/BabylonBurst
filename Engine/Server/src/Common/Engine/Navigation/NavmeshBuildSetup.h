@@ -20,6 +20,9 @@ struct NavmeshBuildSetup : public Component {
     //Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable
     CPROPERTY(float, WalkableHeight, 2, NET, SAVE)
 
+    //The radius of an agent for the navmesh
+    CPROPERTY(float, AgentRadius, 0.6, NET, SAVE)
+
     //Minimum size in cells allowed to form an island region
     CPROPERTY(float, MinRegionArea, 8, NET, SAVE)
 

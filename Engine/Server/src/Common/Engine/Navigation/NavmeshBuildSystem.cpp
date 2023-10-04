@@ -75,6 +75,41 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
     }
 }
 
+void printCHFNonWalkables(rcCompactHeightfield* chf, std::string pointId) {
+    int nonWalkables = 0;
+    int walkables = 0;
+    for (int y = 0; y < chf->height; ++y) {
+        for (int x = 0; x < chf->width; ++x) {
+            const int idx = x + y * chf->width;
+            unsigned char area = chf->areas[idx];
+            if (area != RC_WALKABLE_AREA) {
+                nonWalkables++;
+            } else {
+                walkables++;
+            }
+        }
+    }
+    std::cout << "Non walkable spans at " << pointId << " of build:" << nonWalkables << std::endl;
+    std::cout << "Walkable spans at " << pointId << " of build:" << walkables << std::endl;
+    if (walkables == 0) {
+        std::cerr << "No walkable areas at stage " << pointId << std::endl;
+    }
+}
+
+void printSpans(rcHeightfield* hf) {
+    int spanCount = 0;
+    for (int y = 0; y < hf->height; ++y) {
+        for (int x = 0; x < hf->width; ++x) {
+            for (rcSpan* s = hf->spans[x + y * hf->width]; s; s = s->next) {
+                spanCount++;
+            }
+        }
+    }
+    std::cout << "Spans after rasterizing: " << spanCount << std::endl;
+}
+
+#define WALKABLE_FLAG 1
+
 void NavmeshBuildSystem::PerformNavmeshRebuild() {
     const auto allEnts = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface)}, {});
     NavmeshBuildSetup* buildSettings = EntityComponentSystem::GetSingleton<NavmeshBuildSetup>();
@@ -183,84 +218,110 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
         config.walkableSlopeAngle = buildSettings->WalkableSlopeHeight;
         config.walkableClimb = buildSettings->WalkableClimb;
         config.walkableHeight = buildSettings->WalkableHeight;
+        config.walkableRadius = buildSettings->AgentRadius;
         config.minRegionArea = buildSettings->MinRegionArea;
         config.mergeRegionArea = buildSettings->MergeRegionArea;
         std::cout << "Navmesh built with existing settings. CS: " << buildSettings->CellSize << std::endl;
     }
 
+    rcVcopy(config.bmin, bmin);
+    rcVcopy(config.bmax, bmax);
+    rcCalcGridSize(config.bmin, config.bmax, config.cs, &config.width, &config.height);
+
     // Create a heightfield
-    rcHeightfield hf;
+    rcHeightfield* hf = rcAllocHeightfield();
     rcContext context(false);
-    if (!rcCreateHeightfield(&context, hf, config.width, config.height, &config.bmin[0], &config.bmax[0], config.cs, config.ch)) {
+    if (!rcCreateHeightfield(&context, *hf, config.width, config.height, &config.bmin[0], &config.bmax[0], config.cs, config.ch)) {
         std::cerr << "Can't create heightfield for context " << std::endl;
+        return;
     }
+    printSpans(hf);
     std::cout << "Verts into navmesh: " << verts.size() << std::endl;
 
-    rcRasterizeTriangles(&context, &verts[0], verts.size() / 3, &tris[0], &triAreas[0], tris.size() / 3, hf, config.walkableClimb);
-    int spanCount = 0;
-    for (int y = 0; y < hf.height; ++y) {
-        for (int x = 0; x < hf.width; ++x) {
-            for (rcSpan* s = hf.spans[x + y * hf.width]; s; s = s->next) {
-                spanCount++;
-            }
-        }
-    }
-    std::cout << "Spans after rasterizing: " << spanCount << std::endl;
+    // Allocate array that can hold triangle area types.
+    // auto m_triareas = new unsigned char[tris.size()*sizeof(unsigned char)];
+    // memset(m_triareas, 0, tris.size()*sizeof(unsigned char));
+    // //Set walkable triangles
+    // rcMarkWalkableTriangles(&context, config.walkableSlopeAngle, &verts[0], verts.size(), &tris[0], tris.size(), m_triareas);
+    rcRasterizeTriangles(&context, &verts[0], verts.size() / 3, &tris[0], &triAreas[0], tris.size() / 3, *hf, config.walkableClimb);
+    //delete [] m_triareas;
 
     if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
-        NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(NavmeshDebugMethods::GetModelFromHeightfield(hf, config), "Nav Heightfield");
+        NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(NavmeshDebugMethods::GetModelFromHeightfield(*hf, config), "Nav Heightfield");
     }
 
     //Filter out items that are too low to walk on
-    rcFilterWalkableLowHeightSpans(&context, 200, hf);
+    rcFilterLedgeSpans(&context, config.walkableHeight, config.walkableClimb, *hf);
+    rcFilterLowHangingWalkableObstacles(&context, config.walkableClimb, *hf);
+    rcFilterWalkableLowHeightSpans(&context, config.walkableHeight, *hf);
     //Compact heightfield to save geom
-    rcCompactHeightfield chf;
-    if (!rcBuildCompactHeightfield(&context, config.walkableHeight, config.walkableClimb, hf, chf)) {
-        std::cerr << "Issue compacting heightfield for navmesh" << std::endl;
+    rcCompactHeightfield* chf = rcAllocCompactHeightfield();
+    if (!chf) {
+        std::cerr << "buildNavigation: Out of memory for compact heightfield." << std::endl;
+        return;
     }
+    if (!rcBuildCompactHeightfield(&context, config.walkableHeight, config.walkableClimb, *hf, *chf)) {
+        std::cerr << "Issue compacting heightfield for navmesh" << std::endl;
+        return;
+    }
+    rcFreeHeightField(hf); //Free original heightfield as not needed anymore
     NavmeshDebugMethods::printNumCells(chf, "Walkable cells after compacting: ");
 
-    if (chf.spanCount == 0 || !rcErodeWalkableArea(&context, config.walkableRadius, chf)) {
+    printCHFNonWalkables(chf, "Start");
+
+    if (chf->spanCount == 0 || !rcErodeWalkableArea(&context, config.walkableRadius, *chf)) {
         std::cerr << "Issue eroding for navmesh" << std::endl;
+        return;
     }
     NavmeshDebugMethods::printNumCells(chf, "Walkable cells after eroding: ");
 
-    if (chf.spanCount == 0 || !rcBuildDistanceField(&context, chf)) {
+    printCHFNonWalkables(chf, "Erode");
+
+    if (chf->spanCount == 0 || !rcBuildDistanceField(&context, *chf)) {
         std::cerr << "Issue building distance fields navmesh" << std::endl;
+        return;
     }
     NavmeshDebugMethods::printNumCells(chf, "Walkable cells after distance field: ");
 
-    if (chf.spanCount == 0 || !rcBuildRegions(&context, chf, 0, config.minRegionArea, config.mergeRegionArea)) {
+    if (chf->spanCount == 0 || !rcBuildRegions(&context, *chf, 0, config.minRegionArea, config.mergeRegionArea)) {
         std::cerr << "Issue building regions navmesh" << std::endl;
+        return;
     }
     if (NavmeshBuildSystem::getInstance().onNavmeshRegionsRebuild.HasListeners()) {
         NavmeshBuildSystem::getInstance().onNavmeshRegionsRebuild.triggerEvent(NavmeshDebugMethods::ExtractMeshDataFromCompactHeightfieldRegions(chf));
     }
     NavmeshDebugMethods::printNumCells(chf, "Walkable cells after regions: ");
 
-    rcContourSet cset;
-    if (!rcBuildContours(&context, chf, config.maxSimplificationError, config.maxEdgeLen, cset)) {
+    rcContourSet* cset = rcAllocContourSet();
+    if (!rcBuildContours(&context, *chf, config.maxSimplificationError, config.maxEdgeLen, *cset)) {
         std::cerr << "Issue building contours navmesh" << std::endl;
+        return;
     }
-    std::cout << "Number of contours: " << cset.nconts << std::endl;
+    std::cout << "Number of contours: " << cset->nconts << std::endl;
 
     if (onNavmeshContoursRebuild.HasListeners()) {
-        onNavmeshContoursRebuild.triggerEvent(NavmeshDebugMethods::GetLinesFromContours(&cset));
+        onNavmeshContoursRebuild.triggerEvent(NavmeshDebugMethods::GetLinesFromContours(cset));
     }
 
     rcPolyMesh pmesh;
-    if (!rcBuildPolyMesh(&context, cset, config.maxVertsPerPoly, pmesh)) {
+    if (!rcBuildPolyMesh(&context, *cset, config.maxVertsPerPoly, pmesh)) {
         std::cerr << "Issue building poly navmesh" << std::endl;
+        return;
     }
+    rcFreeContourSet(cset);
     if (NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.HasListeners()) {
         NavmeshBuildSystem::getInstance().onNavmeshStageRebuild.triggerEvent(NavmeshDebugMethods::GetModelFromLowPolyMesh(pmesh), "LowPoly NavMesh");
     }
     std::cout << "Low Detail Navmesh Number of polygons: " << pmesh.npolys << std::endl;
 
     rcPolyMeshDetail dmesh;
-    if (!rcBuildPolyMeshDetail(&context, pmesh, chf, config.detailSampleDist, config.detailSampleMaxError, dmesh)) {
+    if (!rcBuildPolyMeshDetail(&context, pmesh, *chf, config.detailSampleDist, config.detailSampleMaxError, dmesh)) {
         std::cerr << "Issue building detail poly navmesh" << std::endl;
+        return;
     }
+
+    printCHFNonWalkables(chf, "End");
+    rcFreeCompactHeightfield(chf);
 
     //Convert high poly mesh into actual navmesh data
     unsigned char* navData = 0;
@@ -297,13 +358,14 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
 
     if (!dtCreateNavMeshData(&params, &navData, &navDataSize)) {
         std::cerr << "Could not build Detour navmesh" << std::endl;
+        return;
     }
 
     //Set data saved for later
     LoadedNavmeshData* load = EntityComponentSystem::GetOrCreateSingleton<LoadedNavmeshData>();
-    load->navmeshData = std::string(reinterpret_cast<char*>(navData), navDataSize);
+    load->navmeshData = std::vector<unsigned char>(navData, navData + navDataSize);
     load->savedSetup = ExtractCachedData(orderedSurfaces);
-    std::cout << "Set load data: " << load->savedSetup.size();
+    std::cout << "Set load data. N meshes added: " << load->savedSetup.size() << " data size: " << navDataSize << std::endl;
     load->onComponentAdded(nullptr); //This is a bit sneaky but we want to init the loadednavmeshdata with out set string
 
     //TODO: Generate navmesh useable object
@@ -320,7 +382,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
 bool NavmeshBuildSystem::IsNavmeshLatest() {
     const auto builtNamesh = EntityComponentSystem::GetSingleton<LoadedNavmeshData>();
     if (!builtNamesh) {
-        std::cout << "no built namvehs" << std::endl;
+        std::cout << "no built navmesh" << std::endl;
         return false;
     }
     const auto currentSurfaces = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface)}, {});

@@ -52,13 +52,14 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             prefabData = decode(prefab.data) as PrefabPackedType;
         }
         this.prefabUUID = prefabData.prefabID;
-        this.allEntities = LoadEntitiesFromMsgpackFormat(prefabData.prefabData);
         (this.higherarchPanel.querySelector("#HigherarchTitle") as HTMLElement).innerText = prefab.name;
 
         await this.ecosystem.waitLoadedPromise;
 
         setupTopMenu();
 
+        this.ecosystem.wasmWrapper.LoadPrefabByIdToExisting(prefabData.prefabID,true);
+        this.RefreshDataToWASM();
         this.RegenerateHigherarchy();
 
         this.setupRightClick();

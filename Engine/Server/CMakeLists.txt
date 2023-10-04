@@ -238,7 +238,7 @@ if(wasmBuild)
         "SHELL:-s WASM=1"
         "SHELL:-s ALLOW_MEMORY_GROWTH=1"
         "SHELL:-s \"EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']\""
-        #"SHELL:-s NO_DISABLE_EXCEPTION_CATCHING" # - For full builds catch?
+        "SHELL:-s NO_DISABLE_EXCEPTION_CATCHING"
         "SHELL:-Oz"
         "SHELL:-flto"
         #"SHELL:--strip-debug" - TODO: If prod build?
