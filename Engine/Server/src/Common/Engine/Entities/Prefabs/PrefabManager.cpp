@@ -14,20 +14,18 @@ void PrefabManager::RefreshPrefabs() {
     AwsManager::getInstance().GetAllObjectsInS3([this](std::vector<std::string> allItems) {
         //TODO: Fix this up and Instead search all bundles?
         const std::string prefabItemType = "~p~";
-        std::vector<std::string> prefabItems;
+        std::vector<std::string> prefabFiles;
         for (const auto& item : allItems) {
             if (item.find(prefabItemType) != std::string::npos) {
-                prefabItems.push_back(item);
+                prefabFiles.push_back(item);
+                this->filesAwaitingCallback.push_back(item);
             }
         }
         prefabNameToUUID.clear();
         prefabsByUUID.clear();
 
-        for (const auto& fileName : prefabItems) {
-            this->filesAwaitingCallback.push_back(fileName);
-
+        for (const auto& fileName : prefabFiles) {
             std::cout << "Checking for prefab in file: " << fileName << std::endl;
-
             AwsManager::getInstance().GetFilenamesOfBundle(fileName,
                                                            [fileName, this](std::vector<std::string> vec) {
                                                                const auto it = std::find(filesAwaitingCallback.begin(), filesAwaitingCallback.end(), fileName);
@@ -39,14 +37,18 @@ void PrefabManager::RefreshPrefabs() {
 }
 
 void PrefabManager::checkFilenamesForPrefab(std::vector<std::string> names, std::string mainPath) {
+    std::vector<std::string> foundPrefabs;
     for (const auto& n : names) {
         if (n.find(".Prefab") != std::string::npos) {
-            this->prefabsAwaitingCallback.push_back(mainPath);
-            AwsManager::getInstance().GetFileFromS3(mainPath, n,
-                                                    [mainPath, n, this](std::vector<uint8_t> vec) {
-                                                        SetupPrefabFromBinary(mainPath, n, vec);
-                                                    });
+            foundPrefabs.push_back(n);
+            prefabsAwaitingCallback.push_back(n);
         }
+    }
+    for (const auto& n : foundPrefabs) {
+        AwsManager::getInstance().GetFileFromS3(mainPath, n,
+                                                [mainPath, n, this](std::vector<uint8_t> vec) {
+                                                    SetupPrefabFromBinary(mainPath, n, vec);
+                                                });
     }
 }
 
@@ -158,7 +160,7 @@ std::string PrefabManager::SetupPrefabFromBinary(const std::string& prefabLocati
 
     std::cout << "Loaded prefab: " << prefabID << " " << prefabLocation << " " << prefabName << std::endl;
 
-    checkAllPrefabsLoaded(prefabLocation);
+    checkAllPrefabsLoaded(prefabName);
 
     return prefabID;
 }
@@ -273,7 +275,11 @@ void PrefabManager::checkAllPrefabsLoaded(std::string prefab) {
     if (prefabsAwaitingCallback.size() != 0) {
         return;
     }
+    if (filesAwaitingCallback.size() > 0) {
+        return;
+    }
     onAllPrefabsLoaded.triggerEvent(this);
+    std::cout << "All prefabs loaded. Total number: " << prefabNameToUUID.size() << std::endl;
 }
 
 std::optional<std::pair<PrefabInstance*, EntityData*>> PrefabManager::LoadPrefabByUUID(const std::string& UUID) {

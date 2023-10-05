@@ -24,6 +24,12 @@ export function GetTrackedVariablesHSetup() : string {
         ret += `class TrackedVariable<${comp}> : public ${comp} {\n`;
 
         ret += `public:\n`;
+
+        // //Constructor - Best to leave blank
+        // ret += `\tTrackedVariable(const ${comp}& item){\n`;
+        // ret += `\t\t*this = item\n`;
+        // ret += `\t}\n`;
+
         //Set callbacks in tracked variable
         ret += `\tvoid setCallback(std::function<void()> cb) { \n`;
             compData.properties.forEach(property=>{

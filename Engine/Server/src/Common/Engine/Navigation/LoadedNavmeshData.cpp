@@ -11,16 +11,16 @@ float frand() {
 
 void LoadedNavmeshData::onComponentAdded(EntityData* entData) {
     if (navmeshData.empty()) {
+        std::cerr << "Navmesh data is empty" << std::endl;
         return;
     }
-    return;
     try {
-        std::cout << "Navmesh data in size: " << navmeshData.size() << std::endl;
-        auto status = loadednavmesh.init(reinterpret_cast<unsigned char*>(&navmeshData[0]), navmeshData.size(), DT_TILE_FREE_DATA);
+        //std::cout << "Navmesh data in size: " << navmeshData.size() << std::endl;
+        auto status = loadednavmesh.init(navmeshData.data(), navmeshData.size(), DT_TILE_FREE_DATA);
         if (!dtStatusSucceed(status)) {
             std::cerr << "Failed to init navmesh with saved data: " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " Data length: " << navmeshData.size() << std::endl;
         } else {
-            std::cout << "Navmesh loaded succesfully" << std::endl;
+            std::cout << "Navmesh loaded succesfully. Num walkable polys: " << countWalkablePolygons() << ". num non walkable: " << countNonWalkablePolygons() << ". Num meshes in: " << savedSetup.size() << std::endl;
         }
     } catch (const std::exception& e) {
         std::cerr << "Error loading navmesh: " << e.what() << std::endl;
@@ -32,6 +32,7 @@ void LoadedNavmeshData::onComponentAdded(EntityData* entData) {
 bool LoadedNavmeshData::IsNavmeshValid() {
     // Check if there are tiles in the navmesh
     if (this->loadednavmesh.getMaxTiles() == 0) {
+        std::cerr << "Navmesh not valid. 0 max tiles!" << std::endl;
         return false;
     }
 
@@ -86,7 +87,6 @@ std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmeshInCircle(Ent
         dtFreeNavMeshQuery(navQuery);
         return std::nullopt;
     }
-    std::cout << "centerPoly value: " << centerPoly << std::endl;
 
     dtPolyRef randomPoly;
     float randomPt[3];
@@ -121,4 +121,46 @@ std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmeshInCircle(Ent
         dtFreeNavMeshQuery(navQuery);
         return std::nullopt;
     }
+}
+
+int LoadedNavmeshData::countWalkablePolygons() {
+    int walkablePolyCount = 0;
+
+    for (int i = 0; i < this->loadednavmesh.getMaxTiles(); ++i) {
+        const dtMeshTile* tile = this->loadednavmesh.getTileAt(i, 0, 0);
+        if (!tile) {
+            continue;
+        }
+        for (int j = 0; j < tile->header->polyCount; ++j) {
+            const dtPoly* poly = &tile->polys[j];
+
+            // Check if the polygon is used and walkable
+            if (poly->getArea() != RC_NULL_AREA && poly->flags != 0) {
+                ++walkablePolyCount;
+            }
+        }
+    }
+
+    return walkablePolyCount;
+}
+
+int LoadedNavmeshData::countNonWalkablePolygons() {
+    int nonWalkCount = 0;
+
+    for (int i = 0; i < this->loadednavmesh.getMaxTiles(); ++i) {
+        const dtMeshTile* tile = this->loadednavmesh.getTileAt(i, 0, 0);
+        if (!tile) {
+            continue;
+        }
+        for (int j = 0; j < tile->header->polyCount; ++j) {
+            const dtPoly* poly = &tile->polys[j];
+
+            // Check if the polygon is used and walkable
+            if (poly->getArea() == RC_NULL_AREA || poly->flags == 0) {
+                ++nonWalkCount;
+            }
+        }
+    }
+
+    return nonWalkCount;
 }

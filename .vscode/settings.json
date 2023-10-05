@@ -95,7 +95,8 @@
         "*.inc": "cpp",
         "csetjmp": "cpp",
         "csignal": "cpp",
-        "execution": "cpp"
+        "execution": "cpp",
+        "*.ipp": "cpp"
     },
     "cmake.sourceDirectory": "/home/jhines/BabylonBoost/Engine/Server"
 }

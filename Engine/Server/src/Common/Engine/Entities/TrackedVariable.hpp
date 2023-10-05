@@ -268,30 +268,46 @@ public:
 
     explicit TrackedVariable(const std::vector<T>& initialValues) {
         for (const auto& val : initialValues) {
-            data.push_back(TrackedVariable<T>(val));
+            innerData.push_back(TrackedVariable<T>(val));
         }
     }
 
 private:
-    std::vector<TrackedVariable<T>> data;
+    std::vector<TrackedVariable<T>> innerData;
     std::function<void()> onChange;
+    mutable std::vector<T> cache;
+
+    void updateCache() const {
+        if (cache.size() != innerData.size()) {
+            cache.resize(innerData.size());
+        }
+
+        for (size_t i = 0; i < innerData.size(); ++i) {
+            cache[i] = static_cast<T>(innerData[i]); // using the implicit conversion operator
+        }
+    }
 
 public:
     inline TrackedVariable<std::vector<T>, void>& operator=(const std::vector<T>& newValues) {
         if (onChange) {
             onChange();
         }
-        data.clear();
+        innerData.clear();
         for (const auto& val : newValues) {
             TrackedVariable<T> tracked;
             tracked = val;
-            data.push_back(tracked);
+            innerData.push_back(tracked);
         }
         return *this;
     }
 
+    inline T* data() {
+        updateCache();
+        return cache.data();
+    }
+
     inline bool operator==(const TrackedVariable<std::vector<T>>& other) const {
-        return data == other.data;
+        return innerData == other.innerData;
     }
 
     inline bool operator!=(const TrackedVariable<std::vector<T>>& other) const {
@@ -299,7 +315,7 @@ public:
     }
 
     inline bool operator==(const std::vector<T>& other) const {
-        return data == other;
+        return innerData == other;
     }
 
     inline bool operator!=(const std::vector<T>& other) const {
@@ -307,7 +323,7 @@ public:
     }
 
     inline operator T() const {
-        return data;
+        return innerData;
     }
 
     void setCallback(std::function<void()> callback) {
@@ -319,79 +335,78 @@ public:
         if (onChange) {
             onChange();
         }
-        TrackedVariable<T> tracked(value);
+        TrackedVariable<T> tracked{value};
         tracked.setCallback(onChange);
-        data.push_back(tracked);
+        innerData.push_back(tracked);
     }
 
     inline void push_back(const TrackedVariable<T>& value) {
         if (onChange) {
             onChange();
         }
-        TrackedVariable<T> tracked = value;
-        data.push_back(tracked);
+        innerData.push_back(value);
     }
 
     inline void pop_back() {
         if (onChange) {
             onChange();
         }
-        data.pop_back();
+        innerData.pop_back();
     }
 
     inline TrackedVariable<T>& operator[](size_t index) {
-        return data[index];
+        return innerData[index];
     }
 
     inline size_t size() const {
-        return data.size();
+        return innerData.size();
     }
 
     inline void clear() {
         if (onChange) {
             onChange();
         }
-        data.clear();
+        innerData.clear();
     }
 
-    auto begin() -> decltype(data.begin()) {
-        return data.begin();
+    auto begin() -> decltype(innerData.begin()) {
+        return innerData.begin();
     }
 
-    inline auto end() -> decltype(data.end()) {
-        return data.end();
+    inline auto end() -> decltype(innerData.end()) {
+        return innerData.end();
     }
 
-    inline auto begin() const -> decltype(data.begin()) const {
-        return data.begin();
+    inline auto begin() const -> decltype(innerData.begin()) const {
+        return innerData.begin();
     }
 
-    inline auto end() const -> decltype(data.end()) const {
-        return data.end();
+    inline auto end() const -> decltype(innerData.end()) const {
+        return innerData.end();
     }
 
     inline void erase(typename std::vector<TrackedVariable<T>>::iterator first, typename std::vector<TrackedVariable<T>>::iterator last) {
         if (onChange) {
             onChange();
         }
-        data.erase(first, last);
+        innerData.erase(first, last);
     }
 
     inline void resize(size_t newSize) {
         if (onChange) {
             onChange();
         }
-        data.resize(newSize);
+        innerData.resize(newSize);
     }
 
     inline bool empty() const {
-        return data.empty();
+        return innerData.empty();
     }
 
     template <typename Packer>
     void msgpack_pack(Packer& pk) const {
         std::vector<T> plainData;
-        for (const auto& item : data) {
+        for (const auto& item : innerData) {
             plainData.push_back(static_cast<T>(item));
         }
         pk.pack(plainData);
@@ -400,9 +415,9 @@ public:
     void msgpack_unpack(msgpack::object const& o) {
         std::vector<T> plainData;
         o.convert(plainData);
-        data.clear();
+        innerData.clear();
         for (const auto& item : plainData) {
-            data.push_back(TrackedVariable<T>(item));
+            innerData.push_back(TrackedVariable<T>(item));
         }
     }
 };

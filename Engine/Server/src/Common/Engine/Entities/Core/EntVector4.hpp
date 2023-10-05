@@ -24,6 +24,8 @@ struct EntVector4 {
         return !(*this == other);
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const EntVector4& obj);
+
     void Set(EntVector4 other) {
         X = other.X;
         Y = other.Y;

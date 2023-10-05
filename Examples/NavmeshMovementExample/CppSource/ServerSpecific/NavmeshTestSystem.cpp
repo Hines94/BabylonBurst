@@ -14,7 +14,7 @@ void TestSystem(bool SystemInit, double deltaTime) {
     if(!SystemInit) {
         std::cout << "Loading Nav Test Map" << std::endl;
         //Load test map in
-        const auto map = PrefabManager::getInstance().LoadPrefabByName("testFolder/NavigationTest");
+        const auto map = PrefabManager::getInstance().LoadPrefabByName("Maps/TestMapBundle","TestMapPrefab");
         if(map) {
             std::cout << "Nav test map loaded successfully!" << std::endl;
         } else {

@@ -57,7 +57,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         await this.ecosystem.waitLoadedPromise;
 
         setupTopMenu();
-
+        
         this.ecosystem.wasmWrapper.LoadPrefabByIdToExisting(prefabData.prefabID,true);
         this.RefreshDataToWASM();
         this.RegenerateHigherarchy();

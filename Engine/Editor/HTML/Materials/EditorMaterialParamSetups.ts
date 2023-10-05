@@ -1,6 +1,7 @@
 import {AsyncTextureSetupParameter,MaterialSetupParameter,ScalarSetupParameter,SetAsyncTextureSetupEditorCallback} from "@BabylonBurstClient/Materials/MaterialSetupParameter"
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { GetEditorObjectWithValues, SetInputValueFromDatalist, SetupContentInputWithDatalist } from "../../Utils/ContentTypeTrackers";
+import { CreateItemLabel, SetupBindInputToValue } from "@BabylonBurstClient/HTML/HTMLUtils";
 export function bindEditorMaterialParamSetupCallbacks() {
     SetAsyncTextureSetupEditorCallback(setupMaterialParameterType);
 }
@@ -23,7 +24,7 @@ function setupAsyncTexture(tableCell:HTMLTableCellElement, values: any, paramNam
 
     //Create datalist with all possible image paths
     const datalistInput = tableCell.ownerDocument.createElement("input");
-    tableCell.appendChild(datalistInput);
+    tableCell.appendChild(CreateItemLabel("Texture Item",datalistInput));
     SetupContentInputWithDatalist(ContentItemType.Image,datalistInput,(val:ContentItem) => {
         if(val === undefined) {
             values[paramName]["FilePath"] = "";
@@ -34,6 +35,16 @@ function setupAsyncTexture(tableCell:HTMLTableCellElement, values: any, paramNam
         }
     });
     SetInputValueFromDatalist(datalistInput,existingItem);
+
+    const uItem = tableCell.ownerDocument.createElement("input");
+    uItem.type = "number";
+    SetupBindInputToValue("uScale",values[paramName],uItem,"1");
+    tableCell.appendChild(CreateItemLabel("uScale",uItem));
+
+    const vItem = tableCell.ownerDocument.createElement("input");
+    vItem.type = "number";
+    SetupBindInputToValue("vScale",values[paramName],vItem,"1");
+    tableCell.appendChild(CreateItemLabel("vScale",vItem));
 }
 
 function setupScalar(tableCell:HTMLTableCellElement, values: any, paramName: string,param:ScalarSetupParameter) {

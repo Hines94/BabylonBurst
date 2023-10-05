@@ -29,9 +29,17 @@ sed -i 's/^/VITE_/' Engine/Client/.env
 #--- Build Server ---
 echo -e ${MAGENTA}Building Server${RESET}
 if arg_exists "-t" "$@"; then
-    bash ${base_path}/Engine/Server/BuildDev.sh -t || exit
+    if arg_exists "-noautogen" "$@"; then
+        bash ${base_path}/Engine/Server/BuildDev.sh -t -noautogen || exit
+    else 
+        bash ${base_path}/Engine/Server/BuildDev.sh -t || exit
+    fi
 else
-    bash ${base_path}/Engine/Server/BuildDev.sh || exit
+    if arg_exists "-noautogen" "$@"; then
+        bash ${base_path}/Engine/Server/BuildDev.sh -noautogen || exit
+    else 
+        bash ${base_path}/Engine/Server/BuildDev.sh || exit
+    fi
 fi
 
 #--- Start client ---

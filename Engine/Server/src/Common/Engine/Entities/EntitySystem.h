@@ -111,6 +111,8 @@ struct EntityData : public ICustomMsgpack {
     }
 };
 
+//TODO: Make Tracked entityData
+
 //Result of entity query, contains all the differing types of Ents
 struct EntityQueryResult {
     std::vector<std::type_index> includedComponents;

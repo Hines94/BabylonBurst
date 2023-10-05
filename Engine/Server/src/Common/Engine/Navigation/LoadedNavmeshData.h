@@ -30,5 +30,8 @@ struct LoadedNavmeshData : public Component {
     std::optional<EntVector3> GetRandomPointOnNavmeshInCircle(EntVector3 startPos, float Radius);
     dtNavMeshQuery* GetPremadeQuery(int maxNodes = 2048);
 
+    int countWalkablePolygons();
+    int countNonWalkablePolygons();
+
     void onComponentAdded(EntityData* entData) override;
 };

@@ -83,6 +83,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
         this.camera = new PlayerCamera(this);
         GetGameSettings().OnSceneLoaded(this);
         this.waitLoadResolve(this);
+        console.log(`Ecosystem: ${this.uuid} completed setup and starting game loop.`);
         this.runGameLoop();
     }
 

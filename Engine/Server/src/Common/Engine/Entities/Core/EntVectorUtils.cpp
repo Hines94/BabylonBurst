@@ -1,5 +1,21 @@
 #include "EntVectorUtils.h"
+#include "iostream"
 #include <cmath>
+
+std::ostream& operator<<(std::ostream& os, const EntVector3& obj) {
+    os << "{ X: " << obj.X << " Y: " << obj.Y << " Z: " << obj.Z << " }";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const EntVector4& obj) {
+    os << "{ X: " << obj.X << " Y: " << obj.Y << " Z: " << obj.Z << " W: " << obj.W << " }";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const EntTransform& obj) {
+    os << "{ POS: " << obj.Position << " ROT: " << obj.Rotation << " SCALE: " << obj.Scale << " }";
+    return os;
+}
 
 EntVector4 EntVectorUtils::EulerToQuaternion(const EntVector3& vec) {
     auto result = EntVector4();

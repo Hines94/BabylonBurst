@@ -31,6 +31,8 @@ struct EntVector3 {
         return !(*this == other);
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const EntVector3& obj);
+
     EntVector3 Normalize() {
         double magnitude = std::sqrt(X * X + Y * Y + Z * Z);
         return EntVector3(

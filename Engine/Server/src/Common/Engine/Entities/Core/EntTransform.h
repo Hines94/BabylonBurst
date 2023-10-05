@@ -35,6 +35,8 @@ struct EntTransform : public Component {
         this->Rotation.W = 1;
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const EntTransform& obj);
+
     DECLARE_COMPONENT_METHODS(EntTransform)
 
     void onComponentAdded(EntityData* entData) override;

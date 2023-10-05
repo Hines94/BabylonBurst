@@ -12,8 +12,11 @@ void PlayerPawn::SetupNewPawn(EntityData* pawn) {
 
     //Add Renderer
     const auto newRenderer = new InstancedRender();
-    newRenderer->ModelData.FilePath = "debug/TestHuman";
-    newRenderer->ModelData.MeshName = "TestHuman";
+    newRenderer->ModelData.FilePath = "Meshes/VehicleExamples";
+    newRenderer->ModelData.FileName = "GreyboxVehicles.gltf";
+    newRenderer->ModelData.MeshName = "LightTank";
+    const MaterialSpecifier matSpec;
+    newRenderer->MaterialData.push_back(matSpec);
     EntityComponentSystem::AddSetComponentToEntity(pawn,newRenderer);
 
     //TODO: Add controllable Navigator
@@ -29,6 +32,7 @@ void PlayerPawn::SetupNewPawn(EntityData* pawn) {
         newTransform->Position.X = randomPoint->X;
         newTransform->Position.Y = randomPoint->Y;
         newTransform->Position.Z = randomPoint->Z;
+        std::cout << "Setup pawn at pos: " << newTransform->Position << std::endl;
     }
     
 }

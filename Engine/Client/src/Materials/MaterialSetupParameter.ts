@@ -48,6 +48,12 @@ export class AsyncTextureSetupParameter extends MaterialSetupParameter {
         if (!loadedTexture) {
             return;
         }
+        if (textureData.uScale !== undefined) {
+            loadedTexture.uScale = parseFloat(textureData.uScale);
+        }
+        if (textureData.vScale !== undefined) {
+            loadedTexture.vScale = parseFloat(textureData.vScale);
+        }
         this.TrySetMatParameter(mat, paramName, loadedTexture);
     }
 

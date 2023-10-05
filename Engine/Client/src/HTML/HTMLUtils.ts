@@ -152,3 +152,23 @@ export function RemoveClassFromAllItems(removeclass: string, owner: HTMLElement)
     });
     return allSelected.length;
 }
+
+/** Returns the wrapper */
+export function CreateItemLabel(label: string, item: HTMLElement): HTMLElement {
+    const wrapper = item.ownerDocument.createElement("div");
+    const labelEle = wrapper.ownerDocument.createElement("p");
+    labelEle.innerText = label;
+    labelEle.style.display = "inline";
+    labelEle.style.marginRight = "10px";
+    wrapper.appendChild(labelEle);
+    wrapper.appendChild(item);
+    return wrapper;
+}
+
+/** Setup/bind an input to be the same as a value */
+export function SetupBindInputToValue(paramName: string, data: any, item: HTMLInputElement, defaultval = "") {
+    item.value = data[paramName] !== undefined ? data[paramName] : defaultval;
+    item.addEventListener("change", () => {
+        data[paramName] = item.value;
+    });
+}

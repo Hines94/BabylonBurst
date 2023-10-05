@@ -106,7 +106,8 @@ function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Mate
         }
         if (!matLoader.rawData) {
             console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
-            return [];
+            ret.push(null);
+            continue;
         }
         //Try get material
         const data = decode(matLoader.rawData) as any;

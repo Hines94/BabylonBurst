@@ -59,18 +59,17 @@ void NavmeshBuildSystem::RunSystem(bool Init, double dt) {
     //Different geom require rebuild?
     if (unbuiltEnts.get()->size() > 0 && NavmeshBuildSystem::getInstance().meshUnbuilt == false) {
         if (!IsNavmeshLatest()) {
-            NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
+            VisualMessageShower::ShowVisibleInfoMessageIfEditor("Navmesh requires rebuild. Please use build->RebuildNavmesh when convenient.");
         } else {
             std::cout << "Using cached navmesh data!" << std::endl;
         }
-    } else {
-        const auto settings = EntityComponentSystem::GetSingleton<NavmeshBuildSetup>();
-        //Request rebuild from settings?
-        if (settings && unbuiltEnts.get()->size() == 0) {
-            if (settings->performRebuild) {
-                settings->performRebuild = false;
-                NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
-            }
+    }
+    //Settings asking for rebuild?Unhite all enti
+    const auto settings = EntityComponentSystem::GetSingleton<NavmeshBuildSetup>();
+    if (settings && unbuiltEnts.get()->size() == 0) {
+        if (settings->performRebuild) {
+            settings->performRebuild = false;
+            NavmeshBuildSystem::getInstance().PerformNavmeshRebuild();
         }
     }
 }
@@ -132,7 +131,7 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
             std::cerr << "Null extracted data" << std::endl;
             return;
         }
-        //TODO: user specified areas
+        //TODO: user specified areas (mainly used for marking different terrains or sections of your game world. For example, an area might be labeled as "water", "ground", "stairs", "forbidden",)
         triAreas.insert(triAreas.end(), extractedData->triangles.size(), RC_WALKABLE_AREA);
         for (const auto& tri : extractedData->triangles) {
 
@@ -322,6 +321,14 @@ void NavmeshBuildSystem::PerformNavmeshRebuild() {
 
     printCHFNonWalkables(chf, "End");
     rcFreeCompactHeightfield(chf);
+
+    //Set flags (Flags can be used to indicate permissions, characteristics, or attributes of a polygon - You might use flags to indicate whether a polygon is "walkable", "swimmable", "flyable", or any other custom characteristic you want to define. Given that they're bitwise, a single polygon can have multiple flags set.)
+    //TODO: Proper user defined flags!
+    for (int i = 0; i < pmesh.npolys; ++i) {
+        if (pmesh.areas[i] == RC_WALKABLE_AREA) {
+            pmesh.flags[i] = WALKABLE_FLAG;
+        }
+    }
 
     //Convert high poly mesh into actual navmesh data
     unsigned char* navData = 0;
