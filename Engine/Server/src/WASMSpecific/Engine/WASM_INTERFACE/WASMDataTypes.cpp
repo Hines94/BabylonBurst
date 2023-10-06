@@ -1,3 +1,4 @@
+#include "Engine/Entities/Core/EntVector3.hpp"
 #include <emscripten/bind.h>
 
 using namespace emscripten;
@@ -23,4 +24,10 @@ EMSCRIPTEN_BINDINGS(WASMDataTypes) {
         .function("get", select_overload<std::string&(size_t)>(&std::vector<std::string>::operator[]))
         .function("set", &setElementString)
         .function("push_back", &pushBackString);
+    class_<EntVector3>("EntVector3")
+        .constructor<>()
+        .constructor<float, float, float>()
+        .property("X", &EntVector3::X)
+        .property("Y", &EntVector3::Y)
+        .property("Z", &EntVector3::Z);
 }

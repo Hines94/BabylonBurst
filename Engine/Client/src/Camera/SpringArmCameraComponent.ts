@@ -17,8 +17,10 @@ export class SpringArmCameraComponent {
     springArmMin = 5;
     /** Current length of our spring arm */
     springArmLength = 10;
-
-    springArmDirection = new Vector3(0, 0.7, -0.3);
+    /** Spring arm direction at maximum length */
+    springArmDirectionMax = new Vector3(0, 0.7, -0.3);
+    /** Spring arm direction at minimum length */
+    springArmDirectionMin = new Vector3(0, 0.5, -0.5);
 
     /** As our spring arm length changes we also change FOV to focus/defocus user attention */
     bAlterFOV = true;
@@ -62,13 +64,17 @@ export class SpringArmCameraComponent {
     /** Update our spring arm with additional or less length */
     private updateSpringArm(length: number) {
         this.springArmLength = length;
-        const alpha = Clamp01((this.springArmLength - this.springArmMin) / (this.springArmMax - this.springArmMin));
+        const alpha = this.GetSpringArmAlpha();
         const newFov = lerp(this.fovMin, this.fovMax, alpha);
         this.playerCam.mainCamera.fov = newFov;
         for (var a = 0; a < this.playerCam.additionalCameras.length; a++) {
             this.playerCam.additionalCameras[a].fov = newFov;
         }
         this.ResetCamPosition();
+    }
+
+    private GetSpringArmAlpha() {
+        return Clamp01((this.springArmLength - this.springArmMin) / (this.springArmMax - this.springArmMin));
     }
 
     private PlayerCameraPosUpdate(cam: PlayerCamera) {
@@ -78,7 +84,12 @@ export class SpringArmCameraComponent {
     }
 
     private ResetCamPosition() {
-        this.playerCam.mainCamera.position = this.springArmDirection.multiplyByFloats(
+        const direction = Vector3.Lerp(
+            this.springArmDirectionMin,
+            this.springArmDirectionMax,
+            this.GetSpringArmAlpha()
+        );
+        this.playerCam.mainCamera.position = direction.multiplyByFloats(
             this.springArmLength,
             this.springArmLength,
             this.springArmLength

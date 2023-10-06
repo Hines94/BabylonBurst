@@ -41,7 +41,7 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
         return true;
     }
 
-    onItemDropped(DraggedElement:EventTarget) {
+    async onItemDropped(DraggedElement:EventTarget) {
         const item = (DraggedElement as any).contentItem as ContentItem;
         if(item) {
             if(this.ourItem.GetItemByName(item.name) !== undefined) {
@@ -49,7 +49,8 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
                 return;
             }
             if(confirm(`Swap asset from ${item.parent.name} to ${this.ourItem.name}?`)) {
-                this.ourItem.MoveItemIntoThisBundle(item);
+                await this.ourItem.MoveItemIntoThisBundle(item);
+                this.ourContentHolder.rebuildStoredItems();
             }
         }
     }

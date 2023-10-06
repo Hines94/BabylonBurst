@@ -2,6 +2,7 @@
 #include "Engine/Rendering/InstancedRender.hpp"
 #include "Engine/Entities/Core/EntTransform.h"
 #include "Engine/Navigation/LoadedNavmeshData.h"
+#include "SelectableComponent.hpp"
 
 void PlayerPawn::SetupNewPawn(EntityData* pawn) {
     //TODO: This could also easily be done by loading a premade Prefab
@@ -18,6 +19,9 @@ void PlayerPawn::SetupNewPawn(EntityData* pawn) {
     const MaterialSpecifier matSpec;
     newRenderer->MaterialData.push_back(matSpec);
     EntityComponentSystem::AddSetComponentToEntity(pawn,newRenderer);
+    const auto selectable = new SelectableComponent();
+    selectable->SelectionScale = 10;
+    EntityComponentSystem::AddSetComponentToEntity(pawn, selectable);
 
     //TODO: Add controllable Navigator
     const auto loadedNavmesh = EntityComponentSystem::GetSingleton<LoadedNavmeshData>();

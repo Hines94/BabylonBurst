@@ -110,6 +110,9 @@ export function LoadEntitiesFromMsgpackFormat(inData: any): RawEntityData {
         return {};
     }
     if (Array.isArray(inData) || inData instanceof ArrayBuffer || inData instanceof Uint8Array) {
+        if ((inData as Uint8Array).length === 0) {
+            return {};
+        }
         data = decode(inData);
     }
 

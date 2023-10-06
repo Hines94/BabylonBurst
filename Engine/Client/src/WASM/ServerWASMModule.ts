@@ -6,6 +6,7 @@ import {
 } from "../EntitySystem/EntityMsgpackConverter";
 import { v4 as uuidv4 } from "uuid";
 import { DisposeOfObject } from "../Utils/SceneUtils";
+import { EntVector3 } from "@engine/EntitySystem/CoreComponents";
 
 //@ts-ignore
 window.WASMModules = {};
@@ -91,6 +92,16 @@ export class ServerWASMModuleWrapper {
         return new Promise<void>(resolve => {
             this.setupResolve = resolve; // The resolve function is assigned to the callFunction variable
         });
+    }
+
+    CreateEntVector3(item: EntVector3): any {
+        return new this.wasmModule.EntVector3(item.X, item.Y, item.Z);
+    }
+
+    ConvertEntVector3(val: any): EntVector3 {
+        const ret = new EntVector3(val.X, val.Y, val.Z);
+        val.delete();
+        return ret;
     }
 
     /** Update game loop including physics system/CSP etc */
@@ -271,6 +282,14 @@ export class ServerWASMModuleWrapper {
 
     RegenerateNavmesh() {
         this.wasmModule.RegenerateNavmesh();
+    }
+
+    GetRandomPointOnNavmesh(): EntVector3 {
+        return this.wasmModule.GetRandomPointOnNavmesh();
+    }
+
+    GetRandomPointOnNavmeshInRadius(center: EntVector3, radius: number): EntVector3 {
+        return this.wasmModule.GetRandomPointOnNavmeshInRadius(center, radius);
     }
 
     /** Dispose of this WASM wrapper */

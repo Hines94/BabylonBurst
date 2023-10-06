@@ -51,9 +51,9 @@ export function GenerateCustomSerializationMethods() : string {
         structMethods += `\nvoid ${comp}::GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent) { \n`;
         structMethods += `//Default component to test against for changed params\n`;
         structMethods += `\t${comp}* comparisonComp = new ${comp}();\n`;
-        structMethods += `\tbool childComponentIsUnique = false;\n`
+        structMethods += `\tbool externalComparison = false;\n`
         structMethods += `\tif(childComponent != nullptr) {\n`;
-        structMethods += `\t\tchildComponentIsUnique = false;\n`
+        structMethods += `\t\texternalComparison = true;\n`
         structMethods += `\t\tdelete (comparisonComp);\n`;
         structMethods += `\t\tcomparisonComp = dynamic_cast<${comp}*>(childComponent);\n`;
         structMethods += `\t}\n`;
@@ -65,7 +65,7 @@ export function GenerateCustomSerializationMethods() : string {
             structMethods = GeneratePropertySaveNetwork(structMethods, param);
         })
         structMethods += `//Default component cleanup\n`;
-        structMethods += `\tif(childComponentIsUnique) {\n`;
+        structMethods += `\tif(externalComparison) {\n`;
         structMethods += `\t\tdelete (comparisonComp);\n`;
         structMethods += `\t}\n`;
         structMethods += `} \n`;

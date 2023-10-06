@@ -1,5 +1,7 @@
 #!/bin/sh
 
+cd Engine/Server
+
 # Path to the binary
 program="${PWD}/build/server_build/babylonburstserver"
 
