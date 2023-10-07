@@ -9,6 +9,12 @@
 - [Game Ecosystem](ecosystemOverview.md) - The glue that ties BabylonJs scenes and our ECS infrastructure
 - [Engine Upgrade](engineUpgrade.md) - How to upgrade to the latest engine version
 
+## Launching In Dev Mode
+> **./bbStartDev.sh** to launch. 
+
+This will start the linux backend server + start the frontend on localhost.5173
+> **./bbStartDev.sh -edit** to launch with additional editor functionality. 
+
 ## Details
 Detailed explanations of how the underlying systems work in BabylonBoost. Includes further details and more technical segments to help provide context on technical decisions and how to use all engine features.
 ### Assets
