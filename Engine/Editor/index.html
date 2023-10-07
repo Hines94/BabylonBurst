@@ -61,12 +61,17 @@
         <!-- Import Game Client Logic -->
         <script type="module">
             import { BabylonBurstEditor } from "/BabylonBurstEditor.ts";
+            import { GameEditor } from "./GameEditor.ts"
             const canvas = document.getElementById("renderCanvas"); // Get the canvas element
             //Not worth using worker thread as communication too much!
             document.body.style.zoom = "100%";
             //TODO: Additional options from env etc?
             //Pass in canvas and start up game client
-            const client = new BabylonBurstEditor(canvas, {});
+            if(import.meta.env.VITE_EDITORMODE === "play") {
+                const client = new GameEditor(canvas);
+            } else {
+                const client = new BabylonBurstEditor(canvas, {});
+            }
         </script>
     </body>
 </html>

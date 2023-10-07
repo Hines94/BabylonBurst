@@ -98,11 +98,16 @@ void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::
         c.second->GetComponentData(p, ignoreDefaultValues, defaultComp);
         //For prefabs all comps are auto added - no need to bother saving that we have this one
         if (defaultComp && p.packSize == 0) {
-            delete (defaultComp) continue;
+            if (defaultComp) {
+                delete (defaultComp);
+            }
+            continue;
         }
-        delete (defaultComp)
+        if (defaultComp) {
+            delete (defaultComp);
+        }
 
-            itsToPack.push_back(entPackInfo{p.packSize, c.first, c.second});
+        itsToPack.push_back(entPackInfo{p.packSize, c.first, c.second});
     }
 
     //No components to pack? Just send entity
@@ -136,6 +141,8 @@ void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::
 
         const auto defaultComp = PrefabManager::getInstance().TryGetDefaultPrefabComp(ent, ComponentLoader::GetNameFromComponent(c.comp));
         c.comp->GetComponentData(pDet, ignoreDefaultValues, defaultComp);
-        delete (defaultComp)
+        if (defaultComp) {
+            delete (defaultComp);
+        }
     }
 }

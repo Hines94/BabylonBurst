@@ -133,6 +133,16 @@ std::vector<JSEntity> LoadMsgpackDataToNewEntities(std::vector<uint8_t> entityDa
     return rawEnts;
 }
 
+std::vector<JSEntity> GetAllEntityIds() {
+    const auto allEnts = EntityComponentSystem::GetEntitiesWithData({}, {});
+    std::vector<JSEntity> rawEnts;
+    rawEnts.reserve(allEnts.get()->size());
+    for (const auto& e : allEnts.get()->GetLimitedNumber(-1)) {
+        rawEnts.push_back(e->owningEntity);
+    }
+    return rawEnts;
+}
+
 void LoadMsgpackDataToExistingEntities(std::vector<uint8_t> entityData, bool overwrite) {
     const auto templateData = EntityLoader::LoadTemplateFromSave(entityData);
     const auto newEnts = EntityLoader::LoadTemplateToExistingEntities(templateData, overwrite);
@@ -159,4 +169,5 @@ EMSCRIPTEN_BINDINGS(WASMEntityInterface) {
     function("GetDefaultComponentsForEntity", &GetDefaultComponentsForEntity);
     function("ReloadPrefabData", &ReloadPrefabData);
     function("LoadPrefabByIdToExisting", &LoadPrefabByIdToExisting);
+    function("GetAllEntityIds", &GetAllEntityIds);
 }

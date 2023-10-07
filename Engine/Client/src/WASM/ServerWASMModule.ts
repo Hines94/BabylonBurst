@@ -187,6 +187,10 @@ export class ServerWASMModuleWrapper {
         return allData[entId];
     }
 
+    GetAllEntitiesInWASM(): JSEntity[] {
+        return WASMArrayToJSEntity(this.wasmModule.GetAllEntityIds());
+    }
+
     /** Will create new Entities but maintain the given relationships between EntityData*. Use SaveEntitiesToMsgpackIntArray to generate the data */
     LoadMsgpackDataToNewEntities(data: RawEntityData): JSEntity[] {
         let msgpackData: WASMUint8Array = new this.wasmModule.VectorUint8();

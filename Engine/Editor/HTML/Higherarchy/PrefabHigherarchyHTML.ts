@@ -59,7 +59,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         setupTopMenu();
         
         this.ecosystem.wasmWrapper.LoadPrefabByIdToExisting(prefabData.prefabID,true);
-        this.RefreshDataToWASM();
+        this.RefreshDataToWASMCore();
         this.RegenerateHigherarchy();
 
         this.setupRightClick();
@@ -143,6 +143,11 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         this.allEntities[added] = {
             Prefab: prefabData,
         };
+        this.RefreshWASMForSpecificEntity(added);
         return added;
+    }
+
+    override RegenerateHigherarchy(): void {
+        super.RegenerateHigherarchy();
     }
 }

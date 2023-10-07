@@ -29,8 +29,6 @@ export class BabylonBurstEditor extends RunnableGameEcosystem {
     protected override setupExtras(): void {
         //Load in CSV with our buildables on it
         this.setupEditor();
-        //Create light
-        var light = new HemisphericLight("hemiLight", new Vector3(-1, 1, 0), this.scene);
     }
 
     editorHTML: CustomEditorHTML;

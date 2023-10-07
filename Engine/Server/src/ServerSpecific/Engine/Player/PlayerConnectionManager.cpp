@@ -114,7 +114,9 @@ bool IsNetworkedForPlayer(EntityData* ent, const tbb::concurrent_unordered_map<s
         }
         const auto defaultComp = PrefabManager::getInstance().TryGetDefaultPrefabComp(ent, ComponentLoader::GetNameFromComponent(c.second));
         c.second->GetComponentData(p, true, defaultComp);
-        delete (defaultComp);
+        if (defaultComp) {
+            delete (defaultComp);
+        }
         if (p.packSize > 0) {
             return true;
         }

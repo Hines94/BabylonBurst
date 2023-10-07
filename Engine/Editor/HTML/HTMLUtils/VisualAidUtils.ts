@@ -4,6 +4,7 @@ import { RefreshNavmeshVisualisationStage, navStageChangeDat, onContoursRebuild,
 import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { HemisphericLight, Vector3 } from "@babylonjs/core";
 
 /** All visualistaion options such as view colliders etc */
 export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
@@ -14,6 +15,28 @@ export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
     onContoursRebuild.add((eco)=>{
         GenerateNavStageVisualistaion({ecosystem:ecosystem,stage:"Contours"})  
     })
+    SetupEditorDownLight(ecosystem);
+}
+
+
+function SetupEditorDownLight(ecosystem:GameEcosystem) {
+    if(ecosystem.dynamicProperties["___EDITORPOWERLIGHT___"]) {
+        return;
+    }
+    //Create light
+    var light = new HemisphericLight("editorDownLight", new Vector3(-1, 1, 0), ecosystem.scene);
+    ecosystem.dynamicProperties["___EDITORPOWERLIGHT___"] = light;
+    light.setEnabled(false);
+    GenerateEcosystemDropdownProp(ecosystem,"Editor Light","",
+    (ecosystem:GameEcosystem)=>{
+        //On callback
+        light.setEnabled(true);
+    },
+    (ecosystem:GameEcosystem)=>{
+        //Off callback
+        light.setEnabled(false);
+    }
+)
 }
 
 function SetupNavmeshRebuild(ecosystem:GameEcosystem) {

@@ -127,6 +127,7 @@ export class EntityInspectorHTML {
                     }
                     //Set new data into owner
                     higherarch.owner.allEntities[entityId][comp] = newData;
+                    higherarch.owner.RefreshWASMForSpecificEntity(entityId);
                     higherarch.owner.RegenerateHigherarchy();
                     higherarch.runCustomComponentChanges(comp);
                 };
@@ -150,6 +151,7 @@ export class EntityInspectorHTML {
                         delete higherarch.owner.allEntities[entityId][comp];
                         componentWrapper.remove();
                         higherarch.owner.ecosystem.wasmWrapper.DelayedRemoveComponent(entityId,comp);
+                        higherarch.owner.RefreshWASMForSpecificEntity(entityId);
                         higherarch.owner.RegenerateHigherarchy();
                     };
                     label.parentElement.appendChild(removeButton);

@@ -71,7 +71,14 @@ if arg_exists "-ns" "$@"; then
     echo "Not starting client or server as part of build"
 else
     cd Engine/Client
-    nohup npm run start:dev > ${CLIENTLOGS} 2>&1 &
+    #Editor version of game?
+    if arg_exists "-edit" "$@"; then
+        cd ${base_path}/Engine/Editor
+        nohup npm run start:game > ${CLIENTLOGS} 2>&1 &
+    #Regular version of game
+    else
+        nohup npm run start:dev > ${CLIENTLOGS} 2>&1 &
+    fi
     cd ${base_path}
 
     echo -e ${GREEN=}"Client running on ${MAGENTA}http://localhost:5173/.${GREEN} Logs are in Engine/tmp."${RESET}

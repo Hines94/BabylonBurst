@@ -65,10 +65,10 @@ export function GenerateCustomSerializationMethods() : string {
             structMethods = GeneratePropertySaveNetwork(structMethods, param);
         })
         structMethods += `//Default component cleanup\n`;
-        structMethods += `\tif(externalComparison) {\n`;
+        structMethods += `\tif(!externalComparison) {\n`;
         structMethods += `\t\tdelete (comparisonComp);\n`;
         structMethods += `\t}\n`;
-        structMethods += `} \n`;
+        structMethods += `}\n`;
 
         //Create Load
         structMethods += `\nvoid ${comp}::LoadFromComponentData(const std::map<Entity, EntityData*>& OldNewEntMap, const std::map<std::string, msgpack::object>& compData) { \n`;

@@ -24,12 +24,15 @@ std::vector<uint8_t> SelectNearestEntity(EntVector3 origin, EntVector3 direction
     //Get all entities with selectable component
     const auto selectables = EntityComponentSystem::GetEntitiesWithData({typeid(SelectableComponent),typeid(EntTransform)},{});
     //TODO: Filter those that are not owned by our player
+    if(selectables.get()->size() == 0) {
+        return std::vector<uint8_t>();
+    }
 
     //TODO: Get closest entity
-    EntityData* closest;
+    EntityData* closest = selectables.get()->GetLimitedNumber()[0];
 
     //Package data to send over
-    if(closest.size() == 1) {
+    if(closest) {
         const auto data = EntitySaver::GetSpecificSavePack({closest}, false);
         EntityComponentSystem::AddSetComponentToEntity(closest,new ActiveSelectedComponent());
         return EntitySaver::SBufferToUintVector(data);
