@@ -115,6 +115,7 @@ void EntityComponentSystem::RemoveEntity(double deltaTime, EntityData* data) {
     }
     auto fullDelete = std::vector<std::string>({"__F__"});
     ActiveEntitySystem->DeletedEntDataToNetwork.insert({entId, fullDelete});
+    ActiveEntitySystem->onEntityRemoved.triggerEvent(entId);
 }
 
 //ASSUMES SERIES RUNNING
@@ -414,6 +415,7 @@ EntityData* EntityComponentSystem::createEntity(Entity entityId) {
     std::pair<Entity, EntityData*> pair(entityId, entData);
     AllEntities.insert(pair);
     dirtyBitsetItems.insert(entData);
+    onEntityCreated.triggerEvent(entityId);
     return entData;
 }
 

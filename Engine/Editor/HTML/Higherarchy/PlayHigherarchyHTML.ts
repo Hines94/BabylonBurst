@@ -1,6 +1,7 @@
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { HigherarchyHTML } from "./HigherarchyHTML";
 import { SetupAllEditorVisualisations } from "../HTMLUtils/VisualAidUtils";
+import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
 
 declare function FetchInjectAdditionalHTML(arg: string): Promise<any>;
 
@@ -11,11 +12,11 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
     //TODO: Refresh data on load inspector for an entity
 
     async SetupPlayHigherarchy(ecosystem:GameEcosystem) {
-        this.ecosystem = ecosystem;
+        this.setEcosystem(ecosystem);
         await ecosystem.waitLoadedPromise;
 
         //Inject all the editor stuff we need first
-        await FetchInjectAdditionalHTML("/HTMLTemplates/EditorTemplate");
+        const editorTemp = await FetchInjectAdditionalHTML("/HTMLTemplates/EditorTemplate");
 
         //Hide the Content browser
         (ecosystem.doc.querySelector("#ContentBrowser") as HTMLElement).style.display = "none";
@@ -24,6 +25,10 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
 
         //Visualistaions
         SetupAllEditorVisualisations(ecosystem);
+        //Debug
+        SetupAllEditorDebugOptions(ecosystem,{bContentBrowserOption:false})
+
+        //Setup data for Higherarch
         this.RefreshDataToWASMCore();
         this.RegenerateHigherarchy();
     }

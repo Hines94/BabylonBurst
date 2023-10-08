@@ -111,6 +111,12 @@ std::map<Entity, EntityData*> EntityLoader::LoadTemplateToExistingEntities(const
             existingEntities.insert({ent.first, EntityComponentSystem::EnsureEntity(ent.first)});
         }
     }
+
+    //Because loading in with existing we can just load any to existing
+    existingEntities.clear();
+    for (const auto& e : EntityComponentSystem::GetAllEntities()) {
+        existingEntities.insert(e);
+    }
     AddComponentsToEntities(data, existingEntities);
     return existingEntities;
 }

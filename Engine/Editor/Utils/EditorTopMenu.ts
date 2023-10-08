@@ -90,3 +90,40 @@ export class EditorTopMenu {
         this.topLevelHolder.remove();
     }
 }
+
+/** A nice handy on/off s */
+export function GenerateTopMenuToggle(ecosystem:GameEcosystem,name:string, category:string, subfolders:string, onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void, bDefaultOn = false) {
+    const propName = "___" + name + "___";
+    const indicatorName = category+propName+"___INDICATOR___";
+    if(ecosystem.dynamicProperties[indicatorName]) {
+        return;
+    }
+    const ddOption = AddOptionToEditorTopMenu(ecosystem, category, subfolders + name);
+    ecosystem.dynamicProperties[indicatorName] = ddOption;
+    ddOption.addEventListener("click", () => {
+        if (ecosystem.dynamicProperties[propName]) {
+            ecosystem.dynamicProperties[propName] = false;
+        } else {
+            ecosystem.dynamicProperties[propName] = true;
+        }
+        RefreshEcosystemDropdownProp(ecosystem,name,category,onCallback,offCallback);
+    });
+    if(bDefaultOn) {
+        ecosystem.dynamicProperties[propName] = true;
+        RefreshEcosystemDropdownProp(ecosystem,name,category,onCallback,offCallback);
+    } else {
+        ddOption.innerText = name;
+    }
+}
+
+function RefreshEcosystemDropdownProp(ecosystem:GameEcosystem,name:string, category:string,onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void) {
+    const propName = "___" + name + "___";
+    const indicator = ecosystem.dynamicProperties[category + propName+"___INDICATOR___"];
+    if (ecosystem.dynamicProperties[propName]) {
+        indicator.innerHTML = name + " &#10003";
+        onCallback(ecosystem);
+    } else {
+        indicator.innerHTML = name;
+        offCallback(ecosystem);
+    }
+}

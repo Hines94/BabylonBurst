@@ -7,6 +7,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { DisposeOfObject } from "../Utils/SceneUtils";
 import { EntVector3 } from "@engine/EntitySystem/CoreComponents";
+import { Observable } from "@babylonjs/core";
 
 //@ts-ignore
 window.WASMModules = {};
@@ -294,6 +295,16 @@ export class ServerWASMModuleWrapper {
 
     GetRandomPointOnNavmeshInRadius(center: EntVector3, radius: number): EntVector3 {
         return this.wasmModule.GetRandomPointOnNavmeshInRadius(center, radius);
+    }
+
+    onEntityCreatedEv = new Observable<number>();
+    onEntityRemovedEv = new Observable<number>();
+
+    onEntityCreated(entId: number) {
+        this.onEntityCreatedEv.notifyObservers(entId);
+    }
+    onEntityRemoved(entId: number) {
+        this.onEntityRemovedEv.notifyObservers(entId);
     }
 
     /** Dispose of this WASM wrapper */

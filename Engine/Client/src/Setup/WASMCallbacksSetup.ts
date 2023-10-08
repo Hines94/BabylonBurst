@@ -17,4 +17,16 @@ export function setupGeneralWASMCallbacks() {
 
         ShowToastNotification(message, duration, ecosystem.doc);
     };
+    //@ts-ignore
+    window.onEntityCreated = function (entId: number, module: string) {
+        const wasmmodule = GetWasmModule(module);
+        const ecosystem = GetEcosystemForModule(wasmmodule);
+        ecosystem.wasmWrapper.onEntityCreated(entId);
+    };
+    //@ts-ignore
+    window.onEntityRemoved = function (entId: number, module: string) {
+        const wasmmodule = GetWasmModule(module);
+        const ecosystem = GetEcosystemForModule(wasmmodule);
+        ecosystem.wasmWrapper.onEntityRemoved(entId);
+    };
 }

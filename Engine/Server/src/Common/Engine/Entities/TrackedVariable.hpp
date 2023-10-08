@@ -311,7 +311,7 @@ public:
     }
 
     inline bool operator!=(const TrackedVariable<std::vector<T>>& other) const {
-        return !(*this == other);
+        return innerData != other.innerData;
     }
 
     inline bool operator==(const std::vector<T>& other) const {
@@ -319,7 +319,7 @@ public:
     }
 
     inline bool operator!=(const std::vector<T>& other) const {
-        return !(*this == other);
+        return innerData != other;
     }
 
     inline operator T() const {

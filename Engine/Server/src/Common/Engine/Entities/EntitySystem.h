@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/StorageTypes.hpp"
+#include "Engine/Utils/Observable.hpp"
 #include "EntityMacros.hpp"
 #include "ICustomMsgpack.h"
 #include "PackerDetails.hpp"
@@ -209,6 +210,7 @@ public:
 
     //Static entity methods
 public:
+    static EntityUnorderedMap<Entity, EntityData*> GetAllEntities() { return ActiveEntitySystem->AllEntities; }
     static bool DoesEntityExist(Entity entityId);
     static EntityData* AddEntity();
     //Ensure we have specified Entity (eg same as server for WASM)
@@ -227,6 +229,10 @@ public:
     static std::vector<std::type_index> GetBitsetMappings() { return ActiveEntitySystem->ComponentBitsetValues; }
     //For smaller networking & saving
     std::vector<std::pair<std::string, std::vector<std::string>>> GetParameterMappings(ComponentDataType packType);
+    //Event for when we create a new Entity
+    Observable<Entity> onEntityCreated;
+    //Event for when we remove an Entity
+    Observable<Entity> onEntityRemoved;
 
     //For our callback from Entity system
     static void OnComponentChanged(EntityData* ent, std::type_index compType);

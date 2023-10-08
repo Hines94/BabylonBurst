@@ -128,7 +128,6 @@ export class EntityInspectorHTML {
                     //Set new data into owner
                     higherarch.owner.allEntities[entityId][comp] = newData;
                     higherarch.owner.RefreshWASMForSpecificEntity(entityId);
-                    higherarch.owner.RegenerateHigherarchy();
                     higherarch.runCustomComponentChanges(comp);
                 };
             }
@@ -141,6 +140,7 @@ export class EntityInspectorHTML {
                 const label = componentWrapper.querySelector("label");
                 label.innerText = comp;
 
+                //Remove button clicked
                 if (comp !== "Prefab") {
                     const removeButton = document.createElement("button");
                     removeButton.innerText = "Remove";

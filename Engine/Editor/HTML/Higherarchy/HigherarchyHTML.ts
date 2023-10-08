@@ -20,11 +20,17 @@ export abstract class HigherarchyHTML {
     ecosystem: GameEcosystem;
     generatedEntityRows: { [entId: number]: HTMLDivElement } = {};
 
+    setEcosystem(ecosystem:GameEcosystem) {
+        this.ecosystem = ecosystem;
+        ecosystem.wasmWrapper.onEntityCreatedEv.add(this.GenerateEntityRow.bind(this));
+        ecosystem.wasmWrapper.onEntityRemovedEv.add(this.RemoveEntityRow.bind(this));
+    }
+
     protected setupHigherarchyEcosystem() {
         const gamePanel = this.windowDoc.getElementById("renderCanvas");
-        this.ecosystem = new BabylonBurstEditor(gamePanel as HTMLCanvasElement, {
+        this.setEcosystem(new BabylonBurstEditor(gamePanel as HTMLCanvasElement, {
             noHTML: true,
-        });
+        }));
         const higherarchy = this;
         this.Displayer.window.addEventListener("beforeunload", function (e) {
             higherarchy.ecosystem.dispose();
@@ -77,7 +83,7 @@ export abstract class HigherarchyHTML {
         const specificLoad:RawEntityData = {};
         specificLoad[entId] = this.allEntities[entId];
         this.ecosystem.wasmWrapper.LoadMsgpackDataToExistingEntities(specificLoad, false);
-        this.ecosystem.wasmWrapper.FlushEntitySystem()
+        this.ecosystem.wasmWrapper.FlushEntitySystem();
     }
 
     /** Full wipe */
@@ -91,7 +97,8 @@ export abstract class HigherarchyHTML {
         //Generate new entities and higherarchy data
         for (var i = 0; i < entityIds.length; i++) {
             if (this.generatedEntityRows[parseInt(entityIds[i])] === undefined) {
-                this.GenerateEntityRow(i);
+                const entId = parseInt(entityIds[i]);
+                this.GenerateEntityRow(entId);
             }
         }
         //Remove old entities that no longer exist
@@ -101,14 +108,13 @@ export abstract class HigherarchyHTML {
                 delete this.generatedEntityRows[entId];
             }
         }
-
-        this.ecosystem.wasmWrapper.FlushEntitySystem();
     }
 
     /** Entity row on higherarchy that lets us select and TODO: re-parent etc */
-    GenerateEntityRow(i: number): HTMLDivElement {
-        const entIds = Object.keys(this.allEntities);
-        const entId = parseInt(entIds[i]);
+    GenerateEntityRow(entId: number): HTMLDivElement {
+        if(this.allEntities[entId]===undefined) {
+            this.allEntities[entId] = {};
+        }
 
         //Basic items
         const row = this.windowDoc.createElement("div");
@@ -125,12 +131,7 @@ export abstract class HigherarchyHTML {
         //View Entity components etc
         row.addEventListener("click", async () => {
             //Update data for specific entity
-            console.log("Entity Id: " + entId)
             this.allEntities[entId] = this.ecosystem.wasmWrapper.GetDataForEntity(entId,false);
-            console.log(this.allEntities[entId])
-            //TODO: Do this and then we can use PlayHigherarchy for our entity
-            console.error("TODO: Manage ent Ids")
-            console.error("TODO: Inspector only changes wasm data for that specific entity")
 
             RemoveClassFromAllItems("selectedHigherarchy", this.higherarchyItems);
             row.classList.add("selectedHigherarchy");
@@ -166,7 +167,15 @@ export abstract class HigherarchyHTML {
         return row;
     }
 
+    RemoveEntityRow(entId:number) {
+        delete this.allEntities[entId];
+        this.RegenerateHigherarchy();
+    }
+
     protected GetPrefabInsetLevel(entity: EntitySpecification): number {
+        if(entity[Prefab.name] === undefined) {
+            return 0;
+        }
         if (GetComponent(entity, Prefab)) {
             return 1;
         }

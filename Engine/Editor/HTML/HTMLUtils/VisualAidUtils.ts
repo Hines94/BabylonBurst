@@ -1,9 +1,8 @@
 import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
 import { RefreshNavmeshVisualisationStage, navStageChangeDat, onContoursRebuild, onNavmeshStageChange } from "@BabylonBurstClient/Rendering/NavmeshVisualRenderSystem";
-import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
+import { AddOptionToEditorTopMenu, GenerateTopMenuToggle } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
-import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { HemisphericLight, Vector3 } from "@babylonjs/core";
 
 /** All visualistaion options such as view colliders etc */
@@ -27,7 +26,7 @@ function SetupEditorDownLight(ecosystem:GameEcosystem) {
     var light = new HemisphericLight("editorDownLight", new Vector3(-1, 1, 0), ecosystem.scene);
     ecosystem.dynamicProperties["___EDITORPOWERLIGHT___"] = light;
     light.setEnabled(false);
-    GenerateEcosystemDropdownProp(ecosystem,"Editor Light","",
+    GenerateTopMenuToggle(ecosystem,"Show Editor Light", "View","",
     (ecosystem:GameEcosystem)=>{
         //On callback
         light.setEnabled(true);
@@ -47,7 +46,7 @@ function SetupNavmeshRebuild(ecosystem:GameEcosystem) {
 }
 
 function SetupColliderVisualisation(ecosystem: GameEcosystem) {
-    GenerateEcosystemDropdownProp(ecosystem,"Collider","",
+    GenerateTopMenuToggle(ecosystem,"Show Collider", "View","",
         (ecosystem:GameEcosystem)=>{
             //On callback
         },
@@ -59,7 +58,7 @@ function SetupColliderVisualisation(ecosystem: GameEcosystem) {
 }
 
 function SetupWiremeshVisualistaion(ecosystem:GameEcosystem) {
-    GenerateEcosystemDropdownProp(ecosystem,"Wireframe","Meshes/",
+    GenerateTopMenuToggle(ecosystem,"Show Wireframe", "View","Meshes/",
     (ecosystem:GameEcosystem)=>{
         ecosystem.dynamicProperties["___MATERIALWIREFRAMEMODE___"] = true;
         //On callback
@@ -74,7 +73,7 @@ function SetupWiremeshVisualistaion(ecosystem:GameEcosystem) {
 }
 
 export function GenerateNavStageVisualistaion(data:navStageChangeDat) {
-    GenerateEcosystemDropdownProp(data.ecosystem,data.stage,"Navigation/",
+    GenerateTopMenuToggle(data.ecosystem,"Show " + data.stage, "View","Navigation/",
         (ecosystem:GameEcosystem)=>{
             //On
             RefreshNavmeshVisualisationStage(ecosystem,data.stage);
@@ -85,40 +84,3 @@ export function GenerateNavStageVisualistaion(data:navStageChangeDat) {
         }
     )
 }
-
-function GenerateEcosystemDropdownProp(ecosystem:GameEcosystem,name:string, subfolders:string, onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void, bDefaultOn = false) {
-    const propName = "___" + name + "___";
-    const indicatorName = propName+"___INDICATOR___";
-    if(ecosystem.dynamicProperties[indicatorName]) {
-        return;
-    }
-    const ddOption = AddOptionToEditorTopMenu(ecosystem, "View", subfolders + name);
-    ecosystem.dynamicProperties[indicatorName] = ddOption;
-    ddOption.addEventListener("click", () => {
-        if (ecosystem.dynamicProperties[propName]) {
-            ecosystem.dynamicProperties[propName] = false;
-        } else {
-            ecosystem.dynamicProperties[propName] = true;
-        }
-        RefreshEcosystemDropdownProp(ecosystem,name,onCallback,offCallback);
-    });
-    if(bDefaultOn) {
-        ecosystem.dynamicProperties[propName] = true;
-        RefreshEcosystemDropdownProp(ecosystem,name,onCallback,offCallback);
-    } else {
-        ddOption.innerText = "Show " + name;
-    }
-}
-
-function RefreshEcosystemDropdownProp(ecosystem:GameEcosystem,name:string, onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void) {
-    const propName = "___" + name + "___";
-    const indicator = ecosystem.dynamicProperties[propName+"___INDICATOR___"];
-    if (ecosystem.dynamicProperties[propName]) {
-        indicator.innerHTML = "Show " + name + " &#10003";
-        onCallback(ecosystem);
-    } else {
-        indicator.innerHTML = "Show " + name;
-        offCallback(ecosystem);
-    }
-}
-

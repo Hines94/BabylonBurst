@@ -1,8 +1,10 @@
+#include "WASMEntityInterface.h"
 #include "Engine/Entities/EntitySystem.h"
 #include "Engine/Entities/Prefabs/PrefabManager.h"
 #include "Engine/SaveLoad/ComponentLoader.h"
 #include "Engine/SaveLoad/EntityLoader.h"
 #include "Engine/SaveLoad/EntitySaver.h"
+#include "WASMSetupInterface.h"
 #include <emscripten/bind.h>
 #include <vector>
 
@@ -150,6 +152,19 @@ void LoadMsgpackDataToExistingEntities(std::vector<uint8_t> entityData, bool ove
 
 void ReloadPrefabData(std::string prefabLocation, std::string prefabName, std::vector<uint8_t> prefabData) {
     PrefabManager::getInstance().SetupPrefabFromBinary(prefabLocation, prefabName, prefabData);
+}
+
+void onEntityCreated(JSEntity ent) {
+    emscripten::val::global("onEntityCreated")(ent, WASMSetup::WASMModuleIdentifier);
+}
+
+void onEntityRemoved(JSEntity ent) {
+    emscripten::val::global("onEntityRemoved")(ent, WASMSetup::WASMModuleIdentifier);
+}
+
+void WASMEntity::setupEntityWASMInterface() {
+    EntityComponentSystem::ActiveEntitySystem->onEntityCreated.addListener(onEntityCreated);
+    EntityComponentSystem::ActiveEntitySystem->onEntityRemoved.addListener(onEntityRemoved);
 }
 
 //TODO: Add client entity with offset
