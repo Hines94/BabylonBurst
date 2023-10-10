@@ -32,7 +32,21 @@ EntVector3 GetRandomPointOnNavmeshInRadius(EntVector3 center, float radius) {
     }
 }
 
+EntVector3 RaycastForPointOnNavmesh(EntVector3 origin, EntVector3 direction) {
+    const auto navmesh = EntityComponentSystem::GetSingleton<LoadedNavmeshData>();
+    if (!navmesh) {
+        return {};
+    }
+    const auto val = navmesh->RaycastForNavmeshPosition(origin, direction);
+    if (val) {
+        return val.value();
+    } else {
+        return {};
+    }
+}
+
 EMSCRIPTEN_BINDINGS(WASMNavigationInterface) {
     function("GetRandomPointOnNavmesh", &GetRandomPointOnNavmesh);
     function("GetRandomPointOnNavmeshInRadius", &GetRandomPointOnNavmeshInRadius);
+    function("RaycastForPointOnNavmesh", &RaycastForPointOnNavmesh);
 }

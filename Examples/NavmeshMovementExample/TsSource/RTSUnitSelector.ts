@@ -18,7 +18,13 @@ export function UpdateUnitSelection(ecosystem:GameEcosystem) {
         const selectedUnits = RTSWASMWrapper.SelectNearestEntity(pos,dir,ecosystem.wasmWrapper);
         UpdateSelectedUnitHighlighting(ecosystem);
     }
-    //TODO: Display system that shows rings around selected
+    //TODO: Display basic information on selected units?
+
+    if(ecosystem.InputValues.secondaryClick.wasJustActivated()) {
+        const pos = EntVector3.VectorToEnt((ecosystem.camera as PlayerCamera).mainCamera.position);
+        const dir = EntVector3.VectorToEnt(GetMousePickingRay(ecosystem).direction);
+        RTSWASMWrapper.IssueUnitsOrder(pos,dir,ecosystem.wasmWrapper);
+    }
 
 }
 
@@ -30,6 +36,7 @@ export function UpdateSelectedUnitHighlighting(ecosystem:GameEcosystem) {
     if(visualPlane === undefined) {
         visualPlane = MeshBuilder.CreatePlane(visualPlaneIdentifier);
         setupSelectionPlane(ecosystem, visualPlane);
+        ecosystem.dynamicProperties[visualPlaneIdentifier] = visualPlane;
     }
     const transforms:InstancedMeshTransform[] = [];
     const ents = Object.keys(allSelectedUnits);

@@ -15,4 +15,12 @@ export class RTSWASMWrapper{
         return allData;
     }
 
+    static IssueUnitsOrder(pos:EntVector3, dir:EntVector3, wrapper:ServerWASMModuleWrapper) : void {
+        const wasmPos = wrapper.CreateEntVector3(pos);
+        const wasmDir = wrapper.CreateEntVector3(dir);
+        wrapper.wasmModule.IssueUnitsOrder(wasmPos,wasmDir);
+        wasmPos.delete();
+        wasmDir.delete();
+    }
+
 }

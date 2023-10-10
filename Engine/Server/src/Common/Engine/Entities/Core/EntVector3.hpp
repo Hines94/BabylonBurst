@@ -21,6 +21,7 @@ struct EntVector3 {
     operator btVector3() const {
         return btVector3(X, Y, Z);
     }
+    EntVector3(const btVector3& btVec) : X(btVec.getX()), Y(btVec.getY()), Z(btVec.getZ()) {}
 #endif
 
     bool operator==(const EntVector3& other) const {
@@ -29,6 +30,30 @@ struct EntVector3 {
 
     bool operator!=(const EntVector3& other) const {
         return !(*this == other);
+    }
+
+    EntVector3 operator-(const EntVector3& other) const {
+        return {X - other.X, Y - other.Y, Z - other.Z};
+    }
+
+    EntVector3 operator+(const EntVector3& other) const {
+        return {X + other.X, Y + other.Y, Z + other.Z};
+    }
+
+    EntVector3 operator+(const float& other) const {
+        return {X + other, Y + other, Z + other};
+    }
+
+    EntVector3 operator*(float scalar) const {
+        return {X * scalar, Y * scalar, Z * scalar};
+    }
+
+    EntVector3 operator*(const EntVector3& other) const {
+        return {X * other.X, Y * other.Y, Z * other.Z};
+    }
+
+    float dot(const EntVector3& other) const {
+        return X * other.X + Y * other.Y + Y * other.Y;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const EntVector3& obj);

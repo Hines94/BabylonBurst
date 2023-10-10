@@ -5,6 +5,7 @@
 #include "Engine/Physics/Control/ControllableRotator.h"
 #include "Engine/Physics/PhysicsSystem.h"
 #endif
+#include "Engine/Navigation/NavigatableAgent.h"
 #include "Engine/Navigation/NavmeshBuildSystem.h"
 #include "Engine/Utils/Environment.h"
 #include "Engine/Utils/PerfTracking.h"
@@ -89,6 +90,8 @@ void CommonGameLoop::UpdateSingleGameLoop() {
     UpdateSystem(systemInit, deltaTime, PhysicsSystem::UpdatePhysicsSystem, "PhysMain");
     UpdateSystem(systemInit, deltaTime, PhysicsSystem::PostPhysicsSystem, "PhysPost");
 #endif
+
+    UpdateSystem(systemInit, deltaTime, NavigatableAgent::UpdateNavAgents, "NavmeshAgents");
 
     EndOfFrame_Update();
 

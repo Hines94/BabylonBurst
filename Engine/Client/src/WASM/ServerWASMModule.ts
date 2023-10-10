@@ -294,7 +294,19 @@ export class ServerWASMModuleWrapper {
     }
 
     GetRandomPointOnNavmeshInRadius(center: EntVector3, radius: number): EntVector3 {
-        return this.wasmModule.GetRandomPointOnNavmeshInRadius(center, radius);
+        const wasmPos = this.CreateEntVector3(center);
+        const result = this.ConvertEntVector3(this.wasmModule.GetRandomPointOnNavmeshInRadius(wasmPos, radius));
+        wasmPos.delete();
+        return result;
+    }
+
+    RaycastForPointOnNavmesh(origin: EntVector3, direction: EntVector3) {
+        const wasmPos = this.CreateEntVector3(origin);
+        const wasmDir = this.CreateEntVector3(direction);
+        const result = this.ConvertEntVector3(this.wasmModule.RaycastForPointOnNavmesh(wasmPos, wasmDir));
+        wasmPos.delete();
+        wasmDir.delete();
+        return result;
     }
 
     onEntityCreatedEv = new Observable<number>();

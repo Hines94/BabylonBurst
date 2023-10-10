@@ -5,6 +5,9 @@
 #include "recastnavigation/DetourNavMeshQuery.h"
 #include <cstdlib>
 
+const float maxAgents = 1000;
+const float maxAgentRadius = 30;
+
 float frand() {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
@@ -15,13 +18,19 @@ void LoadedNavmeshData::onComponentAdded(EntityData* entData) {
         return;
     }
     try {
-        //std::cout << "Navmesh data in size: " << navmeshData.size() << std::endl;
-        auto status = loadednavmesh.init(navmeshData.data(), navmeshData.size(), DT_TILE_FREE_DATA);
+        //Init navmesh
+        auto status = loadedNavmesh.init(navmeshData.data(), navmeshData.size(), DT_TILE_FREE_DATA);
         if (!dtStatusSucceed(status)) {
             std::cerr << "Failed to init navmesh with saved data: " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " Data length: " << navmeshData.size() << std::endl;
         } else {
             std::cout << "Navmesh loaded succesfully. Num walkable polys: " << countWalkablePolygons() << ". num non walkable: " << countNonWalkablePolygons() << ". Num meshes in: " << savedSetup.size() << std::endl;
         }
+        //Init crowd
+        auto crowdStatus = loadedCrowd.init(maxAgents, maxAgentRadius, &loadedNavmesh);
+        if (!dtStatusSucceed(crowdStatus)) {
+            std::cerr << "Failed to init nav crowd: " << NavmeshDebugMethods::GetFailStatusForStatus(crowdStatus) << std::endl;
+        }
+        std::cerr << "TODO: Init all agents that have not currently been init" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error loading navmesh: " << e.what() << std::endl;
     } catch (...) {
@@ -31,7 +40,7 @@ void LoadedNavmeshData::onComponentAdded(EntityData* entData) {
 
 bool LoadedNavmeshData::IsNavmeshValid() {
     // Check if there are tiles in the navmesh
-    if (this->loadednavmesh.getMaxTiles() == 0) {
+    if (this->loadedNavmesh.getMaxTiles() == 0) {
         std::cerr << "Navmesh not valid. 0 max tiles!" << std::endl;
         return false;
     }
@@ -41,8 +50,125 @@ bool LoadedNavmeshData::IsNavmeshValid() {
 
 dtNavMeshQuery* LoadedNavmeshData::GetPremadeQuery(int maxNodes) {
     dtNavMeshQuery* navQuery = dtAllocNavMeshQuery();
-    navQuery->init(&this->loadednavmesh, maxNodes);
+    navQuery->init(&this->loadedNavmesh, maxNodes);
     return navQuery;
+}
+
+std::optional<dtPolyRef> LoadedNavmeshData::FindNearestPoly(EntVector3 Origin, EntVector3 Extents) {
+    dtQueryFilter filter;
+    filter.setIncludeFlags(0xFFFF);
+    filter.setExcludeFlags(0);
+
+    dtNavMeshQuery* navQuery = GetPremadeQuery();
+    dtPolyRef centerPoly;
+    float centerPos[3] = {Origin.X, Origin.Y, Origin.Z};
+    float extents[3] = {Extents.X, Extents.Y, Extents.Z};
+
+    dtStatus status = navQuery->findNearestPoly(centerPos, extents, &filter, &centerPoly, nullptr); // Get the polygon for the center position
+    if (!dtStatusSucceed(status)) {
+        std::cerr << "Nav query fail: " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " for get nearest poly." << std::endl;
+        dtFreeNavMeshQuery(navQuery);
+        return std::nullopt;
+    }
+    dtFreeNavMeshQuery(navQuery);
+    return centerPoly;
+}
+
+std::optional<std::vector<EntVector3>> LoadedNavmeshData::GetPathToPosition(EntVector3 Origin, EntVector3 Destination) {
+    if (!IsNavmeshValid()) {
+        return std::nullopt;
+    }
+    //Get nearest poly at start and end
+    const auto startPoly = FindNearestPoly(Origin);
+    if (!startPoly) {
+        return std::nullopt;
+    }
+    const auto endPoly = FindNearestPoly(Destination);
+    if (!endPoly) {
+        return std::nullopt;
+    }
+
+    //Find the path
+    const auto navMeshQuery = GetPremadeQuery();
+    dtPolyRef path[256];
+    int pathCount;
+    float startPos[3] = {Origin.X, Origin.Y, Origin.Z};
+    float endPos[3] = {Destination.X, Destination.Y, Destination.Z};
+    dtQueryFilter filter;
+    filter.setIncludeFlags(0xFFFF);
+    filter.setExcludeFlags(0);
+
+    const auto pathStatus = navMeshQuery->findPath(startPoly.value(), endPoly.value(), startPos, endPos, &filter, path, &pathCount, 256);
+    if (!dtStatusSucceed(pathStatus)) {
+        dtFreeNavMeshQuery(navMeshQuery);
+        std::cerr << "Nav query fail: " << NavmeshDebugMethods::GetFailStatusForStatus(pathStatus) << " for path find" << std::endl;
+        return std::nullopt;
+    }
+
+    float straightPath[256 * 3];
+    int straightPathCount;
+    const auto lineStatus = navMeshQuery->findStraightPath(startPos, endPos, path, pathCount, straightPath, 0, 0, &straightPathCount, 256);
+    dtFreeNavMeshQuery(navMeshQuery);
+    if (!dtStatusSucceed(lineStatus)) {
+        std::cerr << "Nav query fail: " << NavmeshDebugMethods::GetFailStatusForStatus(lineStatus) << " for path convert to lines" << std::endl;
+        return std::nullopt;
+    }
+
+    std::vector<EntVector3> result;
+    for (int i = 0; i < straightPathCount; ++i) {
+        result.emplace_back(straightPath[i * 3], straightPath[i * 3 + 1], straightPath[i * 3 + 2]);
+    }
+    return result;
+}
+
+std::optional<EntVector3> LoadedNavmeshData::RaycastForNavmeshPosition(EntVector3 Origin, EntVector3 Direction, float MaxDistance) {
+    if (!IsNavmeshValid()) {
+        return std::nullopt;
+    }
+    const dtNavMeshQuery* navQuery = GetPremadeQuery();
+
+    dtQueryFilter filter;
+    filter.setIncludeFlags(0xFFFF);
+    filter.setExcludeFlags(0);
+
+    float startPos[3] = {Origin.X, Origin.Y, Origin.Z};
+    float endPos[3] = {
+        Origin.X + Direction.X * MaxDistance,
+        Origin.Y + Direction.Y * MaxDistance,
+        Origin.Z + Direction.Z * MaxDistance};
+
+    const auto polyRef = FindNearestPoly(Origin);
+    if (!polyRef) {
+        return std::nullopt;
+    }
+
+    const int MAX_POLYS = 100;
+    float t = 0;
+    float hitNormal[3];
+    dtPolyRef pathPolys[MAX_POLYS]; // Choose a suitable size for MAX_POLYS
+    int numPathPolys;
+    unsigned char pathFlags[MAX_POLYS];
+    unsigned char pathAreas[MAX_POLYS];
+
+    dtStatus status = navQuery->raycast(
+        polyRef.value(), startPos, endPos, &filter,
+        &t, hitNormal, pathPolys, &numPathPolys, MAX_POLYS);
+
+    if (!dtStatusSucceed(status)) {
+        std::cerr << "Nav query fail: " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " for navigation raycast" << std::endl;
+        return std::nullopt;
+    }
+
+    //If hit length is < 1 (hit found)
+    if (t < 1.0f) {
+        float hitPos[3];
+        for (int i = 0; i < 3; ++i) {
+            hitPos[i] = startPos[i] + (endPos[i] - startPos[i]) * t;
+        }
+        return EntVector3(hitPos[0], hitPos[1], hitPos[2]);
+    } else {
+        return std::nullopt;
+    }
 }
 
 std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmesh() {
@@ -79,20 +205,17 @@ std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmeshInCircle(Ent
     filter.setExcludeFlags(0);
 
     float centerPos[3] = {startPos.X, startPos.Y, startPos.Z};
-    float extents[3] = {maxRadius / 2, 100, maxRadius / 2};
-    dtPolyRef centerPoly;
-    dtStatus status = navQuery->findNearestPoly(centerPos, extents, &filter, &centerPoly, nullptr); // Get the polygon for the center position
-    if (!dtStatusSucceed(status)) {
-        std::cerr << "Nav query fail: " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " for get nearest poly." << std::endl;
-        dtFreeNavMeshQuery(navQuery);
+    const auto polyRef = FindNearestPoly(startPos);
+    if (!polyRef) {
         return std::nullopt;
     }
+    dtPolyRef centerPoly = polyRef.value();
 
     dtPolyRef randomPoly;
     float randomPt[3];
     dtFreeNavMeshQuery(navQuery);
     navQuery = GetPremadeQuery();
-    status = navQuery->findRandomPointAroundCircle(centerPoly, centerPos, maxRadius, &filter, frand, &randomPoly, randomPt);
+    dtStatus status = navQuery->findRandomPointAroundCircle(centerPoly, centerPos, maxRadius, &filter, frand, &randomPoly, randomPt);
 
     if (dtStatusSucceed(status)) {
         dtFreeNavMeshQuery(navQuery);
@@ -100,7 +223,7 @@ std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmeshInCircle(Ent
     } else {
         std::cerr << "Nav query failed " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " for get random point" << std::endl;
 
-        if (!this->loadednavmesh.isValidPolyRef(centerPoly)) {
+        if (!this->loadedNavmesh.isValidPolyRef(centerPoly)) {
             std::cout << "Nav query failed from isValidPolyRef on centerPoly" << std::endl;
         }
         if (!dtVisfinite(centerPos)) {
@@ -113,7 +236,7 @@ std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmeshInCircle(Ent
         //Is filter fail?
         const dtMeshTile* startTile = 0;
         const dtPoly* startPoly = 0;
-        this->loadednavmesh.getTileAndPolyByRefUnsafe(centerPoly, &startTile, &startPoly);
+        this->loadedNavmesh.getTileAndPolyByRefUnsafe(centerPoly, &startTile, &startPoly);
         if (!filter.passFilter(centerPoly, startTile, startPoly)) {
             std::cout << "Nav query failed from filter! startPoly flags: " << startPoly->flags << std::endl;
         }
@@ -126,8 +249,8 @@ std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmeshInCircle(Ent
 int LoadedNavmeshData::countWalkablePolygons() {
     int walkablePolyCount = 0;
 
-    for (int i = 0; i < this->loadednavmesh.getMaxTiles(); ++i) {
-        const dtMeshTile* tile = this->loadednavmesh.getTileAt(i, 0, 0);
+    for (int i = 0; i < this->loadedNavmesh.getMaxTiles(); ++i) {
+        const dtMeshTile* tile = this->loadedNavmesh.getTileAt(i, 0, 0);
         if (!tile) {
             continue;
         }
@@ -147,8 +270,8 @@ int LoadedNavmeshData::countWalkablePolygons() {
 int LoadedNavmeshData::countNonWalkablePolygons() {
     int nonWalkCount = 0;
 
-    for (int i = 0; i < this->loadednavmesh.getMaxTiles(); ++i) {
-        const dtMeshTile* tile = this->loadednavmesh.getTileAt(i, 0, 0);
+    for (int i = 0; i < this->loadedNavmesh.getMaxTiles(); ++i) {
+        const dtMeshTile* tile = this->loadedNavmesh.getTileAt(i, 0, 0);
         if (!tile) {
             continue;
         }
