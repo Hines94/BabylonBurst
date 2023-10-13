@@ -167,13 +167,16 @@ void NetworkingManager::recieveMessage(uWS::WebSocket<false, true, ActiveSocketD
     MessageFromPlayer requestMess;
     try {
         requestMess = nlohmann::json::parse(message).get<MessageFromPlayer>();
-    } catch (nlohmann::json::parse_error& e) {
-        std::cerr << "ERROR: issue decoding message from player " << e.what() << std::endl;
+    } catch (const nlohmann::json::exception& e) {
+        std::cerr << "ERROR: issue decoding message from player " << e.what() << message << std::endl;
+        return;
+    }
+    if (requestMess.MessageType == -1) {
         return;
     }
     std::unique_lock lock(newMessageMut);
     if (playerMessages.find(requestMess.MessageType) == playerMessages.end()) {
-        playerMessages.insert({requestMess.MessageType, std::vector<std::pair<std::string, std::string>>()});
+        playerMessages.insert({requestMess.MessageType, std::vector<std::pair<std::string, std::vector<uint8_t>>>()});
     }
     playerMessages[requestMess.MessageType].push_back({uuid, requestMess.Payload});
 }

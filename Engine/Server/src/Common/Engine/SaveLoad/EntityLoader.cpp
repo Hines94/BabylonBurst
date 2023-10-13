@@ -51,26 +51,36 @@ std::shared_ptr<EntityTemplate> EntityLoader::GetTemplateFromMsgpackFormat(const
     return ret;
 }
 
-void AddComponentsToEntities(EntityTemplate* data, const std::map<Entity, EntityData*>& NewEntities) {
+//Entity load mapping is the map from entity reference ID's to Entity data
+void AddComponentsToEntities(EntityTemplate* data, const std::map<Entity, EntityData*>& NewEntities, const std::map<Entity, EntityData*>& EntityLoadMapping) {
     //Populate components for each entity
     std::vector<std::pair<Component*, EntityData*>> addedComponents;
     for (auto& ent : data->templatedEntities) {
         auto newData = NewEntities.find(ent.first)->second;
         for (auto& comp : ent.second) {
-            Component* newComp = data->GetComponentFromTemplatedEntity(ent.first, std::stoull(comp.first), NewEntities);
-            if (newComp != nullptr) {
-                const auto oldComp = EntityComponentSystem::GetComponent(newData, ComponentLoader::GetTypeFromComponent(newComp));
-                if (newComp->isEqual(oldComp)) {
-                    continue;
+            const auto compIndex = std::stoull(comp.first);
+            if (!data->ComponentExists(ent.first, compIndex)) {
+                continue;
+            }
+            Component* newComp = data->GetComponentFromTemplatedEntity(ent.first, compIndex, EntityLoadMapping);
+            const auto compInfo = data->templatedEntities.at(ent.first).find(std::to_string(compIndex));
+            const auto oldComp = EntityComponentSystem::GetComponent(newData, ComponentLoader::GetTypeFromComponent(newComp));
+            if (oldComp != nullptr) {
+                std::cerr << "TODO: Reset saved fields back to default" << std::endl;
+                oldComp->LoadFromComponentData(EntityLoadMapping, data->GetComponentDataFromMsgpack(compIndex, compInfo->second, EntityLoadMapping));
+                delete (newComp);
+            } else {
+                if (newComp != nullptr) {
+                    EntityComponentSystem::AddSetComponentToEntity(newData, newComp, true, false);
+                    addedComponents.push_back({newComp, newData});
                 }
-                EntityComponentSystem::AddSetComponentToEntity(newData, newComp, true, false);
-                addedComponents.push_back({newComp, newData});
             }
         }
     }
     //Call add component after (as there might be some reliances on eachother for add component)
     for (auto& comp : addedComponents) {
         comp.first->onComponentAdded(comp.second);
+        comp.first->onComponentChanged(comp.second);
     }
 }
 
@@ -81,7 +91,7 @@ std::map<Entity, EntityData*> EntityLoader::LoadTemplateToNewEntities(const std:
     for (auto& ent : data->templatedEntities) {
         NewEntities.insert({ent.first, EntityComponentSystem::AddEntity()});
     }
-    AddComponentsToEntities(data, NewEntities);
+    AddComponentsToEntities(data, NewEntities, NewEntities);
     return NewEntities;
 }
 
@@ -111,13 +121,9 @@ std::map<Entity, EntityData*> EntityLoader::LoadTemplateToExistingEntities(const
             existingEntities.insert({ent.first, EntityComponentSystem::EnsureEntity(ent.first)});
         }
     }
-
-    //Because loading in with existing we can just load any to existing
-    existingEntities.clear();
-    for (const auto& e : EntityComponentSystem::GetAllEntities()) {
-        existingEntities.insert(e);
-    }
-    AddComponentsToEntities(data, existingEntities);
+    //Pass blank entities as in this case we want to use 1-1 mapping for EntityId to EntityData*
+    std::map<Entity, EntityData*> blankEntities;
+    AddComponentsToEntities(data, existingEntities, blankEntities);
     return existingEntities;
 }
 

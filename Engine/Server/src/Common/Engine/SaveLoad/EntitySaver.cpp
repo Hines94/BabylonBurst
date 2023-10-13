@@ -94,7 +94,10 @@ void EntitySaver::PackEntityData(EntityData* ent, const EntityUnorderedMap<std::
         }
 
         //If part of prefab get component comparison against
-        const auto defaultComp = PrefabManager::getInstance().TryGetDefaultPrefabComp(ent, ComponentLoader::GetNameFromComponent(c.second));
+        Component* defaultComp = nullptr;
+        if (ignoreDefaultValues) {
+            defaultComp = PrefabManager::getInstance().TryGetDefaultPrefabComp(ent, ComponentLoader::GetNameFromComponent(c.second));
+        }
         c.second->GetComponentData(p, ignoreDefaultValues, defaultComp);
         //For prefabs all comps are auto added - no need to bother saving that we have this one
         if (defaultComp && p.packSize == 0) {

@@ -2,6 +2,7 @@
 #include "Engine/Rendering/InstancedRender.hpp"
 #include "Engine/Entities/Core/EntTransform.h"
 #include "Engine/Navigation/LoadedNavmeshData.h"
+#include "Engine/Navigation/NavigatableAgent.h"
 #include "SelectableComponent.hpp"
 
 void PlayerPawn::SetupNewPawn(EntityData* pawn) {
@@ -9,19 +10,6 @@ void PlayerPawn::SetupNewPawn(EntityData* pawn) {
     
     //Add Transform
     const auto newTransform = new EntTransform();
-    EntityComponentSystem::AddSetComponentToEntity(pawn,newTransform);
-
-    //Add Renderer
-    const auto newRenderer = new InstancedRender();
-    newRenderer->ModelData.FilePath = "Meshes/VehicleExamples";
-    newRenderer->ModelData.FileName = "GreyboxVehicles.gltf";
-    newRenderer->ModelData.MeshName = "LightTank";
-    const MaterialSpecifier matSpec;
-    newRenderer->MaterialData.push_back(matSpec);
-    EntityComponentSystem::AddSetComponentToEntity(pawn,newRenderer);
-    const auto selectable = new SelectableComponent();
-    selectable->SelectionScale = 10;
-    EntityComponentSystem::AddSetComponentToEntity(pawn, selectable);
 
     //TODO: Add controllable Navigator
     const auto loadedNavmesh = EntityComponentSystem::GetSingleton<LoadedNavmeshData>();
@@ -39,4 +27,20 @@ void PlayerPawn::SetupNewPawn(EntityData* pawn) {
         std::cout << "Setup pawn at pos: " << newTransform->Position << std::endl;
     }
     
+    //Create pawn
+    EntityComponentSystem::AddSetComponentToEntity(pawn,newTransform);
+    const auto newRenderer = new InstancedRender();
+    newRenderer->ModelData.FilePath = "Meshes/VehicleExamples";
+    newRenderer->ModelData.FileName = "GreyboxVehicles.gltf";
+    newRenderer->ModelData.MeshName = "LightTank";
+    const MaterialSpecifier matSpec;
+    newRenderer->MaterialData.push_back(matSpec);
+    EntityComponentSystem::AddSetComponentToEntity(pawn,newRenderer);
+    const auto selectable = new SelectableComponent();
+    selectable->SelectionScale = 10;
+    EntityComponentSystem::AddSetComponentToEntity(pawn, selectable);
+    const auto navAgent = new NavigatableAgent();
+    navAgent->maxSpeed = 12;
+    navAgent->radius = selectable->SelectionScale/2;
+    EntityComponentSystem::AddSetComponentToEntity(pawn,navAgent);
 }

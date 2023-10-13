@@ -58,6 +58,7 @@ export function GenerateCustomSerializationMethods() : string {
         structMethods += `\t\tcomparisonComp = dynamic_cast<${comp}*>(childComponent);\n`;
         structMethods += `\t}\n`;
         structMethods += `//Each networked parameter\n`;
+        structMethods += `\tconst auto& packer = p.packer;\n`
         compData.properties.forEach((param) => {
             if(!param.isCPROPERTY) {
                 return;
@@ -117,7 +118,7 @@ function GeneratePropertySaveNetwork(structMethods: string, param: ComponentProp
     }
 
     //Find correct save method!
-    var packingMethod = GetCorrectParamSaver();
+    var packingMethod = CreatePackedParameter(param);
     //If the same variable as comparison comp then we don't need to send as will be auto added!
     structMethods += `\tif (p.Include("${param.name}",${serializeType}, ignoreDefaultValues && comparisonComp->${param.name} == ${param.name})) {\n`;
     structMethods += `\t\t${packingMethod}\n`;
@@ -125,36 +126,36 @@ function GeneratePropertySaveNetwork(structMethods: string, param: ComponentProp
 
     return structMethods;
 
-    //For the specific data type - eg custom serialized or list etc
-    function GetCorrectParamSaver() {
-        var packingMethod = `p.packer->pack(${param.name});`;
-        serializableClasses.forEach((serializeClassType) => {
-            if (param.type.includes(serializeClassType.name)) {
-                // Match against known container types
-                const containerMatch = param.type.match(/^(std::map|std::unordered_map|std::set|std::unordered_set|std::vector|std::list)<(.+)>$/);
-                if (containerMatch) {
-                    // The type is in a container
-                    const containerType = containerMatch[1];
-                    const valueType = containerMatch[2];
+}
+/** Generate a packing method for the parameter - be it list or custom etc */
+export function CreatePackedParameter(param: ComponentProperty) {
+    var packingMethod = `packer->pack(${param.name});`;
+    serializableClasses.forEach((serializeClassType) => {
+        if (param.type.includes(serializeClassType.name)) {
+            // Match against known container types
+            const containerMatch = param.type.match(/^(std::map|std::unordered_map|std::set|std::unordered_set|std::vector|std::list)<(.+)>$/);
+            if (containerMatch) {
+                // The type is in a container
+                const containerType = containerMatch[1];
+                const valueType = containerMatch[2];
 
-                    if (containerType === "std::vector" || containerType === "std::list") {
-                        packingMethod = `p.packer->pack_array(${param.name}.size());\n`;
-                        packingMethod += `\t\tfor (auto& item : ${param.name}) {\n`;
-                        packingMethod += `\t\t\t${serializeClassType.name}::PackSerializeData(p,item);\n`;
-                        packingMethod += `\t\t}`;
-                    } else {
-                        console.log("Unknown container type for serialization " + containerType);
-                        //@ts-ignore
-                        process.exit(1);
-                    }
+                if (containerType === "std::vector" || containerType === "std::list") {
+                    packingMethod = `packer->pack_array(${param.name}.size());\n`;
+                    packingMethod += `\t\tfor (auto& item : ${param.name}) {\n`;
+                    packingMethod += `\t\t\t${serializeClassType.name}::PackSerializeData(packer,item);\n`;
+                    packingMethod += `\t\t}`;
                 } else {
-                    // The type is not in a container
-                    packingMethod = serializeClassType.name + `::PackSerializeData(p,${param.name});`;
+                    console.log("Unknown container type for serialization " + containerType);
+                    //@ts-ignore
+                    process.exit(1);
                 }
+            } else {
+                // The type is not in a container
+                packingMethod = serializeClassType.name + `::PackSerializeData(packer,${param.name});`;
             }
-        });
-        return packingMethod;
-    }
+        }
+    });
+    return packingMethod;
 }
 
 function GeneratePropertyLoadNetwork(structMethods: string, param: ComponentProperty, bIfNotDefault:boolean) {
@@ -164,7 +165,7 @@ function GeneratePropertyLoadNetwork(structMethods: string, param: ComponentProp
     }
 
     //Find correct load method!
-    var loadingMethod = GetCorrectParamLoader();
+    var loadingMethod =  CreateParamLoader(param);
     
     //Create set code
     if(bIfNotDefault) {
@@ -180,36 +181,37 @@ function GeneratePropertyLoadNetwork(structMethods: string, param: ComponentProp
     }
 
     return structMethods;
+}
 
-    function GetCorrectParamLoader() {
-        var loadingMethod = `${param.name} = data->as<${param.type}>();`;
+/** Create correct loader depending on the type of the parameter */
+export function CreateParamLoader(param: ComponentProperty) {
+    var loadingMethod = `${param.name} = data->as<${param.type}>();`;
 
-        serializableClasses.forEach((serializeClassType) => {
-            if (param.type.includes(serializeClassType.name)) {
-                // Match against known container types
-                const containerMatch = param.type.match(/^(std::map|std::unordered_map|std::set|std::unordered_set|std::vector|std::list)<(.+)>$/);
-                if (containerMatch) {
-                    // The type is in a container
-                    const containerType = containerMatch[1];
-                    const valueType = containerMatch[2];
+    serializableClasses.forEach((serializeClassType) => {
+        if (param.type.includes(serializeClassType.name)) {
+            // Match against known container types
+            const containerMatch = param.type.match(/^(std::map|std::unordered_map|std::set|std::unordered_set|std::vector|std::list)<(.+)>$/);
+            if (containerMatch) {
+                // The type is in a container
+                const containerType = containerMatch[1];
+                const valueType = containerMatch[2];
 
-                    if (containerType === "std::vector"  || containerType === "std::list") {
-                        loadingMethod = `auto arr = data->as<std::vector<msgpack::object>>();\n`;
-                        loadingMethod += `\t\tfor (const auto& element : arr) {\n`;
-                        loadingMethod += `\t\t\t${serializeClassType.name}* item = ${serializeClassType.name}::LoadFromSerializeData(OldNewEntMap,&element);\n`;
-                        loadingMethod += `\t\t\t${param.name}.push_back(item);\n`;
-                        loadingMethod += `\t\t}`;
-                    } else {
-                        console.log("Unknown container type for serialization " + containerType);
-                        //@ts-ignore
-                        process.exit(1);
-                    }
+                if (containerType === "std::vector"  || containerType === "std::list") {
+                    loadingMethod = `auto arr = data->as<std::vector<msgpack::object>>();\n`;
+                    loadingMethod += `\t\tfor (const auto& element : arr) {\n`;
+                    loadingMethod += `\t\t\t${serializeClassType.name}* item = ${serializeClassType.name}::LoadFromSerializeData(OldNewEntMap,&element);\n`;
+                    loadingMethod += `\t\t\t${param.name}.push_back(item);\n`;
+                    loadingMethod += `\t\t}`;
                 } else {
-                    // The type is not in a container
-                    loadingMethod =  `${param.name} = ${serializeClassType.name}::LoadFromSerializeData(OldNewEntMap,data);`;
+                    console.log("Unknown container type for serialization " + containerType);
+                    //@ts-ignore
+                    process.exit(1);
                 }
+            } else {
+                // The type is not in a container
+                loadingMethod =  `${param.name} = ${serializeClassType.name}::LoadFromSerializeData(OldNewEntMap,data);`;
             }
-        });
-        return loadingMethod;
-    }
+        }
+    });
+    return loadingMethod;
 }

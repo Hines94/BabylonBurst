@@ -95,10 +95,10 @@ public:
     }
 
     TrackedVariable& operator=(T newValue) {
+        value = newValue;
         if (onChange) {
             onChange();
         }
-        value = newValue;
         return *this;
     }
 
@@ -152,26 +152,27 @@ public:
     }
 
     inline TrackedVariable& operator=(const std::string& newValue) {
+        std::string::operator=(newValue);
         if (onChange) {
             onChange();
         }
-        std::string::operator=(newValue);
         return *this;
     }
 
     inline TrackedVariable& operator+=(const std::string& addValue) {
+        std::string::operator+=(addValue);
         if (onChange) {
             onChange();
         }
-        std::string::operator+=(addValue);
         return *this;
     }
 
     inline char& operator[](std::size_t idx) {
+        char& ref = std::string::operator[](idx);
         if (onChange) {
             onChange();
         }
-        return std::string::operator[](idx);
+        return ref;
     }
 
     template <typename Packer>
@@ -200,43 +201,43 @@ public:
     }
 
     inline TrackedVariable& operator=(T newValue) {
+        value = newValue;
         if (onChange) {
             onChange();
         }
-        value = newValue;
         return *this;
     }
 
     inline TrackedVariable& operator+=(T addValue) {
+        value += addValue;
         if (onChange) {
             onChange();
         }
-        value += addValue;
         return *this;
     }
 
     inline TrackedVariable& operator-=(T subValue) {
+        value -= subValue;
         if (onChange) {
             onChange();
         }
-        value -= subValue;
         return *this;
     }
 
     inline TrackedVariable& operator*=(T mulValue) {
+        value *= mulValue;
         if (onChange) {
             onChange();
         }
-        value *= mulValue;
         return *this;
     }
 
     inline TrackedVariable& operator/=(T divValue) {
-        if (onChange) {
-            onChange();
-        }
         if (divValue != 0) { // Check to prevent division by zero
             value /= divValue;
+        }
+        if (onChange) {
+            onChange();
         }
         return *this;
     }
@@ -289,14 +290,14 @@ private:
 
 public:
     inline TrackedVariable<std::vector<T>, void>& operator=(const std::vector<T>& newValues) {
-        if (onChange) {
-            onChange();
-        }
         innerData.clear();
         for (const auto& val : newValues) {
             TrackedVariable<T> tracked;
             tracked = val;
             innerData.push_back(tracked);
+        }
+        if (onChange) {
+            onChange();
         }
         return *this;
     }
@@ -332,26 +333,26 @@ public:
     }
 
     inline void push_back(const T& value) {
-        if (onChange) {
-            onChange();
-        }
         TrackedVariable<T> tracked{value};
         tracked.setCallback(onChange);
         innerData.push_back(tracked);
+        if (onChange) {
+            onChange();
+        }
     }
 
     inline void push_back(const TrackedVariable<T>& value) {
+        innerData.push_back(value);
         if (onChange) {
             onChange();
         }
-        innerData.push_back(value);
     }
 
     inline void pop_back() {
+        innerData.pop_back();
         if (onChange) {
             onChange();
         }
-        innerData.pop_back();
     }
 
     inline TrackedVariable<T>& operator[](size_t index) {
@@ -363,10 +364,10 @@ public:
     }
 
     inline void clear() {
+        innerData.clear();
         if (onChange) {
             onChange();
         }
-        innerData.clear();
     }
 
     auto begin() -> decltype(innerData.begin()) {
@@ -386,17 +387,17 @@ public:
     }
 
     inline void erase(typename std::vector<TrackedVariable<T>>::iterator first, typename std::vector<TrackedVariable<T>>::iterator last) {
+        innerData.erase(first, last);
         if (onChange) {
             onChange();
         }
-        innerData.erase(first, last);
     }
 
     inline void resize(size_t newSize) {
+        innerData.resize(newSize);
         if (onChange) {
             onChange();
         }
-        innerData.resize(newSize);
     }
 
     inline bool empty() const {
@@ -456,24 +457,24 @@ public:
     }
 
     inline void insert(const std::pair<K, V>& value) {
+        data.insert({value.first, TrackedVariable<V>(value.second)});
         if (onChange) {
             onChange();
         }
-        data.insert({value.first, TrackedVariable<V>(value.second)});
     }
 
     inline void erase(const K& key) {
+        data.erase(key);
         if (onChange) {
             onChange();
         }
-        data.erase(key);
     }
 
     inline void clear() {
+        data.clear();
         if (onChange) {
             onChange();
         }
-        data.clear();
     }
 
     using iterator = typename std::map<K, TrackedVariable<V>>::iterator;

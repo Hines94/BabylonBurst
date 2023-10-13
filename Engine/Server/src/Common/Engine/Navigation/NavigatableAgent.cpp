@@ -27,12 +27,16 @@ void NavigatableAgent::SetupNavmeshAgent(EntityData* ourEnt) {
     ap.obstacleAvoidanceType = 3; // Use 3rd type of built-in obstacle avoidance
     ap.separationWeight = 2.0f;
 
-    if (crowdAgentId == 0) {
+    if (crowdAgentId == -1) {
         const float floatPos[3] = {ourPos->Position.X, ourPos->Position.Y, ourPos->Position.Z};
         crowdAgentId = navmeshData->loadedCrowd.addAgent(floatPos, &ap);
+        std::cout << "New agent id: " << crowdAgentId << std::endl;
     } else {
         navmeshData->loadedCrowd.updateAgentParameters(crowdAgentId, &ap);
     }
+
+    std::cout << "Setup nav agent!"
+              << "Max speed: " << maxSpeed << std::endl;
 }
 
 //Update every tick setting our transform pos to agent position
@@ -47,6 +51,9 @@ void NavigatableAgent::UpdateNavAgents(bool Init, double dt) {
     EntityTaskRunners::AutoPerformTasksParallel(
         "UpdateNavAgents", allNavAgents, [navmeshData](double dt, EntityData* ent) -> void {
             const auto agentComp = EntityComponentSystem::GetComponent<NavigatableAgent>(ent);
+            if (agentComp->crowdAgentId == -1) {
+                return;
+            }
             const auto transform = EntityComponentSystem::GetComponent<EntTransform>(ent);
             const auto agent = navmeshData->loadedCrowd.getAgent(agentComp->crowdAgentId);
             transform->Position.X = agent->npos[0];
@@ -54,6 +61,14 @@ void NavigatableAgent::UpdateNavAgents(bool Init, double dt) {
             transform->Position.Z = agent->npos[2];
         },
         0);
+}
+
+void NavigatableAgent::onComponentChanged(EntityData* entData) {
+    if (desiredLoc.isDefault()) {
+        return;
+    }
+    SetupNavmeshAgent(entData);
+    RequestMoveToTarget(desiredLoc);
 }
 
 void NavigatableAgent::RequestMoveToTarget(EntVector3 target) {
@@ -69,6 +84,9 @@ void NavigatableAgent::RequestMoveToTarget(EntVector3 target) {
     const float pos[3] = {target.X, target.Y, target.Z};
     if (!navmeshData->loadedCrowd.requestMoveTarget(crowdAgentId, nearestPoly.value(), pos)) {
         std::cerr << "Move request failed for agent: " << crowdAgentId << std::endl;
+    }
+    if (desiredLoc != target) {
+        desiredLoc = target;
     }
 }
 

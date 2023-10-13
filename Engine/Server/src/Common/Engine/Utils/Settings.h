@@ -13,6 +13,6 @@ public:
     Settings(Settings const&) = delete;
     void operator=(Settings const&) = delete;
 
-    size_t NumWorkers;
+    size_t NumWorkers = 6;
     double networkingUpdateFreq;
 };

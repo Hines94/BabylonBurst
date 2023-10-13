@@ -7,7 +7,7 @@
 #include <thread>
 
 int main() {
-    std::cout << "---Space Fleets Server Starting---" << std::endl;
+    std::cout << "---Babylon Burst Server Starting---" << std::endl;
     Environment::LoadEnvironmentVariables();
     PerfTracking& perfTracking = PerfTracking::getInstance(); //This sets up singleton
     ServerSetup::SetupGame();

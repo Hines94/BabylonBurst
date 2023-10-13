@@ -8,7 +8,7 @@
 #include <thread>
 
 int main() {
-    std::cout << "---Space Fleets Client WASM Module Starting---" << std::endl;
+    std::cout << "---Babylon Burst Client WASM Module Starting---" << std::endl;
     Environment::LoadEnvironmentVariables();
     PerfTracking& perfTracking = PerfTracking::getInstance(); //Dummy perf tracker
     WASMSetup::SetupWASM();

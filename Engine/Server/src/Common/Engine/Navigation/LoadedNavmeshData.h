@@ -26,7 +26,7 @@ struct LoadedNavmeshData : public Component {
 
     //Helper functions
     bool IsNavmeshValid();
-    std::optional<dtPolyRef> FindNearestPoly(EntVector3 Origin, EntVector3 Extents = {200, 400, 200});
+    std::optional<dtPolyRef> FindNearestPoly(EntVector3 Origin, EntVector3 Extents = {20, 300, 20});
     //Anywhere on navmesh
     std::optional<EntVector3> GetRandomPointOnNavmesh();
     //Around the start pos to a max radius
@@ -40,6 +40,8 @@ struct LoadedNavmeshData : public Component {
     int countNonWalkablePolygons();
 
     void onComponentAdded(EntityData* entData) override;
+
+    static void UpdateNavmeshData(bool init, float deltaTime);
 
     //Given two points get a path between them (with multiple straight line segments)
     std::optional<std::vector<EntVector3>> GetPathToPosition(EntVector3 Origin, EntVector3 Desination);

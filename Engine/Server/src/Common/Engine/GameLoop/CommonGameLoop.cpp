@@ -5,6 +5,7 @@
 #include "Engine/Physics/Control/ControllableRotator.h"
 #include "Engine/Physics/PhysicsSystem.h"
 #endif
+#include "Engine/Navigation/LoadedNavmeshData.h"
 #include "Engine/Navigation/NavigatableAgent.h"
 #include "Engine/Navigation/NavmeshBuildSystem.h"
 #include "Engine/Utils/Environment.h"
@@ -92,6 +93,7 @@ void CommonGameLoop::UpdateSingleGameLoop() {
 #endif
 
     UpdateSystem(systemInit, deltaTime, NavigatableAgent::UpdateNavAgents, "NavmeshAgents");
+    UpdateSystem(systemInit, deltaTime, LoadedNavmeshData::UpdateNavmeshData, "NavmeshCrowd");
 
     EndOfFrame_Update();
 

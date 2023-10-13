@@ -84,7 +84,6 @@ RegisterCustomInspectorComponent (call during TODO: OnEditorStart)
 Future ideas:
 - TODO: Future iterations include tools for login & account management on AWS & integrate directly into Engine
 - TODO: Future iterations include tools for deployment to AWS
-- TODO: Include Blender tool for uploading models in an easy to use format
 - TODO: Future iterations support for GameLift with matchmaking etc
 - TODO: Future iterations support cloudfront to protect S3 & improve CDN speed
 - TODO: Future iterations support skeletal mesh animator to make animations from ECS easy & support instancing 

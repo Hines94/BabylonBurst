@@ -15,7 +15,9 @@ struct NavigatableAgent : public Component {
 
     CPROPERTY(float, maxSpeed, 4, SAVE, NET)
 
-    int crowdAgentId = 0;
+    CPROPERTY(EntVector3, desiredLoc, NO_DEFAULT, SAVE, NET)
+
+    int crowdAgentId = -1;
 
     void RequestMoveToTarget(EntVector3 target);
 
@@ -24,6 +26,8 @@ struct NavigatableAgent : public Component {
     void onComponentRemoved(EntityData* entData) override;
 
     void onComponentAdded(EntityData* entData) override;
+
+    void onComponentChanged(EntityData* entData) override;
 
     static void UpdateNavAgents(bool Init, double dt);
 

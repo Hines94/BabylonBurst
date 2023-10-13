@@ -7,13 +7,13 @@
 
 namespace PlayerMessageProcessor {
 
-    inline std::map<int, std::function<void(double, std::pair<std::string, std::string>)>> registeredPlayerMessages;
+    inline std::map<int, std::function<void(double, std::pair<std::string, std::vector<uint8_t>>)>> registeredPlayerMessages;
 
     void processPlayerMessages(bool SystemInit, double deltaTime);
 
     class Registrar {
     public:
-        Registrar(int msgId, std::function<void(double, std::pair<std::string, std::string>)> func) {
+        Registrar(int msgId, std::function<void(double, std::pair<std::string, std::vector<uint8_t>>)> func) {
             if (PlayerMessageProcessor::registeredPlayerMessages.find(msgId) != PlayerMessageProcessor::registeredPlayerMessages.end()) {
                 std::cerr << "Tried to double register for player message type: " << msgId << std::endl;
                 exit(EXIT_FAILURE); // Exit with an error code

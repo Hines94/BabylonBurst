@@ -9,6 +9,36 @@
 
 EntityData::EntityData(Entity owningEntity) : owningEntity(owningEntity) {}
 
+const msgpack::object* Component::GetCompData(const std::string& key, const std::map<std::string, msgpack::object>& compData) {
+    auto it = compData.find(key);
+    if (it == compData.end()) {
+        return nullptr;
+    }
+    return &(it->second);
+}
+
+EntityData* EntityData::LoadFromSerializeData(const std::map<Entity, EntityData*>& OldNewEntMap, const msgpack::object* data) {
+    Entity ent;
+    //Not a positive integer - could be a str if blank etc
+    if (data->type != 2) {
+        return nullptr;
+    }
+    data->convert(ent);
+    if (ent == 0) {
+        return nullptr;
+    }
+    if (OldNewEntMap.size() == 0) {
+        return EntityComponentSystem::GetComponentDataForEntity(ent);
+    }
+    auto it = OldNewEntMap.find(ent);
+    if (it == OldNewEntMap.end()) {
+        std::cout << "Could not find ent: " << ent << std::endl;
+        return nullptr;
+    }
+    std::cout << "found ent: " << ent << std::endl;
+    return it->second;
+}
+
 EntityComponentSystem* EntityComponentSystem::ActiveEntitySystem = nullptr;
 
 EntityComponentSystem::EntityComponentSystem() {
@@ -28,19 +58,14 @@ void EntityComponentSystem::ResetEntitySystem() {
     FlushEntitySystem();
 }
 
-const msgpack::object* Component::GetCompData(const std::string& key, const std::map<std::string, msgpack::object>& compData) {
-    auto it = compData.find(key);
-    if (it == compData.end()) {
-        return nullptr;
-    }
-    return &(it->second);
-}
-
 bool EntityComponentSystem::HasComponent(EntityData* data, std::type_index compType) {
     return data->components.find(compType) != data->components.end();
 }
 //NOTE: This will be in the parent (component) class!
 Component* EntityComponentSystem::GetComponent(EntityData* data, std::type_index compType) {
+    if (data == nullptr) {
+        return nullptr;
+    }
     auto compIt = data->components.find(compType);
     if (compIt != data->components.end()) {
         return data->components[compType];
@@ -551,7 +576,20 @@ void EntityComponentSystem::OnComponentChanged(EntityData* ent, std::type_index 
     if (!ActiveEntitySystem->ChangedComponents[ent].contains(compType)) {
         ActiveEntitySystem->ChangedComponents[ent].insert(compType);
     }
-    EntityComponentSystem::GetComponent(ent, compType)->onComponentChanged(ent);
+}
+
+void EntityComponentSystem::ResetChangedEntities() {
+    for (const auto& e : ActiveEntitySystem->ChangedComponents) {
+        if (!e.first) {
+            continue;
+        }
+        for (const auto& c : e.second) {
+            if (EntityComponentSystem::HasComponent(e.first, c)) {
+                EntityComponentSystem::GetComponent(e.first, c)->onComponentChanged(e.first);
+            }
+        }
+    }
+    ActiveEntitySystem->ChangedComponents.clear();
 }
 
 bool EntityComponentSystem::CheckComponentChanged(EntityData* ent, std::type_index compType) {

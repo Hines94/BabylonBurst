@@ -56,6 +56,10 @@ struct EntVector3 {
         return X * other.X + Y * other.Y + Y * other.Y;
     }
 
+    bool isDefault() {
+        return X == 0 && Y == 0 && Z == 0;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const EntVector3& obj);
 
     EntVector3 Normalize() {

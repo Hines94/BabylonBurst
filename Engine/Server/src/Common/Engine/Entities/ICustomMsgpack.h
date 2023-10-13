@@ -10,6 +10,6 @@ public:
     virtual ~ICustomMsgpack() {}
 
     //These methods need to be included in the derived class for autogeneration
-    //static void PackSerializeData(PackerDetails& p, YOURCLASS* Data) = 0;
+    //static void PackSerializeData(msgpack::packer<msgpack::sbuffer>* p, YOURCLASS* Data) = 0;
     //static YOURCLASS* LoadFromSerializeData(const std::map<Entity, EntityData*>& OldNewEntMap, const msgpack::object* data) = 0;
 };

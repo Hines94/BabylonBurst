@@ -1,6 +1,8 @@
 import { ShowToastNotification } from "@engine/HTML/HTMLToastItem";
+import { serverConnection } from "@engine/Networking/ServerConnection";
 import { GetEcosystemForModule } from "@engine/RunnableGameEcosystem";
-import { GetWasmModule } from "@engine/WASM/ServerWASMModule";
+import { GetWasmModule, WASMArrayToUint8 } from "@engine/WASM/ServerWASMModule";
+import { decode } from "@msgpack/msgpack";
 
 export function setupGeneralWASMCallbacks() {
     //@ts-ignore
@@ -28,5 +30,10 @@ export function setupGeneralWASMCallbacks() {
         const wasmmodule = GetWasmModule(module);
         const ecosystem = GetEcosystemForModule(wasmmodule);
         ecosystem.wasmWrapper.onEntityRemoved(entId);
+    };
+    //@ts-ignore
+    window.WASMRequestSendMessage = function (typeMsg: number, data: WASMUint8Array, module: string) {
+        //const wasmmodule = GetWasmModule(module);
+        serverConnection.SendMessageToServer([...data], typeMsg);
     };
 }

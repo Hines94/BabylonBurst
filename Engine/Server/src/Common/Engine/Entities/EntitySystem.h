@@ -86,30 +86,15 @@ struct EntityData : public ICustomMsgpack {
 
     EntityData(Entity owningEntity);
 
-    static void PackSerializeData(PackerDetails& p, EntityData* data) {
+    static void PackSerializeData(msgpack::packer<msgpack::sbuffer>* p, EntityData* data) {
         if (data == nullptr) {
-            p.packer->pack(0);
+            p->pack(0);
         } else {
-            p.packer->pack(data->owningEntity);
+            p->pack(data->owningEntity);
         }
     }
 
-    static EntityData* LoadFromSerializeData(const std::map<Entity, EntityData*>& OldNewEntMap, const msgpack::object* data) {
-        Entity ent;
-        //Not a positive integer - could be a str if blank etc
-        if (data->type != 2) {
-            return nullptr;
-        }
-        data->convert(ent);
-        if (ent == 0) {
-            return nullptr;
-        }
-        auto it = OldNewEntMap.find(ent);
-        if (it == OldNewEntMap.end()) {
-            return nullptr;
-        }
-        return it->second;
-    }
+    static EntityData* LoadFromSerializeData(const std::map<Entity, EntityData*>& OldNewEntMap, const msgpack::object* data);
 };
 
 //TODO: Make Tracked entityData
@@ -261,9 +246,7 @@ public:
     }
 
     //Called at end of frame
-    static void ResetChangedEntities() {
-        ActiveEntitySystem->ChangedComponents.clear();
-    }
+    static void ResetChangedEntities();
 
     //For tests etc when we want to remove everything
     static void ResetEntitySystem();

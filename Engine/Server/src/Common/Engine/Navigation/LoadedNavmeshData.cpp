@@ -1,9 +1,15 @@
 #include "LoadedNavmeshData.h"
+#include "Engine/Entities/Core/EntTransform.h"
+#include "Engine/Navigation/NavigatableEntitySurface.h"
 #include "NavmeshBuildSystemDebugMethods.cpp"
 #include "recastnavigation/DetourCommon.h"
 #include "recastnavigation/DetourMath.h"
 #include "recastnavigation/DetourNavMeshQuery.h"
 #include <cstdlib>
+
+#ifdef PHYSICS
+#include "Engine/Physics/PhysicsUtils.h"
+#endif
 
 const float maxAgents = 1000;
 const float maxAgentRadius = 30;
@@ -125,50 +131,45 @@ std::optional<EntVector3> LoadedNavmeshData::RaycastForNavmeshPosition(EntVector
     if (!IsNavmeshValid()) {
         return std::nullopt;
     }
-    const dtNavMeshQuery* navQuery = GetPremadeQuery();
 
-    dtQueryFilter filter;
-    filter.setIncludeFlags(0xFFFF);
-    filter.setExcludeFlags(0);
-
-    float startPos[3] = {Origin.X, Origin.Y, Origin.Z};
-    float endPos[3] = {
-        Origin.X + Direction.X * MaxDistance,
-        Origin.Y + Direction.Y * MaxDistance,
-        Origin.Z + Direction.Z * MaxDistance};
-
-    const auto polyRef = FindNearestPoly(Origin);
-    if (!polyRef) {
-        return std::nullopt;
-    }
-
-    const int MAX_POLYS = 100;
-    float t = 0;
-    float hitNormal[3];
-    dtPolyRef pathPolys[MAX_POLYS]; // Choose a suitable size for MAX_POLYS
-    int numPathPolys;
-    unsigned char pathFlags[MAX_POLYS];
-    unsigned char pathAreas[MAX_POLYS];
-
-    dtStatus status = navQuery->raycast(
-        polyRef.value(), startPos, endPos, &filter,
-        &t, hitNormal, pathPolys, &numPathPolys, MAX_POLYS);
-
-    if (!dtStatusSucceed(status)) {
-        std::cerr << "Nav query fail: " << NavmeshDebugMethods::GetFailStatusForStatus(status) << " for navigation raycast" << std::endl;
-        return std::nullopt;
-    }
-
-    //If hit length is < 1 (hit found)
-    if (t < 1.0f) {
-        float hitPos[3];
-        for (int i = 0; i < 3; ++i) {
-            hitPos[i] = startPos[i] + (endPos[i] - startPos[i]) * t;
+    //Standard recast method is JUNK. Instead need to check all naviagatable surfaces with raycast.
+#ifdef PHYSICS
+    const auto allNavSurfaces = EntityComponentSystem::GetEntitiesWithData({typeid(NavigatableEntitySurface), typeid(EntTransform)}, {});
+    std::vector<RaycastableMeshDetails> meshes;
+    for (const auto& e : allNavSurfaces.get()->GetLimitedNumber()) {
+        const auto surface = EntityComponentSystem::GetComponent<NavigatableEntitySurface>(e);
+        if (!surface->extractedModelData) {
+            std::cout << "No model data for mesh!" << std::endl;
+            continue;
         }
-        return EntVector3(hitPos[0], hitPos[1], hitPos[2]);
-    } else {
+        RaycastableMeshDetails newMesh;
+        newMesh.transform = EntityComponentSystem::GetComponent<EntTransform>(e);
+        newMesh.data = surface->extractedModelData;
+        meshes.push_back(newMesh);
+    }
+    if (meshes.size() == 0) {
         return std::nullopt;
     }
+
+    const auto result = PhysicsUtils::RaycastMeshes(meshes, Origin, Direction, MaxDistance);
+
+    return result;
+#else
+    std::cerr << "Unfortunatly physics is required to raycast for navmesh position as Recast does not support proper raycasting" << std::endl;
+    return std::nullopt;
+#endif
+}
+
+void LoadedNavmeshData::UpdateNavmeshData(bool init, float deltaTime) {
+    const auto navmesh = EntityComponentSystem::GetSingleton<LoadedNavmeshData>();
+    if (!navmesh) {
+        return;
+    }
+    if (!navmesh->IsNavmeshValid()) {
+        return;
+    }
+    dtCrowdAgentDebugInfo crowdAvoid;
+    navmesh->loadedCrowd.update(deltaTime, &crowdAvoid);
 }
 
 std::optional<EntVector3> LoadedNavmeshData::GetRandomPointOnNavmesh() {

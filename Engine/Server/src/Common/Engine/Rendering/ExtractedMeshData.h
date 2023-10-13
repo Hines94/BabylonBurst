@@ -2,6 +2,11 @@
 #include <cstdint>
 #include <vector>
 
+#ifdef PHYSICS
+#include "bullet/btBulletCollisionCommon.h"
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#endif
+
 struct Vertex {
     float x, y, z;
 
@@ -20,6 +25,15 @@ struct ExtractedModelData {
     std::vector<Vertex> vertices;
     std::vector<Triangle> triangles;
 
+#ifdef PHYSICS
+private:
+    btBvhTriangleMeshShape* triangleMesh = nullptr;
+
+public:
+    btBvhTriangleMeshShape* GetTriangleMeshShape();
+#endif
+
+public:
     //Useful for navmesh - Can get wrong orientation from heightfield (no problem)
     void ensureTrianglesUpwards();
 };

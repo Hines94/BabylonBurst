@@ -13,19 +13,21 @@ import { SetSimpleMaterialTexture } from "@engine/Materials/AsyncSimpleImageMate
 export function UpdateUnitSelection(ecosystem:GameEcosystem) {
     //Click to select
     if(ecosystem.InputValues.primaryClick.wasJustActivated()) {
-        const pos = EntVector3.VectorToEnt((ecosystem.camera as PlayerCamera).mainCamera.position);
-        const dir = EntVector3.VectorToEnt(GetMousePickingRay(ecosystem).direction);
+        const ray = GetMousePickingRay(ecosystem);
+        const pos = EntVector3.VectorToEnt(ray.origin);
+        const dir = EntVector3.VectorToEnt(ray.direction);
         const selectedUnits = RTSWASMWrapper.SelectNearestEntity(pos,dir,ecosystem.wasmWrapper);
-        UpdateSelectedUnitHighlighting(ecosystem);
     }
     //TODO: Display basic information on selected units?
 
     if(ecosystem.InputValues.secondaryClick.wasJustActivated()) {
-        const pos = EntVector3.VectorToEnt((ecosystem.camera as PlayerCamera).mainCamera.position);
-        const dir = EntVector3.VectorToEnt(GetMousePickingRay(ecosystem).direction);
+        const ray = GetMousePickingRay(ecosystem);
+        const pos = EntVector3.VectorToEnt(ray.origin);
+        const dir = EntVector3.VectorToEnt(ray.direction);
         RTSWASMWrapper.IssueUnitsOrder(pos,dir,ecosystem.wasmWrapper);
     }
 
+    UpdateSelectedUnitHighlighting(ecosystem);
 }
 
 const visualPlaneIdentifier = "__VISUALUNITSSELECTEDPLANE__";
@@ -44,17 +46,19 @@ export function UpdateSelectedUnitHighlighting(ecosystem:GameEcosystem) {
         const entId = parseInt(ents[m]);
         const transform = allSelectedUnits[entId][EntTransform.name] as EntTransform;
         const selection = allSelectedUnits[entId][SelectableComponent.name] as SelectableComponent;
-        console.log(transform)
         const transformSetup = new InstancedMeshTransform(
             new Vector3(transform.Position.X,transform.Position.Y,transform.Position.Z),
             new Vector3(AngleToRad(90),0,0),
             new Vector3(selection.SelectionScale,selection.SelectionScale,selection.SelectionScale)
         );
         transforms.push(transformSetup);
-        console.log(transformSetup)
     }
-
-    SetTransformArray(transforms,visualPlane);
+    if(transforms.length === 0) {
+        visualPlane.isVisible = false;
+    } else {
+        visualPlane.isVisible = true;
+        SetTransformArray(transforms,visualPlane);
+    }
 }
 
 async function setupSelectionPlane(ecosystem: GameEcosystem, visualPlane: Mesh) {

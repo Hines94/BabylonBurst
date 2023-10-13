@@ -7,6 +7,7 @@ import { WriteFileIfChanged } from "../Utils/InvalidFileRemover";
 import { RemovePlatformSpecificIncludePath } from "../Utils/PlatformUtils";
 import { GenerateEqualityChecks } from "./ComponentMethods/ComponentEquality";
 import { GenerateComponentTracking } from "./ComponentMethods/ComponentTrackedSetup";
+import { GenerateMessageAutoSerialize } from "./AutoSerializeMessage/AutoSerializeMessageGenerator";
 
 //This file deals with any autogeneration that is body specific
 
@@ -43,6 +44,7 @@ export function RunBodyAutogeneration(fileCode:any,basePath:string,filePath:stri
     let output = GenerateCustomSerializationMethods();
     output += GenerateEqualityChecks();
     output += GenerateComponentTracking();
+    output += GenerateMessageAutoSerialize();
 
     if(output == "") {
         return;

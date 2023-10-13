@@ -38,3 +38,22 @@ void ExtractedModelData::ensureTrianglesUpwards() {
         }
     }
 }
+#ifdef PHYSICS
+btBvhTriangleMeshShape* ExtractedModelData::GetTriangleMeshShape() {
+    if (this->triangles.size() == 0) {
+        return nullptr;
+    }
+    if (this->triangleMesh != nullptr) {
+        return this->triangleMesh;
+    }
+    btTriangleMesh* triangleMesh = new btTriangleMesh();
+    for (const Triangle& tri : triangles) {
+        triangleMesh->addTriangle(
+            btVector3(vertices[tri.v1].x, vertices[tri.v1].y, vertices[tri.v1].z),
+            btVector3(vertices[tri.v2].x, vertices[tri.v2].y, vertices[tri.v2].z),
+            btVector3(vertices[tri.v3].x, vertices[tri.v3].y, vertices[tri.v3].z));
+    }
+    this->triangleMesh = new btBvhTriangleMeshShape(triangleMesh, true);
+    return this->triangleMesh;
+}
+#endif

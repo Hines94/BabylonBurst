@@ -16,8 +16,8 @@ struct ClosedSocketData {
 };
 
 struct MessageFromPlayer {
-    uint MessageType;
-    std::string Payload;
+    int MessageType = -1;
+    std::vector<uint8_t> Payload;
 };
 
 //Low level - Responsible for our raw networking - opening,closing sessions etc
@@ -46,9 +46,9 @@ public:
 
     static std::pair<msgpack::sbuffer*, msgpack::packer<msgpack::sbuffer>*> GetBufferToSend();
 
-    std::map<uint, std::vector<std::pair<std::string, std::string>>> GetClearPlayerMessages() {
+    std::map<uint, std::vector<std::pair<std::string, std::vector<uint8_t>>>> GetClearPlayerMessages() {
         std::unique_lock lock(newMessageMut);
-        std::map<uint, std::vector<std::pair<std::string, std::string>>> copy = playerMessages;
+        std::map<uint, std::vector<std::pair<std::string, std::vector<uint8_t>>>> copy = playerMessages;
         playerMessages.clear();
         return copy;
     }
@@ -66,7 +66,7 @@ private:
 
     std::unordered_set<std::string> newSockets_ = {};
     std::unordered_set<std::string> removedSockets_ = {};
-    std::map<uint, std::vector<std::pair<std::string, std::string>>> playerMessages = {};
+    std::map<uint, std::vector<std::pair<std::string, std::vector<uint8_t>>>> playerMessages = {};
     std::unordered_map<uWS::WebSocket<false, true, ActiveSocketData>*, std::queue<msgpack::sbuffer*>> messageQueues_ = {};
     std::mutex sendMessageMut;
     uWS::Loop* networkingLoop;

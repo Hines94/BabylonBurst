@@ -1,4 +1,4 @@
-# Space Fleets Server
+# Babylon Burst Server
 This server is built in C++ with a ECS structure to maximise performance and enable use of existing libraries such as Bullet Physics for game development. It integrates easily with the client side version and typescript/babylon JS.
 
 ## Editing
