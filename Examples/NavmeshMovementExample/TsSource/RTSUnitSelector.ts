@@ -16,7 +16,7 @@ export function UpdateUnitSelection(ecosystem:GameEcosystem) {
         const ray = GetMousePickingRay(ecosystem);
         const pos = EntVector3.VectorToEnt(ray.origin);
         const dir = EntVector3.VectorToEnt(ray.direction);
-        const selectedUnits = RTSWASMWrapper.SelectNearestEntity(pos,dir,ecosystem.wasmWrapper);
+        const selectedUnits = RTSWASMWrapper.SelectNearestEntity(pos,dir,ecosystem.InputValues.shift.isActive,ecosystem.InputValues.leftControl.isActive,ecosystem.wasmWrapper);
     }
     //TODO: Display basic information on selected units?
 

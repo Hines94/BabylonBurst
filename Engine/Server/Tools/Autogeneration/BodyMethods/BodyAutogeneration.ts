@@ -24,6 +24,7 @@ function createCppAutogenBase(relativeDir: string, fileNameExten: string, output
     } else {
         output += `#include "${relativeDir}/${fileNameExten}"\n`;
     }
+    output += `#include "Engine/SaveLoad/ComponentLoader.h"`
     return output;
 }
 

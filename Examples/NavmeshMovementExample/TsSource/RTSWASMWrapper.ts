@@ -4,11 +4,11 @@ import { EntVector3 } from "@engine/EntitySystem/CoreComponents"
 
 export class RTSWASMWrapper{
 
-    static SelectNearestEntity(pos:EntVector3, dir:EntVector3, wrapper:ServerWASMModuleWrapper): RawEntityData {
+    static SelectNearestEntity(pos:EntVector3, dir:EntVector3, additionSelect: boolean, toggleSelect: boolean, wrapper:ServerWASMModuleWrapper): RawEntityData {
         const wasmPos = wrapper.CreateEntVector3(pos);
         const wasmDir = wrapper.CreateEntVector3(dir);
         const allData = LoadEntitiesFromMsgpackFormat(
-            WASMArrayToUint8(wrapper.wasmModule.SelectNearestEntity(wasmPos,wasmDir))
+            WASMArrayToUint8(wrapper.wasmModule.SelectNearestEntity(wasmPos,wasmDir,additionSelect,toggleSelect))
         );
         wasmPos.delete();
         wasmDir.delete();

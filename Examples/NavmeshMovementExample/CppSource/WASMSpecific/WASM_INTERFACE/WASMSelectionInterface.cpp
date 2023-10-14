@@ -30,34 +30,37 @@ bool raySphereTestClosestDistance(const EntVector3& rayFrom, const EntVector3& r
     rayDir.Normalize();
 
     EntVector3 oc = rayFrom - sphereCenter;
-    float a = rayDir.dot(rayDir);  // This will be 1.0 after normalization.
-    float b = 2.0f * oc.dot(rayDir);
-    float c = oc.dot(oc) - sphereRadius * sphereRadius;
+    float b = oc.dot(rayDir);
+    float ocLength2 = oc.dot(oc);
 
-    float discriminant = b * b - 4 * a * c;
+    // Check for ray origin inside the sphere
+    if (ocLength2 < sphereRadius * sphereRadius) {
+        closestDistance = sqrt(sphereRadius * sphereRadius - ocLength2);
+        return true;
+    }
+
+    float discriminant = b * b - ocLength2 + sphereRadius * sphereRadius;
 
     if (discriminant < 0) {
         // Ray doesn't intersect the sphere.
-        float t = -b / (2.0f * a); 
-        EntVector3 closestPoint = (t * rayDir);
-        closestPoint = rayFrom + closestPoint;
+        // Compute closest point on ray to sphere center and its distance
+        EntVector3 closestPoint = rayFrom - b * rayDir;
         closestDistance = EntVectorUtils::Length(closestPoint - sphereCenter) - sphereRadius;
         return false;
     } else {
         // Ray intersects the sphere.
-        float t1 = (-b - sqrt(discriminant)) / (2.0f * a);
-        float t2 = (-b + sqrt(discriminant)) / (2.0f * a);
-
-        EntVector3 intersectionPoint = (t1 * rayDir);
-        intersectionPoint = rayFrom + intersectionPoint;
-        closestDistance = EntVectorUtils::Length(intersectionPoint - sphereCenter) - sphereRadius;
-        std::cout << "Sphere intersected. Distance: " << closestDistance << std::endl;
+        float t = -b - sqrt(discriminant);
+        if (t < 0) t = 0;  // clamp to ensure point is on the ray segment
+        EntVector3 intersectionPoint = rayFrom + t * rayDir;
+        closestDistance = 0;  // since it's on the sphere surface
         return true;
     }
 }
 
-std::vector<uint8_t> SelectNearestEntity(EntVector3 origin, EntVector3 direction) {
-    ClearSelectedEntities();
+std::vector<uint8_t> SelectNearestEntity(EntVector3 origin, EntVector3 direction, bool additionSelect, bool toggleSelect) {
+    if(!additionSelect && !toggleSelect) {
+        ClearSelectedEntities();
+    }
     //Get all entities with selectable component
     const auto selectables = EntityComponentSystem::GetEntitiesWithData({typeid(SelectableComponent),typeid(EntTransform)},{});
     //TODO: Filter those that are not owned by our player
@@ -86,7 +89,11 @@ std::vector<uint8_t> SelectNearestEntity(EntVector3 origin, EntVector3 direction
     //Package data to send over
     if(closest != nullptr) {
         const auto data = EntitySaver::GetSpecificSavePack({closest}, false);
-        EntityComponentSystem::AddSetComponentToEntity(closest,new ActiveSelectedComponent());
+        if(toggleSelect && EntityComponentSystem::HasComponent<ActiveSelectedComponent>(closest)) {
+            EntityComponentSystem::DelayedRemoveComponent<ActiveSelectedComponent>(closest);
+        } else {
+            EntityComponentSystem::AddSetComponentToEntity(closest,new ActiveSelectedComponent());
+        }
         EntityComponentSystem::FlushEntitySystem();
         return EntitySaver::SBufferToUintVector(data);
     } else {

@@ -50,11 +50,8 @@ export function GenerateCustomSerializationMethods() : string {
         //Create Save serialization method
         structMethods += `\nvoid ${comp}::GetComponentData(PackerDetails& p, bool ignoreDefaultValues, Component* childComponent) { \n`;
         structMethods += `//Default component to test against for changed params\n`;
-        structMethods += `\t${comp}* comparisonComp = new ${comp}();\n`;
-        structMethods += `\tbool externalComparison = false;\n`
+        structMethods += `\t${comp}* comparisonComp = dynamic_cast<${comp}*>(ComponentLoader::GetDefaultComponent("${comp}"));\n`;
         structMethods += `\tif(childComponent != nullptr) {\n`;
-        structMethods += `\t\texternalComparison = true;\n`
-        structMethods += `\t\tdelete (comparisonComp);\n`;
         structMethods += `\t\tcomparisonComp = dynamic_cast<${comp}*>(childComponent);\n`;
         structMethods += `\t}\n`;
         structMethods += `//Each networked parameter\n`;
@@ -65,10 +62,6 @@ export function GenerateCustomSerializationMethods() : string {
             }
             structMethods = GeneratePropertySaveNetwork(structMethods, param);
         })
-        structMethods += `//Default component cleanup\n`;
-        structMethods += `\tif(!externalComparison) {\n`;
-        structMethods += `\t\tdelete (comparisonComp);\n`;
-        structMethods += `\t}\n`;
         structMethods += `}\n`;
 
         //Create Load

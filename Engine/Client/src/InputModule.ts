@@ -140,7 +140,7 @@ export class WindowInputValues {
     primaryClick = new ButtonInput([]);
     secondaryClick = new ButtonInput([]);
     middleClick = new ButtonInput([]);
-
+    leftControl = new ButtonInput([LEFTCONTROL]);
     panKey = new ButtonInput([CAPSKEY]);
     //Arrows
     arrowUp = new ButtonInput([ARRUPKEY]);
@@ -157,29 +157,14 @@ export class WindowInputValues {
     sevenHotkey = new ButtonInput([SEVENKEY]);
     eightHotkey = new ButtonInput([EIGHTKEY]);
     nineHotkey = new ButtonInput([NINEKEY]);
-    //Admin
     tilde = new ButtonInput([TILDEKEY, TILDEKEYALT]);
-    //UI
-    inventory = new ButtonInput([IKEY]);
-    //Building
+    iKey = new ButtonInput([IKEY]);
     switchXAxis = new ButtonInput([XKEY]);
     switchYAxis = new ButtonInput([YKEY]);
     switchZAxis = new ButtonInput([ZKEY]);
-    EnterPan = new ButtonInput([PKEY]);
-    zoomToObject = new ButtonInput([FKEY]);
+    pKey = new ButtonInput([PKEY]);
+    fKey = new ButtonInput([FKEY]);
 
-    newBuild = new ButtonInput([NKEY]);
-    confirmBuild = new ButtonInput([ENTER]);
-    buildAlt = new ButtonInput([LEFTSHIFT]);
-    buildAltAlt = new ButtonInput([CAPSKEY]);
-    deleteBlock = new ButtonInput([XKEY]);
-    RotateObUp = new ButtonInput([HOME]);
-    RotateObDown = new ButtonInput([END]);
-    RotateObRight = new ButtonInput([PGDWN]);
-    RotateObLeft = new ButtonInput([DELETE]);
-    RollObRight = new ButtonInput([PGUP]);
-    RollObLeft = new ButtonInput([INSERTKEY]);
-    ChangeSnapMode = new ButtonInput([LKEY]);
     //General Keys
     Tkey = new ButtonInput([TKEY]);
     Gkey = new ButtonInput([GKEY]);
