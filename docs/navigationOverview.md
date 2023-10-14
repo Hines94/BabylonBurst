@@ -23,4 +23,8 @@ TODO: Provide different options for surface types and build types
     - Show Low Poly Navmesh - shows the LP navmesh that is used to perform final navigation
     - Show Navmesh - shows the high poly navmesh that is used to perform final navigation
 
-## TODO: Using nav agents
+## Using nav agents
+- Ensure there is a valid navmesh (can check for BuiltNavmesh Component)
+- Create a NavAgent component type and add to an Entity
+- Call RequestMoveToTarget(desiredLoc) to start the agent moving
+- TODO: Provide rotation options

@@ -22,6 +22,7 @@ The <b>Draco Compression</b> method is extremely strong for static meshes so the
    - Make sure that the “Tools/BlenderMeshAWSUploader.py” addon is installed.
 2. **Naming:**
    - Name your asset according to where the upload is to occur to (use `$` to denominate folders - e.g., `characters$test` = `characters/test`).
+   - Use ~ to denote the upload name within the bundle (eg `characters$test~file` = `file.gltf` inside `characters/test.zip`) 
 3. **Method Selection:**
    - Select the method of upload that is required - e.g., replace, increment, etc. Increment will add a version on (e.g., `file_V1`) depending on existing versions.
 4. **Upload:**
