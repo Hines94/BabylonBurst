@@ -63,4 +63,16 @@ export class EntityQuery {
             }
         }
     }
+
+    FindEntity(entId:number) {
+        for (let bucket of this.data) {
+            for (let entityId in bucket.ContainedEntities) {
+                const entity = bucket.ContainedEntities[entityId];
+                if(entity.EntityId === entId) {
+                    return entity;
+                }
+            }
+        }
+        return undefined;
+    }
 }

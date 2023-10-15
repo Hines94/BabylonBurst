@@ -55,6 +55,9 @@ export function RegisteredComponent(target:Function) {
         console.error("Class name clash for registered component: " + className);
     }
     registeredComponents[className] = target;
+    if(!savedProperties[className]) {
+        savedProperties[className] = [];
+    }
 }
 
 export class Component {

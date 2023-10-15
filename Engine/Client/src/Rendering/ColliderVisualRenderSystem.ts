@@ -1,5 +1,4 @@
 import { AsyncStaticMeshInstanceRunner } from "@engine/AsyncAssets";
-import { GetComponent } from "../EntitySystem/EntityMsgpackConverter";
 import { uiLayerMask } from "../Utils/LayerMasks";
 import { Color3, StandardMaterial } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";

@@ -1,5 +1,4 @@
 
-import { EntitySpecification, RawEntityData } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { CloneTemplate } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { GetEditorGizmos } from "./EditorGizmos";
@@ -7,13 +6,14 @@ import { HigherarchyHTML } from "./HigherarchyHTML";
 //@ts-ignore
 import { JSONEditor } from "@json-editor/json-editor";
 import { CheckEditorForCustomElements } from "../InspectorWindow/CustomInspectorComponents";
+import { EntityData } from "@engine/EntitySystem/EntityData";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {
     owner: HigherarchyHTML;
     entityId: number;
     inspector: HTMLElement;
-    defaultEntityData: RawEntityData;
+    defaultEntityData:EntityData;
 
     constructor(owner: HigherarchyHTML, entityIdentifier: number) {
         this.owner = owner;
@@ -26,7 +26,7 @@ export class EntityInspectorHTML {
         const keys = Object.keys(this.owner.allEntities);
         const entity = this.owner.allEntities[entityIdentifier];
 
-        this.defaultEntityData = owner.ecosystem.wasmWrapper.GetDefaultComponentsForEntity(entityIdentifier);
+        this.defaultEntityData = owner.ecosystem.entitySystem.GetEntityData(entityIdentifier);
 
         //Existing items
         const comps = Object.keys(entity);

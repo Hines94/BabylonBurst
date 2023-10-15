@@ -3,23 +3,14 @@ import { ContentItem } from "../ContentBrowser/ContentItem";
 import { OpenNewWindow } from "@BabylonBurstClient/HTML/HTMLWindowManager";
 import { WaitForEvent } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import {
-    EntitySpecification,
-    GetComponent,
-    LoadEntitiesFromMsgpackFormat,
-} from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentStorageBackend } from "../ContentBrowser/ContentBrowserHTML";
 import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
 import { SetupAllEditorVisualisations } from "../HTMLUtils/VisualAidUtils";
 import { decode, encode } from "@msgpack/msgpack";
-import { GetAllWasmModules } from "@BabylonBurstClient/WASM/ServerWASMModule";
 import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
-
-type PrefabPackedType = {
-    prefabID:string;
-    prefabData:any;
-}
+import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
+import { EntityData } from "@engine/EntitySystem/EntityData";
 
 /** Used for specifically loading prefabs into a seperate window */
 export class PrefabHigherarchyHTML extends HigherarchyHTML {
@@ -58,8 +49,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
 
         setupTopMenu();
         
-        this.ecosystem.wasmWrapper.LoadPrefabByIdToExisting(prefabData.prefabID,true);
-        this.RefreshDataToWASMCore();
+        this.ecosystem.entitySystem.LoadPrefabByIdToExisting(prefabData.prefabID,true);
         this.RegenerateHigherarchy();
         this.setupRightClick();
 
@@ -73,12 +63,12 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             saveEntButton.addEventListener("click", () => {
                 const saveData: PrefabPackedType = {
                     prefabID: higherarchy.prefabUUID,
-                    prefabData: new Uint8Array(higherarchy.ecosystem.wasmWrapper.GetAllEntitiesArray(true)),
+                    prefabData: EntitySaver.GetMsgpackForAllEntities(higherarchy.ecosystem.entitySystem),
                 };
                 prefab.data = encode(saveData);
 
                 console.log("------------ Saved Prefab Data ------------");
-                console.log(higherarchy.ecosystem.wasmWrapper.GetAllEntities(true));
+                console.log(higherarchy.ecosystem.entitySystem.GetEntitiesWithData([],[]));
                 //For direct use with c++ test files etc
                 const hexString = Array.from(prefab.data, byte =>
                     ("0" + (byte as any & 0xff).toString(16)).slice(-2)
@@ -90,9 +80,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 //Save to backend
                 prefab.SaveItemOut();
                 //Reset for each current WASM system
-                GetAllWasmModules().forEach(w => {
-                    w.ReloadPrefabData(prefab.parent.getItemLocation(), prefab.GetSaveName(), prefab.data);
-                });
+                console.error("TODO: Reload prefab!")
                 ShowToastNotification("Entity Saved", 3000, higherarchy.windowDoc);
             });
             //Exit button
@@ -110,14 +98,9 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         }
     }
 
-    protected override GetPrefabInsetLevel(entity: EntitySpecification): number {
-        if(GetComponent(entity, Prefab) === undefined) {
-            return 0;
-        }
-        if (GetComponent(entity, Prefab).PrefabIdentifier != this.prefabUUID) {
-            return 1;
-        }
-        return 0;
+    protected override GetPrefabInsetLevel(entity: EntityData): number {
+        console.log("TODO: Fix inset level!")
+        return super.GetPrefabInsetLevel(entity) - 1;
     }
 
     protected override setupContextMenu(event: MouseEvent): void {
@@ -141,10 +124,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         const prefabData = new Prefab();
         prefabData.PrefabIdentifier = this.prefabUUID;
         prefabData.EntityIndex = added;
-        this.allEntities[added] = {
-            Prefab: prefabData,
-        };
-        this.RefreshWASMForSpecificEntity(added);
+        this.ecosystem.entitySystem.AddSetComponentToEntity(added,prefabData);
         return added;
     }
 

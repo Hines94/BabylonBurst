@@ -30,6 +30,15 @@ export class EntityData extends SaveableDataField {
         return undefined;
     }
 
+    GetComponentByName(name:string) {
+        for (let comp in this.Components) {
+            if(comp.constructor.name === name) {
+                return comp;
+            }
+        }
+        return undefined;
+    }
+
     static GetSaveableData(entity: EntityData, comp:Component, propertyName: string, property:any):any {
         if(!property || !property.IsValid()){
             return 0;

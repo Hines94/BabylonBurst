@@ -1,16 +1,15 @@
 import { SetInspectorOwner } from "../InspectorWindow/InspectorHTML";
 import { RemoveClassFromAllItems, WaitForEvent } from "@BabylonBurstClient/HTML/HTMLUtils";
-import { EntitySpecification, GetComponent, RawEntityData } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { GetEditorGizmos } from "./EditorGizmos";
 import { EntityInspectorHTML } from "./EntityInspectorHTML";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { EntityData } from "@engine/EntitySystem/EntityData";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */
 export abstract class HigherarchyHTML {
     higherarchyItems: HTMLElement;
-    allEntities: RawEntityData;
     Displayer: { loadingElement: Promise<HTMLDivElement>; window: Window };
     windowDoc: Document;
     inspector: HTMLElement;
@@ -58,47 +57,18 @@ export abstract class HigherarchyHTML {
     /** Add entity etc */
     protected setupContextMenu(event: MouseEvent) {}
 
-
-    /** Reset our WASM module to same as the JS data */
-    RefreshWASMToData() {
-        this.ecosystem.wasmWrapper.LoadMsgpackDataToExistingEntities(this.allEntities, false);
-        this.ecosystem.wasmWrapper.FlushEntitySystem();
-    }
-
-    /** Refresh just the entity Id's*/
-    RefreshDataToWASMCore() {
-        this.allEntities = {};
-        this.ecosystem.wasmWrapper.GetAllEntitiesInWASM().forEach(e=>{
-            this.allEntities[e] = {};
-        })
-    }
-
-    /** Reset our WASM module to same as JS data for specific entity */
-    RefreshWASMForSpecificEntity(entId:number) {
-        const specificLoad:RawEntityData = {};
-        specificLoad[entId] = this.allEntities[entId];
-        this.ecosystem.wasmWrapper.LoadMsgpackDataToExistingEntities(specificLoad, false);
-        this.ecosystem.wasmWrapper.FlushEntitySystem();
-    }
-
-    /** Full wipe */
-    ResetWASMEntities() {
-        this.ecosystem.wasmWrapper.ResetEntitySystem();
-    }
-
     /** Rebuild Entities and entity rows */
     RegenerateHigherarchy() {
-        const entityIds = Object.keys(this.allEntities);
+        const allEnts = this.ecosystem.entitySystem.GetEntitiesWithData([],[]);
         //Generate new entities and higherarchy data
-        for (var i = 0; i < entityIds.length; i++) {
-            if (this.generatedEntityRows[parseInt(entityIds[i])] === undefined) {
-                const entId = parseInt(entityIds[i]);
-                this.GenerateEntityRow(entId);
+        allEnts.iterateEntities((e:EntityData)=>{
+            if (this.generatedEntityRows[e.EntityId] === undefined) {
+                this.GenerateEntityRow(e.EntityId);
             }
-        }
+        })
         //Remove old entities that no longer exist
         for (let entId in this.generatedEntityRows) {
-            if (entityIds.includes(entId) === false) {
+            if (!allEnts.FindEntity(parseInt(entId))) {
                 this.generatedEntityRows[entId].remove();
                 delete this.generatedEntityRows[entId];
             }
@@ -107,10 +77,6 @@ export abstract class HigherarchyHTML {
 
     /** Entity row on higherarchy that lets us select and TODO: re-parent etc */
     GenerateEntityRow(entId: number): HTMLDivElement {
-        if(this.allEntities[entId]===undefined) {
-            this.allEntities[entId] = {};
-        }
-
         //Basic items
         const row = this.windowDoc.createElement("div");
         this.generatedEntityRows[entId] = row;
@@ -121,13 +87,10 @@ export abstract class HigherarchyHTML {
         entityId.classList.add("higherarchEntityText");
         row.appendChild(entityId);
         this.higherarchyItems.appendChild(row);
-        row.style.marginLeft = (this.GetPrefabInsetLevel(this.allEntities[entId]) * 10).toString() + "%";
+        row.style.marginLeft = (this.GetPrefabInsetLevel(this.ecosystem.entitySystem.GetEntityData(entId)) * 10).toString() + "%";
 
         //View Entity components etc
         row.addEventListener("click", async () => {
-            //Update data for specific entity
-            this.allEntities[entId] = this.ecosystem.wasmWrapper.GetDataForEntity(entId,false);
-
             RemoveClassFromAllItems("selectedHigherarchy", this.higherarchyItems);
             row.classList.add("selectedHigherarchy");
             this.inspector.innerHTML = "";
@@ -149,8 +112,7 @@ export abstract class HigherarchyHTML {
                         callback: () => {
                             if (this.windowDoc.defaultView.confirm("Delete Entity " + entId + "?")) {
                                 row.remove();
-                                delete this.allEntities[entId];
-                                this.ecosystem.wasmWrapper.DelayedRemoveEntity(entId);
+                                this.ecosystem.entitySystem.RemoveEntity(entId);
                                 this.RegenerateHigherarchy();
                             }
                         },
@@ -163,39 +125,28 @@ export abstract class HigherarchyHTML {
     }
 
     RemoveEntityRow(entId:number) {
-        delete this.allEntities[entId];
+        this.ecosystem.entitySystem.RemoveEntity(entId);
         this.RegenerateHigherarchy();
     }
 
-    protected GetPrefabInsetLevel(entity: EntitySpecification): number {
-        if(entity[Prefab.name] === undefined) {
-            return 0;
-        }
-        if (GetComponent(entity, Prefab)) {
-            return 1;
-        }
+    protected GetPrefabInsetLevel(entity: EntityData): number {
+        console.log("TODO: Fix inset level!")
+        // if(entity[Prefab.name] === undefined) {
+        //     return 0;
+        // }
+        // if (GetComponent(entity, Prefab)) {
+        //     return 1;
+        // }
         return 0;
     }
 
     protected addNewEntity(): number {
-        const keys = Object.keys(this.allEntities);
-        var found = true;
-        var newEntId = 1;
-        while (found) {
-            if (keys.includes(newEntId.toString())) {
-                newEntId++;
-                continue;
-            }
-            found = false;
-        }
-        this.allEntities[newEntId] = {};
-        this.RefreshWASMForSpecificEntity(newEntId);
-        return newEntId;
+        return this.ecosystem.entitySystem.AddEntity().EntityId;
     }
 
     addComponentToEntity(entityId: number, compType: any, allEntComps: HTMLElement): boolean {
-        const entity = this.allEntities[entityId];
-        if (entity[compType.name] !== undefined) {
+        const entity = this.ecosystem.entitySystem.GetEntityData(entityId);
+        if (entity.GetComponentByName(compType.name) !== undefined) {
             return true;
         }
 
@@ -210,8 +161,7 @@ export abstract class HigherarchyHTML {
         }
 
         //Set component as added
-        entity[compType.name] = {};
-        this.RefreshWASMForSpecificEntity(entityId);
+        this.ecosystem.entitySystem.AddSetComponentToEntity(entityId,new compType());
         this.refreshInspectorIfEntity(entityId);
 
         return true;

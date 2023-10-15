@@ -1,5 +1,4 @@
 import { defaultLayerMask } from "../Utils/LayerMasks";
-import { GetComponent } from "../EntitySystem/EntityMsgpackConverter";
 import { AsyncStaticMeshInstanceRunner } from "@engine/AsyncAssets";
 import { Material } from "@babylonjs/core";
 import { GetPreviouslyLoadedAWSAsset } from "@engine/AsyncAssets/Framework/AsyncAssetLoader";

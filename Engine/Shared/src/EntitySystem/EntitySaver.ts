@@ -29,12 +29,12 @@ export function GetTypingsParamIndex(comp:string,param:string,typings:EntitySave
 
 export class EntitySaver {
 
-    static GetMsgpackForAllEntities(system:EntitySystem) {
+    static GetMsgpackForAllEntities(system:EntitySystem, bIgnoreDefaults = false) {
         const allEnts = system.GetEntitiesWithData([],[]);
-        return this.GetMsgpackForQuery(allEnts);
+        return this.GetMsgpackForQuery(allEnts,bIgnoreDefaults);
     }
 
-    static GetMsgpackForQuery(query:EntityQuery) : Uint8Array {
+    static GetMsgpackForQuery(query:EntityQuery, bIgnoreDefaults:boolean) : Uint8Array {
         const typings:EntitySavedTypings = {};
         const data = {};
         query.iterateEntities((ent)=>{
@@ -55,14 +55,15 @@ export class EntitySaver {
                 const keys = Object.keys(compObject);
 
                 //Get default component to check against
-                const defaultComp = new (registeredComponents[compName] as any)();
-                //TODO: Get default from prefab too
+                var defaultComp = new (registeredComponents[compName] as any)();
+                const isPrefabDefault = false;
+                //TODO: Get default from prefab?
 
                 keys.forEach(paramName =>{
                     //Get the metadata about this property (via decorator)
                     const propIdentifier = FindSavedProperty(compName,paramName);
                     //Is the same as default? No need to pack!
-                    if(defaultComp[paramName] === compObject[paramName]) {
+                    if(bIgnoreDefaults && defaultComp[paramName] === compObject[paramName]) {
                         return;
                     }
                     //Is saved?
@@ -80,6 +81,11 @@ export class EntitySaver {
                     }
                     data[ent.EntityId][typingsIndex][paramIndex] = paramData; 
                 })
+
+                //Tidy if ignore default and prefab
+                if(isPrefabDefault && Object.keys(data[ent.EntityId][typingsIndex]).length === 0) {
+                    delete(data[ent.EntityId][typingsIndex]);
+                }
             }
         })
         const finalObject = {

@@ -11,7 +11,6 @@ import { AssetBundle } from "./ContentBrowser/AssetBundle";
 import { Scene } from "@babylonjs/core";
 import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
-import { SaveEntitiesToMsgpackIntArray } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
 import { AsyncAWSBackend, AsyncAssetManager } from "@engine/AsyncAssets";
 import { GameEcosystem } from "@engine/GameEcosystem";
@@ -102,7 +101,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                 newPrefab.category = ContentItemType.Prefab;
                 newPrefab.data = encode({
                     prefabID: uuidv4(),
-                    prefabData: SaveEntitiesToMsgpackIntArray({}),
+                    prefabData: encode({}),
                 });
 
                 const newMaterial = new ContentItem(undefined,undefined);
