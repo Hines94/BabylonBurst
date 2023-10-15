@@ -11,6 +11,7 @@ import { decode, encode } from "@msgpack/msgpack";
 import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
 import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
 import { EntityData } from "@engine/EntitySystem/EntityData";
+import {PrefabPackedType} from "@engine/EntitySystem/Prefab"
 
 /** Used for specifically loading prefabs into a seperate window */
 export class PrefabHigherarchyHTML extends HigherarchyHTML {
@@ -63,7 +64,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             saveEntButton.addEventListener("click", () => {
                 const saveData: PrefabPackedType = {
                     prefabID: higherarchy.prefabUUID,
-                    prefabData: EntitySaver.GetMsgpackForAllEntities(higherarchy.ecosystem.entitySystem),
+                    prefabData: EntitySaver.GetMsgpackForAllEntities(higherarchy.ecosystem.entitySystem,true),
                 };
                 prefab.data = encode(saveData);
 

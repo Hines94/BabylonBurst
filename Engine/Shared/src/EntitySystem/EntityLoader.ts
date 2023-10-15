@@ -1,8 +1,10 @@
 import { decode } from "@msgpack/msgpack";
-import { Component, FindSavedProperty, registeredComponents } from "./Component";
 import { EntitySavedTypings, GetTypingsCompIndex } from "./EntitySaver";
 import { EntitySystem } from "./EntitySystem";
-import { EntityLoadMapping } from "./EntityData";
+import { EntityData, EntityLoadMapping } from "./EntityData";
+import { SaveableDataField } from "./SaveableDataField";
+import { Component } from "./Component";
+import { registeredTypes } from "./TypeRegister";
 
 export class EntityTemplate {
     typings:EntitySavedTypings;
@@ -12,11 +14,15 @@ export class EntityTemplate {
         return this.entityData[ent] !== undefined;
     }
 
-    GetEntityComponent<T extends Component>(ent:number,type: { new(): T }, mapping:EntityLoadMapping): T | undefined {
+    GetEntityComponent<T extends Component>(ent:number,type: { new(): T },newEnt:EntityData, mapping:EntityLoadMapping): T | undefined {
         if(!this.DoesEntityExist(ent)) {
             return undefined;
         }
         const compName = type.name;
+        return this.GetEntityComponentByName(ent,compName,newEnt,mapping);
+    }
+
+    GetEntityComponentByName(ent:number,compName: string,newEnt:EntityData, mapping:EntityLoadMapping) {
         const compNames = Object.keys(this.typings);
         if(!compNames.includes(compName)) {
             return undefined;
@@ -25,17 +31,18 @@ export class EntityTemplate {
         if(!compData){
             return undefined;
         }
+        const type = registeredTypes[compName];
+        if(!type) {
+            console.warn("No component type for " + compName)
+            return undefined;
+        }
+        //@ts-ignore
         const ret = new type();
         const params = Object.keys(compData);
         for(var i = 0; i < params.length;i++) {
             const paramIndex = parseInt(params[i]);
             const paramName = this.typings[compName][paramIndex];
-            const propIdentifier = FindSavedProperty(compName,paramName);
-            if(propIdentifier.type["LoadSaveableData"]) {
-                ret[paramName] = propIdentifier.type.LoadSaveableData(mapping[ent],ret,paramName,compData[paramIndex],mapping);
-            } else {
-                ret[paramName] = compData[paramIndex];
-            }
+            ret[paramName] = SaveableDataField.loadCustomSaveData(newEnt,mapping,compData[paramIndex],compName,paramName);
         }
         return ret;
     }
@@ -61,7 +68,7 @@ export class EntityLoader {
         return template;
     }
 
-    static LoadTemplateIntoNewEntities(template:EntityTemplate,system:EntitySystem) {
+    static LoadTemplateIntoNewEntities(template:EntityTemplate,system:EntitySystem):EntityLoadMapping {
         const allEnts = Object.keys(template.entityData);
         const entMappings:EntityLoadMapping = {};
         allEnts.forEach(e=>{
@@ -73,14 +80,15 @@ export class EntityLoader {
             const comps = Object.keys(template.entityData[originalEntId]);
             for(var c = 0; c < comps.length;c++){
                 const compName = Object.keys(template.typings)[parseInt(comps[c])];
-                const compType = registeredComponents[compName];
+                const compType = registeredTypes[compName];
                 if(!compType) {
                     console.error("No registered comp type for: " + compName);
                     continue;
                 }
-                const compData = template.GetEntityComponent(originalEntId,compType as any,entMappings);
+                const compData = template.GetEntityComponent(originalEntId,compType as any,entMappings[e],entMappings);
                 system.AddSetComponentToEntity(entMappings[e],compData);
             }
         })
+        return entMappings;
     }
 }

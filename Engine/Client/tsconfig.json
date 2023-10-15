@@ -19,12 +19,12 @@
         "paths": {
             "@BabylonBurstClient/*": ["src/*"],
             "@engine/*": ["../Shared/src/*"],
-            "@userCode/*": ["../../Source/TsSource/*"]
+            "@userCode/*": ["../../Source/ClientSource/*"]
         }
     },
     "include": [
         "src/**/*", 
         "../Shared/src/**/*", 
-        "../../Source/TsSource/**/*"
+        "../../Source/ClientSource/**/*"
     ]
 }

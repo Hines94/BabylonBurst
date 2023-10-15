@@ -1,10 +1,14 @@
 import { AbstractMesh, Matrix, Quaternion, Vector3, Vector4 } from "@babylonjs/core";
 import { Clamp } from "../Utils/MathUtils";
-import { RegisteredComponent } from "./Component";
+import { RegisteredType, Saved } from "./TypeRegister";
 
+@RegisteredType
 export class EntVector3{
+    @Saved()
     X: number = 0;
+    @Saved()
     Y: number = 0;
+    @Saved()
     Z: number = 0;
 
     constructor(X: number = undefined, Y: number = undefined, Z: number = undefined) {
@@ -158,9 +162,13 @@ export class EntVector3{
 }
 
 export class EntVector4 {
+    @Saved()
     X: number = 0;
+    @Saved()
     Y: number = 0;
+    @Saved()
     Z: number = 0;
+    @Saved()
     W: number = 1;
 
     constructor(X: number = undefined, Y: number = undefined, Z: number = undefined, W: number = undefined) {
@@ -381,11 +389,15 @@ export class EntVector4 {
     }
 }
 
-@RegisteredComponent
+@RegisteredType
 export class EntTransform {
+    @Saved()
     Position = new EntVector3();
+    @Saved()
     Rotation = new EntVector4(0,0,0,1);
+    @Saved()
     Scale = new EntVector3(1,1,1);
+    
     static getAsInstanceArray(val: EntTransform): number[] {
         var ret: number[] = [];
         var Quat = new Quaternion(val.Rotation.X, val.Rotation.Y, val.Rotation.Z, val.Rotation.W);

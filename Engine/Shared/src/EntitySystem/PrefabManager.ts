@@ -37,6 +37,10 @@ export class PrefabManager {
         this.allPrefabs[loadData.prefabID] = EntityLoader.GetEntityTemplateFromMsgpack(loadData.prefabData);
     }
 
+    GetPrefabTemplateById(id:string) {
+        return this.allPrefabs[id];
+    }
+
     LoadPrefabFromId(id:string, entitySystem:EntitySystem) {
         if(this.allPrefabs[id] === undefined) {
             console.error(`Tried to load bad prefab: ${id}`);

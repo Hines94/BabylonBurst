@@ -10,7 +10,7 @@ cd ${base_path}
 
 # The actual script
 clear
-print_cyan "--- Starting setup for Babylon Boost ---\n"
+print_cyan "--- Starting setup for Babylon Burst ---\n"
 
 # Install modules common to all packages
 print_cyan "--- Installing Common Modules ---\n"
@@ -24,7 +24,7 @@ cd Engine/Editor
 npm install
 cd ${base_path}
 cd Engine/Server
-bash DevSetup.sh
+print_cyan "TODO: Setup server once implemented!"
 cd ${base_path}
 
 print_cyan "--- Installing git hooks for Engine ---\n"
@@ -32,5 +32,5 @@ mkdir ${base_path}/.git/hooks
 cp ${base_path}/Engine/Tools/GitHooks/pre-commit ${base_path}/.git/hooks/pre-commit
 chmod +x ${base_path}/.git/hooks/pre-commit
 
-print_cyan "--- Babylon Boost setup complete! ---\n"
+print_cyan "--- Babylon Burst setup complete! ---\n"
 read -r -p "Press any key to continue..." key

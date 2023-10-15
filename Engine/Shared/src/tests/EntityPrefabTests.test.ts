@@ -1,15 +1,17 @@
 import { encode } from "@msgpack/msgpack";
-import { Component, RegisteredComponent } from "../EntitySystem/Component";
+import { Component } from "../EntitySystem/Component";
 import { EntityData } from "../EntitySystem/EntityData";
 import { EntitySaver } from "../EntitySystem/EntitySaver";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
-import { Prefab, PrefabPackedType } from "../EntitySystem/Prefab";
+import { Prefab, PrefabInstance, PrefabPackedType } from "../EntitySystem/Prefab";
 import { PrefabManager } from "../EntitySystem/PrefabManager";
+import { EntityLoader } from "../EntitySystem/EntityLoader";
+import { RegisteredType } from "../EntitySystem/TypeRegister";
 
 const entSystem = new EntitySystem();
 const testUUID = "1234test234";
 
-@RegisteredComponent
+@RegisteredType
 class PrefabTestComp extends Component {
 
 }
@@ -44,3 +46,18 @@ test("PrefabReloadPrefab", () => {
 });
 
 //TODO: Test where we don't save default data on nested prefabs
+
+
+test("PrefabIgnoreDefault",()=>{ 
+    const savedData = EntitySaver.GetMsgpackForAllEntities(entSystem,true);
+    const template = EntityLoader.GetEntityTemplateFromMsgpack(savedData);
+    expect(template.DoesEntityExist(1)).toBe(true);
+    expect(template.GetEntityComponent(1,Prefab,undefined,entSystem.GetAllEntities())).toBe(undefined);
+})
+
+test("PrefabSaveLoadInstance",()=>{
+    entSystem.ResetSystem();
+    entSystem.AddEntity();
+    entSystem.AddSetComponentToEntity(1,new PrefabInstance(testUUID));
+    expect(entSystem.GetEntitiesWithData([Prefab],[]).GetNumEntities()).toBe(1);
+})

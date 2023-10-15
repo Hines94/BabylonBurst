@@ -1,7 +1,11 @@
 import { encode } from "@msgpack/msgpack";
-import { Component, FindSavedProperty, registeredComponents, savedProperties } from "./Component";
 import { EntityQuery } from "./EntityQuery";
 import { EntitySystem } from "./EntitySystem";
+import { Prefab } from "./Prefab";
+import { PrefabManager } from "./PrefabManager";
+import { SaveableDataField } from "./SaveableDataField";
+import { Component } from "./Component";
+import { FindSavedProperty, registeredTypes, savedProperties } from "./TypeRegister";
 
 export type EntitySavedTypings = {
     [comps:string]: string[];
@@ -39,6 +43,7 @@ export class EntitySaver {
         const data = {};
         query.iterateEntities((ent)=>{
             data[ent.EntityId] = {};
+            const prefabComp = ent.GetComponent<Prefab>(Prefab);
             for(var c = 0; c < ent.Components.length;c++){
                 //Get data and check if saved
                 const compObject = ent.Components[c];
@@ -55,9 +60,17 @@ export class EntitySaver {
                 const keys = Object.keys(compObject);
 
                 //Get default component to check against
-                var defaultComp = new (registeredComponents[compName] as any)();
-                const isPrefabDefault = false;
-                //TODO: Get default from prefab?
+                var defaultComp = new (registeredTypes[compName] as any)();
+                //Get default from prefab?
+                if(prefabComp !== undefined) {
+                    const attemptPrefab = PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabComp.PrefabIdentifier);
+                    if(attemptPrefab) {
+                        const defaultPrefab = attemptPrefab.GetEntityComponentByName(ent.EntityId,compName,undefined,query.owningSystem.GetAllEntities());
+                        if(defaultPrefab) {
+                            defaultComp = defaultPrefab;
+                        }
+                    }
+                }
 
                 keys.forEach(paramName =>{
                     //Get the metadata about this property (via decorator)
@@ -76,14 +89,11 @@ export class EntitySaver {
 
                     const paramIndex = GetTypingsParamIndex(compName,paramName,typings);
                     var paramData = compObject[paramName];
-                    if(propIdentifier.type["GetSaveableData"]) {
-                        paramData = propIdentifier.type.GetSaveableData(ent,compObject,paramName,paramData);
-                    }
-                    data[ent.EntityId][typingsIndex][paramIndex] = paramData; 
+                    data[ent.EntityId][typingsIndex][paramIndex] = SaveableDataField.getCustomSaveData(propIdentifier,ent,paramData);
                 })
 
                 //Tidy if ignore default and prefab
-                if(isPrefabDefault && Object.keys(data[ent.EntityId][typingsIndex]).length === 0) {
+                if(prefabComp !== undefined && Object.keys(data[ent.EntityId][typingsIndex]).length === 0) {
                     delete(data[ent.EntityId][typingsIndex]);
                 }
             }

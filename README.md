@@ -1,49 +1,36 @@
 Goals:
 The overall goal is to take all of the "heavy lifting" away so that the developers can focus solely on making clean game related code.
 - Maximum convenience for making game code (macros like REGISTER_MIDDLE_SYSTEM_UPDATE to register new systems)
-- Maximum performance and parallelistaion
-- Automatic performance tracking
-- Automatic networking
+- TODO: Automatic performance tracking
+- TODO: Automatic networking
 - Backwards compatability for Engine upgrades
 - Integrated Editor to maximise productivity & debugging
 - TODO: Automatic login & utils for multiplayer games
 - Full BabylonJS integration and max client performance
 
+NOTE: The engine  has recently gone through some large changes with all C++/WASM removed and replaced with typescript due to client performance issues. Networking and server is has been removed, but will be re-added at a later date (to similar functionality as previous).
+
 Setup:
-- Install WSL
-- create an AWS S3 bucket to contain the data for your game
-- create an AWS global key in IAM (not safe for production)
-- Clone this directory (git clone https://github.com/Hines94/BabylonBoost.git) into WSL
 - run EngineSetup.sh
 - create .env at the same level as this README
-    Example:
-        DEBUG_MODE=Light
-        USE_MEMORY_FRONTEND=TRUE
-        AWS_ID=YourAwsId
-        AWS_KEY=YourAwsKey
-        AWS_BUCKET_NAME=YourBucketName
-        AWS_BUCKET_REGION=ap-southeast-2
-        #Cut out the physics engine (bullet)?
-        NO_PHYSICS=false
+    - see .env.sample
 VsCode:
 - Install vscode extension
-- Install c/c++ for WSL & extension pack
-- Install CMake for WSL
 
 Working With Examples:
-Simply copy the CppSource and TsSource folders into your Source folder and re-compile
+Simply copy the ServerSource and ClientSource folders into your Source folder and re-run
 
 Start Editor:
 run StartEditor.sh
 
 Start Development:
-On vscode + wsl extension:
+On vscode:
 run debug mode to debug server (F5)
 No vscode:
 run bash StartDev.sh
 
 Check Backend Performance:
-Open Prometheus to see graphed data (localhost:3000)
+TODO: Open Prometheus to see graphed data (localhost:3000)
 Import the Grafana Dashboard (in Engine/Tools)
 
 Build Production:
@@ -58,27 +45,9 @@ Git & Engine Upgrades:
     - Should automatically merge in changes from the engine
     - If you have changed Engine code you may need to resolve any conflicts
 
-Extend Code C++:
-- Be careful using .hpp and .h files - unless included in a .cpp they will not be compiled in
-- Follow folder structure:
-    Source
-        CppSource
-            Common - compiled into WASM + Server
-            ServerSpecific - compiled into backend only
-            WASMSpecific - compiled into WASM only
-                WASM_INTERFACE - compiled with Emscripten for Embind (to make Typescript hooks into WASM - see Examples)
-- Register systems to update by including "Engine/GameLoop/CommonGameLoop.h" and using REGISTER_MIDDLE_SYSTEM_UPDATE (START/MIDDLE/END)
-- Register messages from players (clients) by REGISTER_PLAYER_MESSAGE(id for message, function to process)
-- TODO: Custom messages to players from Server
-
-Extend Code Typescript:
-- Required: Main.ts in TsSource with export function UpdateTick(ecosystem:GameEcosystem) 
-- Send messages to Server - if(serverConnection) { serverConnection.SendMessageToServer() }
-
 Future ideas:
 - TODO: Future iterations include tools for login & account management on AWS & integrate directly into Engine
 - TODO: Future iterations include tools for deployment to AWS
-- TODO: Include Blender tool for uploading models in an easy to use format
 - TODO: Future iterations support for GameLift with matchmaking etc
 - TODO: Future iterations support cloudfront to protect S3 & improve CDN speed
 - TODO: Future iterations support skeletal mesh animator to make animations from ECS easy & support instancing 

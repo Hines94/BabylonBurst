@@ -19,6 +19,10 @@ export class EntitySystem {
         return this.CreateEntity(this.SpawnedEntities);
     }
 
+    GetAllEntities() :{[entId:number]:EntityData} {
+        return this.AllEntities;
+    }
+
     EnsureEntity(entId:number) : EntityData {
         if(this.EntityExists(entId)){
             return this.GetEntityData(entId);
@@ -35,18 +39,41 @@ export class EntitySystem {
     }
 
     ResetSystem() {
+        this.GetEntitiesWithData([],[]).iterateEntities((e)=>{
+            this.RemoveEntity(e);
+        })
         this.SpawnedEntities = 0;
         this.AllEntities = {};
         this.EntityBuckets = [];
         this.ChangedComponents = {};
     }
 
-    RemoveEntity(en:number | EntityData) {
+    RemoveComponent(en:number | EntityData,comp:typeof Component) {
         const entData = this.getEntData(en);
-        const entId = this.getEntId(en);
         if(!entData.IsValid()) {
             return;
         }
+        const component = entData.GetComponent(comp);
+        if(!component) {
+            return;
+        }
+        component.onComponentRemoved(entData);
+        entData.Components = entData.Components.filter(c=>{c !== component});
+        const newBucket = this.FindMakeBucket(entData.Components);
+        newBucket.ChangeEntityToThisBucket(entData);
+    }
+
+    RemoveEntity(en:number | EntityData) {
+        const entData = this.getEntData(en);
+        if(!entData.IsValid()) {
+            console.warn("Tried to remove invalid ent: " + en);
+            return;
+        }
+        const entId = this.getEntId(en);
+        //Remove all components
+        entData.Components.forEach((comp)=> {
+            comp.onComponentRemoved(entData)
+        });
         EntityBucket.RemoveEntityFromAnyBuckets(entData);
         delete(this.AllEntities[entData.EntityId]);
         entData.CleanEntity();
@@ -96,14 +123,34 @@ export class EntitySystem {
         entData.Components.push(comp);
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
+        comp.onComponentAdded(entData);
     }
 
     ResetChangedComponents() {
+        for(let ent in this.ChangedComponents) {
+            const entId = parseInt(ent);
+            const comps = this.ChangedComponents[entId];
+            const data = this.getEntData(entId);
+            if(data === undefined) {
+                continue;
+            }
+            for(var c = 0; c < comps.length;c++) {
+                const comp = comps[c];
+                const component = data.GetComponentByName(comp);
+                if(component === undefined){
+                    continue;
+                }
+                component.onComponentChanged(data);
+            }
+        }
         this.ChangedComponents = {};
     }
 
     IsChangedComponent(en:number | EntityData, comp:typeof Component) {
         const entId = this.getEntId(en);
+        if(!entId) {
+            return false;
+        }
         if(!this.ChangedComponents[entId]) {
             return false;
         }
@@ -112,6 +159,9 @@ export class EntitySystem {
 
     SetChangedComponent(en:number | EntityData, comp:Component) {
         const entId = this.getEntId(en);
+        if(!entId) {
+            return;
+        }
         if(!this.ChangedComponents[entId]) {
             this.ChangedComponents[entId] = [];
         }
@@ -129,6 +179,7 @@ export class EntitySystem {
         const bucket = this.FindMakeBucket([]);
         bucket.ChangeEntityToThisBucket(newEnt);
         this.onEntityCreatedEv.notifyObservers(entId);
+        newEnt.owningSystem = this;
         return newEnt;
     }
 
@@ -164,6 +215,9 @@ export class EntitySystem {
 
     
     private getEntId(ent:number | EntityData) : number {
+        if(ent === undefined) {
+            return undefined;
+        }
         if (typeof ent === "number") {
             return ent;
         } else {

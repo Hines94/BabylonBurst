@@ -69,8 +69,4 @@ else
 fi
 
 #--- Start Server ---
-if arg_exists "-ns" "$@"; then
-    exit 0
-else
-    ./Engine/Server/build/server_build/babylonboostserver
-fi
+#TODO: Start server

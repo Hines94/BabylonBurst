@@ -1,7 +1,11 @@
 import { Component, TrackedVariable } from "../EntitySystem/Component";
+import { EntityData } from "../EntitySystem/EntityData";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
 
 const entSystem = new EntitySystem();
+var removeCalled = false;
+var addCalled = false;
+var changeCalled = false;
 
 class TestComp extends Component {
 
@@ -10,6 +14,16 @@ class TestComp extends Component {
 class TestComp2 extends Component {
     @TrackedVariable()
     someVar = "test";
+
+    override onComponentRemoved(entData: EntityData): void {
+        removeCalled = true;
+    }
+    override onComponentAdded(entData: EntityData): void {
+        addCalled = true;
+    }
+    override onComponentChanged(entData: EntityData): void {
+        changeCalled = true;
+    }
 }
 
 test("EntitySystemAddEntity", () => {
@@ -57,8 +71,18 @@ test("EntitySystemRemoveEntities", () => {
     expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(1);
 })
 
+test("EntitySystemRemoveComponent", () => {
+    entSystem.RemoveComponent(2,TestComp);
+    expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(0);
+})
 
 test("EntitySystemResetSystem", () => {
-    entSystem.SetChangedComponent;
-    expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(1);
+    entSystem.ResetSystem();
+    expect(entSystem.GetEntitiesWithData([],[]).GetNumEntities()).toBe(0);
+})
+
+test("EntitySystemEventsFired", () => {
+    expect(addCalled).toBe(true);
+    expect(removeCalled).toBe(true);
+    expect(changeCalled).toBe(true);
 })

@@ -7,7 +7,7 @@
       "paths": {
         "@BabylonBurstClient/*": ["../Client/src/*"],
         "@engine/*": ["../Shared/src/*"],
-        "@userCode/*": ["../../Source/TsSource/*"]
+        "@userCode/*": ["../../Source/ClientSource/*"]
       }
     }
   }

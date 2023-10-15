@@ -1,15 +1,17 @@
 import { Component } from "./Component";
 import { SaveableDataField } from "./SaveableDataField";
+import { RegisteredType } from "./TypeRegister";
 
 //Maps entities original->new so we can keep any references etc
 export type EntityLoadMapping = {
     [originalId:number]:EntityData;
 }
 
-
+@RegisteredType
 export class EntityData extends SaveableDataField {
     EntityId:number;
     Components:Component[] = [];
+    owningSystem:any;
     IsValid() {
         return this.EntityId !== undefined;
     }
@@ -30,8 +32,9 @@ export class EntityData extends SaveableDataField {
         return undefined;
     }
 
-    GetComponentByName(name:string) {
-        for (let comp in this.Components) {
+    GetComponentByName(name:string) : Component {
+        for(var c=0; c < this.Components.length;c++) {
+            const comp = this.Components[c];
             if(comp.constructor.name === name) {
                 return comp;
             }
@@ -39,14 +42,14 @@ export class EntityData extends SaveableDataField {
         return undefined;
     }
 
-    static GetSaveableData(entity: EntityData, comp:Component, propertyName: string, property:any):any {
-        if(!property || !property.IsValid()){
+    static GetSaveableData(entity: EntityData,property:any):any {
+        if(property === undefined || property === null || !property.IsValid()){
             return 0;
         }
         return property.EntityId;
     }
 
-    static LoadSaveableData(entity: EntityData, comp:Component, propertyName: string, property:any, entityMap:EntityLoadMapping):any {
+    static LoadSaveableData(entity: EntityData,property:any, entityMap:EntityLoadMapping):any {
         if(!property || property === 0) {
             return undefined;
         }
