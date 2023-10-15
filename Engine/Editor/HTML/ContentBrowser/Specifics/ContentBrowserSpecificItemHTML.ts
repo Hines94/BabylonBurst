@@ -8,7 +8,7 @@ import { SetupBundleInputWithDatalist } from "../../../Utils/ContentTypeTrackers
 
 
 export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedItemHTML {
-    ourItem:ContentItem;
+    declare ourItem:ContentItem;
 
     getDraggingText(): string {
         return this.ourItem.name;

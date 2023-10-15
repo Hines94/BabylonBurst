@@ -1,6 +1,6 @@
 import * as BABYLONGUI from "@babylonjs/gui";
 import { GetGameSettings } from "../../Settings";
-import { DebugMode, environmentVaraibleTracker } from "../../Utils/EnvironmentVariableTracker";
+import { DebugMode, environmentVaraibleTracker } from "../../../../Shared/src/Utils/EnvironmentVariableTracker";
 import { uiLayerMask } from "../../Utils/LayerMasks";
 
 export class FramerateCounter {

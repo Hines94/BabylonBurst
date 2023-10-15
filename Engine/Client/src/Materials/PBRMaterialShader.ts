@@ -1,10 +1,6 @@
+import { MateralDescription } from "@BabylonBurstClient/Materials/MaterialDescription";
+import { AsyncTextureSetupParameter, MaterialSetupParameter, ScalarSetupParameter } from "@BabylonBurstClient/Materials/MaterialSetupParameter";
 import { Material, PBRMaterial, Scene } from "@babylonjs/core";
-import { MateralDescription } from "@engine/Materials/MaterialDescription";
-import {
-    AsyncTextureSetupParameter,
-    MaterialSetupParameter,
-    ScalarSetupParameter,
-} from "@engine/Materials/MaterialSetupParameter";
 
 export class PBRMaterialShader extends MateralDescription {
     GetMaterialInstance(scene: Scene): Material {

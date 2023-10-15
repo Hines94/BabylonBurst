@@ -1,5 +1,6 @@
-import { MateralDescription } from "@engine/Materials/MaterialDescription";
-import { PBRMaterialShader } from "@engine/Materials/PBRMaterialShader";
+import { MateralDescription } from "@BabylonBurstClient/Materials/MaterialDescription";
+import { PBRMaterialShader } from "@BabylonBurstClient/Materials/PBRMaterialShader";
+
 
 var setDefault = false;
 

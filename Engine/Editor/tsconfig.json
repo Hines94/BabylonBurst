@@ -1,8 +1,12 @@
 {
     "compilerOptions": {
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "node",
       "baseUrl": "./",
       "paths": {
         "@BabylonBurstClient/*": ["../Client/src/*"],
+        "@engine/*": ["../Shared/src/*"],
         "@userCode/*": ["../../Source/TsSource/*"]
       }
     }

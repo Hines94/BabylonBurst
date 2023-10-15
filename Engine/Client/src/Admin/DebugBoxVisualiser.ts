@@ -1,6 +1,6 @@
 import { Mesh, MeshBuilder } from "@babylonjs/core";
 import { GetSimpleImageMaterial } from "../Materials/SimpleImageMaterial";
-import { InstancedMeshTransform, SetTransformArray } from "../AsyncAssets";
+import { InstancedMeshTransform, SetTransformArray } from "@engine/AsyncAssets";
 
 export class DebugBoxSpecification {
     transform: InstancedMeshTransform;

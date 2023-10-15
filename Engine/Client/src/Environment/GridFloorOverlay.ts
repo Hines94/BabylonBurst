@@ -10,11 +10,11 @@ import {
     Color4,
 } from "@babylonjs/core";
 import { GetSimpleImageMaterial } from "../Materials/SimpleImageMaterial";
-import { SetSimpleMaterialColor } from "../Materials/AsyncSimpleImageMaterial";
+import { SetSimpleMaterialColor } from "../../../Shared/src/Materials/AsyncSimpleImageMaterial";
 import { DisposeOfObject } from "../Utils/SceneUtils";
 import { defaultLayerMask } from "../Utils/LayerMasks";
 import { SnapGridUtil } from "../Utils/SnapGridUtil";
-import { InstancedMeshTransform, SetTransformArray } from "../AsyncAssets";
+import { InstancedMeshTransform, SetTransformArray } from "@engine/AsyncAssets";
 
 export enum GridType {
     squareGrid,

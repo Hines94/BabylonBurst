@@ -1,7 +1,7 @@
 import { InspectableType, TransformNode } from "@babylonjs/core";
-import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
+import { DebugMode, environmentVaraibleTracker } from "../../../Shared/src/Utils/EnvironmentVariableTracker";
 import { GameEcosystem } from "../GameEcosystem";
-import { AsyncAssetManager } from "../AsyncAssets";
+import { AsyncAssetManager } from "@engine/AsyncAssets";
 
 /** A Debug interface based on a node. Simply press ` to open inspector then navigate to "ADMINDEBUGOBJECT" to access the useful methods */
 export class AdminDebugInterface extends TransformNode {

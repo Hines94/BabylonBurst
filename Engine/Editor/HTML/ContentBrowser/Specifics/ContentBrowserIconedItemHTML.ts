@@ -2,16 +2,14 @@ import { CloneTemplate, MakeDraggableElement } from "@BabylonBurstClient/HTML/HT
 import { ContentBrowserHTML } from "../ContentBrowserHTML";
 import { ContentBrowserVisualHTML } from "../ContentBrowserVisualHTML";
 import { VisualItem } from "../VisualItem";
-import { ContextMenuItem, ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
-import { SetInspectorOwner } from "../../InspectorWindow/InspectorHTML";
 
 const icons: { [type: number]: string } = {};
 const iconPromises: { [type: number]: Promise<void> } = {};
 
 /** Folder or item - something which is draggable and has an icon */
 export abstract class ContentBrowserIconedItemHTML extends ContentBrowserVisualHTML {
-    ourItemContainer:HTMLElement;
-    iconImg: HTMLImageElement;
+    declare ourItemContainer:HTMLElement;
+    declare iconImg: HTMLImageElement;
 
     constructor(ourContentHolder: ContentBrowserHTML, ourItem:VisualItem) {
         super(ourContentHolder,ourItem);
@@ -20,7 +18,7 @@ export abstract class ContentBrowserIconedItemHTML extends ContentBrowserVisualH
     }
 
     setupOurSelectable(): void {
-        this.ourItemContainer = CloneTemplate("ContentItem");
+        this.ourItemContainer = CloneTemplate("ContentItem",this.ourContentHolder.ecosystem.doc);
         this.ourSelectable = this.ourItemContainer.querySelector("#selectableContentItem");
         this.iconImg = this.ourItemContainer.querySelector("#ContentItemThumbnail");
         this.ourName = this.ourItemContainer.querySelector("#ContentItemName") as HTMLInputElement;

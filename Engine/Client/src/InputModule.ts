@@ -1,5 +1,5 @@
 import { Observable } from "@babylonjs/core/Misc/observable.js";
-import { SimpleWeightedAverageSmooth } from "./Utils/MathUtils";
+import { SimpleWeightedAverageSmooth } from "../../Shared/src/Utils/MathUtils";
 import { UpdateDynamicTextureChecks } from "./GUI/AdvancedDynamicTextureTracker";
 import { GameEcosystem } from "./GameEcosystem";
 import { DeviceSourceManager, DeviceType, PointerInput, Vector2 } from "@babylonjs/core";

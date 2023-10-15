@@ -17,12 +17,14 @@
         "strictNullChecks": false,
         "baseUrl": "./", 
         "paths": {
-            "@engine/*": ["src/*"],
+            "@BabylonBurstClient/*": ["src/*"],
+            "@engine/*": ["../Shared/src/*"],
             "@userCode/*": ["../../Source/TsSource/*"]
         }
     },
     "include": [
         "src/**/*", 
+        "../Shared/src/**/*", 
         "../../Source/TsSource/**/*"
     ]
 }

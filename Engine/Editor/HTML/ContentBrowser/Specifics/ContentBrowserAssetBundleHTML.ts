@@ -10,8 +10,7 @@ import { AssetFolder } from "../AssetFolder";
 
 
 export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
-
-    ourItem: AssetBundle;
+    declare ourItem: AssetBundle;
     containedIcons:ContentBrowserVisualHTML[] = [];
 
     setupOurSelectable(): void {

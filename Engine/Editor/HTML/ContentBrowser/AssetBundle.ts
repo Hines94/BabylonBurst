@@ -1,10 +1,10 @@
 import { VisualItem } from "./VisualItem";
 import { AssetFolder } from "./AssetFolder";
 import { ContentItem, ContentItemType } from "./ContentItem";
-import { AsyncAWSBackend, AsyncZipPuller, IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
-import { AsyncDataType, GetAllZippedFileDatas } from "@BabylonBurstClient/AsyncAssets/Utils/ZipUtils";
-import { FileZipData } from "@BabylonBurstClient/AsyncAssets/Framework/StorageInterfaceTypes";
 import { RefreshObjectTypeTracking } from "../../Utils/ContentTypeTrackers";
+import { AsyncAWSBackend, AsyncZipPuller } from "@engine/AsyncAssets";
+import { FileZipData } from "@engine/AsyncAssets/Framework/StorageInterfaceTypes";
+import { AsyncDataType, GetAllZippedFileDatas } from "@engine/AsyncAssets/Utils/ZipUtils";
 
 
 //A bundle that holds an item (the .zip archive)

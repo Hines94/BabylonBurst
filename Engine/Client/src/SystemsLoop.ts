@@ -1,14 +1,14 @@
 import { RunInstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
 import { debugBoxVis } from "./Admin/DebugBoxVisualiser";
 import { UpdateAdminInterface } from "./Admin/AdminDebugInterface";
-import { DebugMode, environmentVaraibleTracker } from "./Utils/EnvironmentVariableTracker";
+import { DebugMode, environmentVaraibleTracker } from "../../Shared/src/Utils/EnvironmentVariableTracker";
 import { serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
-import { GameEcosystem } from "./GameEcosystem";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
-import { UpdateAsyncSystemOnTick } from "./AsyncAssets";
 import { UpdateTick } from "@userCode/Main";
-import { RunLightsSystem } from "@engine/Rendering/LightsSystem";
+import { GameEcosystem } from "@engine/GameEcosystem";
+import { RunLightsSystem } from "./Rendering/LightsSystem";
+import { UpdateAsyncSystemOnTick } from "@engine/AsyncAssets";
 
 /** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
@@ -47,11 +47,11 @@ export function UpdateSystemsLoop(gameClient: GameEcosystem, specificSystems: (e
     //Update our visual models on tick (instances and downloading etc)
     UpdateAsyncSystemOnTick();
 
-    //gameClient.entitySystem.ResetChangedComponents(); TODO: Reset changed in WASM!
+    gameClient.entitySystem.ResetChangedComponents();
 }
 
 function runSystem(ecosystem: GameEcosystem, system: (ecosystem: GameEcosystem) => void) {
-    ecosystem.wasmWrapper.FlushEntitySystem();
+    //tODO: Track performance
     system(ecosystem);
 }
 

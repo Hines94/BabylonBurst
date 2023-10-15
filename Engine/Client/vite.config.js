@@ -13,7 +13,8 @@ export default {
     },
     resolve: {
         alias: {
-            '@engine': path.resolve(__dirname, 'src'),
+            '@BabylonBurstClient': path.resolve(__dirname, 'src'),
+            '@engine': path.resolve(__dirname, '../Shared/src'),
             '@userCode': path.resolve(__dirname, '../../Source/TsSource'),
         }
     }

@@ -1,8 +1,8 @@
 import { VisualItem } from "./VisualItem";
 import { AssetBundle } from "./AssetBundle";
-import { IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
 import { ContentItem } from "HTML/ContentBrowser/ContentItem";
 import { RefreshObjectTypeTracking } from "../../Utils/ContentTypeTrackers";
+import { IBackendStorageInterface } from "@engine/AsyncAssets";
 
 
 

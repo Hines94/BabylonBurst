@@ -10,7 +10,7 @@ import {
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import JSZip from "jszip";
 import { BackendSetup, FileZipData, IBackendStorageInterface } from "./StorageInterfaceTypes";
-import { GetZipPath } from "@engine/AsyncAssets/Utils/ZipUtils";
+import { GetZipPath } from "../Utils/ZipUtils";
 
 async function createZip(data: FileZipData[]) {
     const zip = new JSZip();

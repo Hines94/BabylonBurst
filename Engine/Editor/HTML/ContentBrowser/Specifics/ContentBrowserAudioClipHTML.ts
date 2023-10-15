@@ -1,13 +1,11 @@
 
-import { AsyncAudioClipDefinition } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentItem } from "../ContentItem";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
+import { AsyncAudioClipDefinition } from "@engine/AsyncAssets";
 
 
 export class ContentBrowserAudioClipHTML extends  ContentBrowserSpecificItem {
-
-    outItem:ContentItem;
 
     cleanupItem(): void {
         throw new Error("Method not implemented.");

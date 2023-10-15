@@ -4,8 +4,6 @@ import { BaseTickableObject } from "@BabylonBurstClient/Utils/BaseTickableObject
 import { BabylonBurstEditor } from "../BabylonBurstEditor";
 import { ContentItem, ContentItemType } from "./ContentBrowser/ContentItem";
 import { SetupCustomInspectorEditors } from "./InspectorWindow/CustomInspectorInputs";
-import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
-import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserHTML, ContentStorageBackend } from "./ContentBrowser/ContentBrowserHTML";
 import { SetupForModelTrackingRefresh } from "../Utils/EditorModelSpecifier";
 import { AssetFolder } from "./ContentBrowser/AssetFolder";
@@ -15,6 +13,8 @@ import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
 import { SaveEntitiesToMsgpackIntArray } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
 import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
+import { AsyncAWSBackend, AsyncAssetManager } from "@engine/AsyncAssets";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 //This assumes only one editor per time - pretty reasonable
 export var topLevelEditorFolder:AssetFolder;

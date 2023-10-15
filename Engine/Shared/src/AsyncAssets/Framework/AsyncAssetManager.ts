@@ -35,6 +35,13 @@ export class AsyncAssetManager {
         return globalAssetManager;
     }
 
+    static CreateAssetManager(backendStorage:IBackendStorageInterface,frontendStorage:IFrontendStorageInterface) {
+        if(globalAssetManager) {
+            return;
+        }
+        new AsyncAssetManager(backendStorage,frontendStorage);
+    }
+
     async loadManager() {
         //Waiting promise so others don't run the same code also!
         if (this.awaitingLoadProm !== null) {

@@ -9,13 +9,11 @@ import { ShowNotificationWindow } from "@BabylonBurstClient/HTML/HTMLNotificatio
 
 export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
     ourFolder:AssetFolder;
-    ourItem:AssetFolder;
+    declare ourItem:AssetFolder;
     
     constructor(ourContentHolder: ContentBrowserHTML, folder: AssetFolder) {
         super(ourContentHolder,folder);
         this.ourFolder = folder;
-
-        this.SetIcon("Folder");
     }
 
     override setupOurSelectable(): void {
@@ -23,6 +21,7 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
         (this.ourSelectable as any).AssetFolder = this.ourItem;
         this.ourContentHolder.contentGrid.appendChild(this.ourItemContainer);
         MakeDroppableGenericElement(this.ourSelectable,this.onElementDragover.bind(this),this.isDroppableElement.bind(this))
+        this.SetIcon("Folder");
     }
 
     async onElementDragover(ele:any) {
@@ -146,14 +145,14 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
     }
 
     async drawInspectorInfo(): Promise<void> {
-        const inspector = this.ourItemContainer.ownerDocument.getElementById("InspectorPanel") as HTMLElement;
+        const inspector = this.ourContentHolder.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         (inspector.querySelector("#ItemType") as HTMLElement).innerText = "Folder";
         this.SetIcon("Folder",inspector.querySelector("#ItemImage"));
 
         const containedItems = this.ourItem.getAllContainedAssets();
 
         //Total num assets
-        const numItems = this.ourItemContainer.ownerDocument.createElement("p");
+        const numItems = this.ourContentHolder.ecosystem.doc.createElement("p");
         numItems.innerText = "Num Contained Assets: " + containedItems.length;
         numItems.style.paddingBottom = "0px";
         numItems.style.marginBottom = "0px";
@@ -173,7 +172,7 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
         }
         const types = Object.keys(containedTypes);
         for (var i = 0; i < types.length; i++) {
-            const typeItem = this.ourItemContainer.ownerDocument.createElement("p");
+            const typeItem = this.ourContentHolder.ecosystem.doc.createElement("p");
             typeItem.style.padding = "0px";
             typeItem.style.margin = "0px";
             typeItem.style.paddingLeft = "20px";

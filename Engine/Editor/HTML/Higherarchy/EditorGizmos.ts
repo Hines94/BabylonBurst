@@ -1,7 +1,6 @@
 import { AbstractMesh, GizmoManager, Observable } from "@babylonjs/core";
-import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
-import { GetComponent, RawEntityData } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
-import { EntTransform } from "@BabylonBurstClient/EntitySystem/CoreComponents";
+import { EntTransform } from "@engine/EntitySystem/CoreComponents";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 export function GetEditorGizmos(ecosystem: GameEcosystem) {
     if (ecosystem.dynamicProperties["EditorGizmos"] === undefined) {
@@ -114,8 +113,8 @@ export class EditorGizmos {
     }
 
     SetupToEntity(entity: number) {
-        const entData = this.owner.wasmWrapper.GetDataForEntity(entity, false);
-        const transform = GetComponent(entData, EntTransform);
+        const entData = this.owner.entitySystem.GetEntityData(entity);
+        const transform = entData.GetComponent(EntTransform);;
         if (!transform) {
             this.entityOwner = undefined;
             this.HideGizmos();
@@ -155,10 +154,7 @@ export class EditorGizmos {
         if (EntTransform.Equals(this.oldTransformData, transformData)) {
             return;
         }
-        this.oldTransformData = transformData;
-        const rawData: RawEntityData = {};
-        rawData[this.entityOwner] = { EntTransform: transformData };
-        this.owner.wasmWrapper.LoadMsgpackDataToExistingEntities(rawData, false);
-        this.changeTransformObserver.notifyObservers(transformData);
+        const entTf = this.owner.entitySystem.GetEntityData(this.entityOwner).GetComponent(EntTransform) as EntTransform;
+        entTf.Copy(transformData);
     }
 }

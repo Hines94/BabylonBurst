@@ -1,16 +1,6 @@
+import { AsyncAWSBackend, AsyncAssetManager, AsyncInMemoryFrontend, AsyncIndexDBFrontend } from "@engine/AsyncAssets";
 import { GetAllZippedFileDatas } from "@engine/AsyncAssets/Utils/ZipUtils";
-import {
-    AsyncAWSBackend,
-    AsyncAssetManager,
-    AsyncDataType,
-    AsyncInMemoryFrontend,
-    AsyncIndexDBFrontend,
-    AsyncZipPuller,
-} from "../AsyncAssets";
-import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
-import { GetWasmModule } from "../WASM/ServerWASMModule";
-import { setupGeneralWASMCallbacks } from "@engine/Setup/WASMCallbacksSetup";
-import { decode } from "@msgpack/msgpack";
+import { DebugMode, environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
 
 //Since manager is global we just check if setup
 export async function setupAsyncManager() {
@@ -44,33 +34,4 @@ export async function setupAsyncManager() {
     );
     assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light;
     await assetManager.loadManager();
-    setupAWSWASMHooks(assetManager);
-    setupGeneralWASMCallbacks();
-    console.log("Setup Async Asset Manager");
-}
-
-function setupAWSWASMHooks(manager: AsyncAssetManager) {
-    //@ts-ignore
-    window.RequestAwsAsset = async function (url: string, fileName: string, module: string) {
-        console.log("Request AWS Asset: " + url);
-        const data = await AsyncZipPuller.LoadFileData(url, fileName, AsyncDataType.arrayBuffer, false);
-        GetWasmModule(module).AwsGetItemDataCallback(data, url);
-    };
-    //@ts-ignore
-    window.RequestAWSBundleName = async function (url: string, module: string) {
-        console.log("Request AWS Asset: " + url);
-        const data = await AsyncAssetManager.GetAssetManager().backendStorage.GetItemAtLocation(url);
-        const datas = await GetAllZippedFileDatas(data);
-        var ret: string[] = [];
-        datas.forEach(d => {
-            ret.push(d.name);
-        });
-        GetWasmModule(module).AwsFilenamesCallback(url, ret);
-    };
-    //@ts-ignore
-    window.RequestAllAwsAssets = async function (module: string) {
-        const allItems = await manager.backendStorage.GetAllBackendItems();
-        var strArray = allItems.map(String);
-        GetWasmModule(module).AwsGetAllDataCallback(strArray);
-    };
 }

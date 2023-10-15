@@ -8,8 +8,8 @@ import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
 import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
-import { DebugMode, environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
-import { GetBadMeshMaterial } from "@engine/Utils/MeshUtils";
+import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
+import { GetBadMeshMaterial } from "../Materials/AsyncSimpleImageMaterial";
 
 /** A Dictionary of all mesh definitions with details on if they are  */
 var AllMDefinitions: {

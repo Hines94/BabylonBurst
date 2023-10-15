@@ -1,10 +1,8 @@
 import { ContentBrowserMaterialHTML } from "./Specifics/ContentBrowserMaterialHTML";
 import { ContentBrowserHTML } from "./ContentBrowserHTML";
-import { ContentBrowserItemHTML } from "./ContentBrowserItemHTML";
 import { ContentItem, ContentItemType } from "./ContentItem";
 import { ContentBrowserAudioClipHTML } from "./Specifics/ContentBrowserAudioClipHTML";
 import { ContentBrowserDatasheetHTML } from "./Specifics/ContentBrowserDatasheetHTML";
-import { ContentBrowserFolderHTML } from "./Specifics/ContentBrowserFolderHTML";
 import { ContentBrowserImageHTML } from "./Specifics/ContentBrowserImageHTML";
 import { ContentBrowserModelHTML } from "./Specifics/ContentBrowserModelHTML";
 import { ContentBrowserPrefabHTML } from "./Specifics/ContentBrowserPrefabHTML";

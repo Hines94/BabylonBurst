@@ -1,19 +1,13 @@
-import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
-import { RefreshNavmeshVisualisationStage, navStageChangeDat, onContoursRebuild, onNavmeshStageChange } from "@BabylonBurstClient/Rendering/NavmeshVisualRenderSystem";
-import { AddOptionToEditorTopMenu, GenerateTopMenuToggle } from "../../Utils/EditorTopMenu";
+import { GenerateTopMenuToggle } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 import { HemisphericLight, Vector3 } from "@babylonjs/core";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 /** All visualistaion options such as view colliders etc */
 export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
-    SetupNavmeshRebuild(ecosystem)
     SetupWiremeshVisualistaion(ecosystem);
     SetupColliderVisualisation(ecosystem);
-    onNavmeshStageChange.add(GenerateNavStageVisualistaion);
-    onContoursRebuild.add((eco)=>{
-        GenerateNavStageVisualistaion({ecosystem:ecosystem,stage:"Contours"})  
-    })
     SetupEditorDownLight(ecosystem);
 }
 
@@ -36,13 +30,6 @@ function SetupEditorDownLight(ecosystem:GameEcosystem) {
         light.setEnabled(false);
     }
 )
-}
-
-function SetupNavmeshRebuild(ecosystem:GameEcosystem) {
-    const ddOption = AddOptionToEditorTopMenu(ecosystem, "Build", "Rebuild Nav");
-    ddOption.addEventListener("click", () => {
-        ecosystem.wasmWrapper.RegenerateNavmesh();
-    });
 }
 
 function SetupColliderVisualisation(ecosystem: GameEcosystem) {
@@ -70,17 +57,4 @@ function SetupWiremeshVisualistaion(ecosystem:GameEcosystem) {
         RefreshWireframeMode(ecosystem);
     }
 )
-}
-
-export function GenerateNavStageVisualistaion(data:navStageChangeDat) {
-    GenerateTopMenuToggle(data.ecosystem,"Show " + data.stage, "View","Navigation/",
-        (ecosystem:GameEcosystem)=>{
-            //On
-            RefreshNavmeshVisualisationStage(ecosystem,data.stage);
-        },
-        (ecosystem:GameEcosystem)=>{
-            //Off callback
-            RefreshNavmeshVisualisationStage(ecosystem,data.stage);
-        }
-    )
 }

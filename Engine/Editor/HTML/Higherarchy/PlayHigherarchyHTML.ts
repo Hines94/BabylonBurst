@@ -1,7 +1,7 @@
-import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
 import { HigherarchyHTML } from "./HigherarchyHTML";
 import { SetupAllEditorVisualisations } from "../HTMLUtils/VisualAidUtils";
 import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 declare function FetchInjectAdditionalHTML(arg: string): Promise<any>;
 

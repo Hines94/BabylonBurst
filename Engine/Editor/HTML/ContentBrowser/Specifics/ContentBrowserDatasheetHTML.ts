@@ -1,11 +1,12 @@
-import { AsyncStringLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
 import { ConvertDataBackToCSV } from "@BabylonBurstClient/Utils/DataToCSV";
 import { OpenDatasheet, SetupDatasheet as SetupDatasheet } from "../../Datasheets/DatasheetEditor";
 import { ContentItem } from "../ContentItem";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
+import { AsyncStringLoader } from "@engine/Utils/StandardAsyncLoaders";
 
 export class ContentBrowserDatasheetHTML extends ContentBrowserSpecificItem {
-    ourItem:ContentItem;
+    declare ourItem:ContentItem;
+    
     override getContextMenuItems(): {
         name: string;
         callback: () => void;

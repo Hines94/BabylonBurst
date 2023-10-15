@@ -1,9 +1,8 @@
 import { decode } from "@msgpack/msgpack";
 import { OpenMaterial } from "../../Materials/MaterialEditor";
-import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
-import { AsyncArrayBufferLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import {AsyncArrayBufferLoader} from "@engine/Utils/StandardAsyncLoaders"
 
 export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
 

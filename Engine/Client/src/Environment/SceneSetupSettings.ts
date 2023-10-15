@@ -17,7 +17,7 @@ import {
 import { GridFloorOverlay } from "./GridFloorOverlay";
 // import { AdminDebugInterface } from "../Admin/AdminDebugInterface";
 import { GetGameSettings } from "../Settings";
-import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
+import { DebugMode, environmentVaraibleTracker } from "../../../Shared/src/Utils/EnvironmentVariableTracker";
 import { defaultLayerMask } from "../Utils/LayerMasks";
 
 function fakePickMoveFunction(): PickingInfo {

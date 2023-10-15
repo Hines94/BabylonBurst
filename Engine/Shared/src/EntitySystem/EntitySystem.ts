@@ -1,3 +1,4 @@
+import { Observable } from "@babylonjs/core";
 import { ArraysContainEqualItems } from "../Utils/ArrayUtils";
 import { Component, DeepSetupCallback } from "./Component";
 import { EntityBucket } from "./EntityBucket";
@@ -9,6 +10,9 @@ export class EntitySystem {
     private AllEntities:{[entId:number]:EntityData} = {};
     private EntityBuckets:EntityBucket[] = [];
     private ChangedComponents:{[enId:number]:string[]} = {};
+
+    onEntityCreatedEv = new Observable<number>();
+    onEntityRemovedEv = new Observable<number>();
 
     AddEntity(): EntityData {
         this.SpawnedEntities++;
@@ -39,12 +43,14 @@ export class EntitySystem {
 
     RemoveEntity(en:number | EntityData) {
         const entData = this.getEntData(en);
+        const entId = this.getEntId(en);
         if(!entData.IsValid()) {
             return;
         }
         EntityBucket.RemoveEntityFromAnyBuckets(entData);
         delete(this.AllEntities[entData.EntityId]);
         entData.CleanEntity();
+        this.onEntityRemovedEv.notifyObservers(entId);
     }
 
     GetEntitiesWithData(includeComps:typeof Component[],excludeComps:typeof Component[]): EntityQuery {
@@ -122,6 +128,7 @@ export class EntitySystem {
         this.AllEntities[entId] = newEnt;
         const bucket = this.FindMakeBucket([]);
         bucket.ChangeEntityToThisBucket(newEnt);
+        this.onEntityCreatedEv.notifyObservers(entId);
         return newEnt;
     }
 

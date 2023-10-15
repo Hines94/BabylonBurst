@@ -12,6 +12,8 @@
 
     },
     "dependencies": {
+        "@babylonjs/core": "../node_modules/@babylonjs/core",
+        "@babylonjs/gui": "../node_modules/@babylonjs/gui",
         "@json-editor/json-editor": "^2.10.1",
         "vite": "../../node_modules/vite",
         "@msgpack/msgpack": "../node_modules/msgpack",

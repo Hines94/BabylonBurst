@@ -1,4 +1,4 @@
-import { AsyncArrayBufferLoader } from "@BabylonBurstClient/Utils/StandardAsyncLoaders";
+import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { decode } from "@msgpack/msgpack";

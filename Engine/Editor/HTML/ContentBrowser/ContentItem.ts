@@ -1,9 +1,8 @@
-import { AsyncZipPuller, IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
 import { VisualItem } from "./VisualItem";
 import { AssetBundle } from "./AssetBundle";
 import { AssetFolder } from "./AssetFolder";
-import { AsyncDataType, GetZippedFile, ZippedEntry } from "@BabylonBurstClient/AsyncAssets/Utils/ZipUtils";
-import {GetFileExtension} from "@BabylonBurstClient/Utils/StringUtils"
+import { GetFileExtension } from "@engine/Utils/StringUtils"
+import { AsyncDataType, ZippedEntry } from "@engine/AsyncAssets/Utils/ZipUtils";
 
 
 /** Type of content for our editor (or player build) content browser */

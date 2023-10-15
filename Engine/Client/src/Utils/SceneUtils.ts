@@ -1,5 +1,5 @@
 import { Camera, Engine, Quaternion, Scene, TransformNode, Vector2, Vector3 } from "@babylonjs/core";
-import { lerp } from "./MathUtils";
+import { lerp } from "../../../Shared/src/Utils/MathUtils";
 
 export function localToWorldRotation(rotation: Vector3, translationNode: TransformNode): Vector3 {
     let worldRotation = Quaternion.FromEulerAngles(

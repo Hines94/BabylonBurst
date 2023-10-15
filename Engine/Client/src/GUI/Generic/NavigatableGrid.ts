@@ -1,6 +1,6 @@
 import { Button, Grid } from "@babylonjs/gui";
 import { NavigatableGridItemIcon } from "./NavigatableGridItemIcon";
-import { Clamp } from "../../Utils/MathUtils";
+import { Clamp } from "../../../../Shared/src/Utils/MathUtils";
 import { GameEcosystem } from "../../GameEcosystem";
 
 export class NavigatableGrid {
