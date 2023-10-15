@@ -1,5 +1,5 @@
 import { ArraysContainEqualItems } from "../Utils/ArrayUtils";
-import { Component } from "./Component";
+import { Component, DeepSetupCallback } from "./Component";
 import { EntityBucket } from "./EntityBucket";
 import { EntityData } from "./EntityData"
 import { EntityQuery } from "./EntityQuery";
@@ -8,6 +8,7 @@ export class EntitySystem {
     private SpawnedEntities:number = 0;
     private AllEntities:{[entId:number]:EntityData} = {};
     private EntityBuckets:EntityBucket[] = [];
+    private ChangedComponents:{[enId:number]:string[]} = {};
 
     AddEntity(): EntityData {
         this.SpawnedEntities++;
@@ -27,6 +28,13 @@ export class EntitySystem {
 
     GetEntityData(entId:number) : EntityData {
         return this.AllEntities[entId];
+    }
+
+    ResetSystem() {
+        this.SpawnedEntities = 0;
+        this.AllEntities = {};
+        this.EntityBuckets = [];
+        this.ChangedComponents = {};
     }
 
     RemoveEntity(en:number | EntityData) {
@@ -64,8 +72,11 @@ export class EntitySystem {
             }
             possibleBuckets.push(b);
         })
-        //Return found buckets
-        return new EntityQuery(possibleBuckets);
+
+        const query = new EntityQuery(possibleBuckets);
+        query.owningSystem =this;
+        query.includeComponents = includeComps;
+        return query;
     }
 
     AddSetComponentToEntity(en:number | EntityData, comp:Component) {
@@ -73,9 +84,36 @@ export class EntitySystem {
         if(!entData.IsValid()) {
             return;
         }
+        DeepSetupCallback(comp,()=>{
+            this.SetChangedComponent(en,comp);
+        });
         entData.Components.push(comp);
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
+    }
+
+    ResetChangedComponents() {
+        this.ChangedComponents = {};
+    }
+
+    IsChangedComponent(en:number | EntityData, comp:typeof Component) {
+        const entId = this.getEntId(en);
+        if(!this.ChangedComponents[entId]) {
+            return false;
+        }
+        return this.ChangedComponents[entId].includes(comp.prototype.constructor.name);
+    }
+
+    SetChangedComponent(en:number | EntityData, comp:Component) {
+        const entId = this.getEntId(en);
+        if(!this.ChangedComponents[entId]) {
+            this.ChangedComponents[entId] = [];
+        }
+
+        const name = comp.constructor.name;
+        if(!this.ChangedComponents[entId].includes(name)) {
+            this.ChangedComponents[entId].push(name);
+        }
     }
 
     private CreateEntity(entId:number):EntityData {
@@ -114,6 +152,15 @@ export class EntitySystem {
             return this.GetEntityData(ent);
         } else {
             return ent;
+        }
+    }
+
+    
+    private getEntId(ent:number | EntityData) : number {
+        if (typeof ent === "number") {
+            return ent;
+        } else {
+            return ent.EntityId;
         }
     }
 
