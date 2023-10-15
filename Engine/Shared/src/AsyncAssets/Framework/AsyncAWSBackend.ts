@@ -5,17 +5,23 @@ import {
     ListObjectsV2Command,
     _Object,
     DeleteObjectCommand,
+    HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import JSZip from "jszip";
 import { BackendSetup, FileZipData, IBackendStorageInterface } from "./StorageInterfaceTypes";
+import { GetZipPath } from "@engine/AsyncAssets/Utils/ZipUtils";
 
-async function createZip(data: FileZipData[], filename: string) {
+async function createZip(data: FileZipData[]) {
     const zip = new JSZip();
     for (var i = 0; i < data.length; i++) {
-        zip.file(i + "_" + filename, data[i]);
+        zip.file(data[i].name, data[i].data);
     }
-    const content = await zip.generateAsync({ type: "uint8array" });
+    const content = await zip.generateAsync({
+        compression: "DEFLATE",
+        compressionOptions: { level: 9 },
+        type: "uint8array",
+    });
     return content;
 }
 
@@ -80,7 +86,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         };
         try {
             const response = await this.s3.send(new PutObjectCommand(uploadParams));
-            console.log(`File uploaded successfully. ETag: ${response.ETag}`);
+            console.log(`File uploaded successfully: ${location}`);
             return true;
         } catch (error: any) {
             console.error(`Error uploading file: ${error.message}`);
@@ -88,12 +94,12 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         }
     }
 
-    async StoreZipAtLocation(data: FileZipData[], location: string, extension: string): Promise<boolean> {
-        const zipData = await createZip(data, "babylonBoostUpload" + extension);
+    async StoreZipAtLocation(data: FileZipData[], location: string): Promise<boolean> {
+        const zipData = await createZip(data);
         const compressedBlob = new Blob([zipData], { type: "application/zip" });
         const uploadParams = {
             Bucket: this.bucketName,
-            Key: location + ".zip",
+            Key: GetZipPath(location),
             Body: compressedBlob,
             ContentType: "application/zip",
         };
@@ -132,20 +138,28 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
                 Key: location,
                 ResponseCacheControl: "no-cache",
             });
-            storage.s3.send(
-                request,
-                //our callback for after S3 has done its thing
-                async function (err: any, data: any) {
+            try {
+                storage.s3.send(request, (err: any, data: any) => {
                     if (err !== null) {
-                        //TODO offline here??
-                        console.error("Error fetching async data asset: " + err);
+                        console.warn("Warning: Failed to fetch async data asset: " + location); // Log a warning.
                         reject(null);
                     } else {
-                        //Wait for our data to complete and send
-                        resolve(await data["Body"].transformToByteArray());
+                        if (data.$metadata.httpStatusCode !== 200) {
+                            resolve(null);
+                        }
+                        data["Body"]
+                            .transformToByteArray()
+                            .then((result: any) => resolve(result))
+                            .catch((error: any) => {
+                                console.warn("Warning: Failed to transform data.");
+                                reject(null);
+                            });
                     }
-                }
-            );
+                });
+            } catch (err) {
+                console.warn("Warning: Error while sending s3 request for " + location);
+                reject(null);
+            }
         });
     }
 
@@ -179,27 +193,35 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         });
     }
 
-    deleteObject(objectPath: string): Promise<boolean> {
+    async deleteObject(objectPath: string): Promise<boolean> {
         var storage = this;
-        return new Promise((resolve, reject) => {
+        try {
+            // Construct the HeadObjectCommand
+            const checkCommand = new HeadObjectCommand({
+                Bucket: storage.bucketName,
+                Key: objectPath,
+            });
+
+            // Send the command to check if the object exists
+            await storage.s3.send(checkCommand);
+
+            // If the object exists, construct and send the DeleteObjectCommand
             const deleteCommand = new DeleteObjectCommand({
                 Bucket: storage.bucketName,
                 Key: objectPath,
             });
-            storage.s3.send(
-                deleteCommand,
-                //our callback for after S3 has done its thing
-                async function (err: any, data: any) {
-                    if (err !== null) {
-                        console.error("Error deleting asset: " + err);
-                        reject(false);
-                    } else {
-                        console.log(data);
-                        //Wait for delete to finish
-                        resolve(true);
-                    }
-                }
-            );
-        });
+
+            await storage.s3.send(deleteCommand);
+            console.log(`Item deleted: ${objectPath}`);
+            return true;
+        } catch (error: any) {
+            if (error.name === "NotFound") {
+                console.warn(`Object does not exist: ${objectPath}`);
+                return false; // Or reject, based on your use case
+            } else {
+                console.warn(`Error: ${error} ${objectPath}`);
+                return false;
+            }
+        }
     }
 }

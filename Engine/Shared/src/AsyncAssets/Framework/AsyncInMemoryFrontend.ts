@@ -1,4 +1,4 @@
-import { GetAssetFullPath } from "../Utils/ZipUtils";
+import { GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils";
 import { FrontendSetup, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 
 /** An easy in-memory way of storing requests downloaded from backend (AWS) */
@@ -28,7 +28,7 @@ export class AsyncInMemoryFrontend implements IFrontendStorageInterface {
         return true;
     }
 
-    async RemoveCacheAtLocation(loc: string, fileIndex: number): Promise<void> {
-        delete this.storedRequests[GetAssetFullPath(loc, fileIndex)];
+    async RemoveCacheAtLocation(loc: string): Promise<void> {
+        delete this.storedRequests[GetZipPath(loc)];
     }
 }

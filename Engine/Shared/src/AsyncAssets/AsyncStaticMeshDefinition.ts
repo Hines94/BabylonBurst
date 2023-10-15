@@ -4,11 +4,12 @@ import { ExtractMaterialFromAny } from "./AsyncMaterial";
 import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 import { BackgroundCacher } from "./Framework/BackgroundCacher";
 import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
-import { GetSceneLoader, SceneAsyncLoader } from "./SceneAsyncLoader";
+import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
-import { GetAssetFullPath } from "./Utils/ZipUtils";
-import { AsyncAssetManager } from ".";
+import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
+import { DebugMode, environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
+import { GetBadMeshMaterial } from "@engine/Utils/MeshUtils";
 
 /** A Dictionary of all mesh definitions with details on if they are  */
 var AllMDefinitions: {
@@ -31,9 +32,6 @@ export function UpdateAllMeshDefinitions() {
     );
 }
 
-var asyncMeshLoaders: {
-    [sceneid: string]: { [loaderID: string]: SceneAsyncLoader };
-} = {};
 /**
  * Should contain information on Materials and submeshes that will be combined to one mesh from our GLTF on AWS.
  * From here we can create either an instance or clone.
@@ -42,19 +40,14 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
     desiredPath: string;
     onMeshReady = new Observable<AsyncStaticMeshDefinition>();
     startedLoadingProcess = false;
+    /** Set to true if we want to accept different number of materials input vs actual mesh */
+    bNoFailMaterialDiff = false;
 
     //Details on this definition
     meshName: string;
     materials: any[];
-    fileIndex: number;
+    fileName: string;
     layerMask: number;
-
-    static GetAsyncMeshLoader(scene: Scene, desiredPath: string, fileIndex: number): SceneAsyncLoader {
-        if (asyncMeshLoaders[GetAsyncSceneIdentifier(scene)] === undefined) {
-            return undefined;
-        }
-        return asyncMeshLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(desiredPath, fileIndex)];
-    }
 
     /** Final combined meshes for each scene */
     protected finalCombinedMeshes: { [sceneid: string]: Mesh } = {};
@@ -66,21 +59,21 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
     extensionType = ".glb";
 
     /**
-     * @param awsPath Path to the asset in AWS (including folder - eg. mechs/SilverbackMechOverall)
+     * @param awsPath Path to the asset bundle in AWS (including folder - eg. levels/levelAData)
      * @param meshName The name of this specific mesh in the gltf - eg. SilverbackArms
      * @param materials An array of materials to use. Use null to keep the gltf material. MUST be same length as material num.
-     * @param fileIndex optional if there are multiple files in the zip bundle
+     * @param fileName Name of the file that contains our mesh
      */
-    constructor(awsPath: string, meshName: string, materials: any[], fileIndex = 0, layerMask = 0x00000001) {
+    constructor(awsPath: string, meshName: string, materials: any[], fileName: string, layerMask = 0x00000001) {
         super();
-        this.fileIndex = fileIndex;
+        this.fileName = fileName;
         this.desiredPath = awsPath;
         this.meshName = meshName;
         this.materials = materials;
         this.layerMask = layerMask;
 
         //Add to our mesh definitions so networked etc can find this definition
-        const meshPath = awsPath + "_" + fileIndex;
+        const meshPath = awsPath + "_" + fileName;
         if (AllMDefinitions[meshPath] === undefined) {
             AllMDefinitions[meshPath] = {};
         }
@@ -91,12 +84,19 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
     /** Background cache as game is running to reduce asset load times */
     async GetBackgroundCacheTask(): Promise<string> {
-        await GetSceneLoader(this.desiredPath, this.fileIndex, undefined).PerformBackgroundCache();
+        //TODO!
+        //await GetSceneLoader(this.desiredPath, this.fileName, undefined).PerformBackgroundCache();
         return this.desiredPath;
     }
 
     /** Generic method for making sure mesh is loaded from AWS and performing the combine method on seperate elements */
     async loadInMesh(scene: Scene) {
+        if (!this.desiredPath || this.desiredPath == "") {
+            return;
+        }
+        if (!this.meshName || this.meshName == "") {
+            return;
+        }
         //Already loaded?
         if (this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] !== undefined) {
             return;
@@ -121,17 +121,11 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
         }
 
         //Check if a similar asset has loaded yet?
-        if (AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex) === undefined) {
-            if (asyncMeshLoaders[GetAsyncSceneIdentifier(scene)] === undefined) {
-                asyncMeshLoaders[GetAsyncSceneIdentifier(scene)] = {};
-            }
-            asyncMeshLoaders[GetAsyncSceneIdentifier(scene)][GetAssetFullPath(this.desiredPath, this.fileIndex)] =
-                GetSceneLoader(this.desiredPath, this.fileIndex, scene);
-            AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex).extensionType =
-                this.extensionType;
+        if (SceneAsyncLoader.GetAsyncSceneLoader(scene, this.desiredPath, this.fileName) === undefined) {
+            new SceneAsyncLoader(this.desiredPath, this.fileName, scene, this.extensionType);
         }
         //Make sure actual mesh is loaded
-        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileIndex);
+        const asyncLoader = SceneAsyncLoader.GetAsyncSceneLoader(scene, this.desiredPath, this.fileName);
         await asyncLoader.getWaitForFullyLoadPromise();
 
         //Extract submeshes that we want
@@ -139,22 +133,29 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
         //Validation
         if (foundMeshElements.length !== this.materials.length) {
-            console.error(
-                "Specified different number of materials for mesh: " +
-                    this.meshName +
-                    " in GLTF: " +
-                    asyncLoader.requestedAssetPath +
-                    ". Number of materials in GLTF: " +
-                    foundMeshElements.length +
-                    ". Number Specified: " +
-                    this.materials.length +
-                    ". Cancelling description creation."
-            );
-            if (AsyncAssetManager.GetAssetManager().printDebugStatements === true) {
-                console.log(asyncLoader.loadedGLTF);
+            if (this.bNoFailMaterialDiff) {
+                if (foundMeshElements.length > this.materials.length) {
+                    for (var m = this.materials.length - 1; m < foundMeshElements.length; m++) {
+                        this.materials.push(null);
+                    }
+                } else {
+                    this.materials = this.materials.slice(0, foundMeshElements.length);
+                }
+            } else {
+                console.error(
+                    "Specified different number of materials for mesh: " +
+                        this.meshName +
+                        " in GLTF: " +
+                        asyncLoader.requestedAssetPath +
+                        ". Number of materials in GLTF: " +
+                        foundMeshElements.length +
+                        ". Number Specified: " +
+                        this.materials.length +
+                        ". Cancelling description creation."
+                );
+                this.setReplacementErrorBox(scene);
+                return;
             }
-            this.setReplacementErrorBox(scene);
-            return;
         }
 
         //Change to specified materials
@@ -228,10 +229,10 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
 
     /** If something went wrong just show a simple box */
     setReplacementErrorBox(scene: Scene) {
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox");
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material = new StandardMaterial("ReplacementMat");
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material.alpha = 0.1;
-        this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].isVisible = false;
+        if (environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light) {
+            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox");
+            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material = GetBadMeshMaterial(scene);
+        }
         this.onMeshReady.notifyObservers(this);
     }
 
@@ -399,7 +400,6 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
     /** For testing purposes */
     ResetDefinitionParams() {
         this.finalCombinedMeshes = {};
-        asyncMeshLoaders = {};
     }
 
     //Ready event for our knowledge

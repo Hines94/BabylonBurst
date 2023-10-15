@@ -1,5 +1,5 @@
 import { Observable } from "@babylonjs/core";
-import { AsyncDataType, GetAssetFullPath } from "../Utils/ZipUtils.js";
+import { AsyncDataType, GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils.js";
 import { AsyncAssetManager } from "./AsyncAssetManager.js";
 import { AsyncZipPuller } from "./AsyncZipPuller.js";
 
@@ -15,8 +15,8 @@ var currentlyLoadingAssets: { [id: string]: number } = {};
 const onCurrentlyLoadingAssetsChange = new Observable<string>();
 
 /** For standard unmodified search paths */
-export function GetPreviouslyLoadedAWSAsset(path: string, fileIndex: number): AsyncAssetLoader {
-    const zipPath = GetAssetFullPath(path, fileIndex);
+export function GetPreviouslyLoadedAWSAsset(path: string, fileName: string): AsyncAssetLoader {
+    const zipPath = GetAssetFullPath(path, fileName);
     if (loadedAssets[zipPath] !== undefined && loadedAssets[zipPath] !== null) {
         return loadedAssets[zipPath];
     }
@@ -65,23 +65,30 @@ export abstract class AsyncAssetLoader {
     ignoreCache = false;
     requestedAssetPath: string;
     AssetFullyLoaded = false;
+    AssetStartedLoading = false;
     onAssetFullyLoaded = new Observable<AsyncAssetLoader>();
 
     startLoadTime: number;
-    desiredFileIndex: number;
+    desiredFileName: string;
+    loadedAsyncData: any;
 
     abstract GetDataLoadType(): AsyncDataType;
 
-    constructor(assetPath: string, fileIndex: number, startLoad = true, ignoreCache = false) {
+    constructor(assetPath: string, fileName: string, startLoad = true, ignoreCache = false) {
         this.ignoreCache = ignoreCache;
-        this.requestedAssetPath = assetPath + ".zip";
-        this.desiredFileIndex = fileIndex;
+        this.requestedAssetPath = GetZipPath(assetPath);
+        this.desiredFileName = fileName;
         if (startLoad === true) {
             this.performAsyncLoad();
         }
     }
 
     async performAsyncLoad() {
+        if (this.AssetStartedLoading === true) {
+            await this.getWaitForFullyLoadPromise();
+            return;
+        }
+        this.AssetStartedLoading = true;
         const manager = AsyncAssetManager.GetAssetManager();
         if (manager.printDebugStatements) {
             console.log("Requested asset at path: " + this.requestedAssetPath);
@@ -90,8 +97,15 @@ export abstract class AsyncAssetLoader {
         const ourAssetPath = this.GetAssetFullPath();
         IncrementCurrentlyLoadingAssets(ourAssetPath, manager);
         //If first then cache in case we want to perform a get unique
-        if (GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileIndex) !== null) {
-            //Add to our in memory cache
+        const priorLoad = GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileName);
+        //Can use data from existing asset?
+        if (priorLoad !== null) {
+            await priorLoad.getWaitForFullyLoadPromise();
+            this.loadedAsyncData = priorLoad.loadedAsyncData;
+            await this.PerformSpecificSetup(this.loadedAsyncData);
+            console.log("found existing asset data for: " + this.requestedAssetPath);
+            return;
+        } else {
             loadedAssets[ourAssetPath] = this;
         }
 
@@ -100,13 +114,12 @@ export abstract class AsyncAssetLoader {
         }
 
         //Get the data we are looking for and perform load
-        const data = await AsyncZipPuller.LoadFileData(
+        this.loadedAsyncData = await AsyncZipPuller.LoadFileData(
             this.requestedAssetPath,
-            this.desiredFileIndex,
+            this.desiredFileName,
             this.GetDataLoadType(),
             this.ignoreCache
         );
-        this.PerformSpecificSetup(data);
 
         if (manager.printDebugStatements) {
             const loadTime = (performance.now() - this.startLoadTime) / 1000;
@@ -114,10 +127,12 @@ export abstract class AsyncAssetLoader {
         }
 
         DecrementCurrentlyLoadingAssets(ourAssetPath, manager);
+
+        await this.PerformSpecificSetup(this.loadedAsyncData);
     }
 
-    static RemovePriorCaching(location: string, fileIndex: number) {
-        const fullPath = GetAssetFullPath(location, fileIndex);
+    static RemovePriorCaching(location: string, fileName: string) {
+        const fullPath = GetAssetFullPath(location, fileName);
         delete loadedAssets[fullPath];
     }
 
@@ -125,14 +140,14 @@ export abstract class AsyncAssetLoader {
     async PerformBackgroundCache() {
         await AsyncZipPuller.LoadFileData(
             this.requestedAssetPath,
-            this.desiredFileIndex,
+            this.desiredFileName,
             this.GetDataLoadType(),
             this.ignoreCache
         );
     }
 
     GetAssetFullPath(): string {
-        return GetAssetFullPath(this.requestedAssetPath, this.desiredFileIndex);
+        return GetAssetFullPath(this.requestedAssetPath, this.desiredFileName);
     }
 
     async PerformSpecificSetup(response: any) {

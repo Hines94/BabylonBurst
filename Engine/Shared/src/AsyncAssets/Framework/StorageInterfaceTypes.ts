@@ -1,13 +1,16 @@
-export type FileZipData = string | number[] | Uint8Array | ArrayBuffer | Blob | NodeJS.ReadableStream;
+export type FileZipData = {
+    name: string;
+    data: string | number[] | Uint8Array | ArrayBuffer | Blob | NodeJS.ReadableStream;
+};
 
 /** Generic backend storage interface for retrieving data from service (eg S3) */
 export interface IBackendStorageInterface {
     /** General setup for backend. After this should be ready to process requests.  */
     InitializeBackend(): Promise<null>;
-    /** Returns byte array promise. Location is "folder/file" */
+    /** Returns byte array promise. Retuns null if no data */
     GetItemAtLocation(location: string): Promise<Uint8Array>;
     GetWebWorkerSetup(): BackendSetup;
-    StoreZipAtLocation(data: FileZipData[], location: string, extension: string): Promise<boolean>;
+    StoreZipAtLocation(data: FileZipData[], location: string): Promise<boolean>;
     StoreDataAtLocation(data: string, location: string, extension: string): Promise<boolean>;
     GetAllBackendItems(): Promise<string[]>;
 }
@@ -26,7 +29,7 @@ export interface IFrontendStorageInterface {
     WipeDatabase(): Promise<boolean>;
     /** If this !== undefined then we can use a web worker to load asset in background */
     GetWebWorkerSetup(): FrontendSetup;
-    RemoveCacheAtLocation(loc: string, fileIndex: number): Promise<void>;
+    RemoveCacheAtLocation(loc: string): Promise<void>;
 }
 
 /** Can be sent across web workers to setup identical frontend */

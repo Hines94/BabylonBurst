@@ -21,7 +21,6 @@ export type CacheWorkerSetup = {
 
 export type CacheWorkerDirective = {
     path: string;
-    loadType: AsyncDataType;
 };
 
 export function GetBackendSetup(data: BackendSetup): IBackendStorageInterface {
