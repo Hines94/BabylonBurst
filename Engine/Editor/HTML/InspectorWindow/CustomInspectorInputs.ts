@@ -1,6 +1,6 @@
 //@ts-ignore
 import { JSONEditor } from "@json-editor/json-editor";
-import { MakeDroppableElement } from "@BabylonBoostClient/HTML/HTMLUtils";
+import { MakeDroppableTextElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 
 interface JSONSchema {
     title?: string;
@@ -16,7 +16,7 @@ class CustomStringEditor extends JSONEditor.defaults.editors.string {
     postBuild() {
         super.postBuild();
         //@ts-ignore
-        MakeDroppableElement(this.input, () => this.getValue());
+        MakeDroppableTextElement(this.input, () => this.getValue());
         setupForEditorOnly(this);
     }
 }
@@ -31,14 +31,49 @@ class CustomNumberEditor extends JSONEditor.defaults.editors.number {
 class CustomArrayEditor extends JSONEditor.defaults.editors.array {
     isReadOnly = false;
     rows: any;
+    getValue:()=>any;
+    onChange:()=>any;
+
+    private events: { [key: string]: Array<() => void> } = {};
+
+    on(evName: string, evCallback: () => void): void {
+        if (!this.events[evName]) {
+            this.events[evName] = [];
+        }
+        this.events[evName].push(evCallback);
+    }
+
+    emit(evName: string): void {
+        if (this.events[evName]) {
+            for (let callback of this.events[evName]) {
+                callback();
+            }
+        }
+    }
 
     postBuild() {
         super.postBuild();
         this.disableIfEditor(this);
+
+        const originalOnChange = this.onChange;
+
+        this.onChange = function(...args) {
+            originalOnChange.apply(this, args);
+            if (this.isReadOnly && this.rows !== undefined) {
+                //@ts-ignore
+                this.disable(true);
+                for (var i = 0; i < this.rows.length; i++) {
+                    this.removeRowButtons(this.rows[i]);
+                    setInputAsReadOnly(this.rows[i].input);
+                }
+            }
+            this.emit("change");
+        }
+        
     }
 
     disableIfEditor(arrayEd: any) {
-        if (arrayEd.original_schema.description.includes("__EDITORREADONLY__")) {
+        if (arrayEd.original_schema.description && arrayEd.original_schema.description.includes("__EDITORREADONLY__")) {
             arrayEd.isReadOnly = true;
             arrayEd.disable(true);
             removeEditorReadOnlyText(arrayEd);
@@ -48,18 +83,20 @@ class CustomArrayEditor extends JSONEditor.defaults.editors.array {
         }
     }
 
-    //@ts-ignore - Exists in JSONEditor arrays
-    override onChange() {
-        super.onChange();
-        if (this.isReadOnly && this.rows !== undefined) {
-            //@ts-ignore
-            this.disable(true);
-            for (var i = 0; i < this.rows.length; i++) {
-                this.removeRowButtons(this.rows[i]);
-                setInputAsReadOnly(this.rows[i].input);
-            }
-        }
-    }
+    // //@ts-ignore - Exists in JSONEditor arrays
+    // override onChange() {
+    //     super.onChange();
+    //     if (this.isReadOnly && this.rows !== undefined) {
+    //         //@ts-ignore
+    //         this.disable(true);
+    //         for (var i = 0; i < this.rows.length; i++) {
+    //             this.removeRowButtons(this.rows[i]);
+    //             setInputAsReadOnly(this.rows[i].input);
+    //         }
+    //     }
+    //     console.log("ARRAY CHANGE")
+    //     console.log(this.getValue());
+    // }
 
     removeRowButtons(row: any) {
         if (row.delete_button) {
@@ -78,7 +115,7 @@ function setupForEditorOnly(item: any) {
     if (!item.original_schema || !item.original_schema.description) {
         return;
     }
-    if (item.original_schema.description.includes("__EDITORREADONLY__")) {
+    if (item.original_schema.description && item.original_schema.description.includes("__EDITORREADONLY__")) {
         const input: HTMLInputElement = item.input;
         setInputAsReadOnly(input);
         removeEditorReadOnlyText(item);
@@ -86,6 +123,10 @@ function setupForEditorOnly(item: any) {
 }
 
 function setInputAsReadOnly(input: HTMLInputElement) {
+    if(input === undefined || input === null) {
+        console.warn("No input for read only setting!");
+        return;
+    }
     input.style.backgroundColor = "darkgrey";
     input.style.color = "white";
     input.title = "Read Only";

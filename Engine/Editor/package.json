@@ -1,11 +1,12 @@
 {
-    "name": "babylonboosteditor",
+    "name": "babylonbursteditor",
     "version": "0.1.0",
     "private": true,
     "main": "src/GameClient/GameClient.ts",
     "type": "module",
     "scripts": {
-        "start":"vite --port 5174"
+        "start":"vite --port 5174",
+        "start:game":"VITE_EDITORMODE=play vite --port 5173"
     },
     "devDependencies": {
 

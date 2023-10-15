@@ -1,11 +1,17 @@
 import { Mesh, MeshBuilder, Vector3 } from "@babylonjs/core";
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { AngleToRad } from "@BabylonBoostClient/Utils/MathUtils";
-import { EntVector4 } from "@BabylonBoostClient/EntitySystem/CoreComponents";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { AngleToRad } from "@BabylonBurstClient/Utils/MathUtils";
+import { LookingCameraComponent } from "@BabylonBurstClient/Camera/LookingCameraComponent"
+import { PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
+import { FlyingCameraComponent } from "@BabylonBurstClient/Camera/FlyingCameraComponent"
 
 /** Simply takes the player camera and runs a simple movement  */
 export class EditorCamera {
     sphereMesh: Mesh;
+    lookingComp:LookingCameraComponent;
+    playerCam:PlayerCamera;
+    movementComp:FlyingCameraComponent;
+
 
     constructor(ecosystem: GameEcosystem) {
         this.sphereMesh = MeshBuilder.CreateSphere(
@@ -15,38 +21,27 @@ export class EditorCamera {
             },
             ecosystem.scene
         );
-        this.sphereMesh.position = new Vector3(0, 2, -5);
-        this.sphereMesh.rotation.x = AngleToRad(20);
+        this.lookingComp = new LookingCameraComponent(ecosystem);
+        this.playerCam = ecosystem.camera as PlayerCamera;
+        this.movementComp = new FlyingCameraComponent(ecosystem);
+        this.playerCam.GetCameraRoot().position = new Vector3(0, 2, -5);
+        this.lookingComp.currentRotation.x = AngleToRad(20);
     }
 
     UpdateCamera(ecosystem: GameEcosystem) {
         if (!ecosystem.InputValues) {
             return;
         }
-        ecosystem.camera.UpdateCamera(
-            this.sphereMesh.position,
-            EntVector4.EulerToQuaternion(this.sphereMesh.rotation),
-            ecosystem
-        );
-        const moveSens = 10;
-        const forDes = ecosystem.InputValues.forward * ecosystem.deltaTime * moveSens;
-        const sideDes = ecosystem.InputValues.side * ecosystem.deltaTime * moveSens;
-        const upDes = ecosystem.InputValues.up * ecosystem.deltaTime * moveSens;
-        this.sphereMesh.position = this.sphereMesh.position.add(
-            this.sphereMesh.forward.multiplyByFloats(forDes, forDes, forDes)
-        );
-        this.sphereMesh.position = this.sphereMesh.position.add(
-            this.sphereMesh.right.multiplyByFloats(sideDes, sideDes, sideDes)
-        );
-        this.sphereMesh.position = this.sphereMesh.position.add(
-            this.sphereMesh.up.multiplyByFloats(upDes, upDes, upDes)
-        );
-
-        const rotSens = 10;
-        this.sphereMesh.rotation.y =
-            this.sphereMesh.rotation.y + ecosystem.camera.DesiredRotationChange.x * ecosystem.deltaTime * -rotSens;
-        this.sphereMesh.rotation.x =
-            this.sphereMesh.rotation.x + ecosystem.camera.DesiredRotationChange.y * ecosystem.deltaTime * rotSens;
-        this.sphereMesh.rotation.z = 0;
+        //Rotation
+        this.lookingComp.UpdateLook();
+        if(ecosystem.InputValues.Vkey.wasJustActivated()){
+            this.lookingComp.TogglePointerLockMode();
+        }
+        
+        //Movement
+        this.movementComp.movementBoostActive = ecosystem.InputValues.shift.isActive;
+        this.movementComp.UpdateFlyingCameraComponent(ecosystem.InputValues.forward,ecosystem.InputValues.side,ecosystem.InputValues.up);
+        this.sphereMesh.position = this.playerCam.GetCameraRoot().position;
+        this.sphereMesh.rotation = this.lookingComp.currentRotation;
     }
 }

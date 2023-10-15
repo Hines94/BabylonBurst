@@ -1,6 +1,6 @@
 import { HemisphericLight, Vector3 } from "@babylonjs/core";
 import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
-import { RunnableGameEcosystem } from "@BabylonBoostClient/RunnableGameEcosystem"
+import { RunnableGameEcosystem } from "@BabylonBurstClient/RunnableGameEcosystem"
 import { EditorCamera } from "./Utils/EditorCamera";
 
 export type BuildableDescript = {
@@ -19,7 +19,7 @@ type editorOptions = {
 };
 
 //This is the editor for generating/saving/loading different buildable types for our AI and players to use
-export class BabylonBoostEditor extends RunnableGameEcosystem {
+export class BabylonBurstEditor extends RunnableGameEcosystem {
     options: editorOptions;
     constructor(canvas: HTMLCanvasElement, options: editorOptions) {
         super(canvas);
@@ -29,8 +29,6 @@ export class BabylonBoostEditor extends RunnableGameEcosystem {
     protected override setupExtras(): void {
         //Load in CSV with our buildables on it
         this.setupEditor();
-        //Create light
-        var light = new HemisphericLight("hemiLight", new Vector3(-1, 1, 0), this.scene);
     }
 
     editorHTML: CustomEditorHTML;

@@ -1,72 +1,125 @@
-import { IBackendStorageInterface } from "@BabylonBoostClient/AsyncAssets";
+import { AsyncZipPuller, IBackendStorageInterface } from "@BabylonBurstClient/AsyncAssets";
+import { VisualItem } from "./VisualItem";
+import { AssetBundle } from "./AssetBundle";
+import { AssetFolder } from "./AssetFolder";
+import { AsyncDataType, GetZippedFile, ZippedEntry } from "@BabylonBurstClient/AsyncAssets/Utils/ZipUtils";
+import {GetFileExtension} from "@BabylonBurstClient/Utils/StringUtils"
 
 
 /** Type of content for our editor (or player build) content browser */
 export enum ContentItemType {
-    BASEASSETSLAYER,
     Unknown,
-    Folder,
+    PLACEHOLDER,
+    PLACEHOLDER2,
     Prefab,
     Image,
     Datasheet,
     Audio,
     Model,
+    Material
 }
 
-export interface ContentItem {
-    nameExtension: string;
-    readableName: string;
+function toContentItemType<T extends string>(str: T): ContentItemType | null {
+    const keys = Object.keys(ContentItemType);
+    for (const key of keys) {
+        if (key === str) {
+            return ContentItemType[key as keyof typeof ContentItemType];
+        }
+    }
+    return null;
+}
+
+export function GetContentTypeFromFilename(fileName:string) : ContentItemType {
+    const extension = GetFileExtension(fileName);
+    if(!extension) {
+        return ContentItemType.Unknown;
+    }
+    return GetContentTypeFromExtension(extension);
+}
+
+/** Item may be different types depending on extension */
+export function GetContentTypeFromExtension(extension:string) : ContentItemType{
+    const str = extension.replace(".","").replace(" ","");
+    const converted = toContentItemType(str);
+    if(converted !== null) {
+        return converted;
+    }
+    if(str === "png" || str === "jpg") {
+        return ContentItemType.Image;
+    }
+    if(str === "wav") {
+        return ContentItemType.Audio;
+    }
+    if(str === "gltf" || str === "glb" || str === ".babylon") {
+        return ContentItemType.Model;
+    }
+    return ContentItemType.Unknown;
+}
+
+//A content item stored within a bundle
+export class ContentItem extends VisualItem {
     category: ContentItemType;
-    containedItems?: { [id: string]: ContentItem };
-    parent: ContentItem;
-    lastModified?: Date;
+    parent: AssetBundle;
     data?: any;
     size?: number;
-    typeExtension?: string;
-}
+    extension?: string;
 
-/** TODO: use different backends to save to player data etc? */
-export function SaveContentItem(backend: IBackendStorageInterface, item: ContentItem): Promise<boolean> {
-    if (item.category === ContentItemType.Folder) {
-        backend.StoreDataAtLocation("", GetFullNameOfObject(item).replace(".zip", ""), "");
-    } else {
-        var type = ".txt";
-        if (item.typeExtension) {
-            type = item.typeExtension;
+    constructor(data:{name:string,entry:ZippedEntry}, parent:AssetBundle) {
+        super();
+        if(data === undefined || parent === undefined) {
+            return;
         }
-        var array = item.data;
-        if (!Array.isArray(array)) {
-            array = [item.data];
+        this.name = data.name;
+        this.size = data.entry.size;
+        this.parent = parent;
+        this.storedBackend = this.parent.storedBackend;
+        this.category = GetContentTypeFromFilename(data.name);
+        const extension = GetFileExtension(data.name);
+        if(extension) {
+            this.name = data.name.replace("."+extension,"");
+            this.extension = extension;
         }
-        return backend.StoreZipAtLocation(array, GetFullNameOfObject(item).replace(".zip", ""), type);
+    }
+
+    SaveItemOut(): Promise<boolean> {
+        //TODO: Ensure our data is up to date?
+        return this.parent.SaveItemOut();
+    }
+
+    DeleteItem(): Promise<boolean> {
+        this.parent.storedItems = this.parent.storedItems.filter(i=>{return i !== this});
+        return this.parent.SaveItemOut();
+    }
+
+    GetAllParentLevels(): AssetFolder[] {
+        const items: AssetFolder[] = [];
+        var parent = parent.parent;
+        while (parent) {
+            items.unshift(parent);
+            parent = parent.parent;
+        }
+        return items;
+    }
+
+    async GetData() : Promise<any> {
+        if(this.data !== undefined && this.data !== null) {
+            return this.data;
+        }
+        //Try load data
+        return await this.parent.GetDataForItem(this.GetSaveName(),AsyncDataType.blob,false);
+    }
+
+    /** Fallback default if no extension set! */
+    GetExtension() : string {
+        return ContentItemType[this.category];
+    }
+
+    /** Name including extension */
+    GetSaveName() : string {
+        if(this.extension) {
+            return this.name + "." + this.extension;
+        }
+        return this.name + "." + this.GetExtension();
     }
 }
 
-/** For a content item get all parent levels above */
-export function GetAllParentLevels(item: ContentItem): ContentItem[] {
-    const items: ContentItem[] = [];
-    var parent = item.parent;
-    while (parent && parent.category !== ContentItemType.BASEASSETSLAYER) {
-        items.unshift(parent);
-        parent = parent.parent;
-    }
-    return items;
-}
-
-/** For a content item get a string format with all forlders above */
-export function GetFolderStructureFromAllParents(item: ContentItem): string {
-    const allParents = GetAllParentLevels(item);
-    var ret = "";
-    for (var i = 0; i < allParents.length; i++) {
-        ret += allParents[i].readableName + "/";
-    }
-    return ret;
-}
-
-export function GetContentItemNameInclType(object: ContentItem): string {
-    return (object.readableName + object.nameExtension).replace(".zip", "");
-}
-
-export function GetFullNameOfObject(object: ContentItem): string {
-    return GetFolderStructureFromAllParents(object) + object.readableName + object.nameExtension;
-}

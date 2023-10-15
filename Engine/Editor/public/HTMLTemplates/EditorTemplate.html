@@ -51,10 +51,22 @@
             grid-template-columns: repeat(10, 1fr); 
         }
 
+        .asset-bundle {
+            grid-column: span 10;
+            grid-row: span 1;
+            background-color: #303030;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            display: grid;
+            grid-gap: 5px;
+            grid-template-columns: repeat(10, 1fr);
+        }
+
         .content-item {
-            position: relative; /* this is important */
+            position: relative;
             color: #f0f0f0;
-            overflow: hidden; /* Optional: in case content is larger than the container */
+            overflow: hidden; /* In case content is larger than the container */
             pointer-events: all;
         }
 
@@ -86,7 +98,7 @@
             width: 100%;
         }
 
-        #ContentItemName {
+        .ContentItemName {
             bottom: 2px;
             pointer-events: none;
             width:100%;
@@ -94,9 +106,10 @@
             background: none;
             color:white;
             border:none;
+            text-align: center;
         }
 
-        #ContentItemName:active {
+        .ContentItemName:active {
             background: #444654;
         }
 
@@ -131,6 +144,7 @@
             position: absolute;
             height: 35px;
             left: 0px;
+            top: 0px;
             width: 100%;
             background-color: #1e1e1e;
             color: white;
@@ -148,7 +162,7 @@
             <div class="content-item-content" id="selectableContentItem">
                 <img style="pointer-events: none;" id="ContentItemThumbnail" src="https://via.placeholder.com/100x100">
             </div>
-            <input type="text" class="text-center" id="ContentItemName"></input>
+            <input type="text" class="ContentItemName" id="ContentItemName"></input>
         </div>
     </template>
 
@@ -158,6 +172,20 @@
         <p id="LastModified"> Last Modified:  </p>
         <p id="ItemSize">Size: 0mb</p>
         <img id="ItemImage" style="width: 100%; aspect-ratio: 1 / 1;">
+    </template>
+
+    <template id="EntityInspector">
+        <h2 id="EntityTitle">Entity Id</h2>
+        <div class="Components" id="EntityComponents"></div>
+    
+        <input
+            list="componentTypes"
+            id="addComponent"
+            name="addComponent"
+            class="form-control"
+            style="margin-bottom: 5px" />
+        <datalist id="componentTypes"></datalist>
+        <button id="AddComponentSubmit">Add Component</button>
     </template>
 
     <!-- Editor Setup -->

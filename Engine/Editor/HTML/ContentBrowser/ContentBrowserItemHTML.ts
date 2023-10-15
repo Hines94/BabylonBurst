@@ -1,23 +1,20 @@
-import { ShowContextMenu } from "@BabylonBoostClient/HTML/HTMLContextMenu";
-import { ShowToastNotification } from "@BabylonBoostClient/HTML/HTMLToastItem";
-import { CloneTemplate, GetNewNameItem, MakeDraggableElement } from "@BabylonBoostClient/HTML/HTMLUtils";
+import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { CloneTemplate, GetNewNameItem, MakeDraggableElement } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { GetInspectorOwner, SetInspectorOwner } from "../InspectorWindow/InspectorHTML";
 import { ContentBrowserHTML } from "./ContentBrowserHTML";
 import {
+    AssetFolder,
     ContentItem,
     ContentItemType,
     GetContentItemNameInclType,
-    GetFullNameOfObject,
+    GetFullPathOfObject,
     SaveContentItem,
 } from "./ContentItem";
-
-const icons: { [type: number]: string } = {};
-const iconPromises: { [type: number]: Promise<void> } = {};
 
 export abstract class ContentBrowserItemHTML {
     ourItem: ContentItem;
     ourDiv: HTMLElement;
-    ourName: HTMLInputElement;
     ourContentHolder: ContentBrowserHTML;
     ourSelectable: HTMLElement;
 
@@ -27,7 +24,7 @@ export abstract class ContentBrowserItemHTML {
         this.ourContentHolder = ourContentHolder;
         this.ourSelectable = div.querySelector("#selectableContentItem");
         MakeDraggableElement(this.ourSelectable, () => {
-            return GetFullNameOfObject(this.ourItem).replace(".zip", "");
+            return GetFullPathOfObject(this.ourItem).replace(".zip", "");
         });
         if (this.ourContentHolder.autoselectItem === this.ourItem) {
             this.ourSelectable.classList.add("selectedContent");
@@ -51,16 +48,7 @@ export abstract class ContentBrowserItemHTML {
         this.bindForKeypress();
         this.bindForClassChanges();
     }
-
-    protected itemNameChange(event: Event) {
-        this.ourContentHolder.storageBackend.requestDelete(this.ourItem);
-        const inputValue: string = this.ourName.value;
-        this.ourName.blur();
-        this.ourItem.readableName = inputValue;
-        this.SaveItem();
-        this.drawInspectorInfo();
-    }
-
+    
     private handleKeypress(event: any) {
         if (event.key === "F2") {
             if (this.ourSelectable.classList.contains("selectedContent")) {
@@ -82,35 +70,6 @@ export abstract class ContentBrowserItemHTML {
         this.ourDiv.ownerDocument.addEventListener("keydown", this.boundKeyFunc);
     }
 
-    protected async setIcon(iconImg: HTMLImageElement) {
-        if (icons[this.ourItem.category] !== undefined) {
-            iconImg.src = icons[this.ourItem.category];
-            return;
-        }
-        if (!iconPromises[this.ourItem.category]) {
-            iconPromises[this.ourItem.category] = this.FetchIcon();
-        }
-        await iconPromises[this.ourItem.category];
-        iconImg.src = icons[this.ourItem.category];
-    }
-
-    private async FetchIcon(): Promise<void> {
-        const response = await fetch("EditorIcons/" + ContentItemType[this.ourItem.category] + "Icon.png");
-        if (!response.ok) {
-            return;
-        }
-        const blob = await response.blob();
-        const imageURL = URL.createObjectURL(blob);
-        icons[this.ourItem.category] = imageURL;
-        iconPromises[this.ourItem.category] = undefined;
-    }
-
-    protected setItemName() {
-        this.ourName = this.ourDiv.querySelector("#ContentItemName") as HTMLInputElement;
-        this.ourName.addEventListener("change", this.itemNameChange.bind(this));
-        this.ourName.value = this.ourItem.readableName;
-    }
-
     protected getContextMenuItems() {
         return [
             {
@@ -130,13 +89,13 @@ export abstract class ContentBrowserItemHTML {
 
     protected SaveItem() {
         //Save to JS representation
-        this.ourItem.parent.containedItems[this.ourItem.readableName] = this.ourItem;
+        this.ourItem.parent.storedItems[this.ourItem.name] = this.ourItem;
         //Send data to S3
         this.ourContentHolder.storageBackend.saveItem(this.ourItem);
     }
 
     protected contextMenuDelete() {
-        var result = window.confirm("Really delete " + this.ourItem.readableName + "?");
+        var result = window.confirm("Really delete " + this.ourItem.name + "?");
         if (result) {
             this.DeleteItem();
         }
@@ -149,9 +108,9 @@ export abstract class ContentBrowserItemHTML {
             return;
         }
         const oldKey = GetContentItemNameInclType(this.ourItem);
-        delete this.ourItem.parent.containedItems[oldKey];
+        delete this.ourItem.parent.storedItems[oldKey];
         this.cleanupItem();
-        ShowToastNotification("Deleted item: " + this.ourItem.readableName);
+        ShowToastNotification("Deleted item: " + this.ourItem.name);
     }
 
     /** When we are no longer needed or deleted */
@@ -170,10 +129,6 @@ export abstract class ContentBrowserItemHTML {
     }
 
     protected abstract performPrimaryMethod(): void;
-
-    getAllContainedAssets(): ContentItem[] {
-        return recursiveGetAssets(this.ourItem).filter(item => item != this.ourItem);
-    }
 
     classChangeObserver: MutationObserver;
     private bindForClassChanges() {
@@ -208,7 +163,7 @@ export abstract class ContentBrowserItemHTML {
         inspector.innerHTML = "";
         const basicInfo = CloneTemplate("BasicItemInspectorInfo");
         inspector.appendChild(basicInfo);
-        (basicInfo.querySelector("#ItemName") as HTMLElement).innerText = this.ourItem.readableName;
+        (basicInfo.querySelector("#ItemName") as HTMLElement).innerText = this.ourItem.name;
         (basicInfo.querySelector("#ItemType") as HTMLElement).innerText = ContentItemType[this.ourItem.category];
         if (this.ourItem.size) {
             (basicInfo.querySelector("#ItemSize") as HTMLElement).innerText =
@@ -243,18 +198,21 @@ export abstract class ContentBrowserItemHTML {
             newItem[key] = this.ourItem[key];
         }
 
-        newItem.readableName = GetNewNameItem(this.ourItem.parent.containedItems, "_Clone");
+        newItem.readableName = GetNewNameItem(this.ourItem.parent.storedItems, "_Clone");
         this.ourContentHolder.addNewItem(newItem);
     }
 }
 
-function recursiveGetAssets(item: ContentItem): ContentItem[] {
-    var ret: ContentItem[] = [item];
-    if (item.containedItems) {
-        const keys = Object.keys(item.containedItems);
+function recursiveGetAssets(item: AssetFolder): ContentItem[] {
+    var ret: ContentItem[] = [];
+    if (item.containedFolders) {
+        const keys = Object.keys(item.containedFolders);
         for (var i = 0; i < keys.length; i++) {
             ret = ret.concat(recursiveGetAssets(item.containedItems[keys[i]]));
         }
+    }
+    if (item.containedItems) {
+        console.error("TODO: Load items inside bundle!")
     }
     return ret;
 }

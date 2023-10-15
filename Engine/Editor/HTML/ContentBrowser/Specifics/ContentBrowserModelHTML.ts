@@ -1,7 +1,17 @@
-import { ContentBrowserItemHTML } from "../ContentBrowserItemHTML";
+import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
+import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 
-export class ContentBrowserModelHTML extends ContentBrowserItemHTML {
-    protected performPrimaryMethod(): void {
-        alert("Unknown item type. Exists in S3 storage. Set type with ~ContentItemType~ identifier in name.");
+export class ContentBrowserModelHTML extends ContentBrowserSpecificItem {
+    getContextMenuItems(): ContextMenuItem[] {
+        return super.getContextMenuItems().concat([]);
+    }
+    async drawInspectorInfo(): Promise<void> {
+        await super.drawInspectorInfo();
+    }
+    protected cleanupItem(): void {
+        
+    }
+    performPrimaryMethod(): void {
+        alert("Model visualistaion not yet supported");
     }
 }

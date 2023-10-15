@@ -1,25 +1,35 @@
 
-import { LoadHTMLUITemplate } from "@BabylonBoostClient/HTML/TemplateLoader";
-import { BaseTickableObject } from "@BabylonBoostClient/Utils/BaseTickableObject";
-import { BabylonBoostEditor } from "../BabylonBoostEditor";
-import { ContentItem, ContentItemType, GetFullNameOfObject, SaveContentItem } from "./ContentBrowser/ContentItem";
+import { LoadHTMLUITemplate } from "@BabylonBurstClient/HTML/TemplateLoader";
+import { BaseTickableObject } from "@BabylonBurstClient/Utils/BaseTickableObject";
+import { BabylonBurstEditor } from "../BabylonBurstEditor";
+import { ContentItem, ContentItemType } from "./ContentBrowser/ContentItem";
 import { SetupCustomInspectorEditors } from "./InspectorWindow/CustomInspectorInputs";
-import { GameEcosystem } from "@BabylonBoostClient/GameEcosystem";
-import { SaveEntitiesToMsgpackIntArray } from "@BabylonBoostClient/EntitySystem/EntityMsgpackConverter";
-import { v4 as uuidv4 } from "uuid";
-import { encode } from "@msgpack/msgpack";
-import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBoostClient/AsyncAssets/index";
+import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstClient/AsyncAssets/index";
 import { ContentBrowserHTML, ContentStorageBackend } from "./ContentBrowser/ContentBrowserHTML";
+import { SetupForModelTrackingRefresh } from "../Utils/EditorModelSpecifier";
+import { AssetFolder } from "./ContentBrowser/AssetFolder";
+import { AssetBundle } from "./ContentBrowser/AssetBundle";
+import { Scene } from "@babylonjs/core";
+import { encode } from "@msgpack/msgpack";
+import { v4 as uuidv4 } from "uuid";
+import { SaveEntitiesToMsgpackIntArray } from "@BabylonBurstClient/EntitySystem/EntityMsgpackConverter";
+import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
+
+//This assumes only one editor per time - pretty reasonable
+export var topLevelEditorFolder:AssetFolder;
+export var mainEditorScene:Scene;
 
 export class CustomEditorHTML extends BaseTickableObject {
     EditorOwner: HTMLDivElement;
     contentBrowser: ContentBrowserHTML;
-    editor: BabylonBoostEditor;
+    editor: BabylonBurstEditor;
     editorStore: ContentStorageBackend;
 
-    constructor(editor: BabylonBoostEditor) {
+    constructor(editor: BabylonBurstEditor) {
         super();
         this.editor = editor;
+        mainEditorScene = editor.scene;
         SetupCustomInspectorEditors();
         this.setupHTML();
     }
@@ -42,106 +52,77 @@ export class CustomEditorHTML extends BaseTickableObject {
         this.setupEditorItems();
     }
 
-    async getS3ContentItems(): Promise<ContentItem> {
+    async getS3ContentItems(): Promise<AssetFolder> {
         const AWS = AsyncAssetManager.GetAssetManager().backendStorage as AsyncAWSBackend;
         const allObjects = await AWS.listObjects();
 
-        const topLevelHigherarch: ContentItem = {
-            nameExtension: "",
-            readableName: "BASEASSETS",
-            category: ContentItemType.BASEASSETSLAYER,
-            containedItems: {},
-            parent: undefined,
-        };
-        allObjects.forEach(item => {
+        const topLevelHigherarch = new AssetFolder(undefined,AWS);
+        topLevelHigherarch.name = "ASSETS_ROOT";
+
+        for(var i = 0; i < allObjects.length;i++) {
+            const item = allObjects[i];
             const folders = item.Key.split("/");
-            const objectName = folders.pop().replace(".zip", "");
+            const objectName = folders.pop().replace(".zip", "").replace("~p~","");
             var currentLevel = topLevelHigherarch;
             //Check folders exist
             folders.forEach(folder => {
-                const existingFolder = currentLevel.containedItems[folder];
-                if (existingFolder === undefined) {
-                    currentLevel.containedItems[folder] = {
-                        nameExtension: "/",
-                        readableName: folder,
-                        category: ContentItemType.Folder,
-                        parent: currentLevel,
-                        containedItems: {},
-                    };
+                const existingFolder = currentLevel.containedFolders.filter(f=>{return f.name === folder});
+                if (existingFolder.length === 0) {
+                    const newFolder = new AssetFolder(folder,AWS);
+                    newFolder.parent = currentLevel;
+                    currentLevel.containedFolders.push(newFolder);
                 }
-                currentLevel = currentLevel.containedItems[folder];
+                currentLevel = currentLevel.containedFolders.filter(f=>{return f.name === folder})[0];
             });
-            //Create object
+            //Create Asset Stores
             if (objectName !== "") {
-                const parts = objectName.split("~");
-                var objectType = ContentItemType.Unknown;
-                var nameExtension = ".zip";
-                var objectCleanName = objectName;
-                //Has known type?
-                if (parts.length > 1) {
-                    nameExtension = "~" + parts[1] + "~.zip";
-                    objectCleanName = parts[0];
-                    objectType = parseInt(parts[1], 10);
-                }
-                currentLevel.containedItems[objectName] = {
-                    nameExtension: nameExtension,
-                    readableName: objectCleanName,
-                    category: objectType,
-                    parent: currentLevel,
+                const store = new AssetBundle({
                     lastModified: item.LastModified,
+                    name:objectName,
                     size: item.Size,
-                };
+                    parent:currentLevel,
+                    storedBackend:AWS
+                });
+                currentLevel.containedItems.push(store);
             }
-        });
+        }
         return topLevelHigherarch;
     }
 
     async setupEditorItems() {
-        const topLevelHigherarch = await this.getS3ContentItems();
+        SetupForModelTrackingRefresh();
+        topLevelEditorFolder = await this.getS3ContentItems();
         //Setup content browser
         this.editorStore = {
-            allStoredItems: topLevelHigherarch,
+            allStoredItems: topLevelEditorFolder,
             currentFolderLevel: [],
             getNewContentOptions: () => {
-                const currentLevel = GetCurrentLevelItem(this.editorStore);
+                const newPrefab = new ContentItem(undefined,undefined);
+                newPrefab.name = "New Prefab";
+                newPrefab.category = ContentItemType.Prefab;
+                newPrefab.data = encode({
+                    prefabID: uuidv4(),
+                    prefabData: SaveEntitiesToMsgpackIntArray({}),
+                });
+
+                const newMaterial = new ContentItem(undefined,undefined);
+                newMaterial.name = "New Material";
+                newMaterial.category = ContentItemType.Material;
+                newMaterial.data = encode({
+                    MaterialShaderType: "PBRMaterialShader",
+                });
+
                 return [
-                    {
-                        nameExtension: "~" + ContentItemType.Prefab + "~.zip",
-                        readableName: "New Prefab",
-                        category: ContentItemType.Prefab,
-                        parent: currentLevel,
-                        lastModified: new Date(),
-                        data: [
-                            encode({
-                                prefabID: uuidv4(),
-                                prefabData: SaveEntitiesToMsgpackIntArray({}),
-                            }),
-                        ],
-                    },
-                    {
-                        nameExtension: "/",
-                        readableName: "New Folder",
-                        category: ContentItemType.Folder,
-                        parent: currentLevel,
-                        containedItems: {},
-                    },
+                    newPrefab,
+                    newMaterial
                 ];
             },
             onContentChange: () => {
-                return;
+                RefreshObjectTypeTracking();
             },
             requestRefresh: () => {
                 this.hardReloadContentBrowser();
-            },
-            requestDelete: (object: ContentItem) => {
-                const path = GetFullNameOfObject(object);
-                const AWS = AsyncAssetManager.GetAssetManager().backendStorage as AsyncAWSBackend;
-                return AWS.deleteObject(path);
-            },
-            saveItem: (item: ContentItem) => {
-                AsyncAssetManager.GetAssetManager().ResetAnyCaching(GetFullNameOfObject(item), 0);
-                return SaveContentItem(AsyncAssetManager.GetAssetManager().backendStorage, item);
-            },
+            }
         };
         this.contentBrowser.setupStorage(this.editorStore);
     }
@@ -150,12 +131,12 @@ export class CustomEditorHTML extends BaseTickableObject {
         const topLevelHigherarch = await this.getS3ContentItems();
         this.editorStore.allStoredItems = topLevelHigherarch;
         //Preserve folder level
-        const newFolderLevel: ContentItem[] = [];
-        var currentLevel: ContentItem = topLevelHigherarch;
+        const newFolderLevel: AssetFolder[] = [];
+        var currentLevel: AssetFolder = topLevelHigherarch;
         for (var i = 0; i < this.editorStore.currentFolderLevel.length; i++) {
             const oldItem = this.editorStore.currentFolderLevel[i];
-            if (currentLevel.containedItems[oldItem.readableName] !== undefined) {
-                currentLevel = currentLevel.containedItems[oldItem.readableName];
+            if (currentLevel.containedFolders[oldItem.name] !== undefined) {
+                currentLevel = currentLevel.containedFolders[oldItem.name];
                 newFolderLevel.push(currentLevel);
             } else {
                 break;
@@ -163,6 +144,8 @@ export class CustomEditorHTML extends BaseTickableObject {
         }
         this.editorStore.currentFolderLevel = newFolderLevel;
         this.contentBrowser.rebuildStoredItems();
+        console.error("TODO: Fix model auto paths")
+        //RefreshAllModelPaths(topLevelHigherarch,this.editor.scene);
     }
 
     performTick(ecosystem: GameEcosystem): void {}
