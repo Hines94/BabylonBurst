@@ -1,7 +1,6 @@
 import { MateralDescription } from "@BabylonBurstClient/Materials/MaterialDescription";
 import { PBRMaterialShader } from "@BabylonBurstClient/Materials/PBRMaterialShader";
 
-
 var setDefault = false;
 
 export function SetupDefaultMaterialDescriptions() {
