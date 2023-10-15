@@ -1,7 +1,7 @@
 import { Observable } from "@babylonjs/core/Misc/observable.js";
 import { SimpleWeightedAverageSmooth } from "./Utils/MathUtils";
 import { UpdateDynamicTextureChecks } from "./GUI/AdvancedDynamicTextureTracker";
-import { GameEcosystem } from "../../Shared/src/GameEcosystem";
+import { GameEcosystem } from "./GameEcosystem";
 import { DeviceSourceManager, DeviceType, PointerInput, Vector2 } from "@babylonjs/core";
 
 const dynamicpropertyDSM = "___DYNAMICSOURCEMANAGER___";
@@ -132,15 +132,19 @@ export class WindowInputValues {
     forward = 0;
     side = 0;
     up = 0;
-    mouseX = 0;
-    mouseY = 0;
+    mouseXDelta = 0;
+    mouseYDelta = 0;
+    mouseXPosition = 0;
+    mouseYPosition = 0;
     roll = 0;
 
     shift = new ButtonInput([LEFTSHIFT]);
     primaryClick = new ButtonInput([]);
     secondaryClick = new ButtonInput([]);
     middleClick = new ButtonInput([]);
-
+    //CAREFUL: Holding this whilst clicking etc can lead to big problems with browser keys
+    leftControl = new ButtonInput([LEFTCONTROL]);
+    leftAlt = new ButtonInput([ALTKEY]);
     panKey = new ButtonInput([CAPSKEY]);
     //Arrows
     arrowUp = new ButtonInput([ARRUPKEY]);
@@ -157,29 +161,14 @@ export class WindowInputValues {
     sevenHotkey = new ButtonInput([SEVENKEY]);
     eightHotkey = new ButtonInput([EIGHTKEY]);
     nineHotkey = new ButtonInput([NINEKEY]);
-    //Admin
     tilde = new ButtonInput([TILDEKEY, TILDEKEYALT]);
-    //UI
-    inventory = new ButtonInput([IKEY]);
-    //Building
+    iKey = new ButtonInput([IKEY]);
     switchXAxis = new ButtonInput([XKEY]);
     switchYAxis = new ButtonInput([YKEY]);
     switchZAxis = new ButtonInput([ZKEY]);
-    EnterPan = new ButtonInput([PKEY]);
-    zoomToObject = new ButtonInput([FKEY]);
+    pKey = new ButtonInput([PKEY]);
+    fKey = new ButtonInput([FKEY]);
 
-    newBuild = new ButtonInput([NKEY]);
-    confirmBuild = new ButtonInput([ENTER]);
-    buildAlt = new ButtonInput([LEFTSHIFT]);
-    buildAltAlt = new ButtonInput([CAPSKEY]);
-    deleteBlock = new ButtonInput([XKEY]);
-    RotateObUp = new ButtonInput([HOME]);
-    RotateObDown = new ButtonInput([END]);
-    RotateObRight = new ButtonInput([PGDWN]);
-    RotateObLeft = new ButtonInput([DELETE]);
-    RollObRight = new ButtonInput([PGUP]);
-    RollObLeft = new ButtonInput([INSERTKEY]);
-    ChangeSnapMode = new ButtonInput([LKEY]);
     //General Keys
     Tkey = new ButtonInput([TKEY]);
     Gkey = new ButtonInput([GKEY]);
@@ -206,6 +195,8 @@ export function SetupInputsModule(ecosystem: GameEcosystem) {
                         }
                     }
                     if (eventData.inputIndex === PointerInput.Move) {
+                        ecosystem.InputValues.mouseXPosition = eventData.clientX;
+                        ecosystem.InputValues.mouseYPosition = eventData.clientY;
                         RecordMouseChanges(eventData.movementX, eventData.movementY);
                     }
                 });
@@ -295,14 +286,14 @@ export function GetNumberedButtonIndex(index: number, ecosystem: GameEcosystem):
 export function UpdateInputValuesEndFrame(ecosystem: GameEcosystem) {
     ecosystem.InputValues.mouseWheel = 0;
 
-    ecosystem.InputValues.mouseY = SimpleWeightedAverageSmooth(
-        ecosystem.InputValues.mouseY,
+    ecosystem.InputValues.mouseYDelta = SimpleWeightedAverageSmooth(
+        ecosystem.InputValues.mouseYDelta,
         frameMouseYChanges,
         ecosystem.deltaTime,
         0.02
     );
-    ecosystem.InputValues.mouseX = SimpleWeightedAverageSmooth(
-        ecosystem.InputValues.mouseX,
+    ecosystem.InputValues.mouseXDelta = SimpleWeightedAverageSmooth(
+        ecosystem.InputValues.mouseXDelta,
         frameMouseXChanges,
         ecosystem.deltaTime,
         0.02

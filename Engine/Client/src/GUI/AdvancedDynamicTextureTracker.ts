@@ -1,5 +1,5 @@
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
-import { GameEcosystem } from "../../../Shared/src/GameEcosystem";
+import { GameEcosystem } from "../GameEcosystem";
 
 //Is the mouse hovered over GUI?
 var hoveredOverGUIOverride = false;

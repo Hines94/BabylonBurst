@@ -1,9 +1,9 @@
-import { Color3, Color4, InputBlock, Material, NodeMaterial, Scene, Vector4 } from "@babylonjs/core";
+import { Color3, Color4, InputBlock, Material, NodeMaterial, Scene, Texture, Vector4 } from "@babylonjs/core";
 
 import { GetSimpleImageMaterial } from "./SimpleImageMaterial";
-import { AsyncImageDescription, AsyncMaterial } from "../../../Shared/src/AsyncAssets";
+import { AsyncImageDescription, AsyncMaterial } from "../AsyncAssets";
 
-/** A default implementation of our cell shaded material */
+/** A default implementation of our unlit material */
 export class AsyncSimpleImageMaterial extends AsyncMaterial {
     image: AsyncImageDescription;
     color: Color4;
@@ -33,10 +33,7 @@ export class AsyncSimpleImageMaterial extends AsyncMaterial {
     async populateTextures(material: NodeMaterial) {
         if (this.image !== undefined) {
             const DiffTex = await this.image.GetImageAsTexture();
-            //@ts-ignore
-            material.getBlockByName("ImageTexture").texture = DiffTex;
-            //@ts-ignore
-            material.getBlockByName("UseTexture").value = 1;
+            SetSimpleMaterialTexture(material, DiffTex);
         }
     }
     async populateColors(material: NodeMaterial) {
@@ -51,4 +48,11 @@ export function SetSimpleMaterialColor(mat: Material, color: Color4) {
     if (colorBlock !== undefined && colorBlock !== null) {
         colorBlock.value = color;
     }
+}
+
+export function SetSimpleMaterialTexture(material: Material, diffTex: Texture) {
+    //@ts-ignore
+    material.getBlockByName("ImageTexture").texture = diffTex;
+    //@ts-ignore
+    material.getBlockByName("UseTexture").value = 1;
 }

@@ -1,17 +1,8 @@
 import { decode } from "@msgpack/msgpack";
-import { GameEcosystem } from "../../../Shared/src/GameEcosystem";
+import { GameEcosystem } from "../GameEcosystem";
 import { DisposeOfObject, WaitForTime } from "../Utils/SceneUtils";
 
 export var serverConnection: ServerConnection;
-
-export enum MessageToServType {
-    inputs,
-    placeItem,
-    removeBuildRequest,
-    interactRequest,
-    enterBuildMode,
-    addDecal,
-}
 
 var retryConnectionAttempts = 0;
 
@@ -72,7 +63,7 @@ export class ServerConnection {
         this.serverMessages = [];
     }
 
-    SendMessageToServer(message: string | ArrayBufferLike | Blob | ArrayBufferView, type: MessageToServType) {
+    SendMessageToServer(message: number[], type: number) {
         if (this.socket.readyState !== this.socket.OPEN) {
             return;
         }

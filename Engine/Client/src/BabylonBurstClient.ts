@@ -2,10 +2,10 @@ import { UpdateGameSpecificSystems as UpdateGameplaySpecificSystems } from "./Sy
 import { FramerateCounter } from "./GUI/Generic/FramerateCounter";
 import { ServerConnection } from "./Networking/ServerConnection";
 import { RunnableGameEcosystem } from "./RunnableGameEcosystem";
-import { GameEcosystem } from "../../Shared/src/GameEcosystem";
+import { GameEcosystem } from "./GameEcosystem";
 
 /** Game specific ecosystem client. Has main scene for rendering main game. */
-export class BabylonBoostClient extends RunnableGameEcosystem {
+export class BabylonBurstClient extends RunnableGameEcosystem {
     //Maximum bounds of the world
     worldRadius = 50;
     worldHeight = 20;

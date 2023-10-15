@@ -1,6 +1,7 @@
 import { Observable, Scene } from "@babylonjs/core";
 import { SceneSetupSettings } from "../../Client/src/Environment/SceneSetupSettings";
 import { WindowInputValues } from "../../Client/src/InputModule";
+import { EntitySystem } from "./EntitySystem/EntitySystem";
 
 /** Contains key parts to run a game ecosystem (render etc) */
 export interface GameEcosystem {
@@ -10,7 +11,7 @@ export interface GameEcosystem {
     deltaTime: number;
     dynamicProperties: { [key: string]: any };
     InputValues: WindowInputValues;
-    entitySystem: ServerWASMModuleWrapper;
+    entitySystem: EntitySystem;
 
     //---HTML/GUI related---
     controlHasFocus: boolean;

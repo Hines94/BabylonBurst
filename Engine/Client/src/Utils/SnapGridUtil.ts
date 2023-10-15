@@ -1,5 +1,5 @@
 import { Vector2, Vector3 } from "@babylonjs/core";
-import { InstancedMeshTransform } from "../../../Shared/src/AsyncAssets";
+import { InstancedMeshTransform } from "../AsyncAssets";
 
 export const buildableGridSize = 0.5;
 

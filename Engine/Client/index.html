@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-        <title>Space Fleets</title>
+        <title>Babylon Burst</title>
 
         <style>
             html,
@@ -15,8 +15,13 @@
             }
 
             .gameCanvas {
-                width: 100%;
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                right: 0px;
+                bottom: 0px;
                 height: 100%;
+                width: 100%;
                 touch-action: none;
             }
         </style>
@@ -31,13 +36,13 @@
         </script>
         <!-- Import Game Client Logic -->
         <script type="module">
-            import { BabylonBoostClient } from "/src/BabylonBoostClient.ts";
+            import { BabylonBurstClient } from "/src/BabylonBurstClient.ts";
             const canvas = document.getElementById("renderCanvas"); // Get the canvas element
             //Not worth using worker thread as communication too much!
             document.body.style.zoom = "100%";
             //TODO: Additional options from env etc?
             //Pass in canvas and start up game client
-            const client = new BabylonBoostClient(canvas);
+            const client = new BabylonBurstClient(canvas);
         </script>
 
         <!-- <script>

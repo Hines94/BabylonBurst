@@ -39,7 +39,7 @@ export function WaitForEvent(eventName: string, doc: Document) {
 }
 
 /** Method to make text input accept drag/drop text and highlight on hover */
-export function MakeDroppableElement(element: HTMLInputElement, getData: () => string) {
+export function MakeDroppableTextElement(element: HTMLInputElement, getData: () => string) {
     element.addEventListener("dragover", function (event: DragEvent) {
         event.preventDefault();
         element.classList.add("dragover");
@@ -57,6 +57,37 @@ export function MakeDroppableElement(element: HTMLInputElement, getData: () => s
     });
 }
 
+/** Will simply return the vent rather than any transfer */
+export function MakeDroppableGenericElement(
+    element: HTMLElement,
+    callback: (DraggedElement: EventTarget) => void,
+    dragoverCheck: (DraggedElement: EventTarget) => boolean
+) {
+    element.addEventListener("dragover", function (event: DragEvent) {
+        if (DraggedElement !== undefined && DraggedElement !== null && dragoverCheck(DraggedElement)) {
+            event.preventDefault(); // Allow drop by preventing default behavior
+            event.stopPropagation();
+            element.classList.add("dragover");
+        }
+    });
+
+    element.addEventListener("dragleave", function (event: DragEvent) {
+        element.classList.remove("dragover");
+    });
+
+    element.addEventListener("drop", function (event: DragEvent) {
+        if (DraggedElement === undefined || DraggedElement === null) {
+            return;
+        }
+        event.preventDefault(); // Prevent default action, e.g., open as link
+        callback(DraggedElement);
+        element.classList.remove("dragover");
+    });
+}
+
+export var DraggedElement: EventTarget;
+
+/** Make a draggable element that can set text in inputs */
 export function MakeDraggableElement(element: HTMLElement, getData: () => string) {
     var clone: HTMLElement;
     let offsetX = 0;
@@ -68,6 +99,9 @@ export function MakeDraggableElement(element: HTMLElement, getData: () => string
     element.addEventListener("dragend", dragEnd);
 
     function dragStart(event: DragEvent) {
+        if (event.target !== element) {
+            return;
+        }
         clone = element.cloneNode(true) as HTMLElement; // clone the element
         clone.style.position = "absolute";
         clone.style.pointerEvents = "none"; // disable pointer events
@@ -81,8 +115,10 @@ export function MakeDraggableElement(element: HTMLElement, getData: () => string
         offsetY = event.clientY - element.getBoundingClientRect().top;
 
         event.dataTransfer.setData("text/plain", getData());
-        event.dataTransfer.effectAllowed = "link";
+        event.dataTransfer.effectAllowed = "all";
         event.dataTransfer.setDragImage(new Image(), 0, 0); // hide the default drag image
+
+        DraggedElement = element;
     }
 
     function dragMiddle(event: DragEvent) {
@@ -104,6 +140,7 @@ export function MakeDraggableElement(element: HTMLElement, getData: () => string
             clone.remove();
             clone = null;
         }
+        DraggedElement = undefined;
     }
 }
 
@@ -114,4 +151,24 @@ export function RemoveClassFromAllItems(removeclass: string, owner: HTMLElement)
         ele.classList.remove(removeclass);
     });
     return allSelected.length;
+}
+
+/** Returns the wrapper */
+export function CreateItemLabel(label: string, item: HTMLElement): HTMLElement {
+    const wrapper = item.ownerDocument.createElement("div");
+    const labelEle = wrapper.ownerDocument.createElement("p");
+    labelEle.innerText = label;
+    labelEle.style.display = "inline";
+    labelEle.style.marginRight = "10px";
+    wrapper.appendChild(labelEle);
+    wrapper.appendChild(item);
+    return wrapper;
+}
+
+/** Setup/bind an input to be the same as a value */
+export function SetupBindInputToValue(paramName: string, data: any, item: HTMLInputElement, defaultval = "") {
+    item.value = data[paramName] !== undefined ? data[paramName] : defaultval;
+    item.addEventListener("change", () => {
+        data[paramName] = item.value;
+    });
 }

@@ -1,6 +1,21 @@
-import { Mesh, PBRMaterial, Scene, StandardMaterial, VertexBuffer, VertexData } from "@babylonjs/core";
+import {
+    Color3,
+    Color4,
+    DynamicTexture,
+    Material,
+    Mesh,
+    PBRMaterial,
+    Scene,
+    StandardMaterial,
+    Vector3,
+    VertexBuffer,
+    VertexData,
+} from "@babylonjs/core";
 import { EntVector3 } from "../EntitySystem/CoreComponents";
 import { defaultLayerMask } from "./LayerMasks";
+import { GetSimpleImageMaterial } from "@engine/Materials/SimpleImageMaterial";
+import { SetSimpleMaterialTexture } from "@engine/Materials/AsyncSimpleImageMaterial";
+import { GetAsyncSceneIdentifier } from "@engine/AsyncAssets";
 
 export function GenerateOutlineMesh(original: Mesh, outlineWidth = 0.005) {
     const outline = GenerateScaledMesh(original, outlineWidth);
@@ -56,4 +71,105 @@ export function CreateMeshFromTriangles(triangles: EntVector3[][], scene: Scene,
         existingMesh.isVisible = true;
         return existingMesh;
     }
+}
+
+export type ExtractedMeshData = {
+    vertices: number[];
+    triangles: number[];
+};
+
+/** Warning - since no normal information they can be inversed */
+export function ExtractedMeshDataToMesh(data: ExtractedMeshData, scene: Scene) {
+    var customMesh = new Mesh("custom", scene);
+
+    var vertexData = new VertexData();
+
+    // Now, you assign vertices and indices (triangles) to the vertexData
+    vertexData.positions = data.vertices;
+    vertexData.indices = data.triangles;
+
+    // Apply vertex data to the custom mesh
+    vertexData.applyToMesh(customMesh);
+
+    return customMesh;
+}
+
+/** Ensures faces point upwards (for nav related items) */
+export function ExtractedMeshDataToMeshUpNormals(data: ExtractedMeshData, scene: Scene) {
+    var customMesh = new Mesh("custom", scene);
+
+    var vertexData = new VertexData();
+
+    // Now, you assign vertices and indices (triangles) to the vertexData
+    vertexData.positions = data.vertices;
+    vertexData.indices = data.triangles;
+
+    // Ensure the normals array exists and is of the appropriate size
+    vertexData.normals = new Array(vertexData.positions.length).fill(0);
+
+    // Compute normals
+    VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
+
+    // Bias the normals to point upwards
+    const upwardVector = new Vector3(0, 1, 0);
+    for (let i = 0; i < vertexData.normals.length; i += 3) {
+        let normal = new Vector3(vertexData.normals[i], vertexData.normals[i + 1], vertexData.normals[i + 2]);
+        normal.addInPlace(upwardVector);
+        normal.normalize();
+
+        vertexData.normals[i] = normal.x;
+        vertexData.normals[i + 1] = normal.y;
+        vertexData.normals[i + 2] = normal.z;
+    }
+
+    for (let i = 0; i < vertexData.indices.length; i += 3) {
+        let temp = vertexData.indices[i];
+        vertexData.indices[i] = vertexData.indices[i + 2];
+        vertexData.indices[i + 2] = temp;
+    }
+
+    // Apply vertex data to the custom mesh
+    vertexData.applyToMesh(customMesh);
+
+    return customMesh;
+}
+
+// Using BabylonJS Color3 for RGB
+export function getRandomColor3() {
+    return new Color3(Math.random(), Math.random(), Math.random());
+}
+
+// Using BabylonJS Color4 for RGBA
+export function GetRandomColor4(alpha: number) {
+    return new Color4(Math.random(), Math.random(), Math.random(), alpha);
+}
+
+var badMeshMats: { [sceneId: string]: Material } = {};
+export function GetBadMeshMaterial(scene: Scene): Material {
+    if (badMeshMats[GetAsyncSceneIdentifier(scene)]) {
+        return badMeshMats[GetAsyncSceneIdentifier(scene)];
+    }
+
+    var textureResolution = 512;
+    var dynamicTexture = new DynamicTexture("BadMatTexture", textureResolution, scene, true);
+    var textureContext = dynamicTexture.getContext();
+
+    var fontSize = 48;
+    textureContext.font = fontSize + "px Arial";
+    textureContext.fillStyle = "white";
+    textureContext.fillRect(0, 0, textureResolution, textureResolution);
+    textureContext.fillStyle = "red";
+    var texts = ["BAD MESH", "ERROR", "CHECK LOG"];
+    for (var i = 0; i < texts.length; i++) {
+        var y = (textureResolution / (texts.length + 1)) * (i + 1);
+        textureContext.fillText(texts[i], textureResolution / 2, y);
+    }
+
+    dynamicTexture.update();
+
+    const mat = GetSimpleImageMaterial(scene);
+    SetSimpleMaterialTexture(mat, dynamicTexture);
+    badMeshMats[GetAsyncSceneIdentifier(scene)] = mat;
+
+    return mat;
 }

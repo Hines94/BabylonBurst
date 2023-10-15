@@ -1,7 +1,7 @@
 import { InspectableType, TransformNode } from "@babylonjs/core";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
-import { GameEcosystem } from "../../../Shared/src/GameEcosystem";
-import { AsyncAssetManager } from "../../../Shared/src/AsyncAssets";
+import { GameEcosystem } from "../GameEcosystem";
+import { AsyncAssetManager } from "../AsyncAssets";
 
 /** A Debug interface based on a node. Simply press ` to open inspector then navigate to "ADMINDEBUGOBJECT" to access the useful methods */
 export class AdminDebugInterface extends TransformNode {
@@ -44,6 +44,9 @@ export class AdminDebugInterface extends TransformNode {
 
     debugLayerSetup = false;
     async setupDebugLayer() {
+        if (this.debugLayerSetup) {
+            return;
+        }
         await import("@babylonjs/core/Debug/debugLayer");
         await import("@babylonjs/inspector");
         this.debugLayerSetup = true;
@@ -59,6 +62,7 @@ export class AdminDebugInterface extends TransformNode {
             } else {
                 ecosystem.scene.debugLayer.show({});
                 ecosystem.scene.debugLayer.select(this);
+                CopyStyles(document, ecosystem.doc);
             }
         }
     }
@@ -71,4 +75,36 @@ export function UpdateAdminInterface(ecosystem: GameEcosystem) {
         ecosystem.dynamicProperties["adminInterface"] = new AdminDebugInterface("DEBUGADMIN", ecosystem.scene);
     }
     ecosystem.dynamicProperties["adminInterface"].PerformTick(ecosystem);
+}
+
+function CopyStyles(sourceDoc: Document, targetDoc: Document) {
+    if (sourceDoc === targetDoc) {
+        return;
+    }
+
+    for (let index = 0; index < sourceDoc.styleSheets.length; index++) {
+        const styleSheet = sourceDoc.styleSheets[index];
+        try {
+            if (styleSheet.cssRules) {
+                // for <style> elements
+                const newStyleEl = sourceDoc.createElement("style");
+
+                for (const cssRule of styleSheet.cssRules) {
+                    if (cssRule.cssText.includes("actionTabs")) {
+                    }
+                    // write the text of each rule into the body of the style element
+                    newStyleEl.appendChild(sourceDoc.createTextNode(cssRule.cssText));
+                }
+
+                targetDoc.head.appendChild(newStyleEl);
+            } else if (styleSheet.href) {
+                // for <link> elements loading CSS from a URL
+                const newLinkEl = sourceDoc.createElement("link");
+
+                newLinkEl.rel = "stylesheet";
+                newLinkEl.href = styleSheet.href;
+                targetDoc.head.appendChild(newLinkEl);
+            }
+        } catch (e) {}
+    }
 }
