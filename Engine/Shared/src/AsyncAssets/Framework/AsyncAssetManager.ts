@@ -31,6 +31,14 @@ export class AsyncAssetManager {
         this.frontendCache = frontendStorage;
     }
 
+    async GetItemAtLocation(location:string): Promise<Uint8Array> {
+        const cachedData = await this.frontendCache.Get(location);
+        if(cachedData !== undefined) {
+            return cachedData;
+        }
+        return await this.backendStorage.GetItemAtLocation(location);
+    }   
+
     static GetAssetManager(): AsyncAssetManager {
         return globalAssetManager;
     }

@@ -1,6 +1,7 @@
 import { AbstractMesh, Matrix, Quaternion, Vector3, Vector4 } from "@babylonjs/core";
 import { Clamp } from "../Utils/MathUtils";
 import { RegisteredType, Saved } from "./TypeRegister";
+import { Component } from "./Component";
 
 @RegisteredType
 export class EntVector3{
@@ -390,7 +391,7 @@ export class EntVector4 {
 }
 
 @RegisteredType
-export class EntTransform {
+export class EntTransform extends Component {
     @Saved()
     Position = new EntVector3();
     @Saved()

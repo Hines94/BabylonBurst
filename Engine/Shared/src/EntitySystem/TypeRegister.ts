@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 export type savedProperty = {
     name:string;
     type:any;
@@ -35,6 +37,7 @@ export function Saved(type?: Function) {
         const compName = target.constructor.name;
         const reflectType = Reflect.getMetadata('design:type', target, propertyKey);
         const propertyType = type || reflectType;
+        console.log(reflectType)
 
         if (!savedProperties[compName]) {
             savedProperties[compName] = [];
@@ -49,8 +52,9 @@ export function Saved(type?: Function) {
 
         if(isarr && type === undefined) {
             console.error(`Property: ${propertyKey} in comp ${compName} is an array but no type. Please use Saved(TYPEOFARRAYITEM) for arrays.`);
-        }
-        if(propertyType === Object) {
+        } else if(propertyType === undefined) {
+            console.error(`Property type: ${propertyKey} in comp ${compName} is undefined. Please use Saved(TYPEOFARRAYITEM) to specify type.`);
+        } else if(propertyType === Object) {
             console.error(`Property: ${propertyKey} in comp ${compName} has bad type. Please use Saved(TYPEOFITEM) to manually specify.`)
         }
     }

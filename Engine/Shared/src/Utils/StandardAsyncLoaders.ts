@@ -1,4 +1,5 @@
-import { AsyncAssetLoader, AsyncDataType } from "@engine/AsyncAssets";
+import { AsyncAssetLoader, AsyncDataType } from "../AsyncAssets";
+
 
 
 export class AsyncJSONLoader extends AsyncAssetLoader {

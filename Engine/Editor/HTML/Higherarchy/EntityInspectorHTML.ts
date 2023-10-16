@@ -3,10 +3,11 @@ import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { CloneTemplate } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { GetEditorGizmos } from "./EditorGizmos";
 import { HigherarchyHTML } from "./HigherarchyHTML";
-//@ts-ignore
-import { JSONEditor } from "@json-editor/json-editor";
-import { CheckEditorForCustomElements } from "../InspectorWindow/CustomInspectorComponents";
 import { EntityData } from "@engine/EntitySystem/EntityData";
+import { Component } from "@engine/EntitySystem/Component";
+import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
+import {GenerateInnerOuterPanelWithMinimizer} from "@engine/Utils/HTMLUtils"
+import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {
@@ -21,19 +22,21 @@ export class EntityInspectorHTML {
 
         this.inspector = this.owner.windowDoc.getElementById("InspectorPanel") as HTMLElement;
         const template = CloneTemplate("EntityInspector", this.owner.windowDoc);
+        this.inspector.innerHTML = "";
+        this.inspector.appendChild(template);
         const allEntComps = template.querySelector("#EntityComponents") as HTMLElement;
-
-        const keys = Object.keys(this.owner.allEntities);
-        const entity = this.owner.allEntities[entityIdentifier];
 
         this.defaultEntityData = owner.ecosystem.entitySystem.GetEntityData(entityIdentifier);
 
         //Existing items
-        const comps = Object.keys(entity);
-        comps.forEach(comp => {
+        const entityData = owner.ecosystem.entitySystem.GetEntityData(this.entityId);
+        entityData.Components.forEach(comp => {
             this.addComponentToInspector(comp, allEntComps, entityIdentifier);
         });
         template.querySelector("#EntityTitle").innerHTML = "Entity: " + entityIdentifier;
+
+        console.error("TODO: Fix add component!")
+        return;
 
         //New Component
         const compTypes = template.querySelector("#componentTypes");
@@ -82,21 +85,28 @@ export class EntityInspectorHTML {
         });
     }
 
-    componentDatas: { editor: JSONEditor; comp: string }[] = [];
-
-    addComponentToInspector(comp: string, inspector: HTMLElement, entityId: number) {
-        if(!componentSchemas[comp]) {
-            console.error("No schema for component: " + comp);
+    addComponentToInspector(comp: Component, inspector: HTMLElement, entityId: number) {
+        const compName = comp.constructor.name;
+        if(!registeredTypes[compName]) {
+            console.error("No schema for component: " + compName);
             return;
         }
-        const schema = JSON.parse(componentSchemas[comp]);
-        const componentWrapper = document.createElement("div");
-        const higherarch = this;
-        componentWrapper.classList.add("Component");
-        inspector.appendChild(componentWrapper);
-        const editor: JSONEditor = GenereateComponentEditor();
 
-        SetupComponentEditor();
+        const higherarch = this;
+
+        const componentWrapper = GenerateInnerOuterPanelWithMinimizer(inspector.ownerDocument);
+        componentWrapper.outerPanel.classList.add("Component");
+        const title = inspector.ownerDocument.createElement("h1");
+        title.textContent = "Inspector: " +  compName;
+        componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
+        componentWrapper.outerPanel.style.backgroundColor = inspector.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
+        inspector.appendChild(componentWrapper.outerPanel);
+        
+        const compSavedProps = savedProperties[compName];
+        for(var c = 0; c < compSavedProps.length;c++) {
+            const property = compSavedProps[c];
+            GenerateEditorProperty(componentWrapper.innerPanel,property,comp);
+        }
 
         bindCustomComponentItems();
 

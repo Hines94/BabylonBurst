@@ -38,7 +38,6 @@ export class PrefabInstance extends Component {
     }
 
     onComponentAdded(ent:EntityData):void {
-        console.log("Prefab instance added")
         const prefabInst = ent.GetComponent<PrefabInstance>(PrefabInstance);
         prefabInst.refreshPrefabInstance(ent);
     }

@@ -12,11 +12,16 @@
 
     },
     "dependencies": {
-        "@babylonjs/core": "../node_modules/@babylonjs/core",
-        "@babylonjs/gui": "../node_modules/@babylonjs/gui",
-        "@json-editor/json-editor": "^2.10.1",
+        "@aws-sdk/client-s3": "../../node_modules/@aws-sdk/client-s3",
+        "@aws-sdk/credential-providers": "../../node_modules/@aws-sdk/credential-providers",
+        "@babylonjs/core": "../../node_modules/@babylonjs/core",
+        "@babylonjs/gui": "../../node_modules/@babylonjs/gui",
+        "@babylonjs/inspector": "../../node_modules/@babylonjs/inspector",
+        "@babylonjs/serializers": "../../node_modules/@babylonjs/serializers",
+        "@msgpack/msgpack": "../../node_modules/@babylonjs/msgpack",
+        "reflect-metadata": "../../node_modules/reflect-metadata",
         "vite": "../../node_modules/vite",
-        "@msgpack/msgpack": "../node_modules/msgpack",
-        "uuid": "../node_modules/uuid"
+        "uuid": "../../node_modules/uuid",
+        "typescript": "../../node_modules/typescript"
     }
 }

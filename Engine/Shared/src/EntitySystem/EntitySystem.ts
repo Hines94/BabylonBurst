@@ -171,7 +171,7 @@ export class EntitySystem {
             this.ChangedComponents[entId].push(name);
         }
     }
-
+    
     private CreateEntity(entId:number):EntityData {
         const newEnt = new EntityData();
         newEnt.EntityId = entId;

@@ -5,6 +5,10 @@ import { GetPreviouslyLoadedAWSAsset } from "@engine/AsyncAssets/Framework/Async
 import { decode } from "@msgpack/msgpack";
 import { GetMaterialDescription } from "@BabylonBurstClient/Materials/EngineMaterialDescriptions";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { HiddenEntity, InstancedRender, MaterialSpecifier } from "@engine/Rendering/InstancedRender";
+import { EntTransform } from "@engine/EntitySystem/CoreComponents";
+import { EntityData } from "@engine/EntitySystem/EntityData";
+import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 
 function getRunnerID(rend: InstancedRender): string {
     var ret: string = rend.ModelData.FilePath + "_" + rend.ModelData.MeshName + "_" + 0 + "_";
@@ -38,7 +42,6 @@ function GetLayerMask(val: InstancedRender): number {
 }
 
 export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
-    return;
     const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData([InstancedRender, EntTransform], [HiddenEntity]);
     var thisFrameTransformData: { [id: string]: number[] } = {};
 
@@ -46,13 +49,10 @@ export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
         ecosystem.dynamicProperties.LoadedRunners = {};
     }
 
-    //Get data from instances
-    const entities = Object.keys(allInstEntities);
 
     //Perform setup for data
-    entities.forEach(ent => {
-        const entKey = parseInt(ent);
-        const rendItem = GetComponent<InstancedRender>(allInstEntities[entKey], InstancedRender);
+    allInstEntities.iterateEntities((entData:EntityData) => {
+        const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
         const runnerID = getRunnerID(rendItem);
         //Create render runner if not exists
         if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
@@ -73,7 +73,7 @@ export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
         if (thisFrameTransformData[runnerID] === undefined) {
             thisFrameTransformData[runnerID] = [];
         }
-        const transform = GetComponent<EntTransform>(allInstEntities[entKey], EntTransform);
+        const transform = entData.GetComponent<EntTransform>(EntTransform);
         thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
             EntTransform.getAsInstanceArray(transform)
         );

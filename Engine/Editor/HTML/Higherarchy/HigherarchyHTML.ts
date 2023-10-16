@@ -6,6 +6,7 @@ import { GetEditorGizmos } from "./EditorGizmos";
 import { EntityInspectorHTML } from "./EntityInspectorHTML";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { EntityData } from "@engine/EntitySystem/EntityData";
+import { Prefab } from "@engine/EntitySystem/Prefab";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */
 export abstract class HigherarchyHTML {
@@ -87,7 +88,7 @@ export abstract class HigherarchyHTML {
         entityId.classList.add("higherarchEntityText");
         row.appendChild(entityId);
         this.higherarchyItems.appendChild(row);
-        row.style.marginLeft = (this.GetPrefabInsetLevel(this.ecosystem.entitySystem.GetEntityData(entId)) * 10).toString() + "%";
+        row.style.marginLeft = ((this.GetPrefabInsetLevel(this.ecosystem.entitySystem.GetEntityData(entId)) * 10)+5).toString() + "%";
 
         //View Entity components etc
         row.addEventListener("click", async () => {
@@ -130,13 +131,13 @@ export abstract class HigherarchyHTML {
     }
 
     protected GetPrefabInsetLevel(entity: EntityData): number {
-        console.log("TODO: Fix inset level!")
-        // if(entity[Prefab.name] === undefined) {
-        //     return 0;
-        // }
-        // if (GetComponent(entity, Prefab)) {
-        //     return 1;
-        // }
+        const pf = entity.GetComponent(Prefab);
+        if(pf) {
+            //TODO: Trace up for this?
+            if(pf.parent) {
+                return 1;
+            }
+        }
         return 0;
     }
 

@@ -38,13 +38,22 @@ export class EntityTemplate {
         }
         //@ts-ignore
         const ret = new type();
+        this.LoadDataIntoComponent(ent,compName,mapping,ret); 
+        return ret;
+    }
+
+    /** Given a component - load the data we have into that component */
+    LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component) {
+        const compData = this.entityData[ent][GetTypingsCompIndex(compName,this.typings)];
+        if(!compData){
+            return;
+        }
         const params = Object.keys(compData);
         for(var i = 0; i < params.length;i++) {
             const paramIndex = parseInt(params[i]);
             const paramName = this.typings[compName][paramIndex];
-            ret[paramName] = SaveableDataField.loadCustomSaveData(newEnt,mapping,compData[paramIndex],compName,paramName);
+            comp[paramName] = SaveableDataField.loadCustomSaveData(mapping[ent],mapping,compData[paramIndex],compName,paramName);
         }
-        return ret;
     }
 
     GetRawComponentData(ent:number,compName:string) : any {
@@ -87,6 +96,35 @@ export class EntityLoader {
                 }
                 const compData = template.GetEntityComponent(originalEntId,compType as any,entMappings[e],entMappings);
                 system.AddSetComponentToEntity(entMappings[e],compData);
+            }
+        })
+        return entMappings;
+    }
+
+    static LoadTemplateIntoExistingEntities(template:EntityTemplate,system:EntitySystem):EntityLoadMapping {
+        const allEnts = Object.keys(template.entityData);
+        const entMappings:EntityLoadMapping = {};
+        allEnts.forEach(e=>{
+            const newEnt = system.EnsureEntity(parseInt(e));
+            entMappings[e] = newEnt;
+        });
+        allEnts.forEach(e=>{
+            const originalEntId = parseInt(e);
+            const comps = Object.keys(template.entityData[originalEntId]);
+            for(var c = 0; c < comps.length;c++){
+                const compName = Object.keys(template.typings)[parseInt(comps[c])];
+                const compType = registeredTypes[compName];
+                if(!compType) {
+                    console.error("No registered comp type for: " + compName);
+                    continue;
+                }
+                const existingComp = entMappings[e].GetComponentByName(compName);
+                if(existingComp !== undefined) {
+                    template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp);
+                } else {
+                    const compData = template.GetEntityComponent(originalEntId,compType as any,entMappings[e],entMappings);
+                    system.AddSetComponentToEntity(entMappings[e],compData);
+                }
             }
         })
         return entMappings;

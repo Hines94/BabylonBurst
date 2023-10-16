@@ -11,7 +11,8 @@ import { decode, encode } from "@msgpack/msgpack";
 import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
 import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
 import { EntityData } from "@engine/EntitySystem/EntityData";
-import {PrefabPackedType} from "@engine/EntitySystem/Prefab"
+import {Prefab, PrefabPackedType} from "@engine/EntitySystem/Prefab"
+import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
 
 /** Used for specifically loading prefabs into a seperate window */
 export class PrefabHigherarchyHTML extends HigherarchyHTML {
@@ -49,8 +50,8 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         await this.ecosystem.waitLoadedPromise;
 
         setupTopMenu();
-        
-        this.ecosystem.entitySystem.LoadPrefabByIdToExisting(prefabData.prefabID,true);
+        this.ecosystem.entitySystem.ResetSystem();
+        PrefabManager.GetPrefabManager().LoadPrefabFromIdToExisting(prefabData.prefabID,this.ecosystem.entitySystem);
         this.RegenerateHigherarchy();
         this.setupRightClick();
 
@@ -95,13 +96,12 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             //Visualistaions
             SetupAllEditorVisualisations(higherarchy.ecosystem);
             //Debug
-            SetupAllEditorDebugOptions(this.ecosystem,{});
+            SetupAllEditorDebugOptions(higherarchy.ecosystem,{});
         }
     }
 
     protected override GetPrefabInsetLevel(entity: EntityData): number {
-        console.log("TODO: Fix inset level!")
-        return super.GetPrefabInsetLevel(entity) - 1;
+        return super.GetPrefabInsetLevel(entity);
     }
 
     protected override setupContextMenu(event: MouseEvent): void {

@@ -20,7 +20,9 @@
             "@BabylonBurstClient/*": ["src/*"],
             "@engine/*": ["../Shared/src/*"],
             "@userCode/*": ["../../Source/ClientSource/*"]
-        }
+        },
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
     },
     "include": [
         "src/**/*", 

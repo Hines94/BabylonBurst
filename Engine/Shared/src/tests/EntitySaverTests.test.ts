@@ -15,7 +15,7 @@ class TestComp extends Component {
 class TestComp2 extends Component {
     data = "testComp2";
     @Saved()
-    otherdata = 1;
+    otherdata:number = 1;
     @Saved()
     testEntity:EntityData;
 }
@@ -29,9 +29,9 @@ class nestedData {
 @RegisteredType
 class TestComp3 extends Component {
     @Saved()
-    data = "testComp3";
-    @Saved(nestedData)
-    nestData = new nestedData();
+    data:string = "testComp3";
+    @Saved()
+    nestData:nestedData = new nestedData();
     @Saved(EntityData)
     testArray:EntityData[] = [];
 }
@@ -51,7 +51,8 @@ test("EntitySystemSaveAllEntities", () => {
     const newent2 = entSystem.AddEntity();
     newTestC2.testEntity = newent2;
     entSystem.AddSetComponentToEntity(newent2,new TestComp());
-    const testComp3 = new TestComp3()
+    const testComp3 = new TestComp3();
+    testComp3.data = "SAVED_DATA";
     testComp3.nestData.nestedEntity = newent;
     testComp3.testArray.push(newent);
     entSystem.AddSetComponentToEntity(newent2,testComp3);
@@ -75,6 +76,10 @@ test("EntitySystemSaveAllEntities", () => {
     expect(entSystem.GetEntityData(3).GetComponent(TestComp2).testEntity).toBe(entSystem.GetEntityData(4));
     expect(entSystem.GetEntityData(4).GetComponent(TestComp3).testArray[0]).toBe(entSystem.GetEntityData(3));
     expect(entSystem.GetEntityData(4).GetComponent(TestComp3).nestData.nestedEntity).toBe(entSystem.GetEntityData(3));
+
     //Load into existing entities
-    
+    entSystem.GetEntityData(4).GetComponent(TestComp3).data = "SHOULD_BE_RELOADED";
+    EntityLoader.LoadTemplateIntoExistingEntities(reloadTemplate,entSystem);
+    expect(entSystem.GetEntityData(2).GetComponent(TestComp3).data).toBe("SAVED_DATA");
+
 });

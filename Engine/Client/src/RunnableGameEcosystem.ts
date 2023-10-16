@@ -5,12 +5,12 @@ import { SimpleWeightedSmoothWithSteps } from "../../Shared/src/Utils/MathUtils"
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { v4 as uuidv4 } from "uuid";
 import { UpdateSystemsLoop } from "./SystemsLoop";
-import { ServerWASMModuleWrapper } from "./WASM/ServerWASMModule";
 import { PlayerCamera } from "./Camera/PlayerCamera";
 import { GetGameSettings } from "./Settings";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { EntitySystem } from "@engine/EntitySystem/EntitySystem";
 import { setupAsyncManager } from "@BabylonBurstClient/Setup/AWSAssetSetup";
+import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
 
 /** Custom game launch - eg editor or client side performance checks */
 export class RunnableGameEcosystem implements GameEcosystem {
@@ -28,7 +28,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
     dynamicProperties: { [key: string]: any } = {};
     InputValues = new WindowInputValues();
 
-    entitySystem: EntitySystem;
+    entitySystem = new EntitySystem();
     engine: Engine;
     sceneSettings: SceneSetupSettings;
     gameSetup = false;
@@ -63,12 +63,12 @@ export class RunnableGameEcosystem implements GameEcosystem {
     async setupEngineRunLoop(canvas: HTMLCanvasElement) {
         await this.setupEngine(canvas);
         await setupAsyncManager();
+        await PrefabManager.GetPrefabManager().setupAllPrefabs();
         //Window resize utils
         const ecosystem = this;
         canvas.ownerDocument.defaultView.onresize = function () {
             ecosystem.engine.resize();
         };
-        this.entitySystem = new EntitySystem();
         this.setupScene();
         this.camera = new PlayerCamera(this);
         GetGameSettings().OnSceneLoaded(this);
@@ -98,7 +98,18 @@ export class RunnableGameEcosystem implements GameEcosystem {
         this.gameSetup = true;
     }
 
+    runRenderLoop = true;
+
+    stopGameLoop() {
+        if(this.engine) {
+            this.engine.stopRenderLoop();
+        }
+    }
+
     runGameLoop(): void {
+        if(!this.runRenderLoop) {
+            return;
+        }
         this.engine.runRenderLoop(() => {
             if (this.gameSetup === false) {
                 return;
@@ -144,8 +155,4 @@ export class RunnableGameEcosystem implements GameEcosystem {
         this.lastTick = NewTick;
     }
     lastTick = 0;
-}
-
-export function GetEcosystemForModule(module: ServerWASMModuleWrapper): GameEcosystem {
-    return module.___ECOSYSTEM___;
 }

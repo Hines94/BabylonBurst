@@ -2,6 +2,15 @@ import { decode } from "@msgpack/msgpack";
 import { PrefabPackedType } from "./Prefab";
 import { EntityLoader, EntityTemplate } from "./EntityLoader";
 import { EntitySystem } from "./EntitySystem";
+import { GetAllZippedFileDatas, GetZipPath } from "../AsyncAssets/Utils/ZipUtils";
+import { AsyncAssetManager } from "../AsyncAssets";
+
+function addPrefabEnd(item:string):string {
+    if(item.includes(".Prefab")) {
+        return item;
+    }
+    return item + ".Prefab";
+}
 
 /** Responsible for loading and managing the prefabs we currently have */
 export class PrefabManager {
@@ -24,9 +33,37 @@ export class PrefabManager {
     }
 
     allPrefabs:{[id:string]:EntityTemplate} = {};
+    prefabBundleNamesToIds:{[bundleName:string]:string} = {};
 
-    //TODO: Also with name so we can load from name
-    SetupPrefabFromRaw(assetBundle:string,filename:string,data:Uint8Array) {
+    async setupAllPrefabs() {
+        //Already setup?
+        if(Object.keys(this.allPrefabs).length > 0) {
+            return;
+        }
+        const assetManager = AsyncAssetManager.GetAssetManager();
+        const allItems = await assetManager.backendStorage.GetAllBackendItems();
+        for(let i in allItems) {
+            const bundlePath = allItems[i];
+            if(!bundlePath.includes("~p~")) {
+                continue;
+            }
+            const data = await assetManager.GetItemAtLocation(bundlePath);
+            if(data === undefined) {
+                continue;
+            }
+            //Check through each zipped
+            const zippedData = await GetAllZippedFileDatas(data);
+            for(let zd in zippedData) {
+                const zipped = zippedData[zd];
+                if(!zipped.name.includes(".Prefab")) {
+                    continue;
+                }
+                this.SetupPrefabFromRaw(bundlePath,zipped.name,await zipped.entry.arrayBuffer());
+            }
+        }
+    }
+
+    SetupPrefabFromRaw(bundlePath:string,fileName:string,data: ArrayLike<number> | BufferSource) {
         const loadData = decode(data) as PrefabPackedType;
         if(loadData.prefabID === undefined) {
             console.error("Invalid prefab type!");
@@ -34,18 +71,37 @@ export class PrefabManager {
         if(loadData.prefabData === undefined) {
             console.error("Invalid prefab data!");
         }
+        const fullPath = GetZipPath(bundlePath)+"_"+addPrefabEnd(fileName);
+        this.prefabBundleNamesToIds[fullPath] = loadData.prefabID;
         this.allPrefabs[loadData.prefabID] = EntityLoader.GetEntityTemplateFromMsgpack(loadData.prefabData);
+        console.log("Setup prefab item: " + fullPath)
     }
 
     GetPrefabTemplateById(id:string) {
         return this.allPrefabs[id];
     }
 
-    LoadPrefabFromId(id:string, entitySystem:EntitySystem) {
+    GetPrefabTemplateByBundleFileName(bundlePath:string,fileName:string) {
+        const fullPath = GetZipPath(bundlePath)+"_"+addPrefabEnd(fileName);
+        if(this.prefabBundleNamesToIds[fullPath] !== undefined) {
+            return this.allPrefabs[this.prefabBundleNamesToIds[fullPath]];
+        }
+        return undefined;
+    }
+
+    LoadPrefabFromIdToNew(id:string, entitySystem:EntitySystem) {
         if(this.allPrefabs[id] === undefined) {
             console.error(`Tried to load bad prefab: ${id}`);
             return;
         }
         EntityLoader.LoadTemplateIntoNewEntities(this.allPrefabs[id],entitySystem);
+    }
+
+    LoadPrefabFromIdToExisting(id:string, entitySystem:EntitySystem) {
+        if(this.allPrefabs[id] === undefined) {
+            console.error(`Tried to load bad prefab: ${id}`);
+            return;
+        }
+        EntityLoader.LoadTemplateIntoExistingEntities(this.allPrefabs[id],entitySystem);
     }
 }

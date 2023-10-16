@@ -38,7 +38,7 @@ test("PrefabGeneratePrefab", () => {
 });
 
 test("PrefabReloadPrefab", () => {
-    PrefabManager.GetPrefabManager().LoadPrefabFromId(prefabData.prefabID,entSystem);
+    PrefabManager.GetPrefabManager().LoadPrefabFromIdToNew(prefabData.prefabID,entSystem);
     expect(entSystem.GetEntitiesWithData([Prefab],[]).GetNumEntities()).toBe(1);
     const ent = entSystem.GetEntityData(1);
     const prefabComp = ent.GetComponent(Prefab);
