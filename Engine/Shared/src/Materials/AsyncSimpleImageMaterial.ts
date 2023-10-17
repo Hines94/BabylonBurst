@@ -1,7 +1,7 @@
-import { Color3, Color4, DynamicTexture, InputBlock, Material, NodeMaterial, Scene, Texture, Vector4 } from "@babylonjs/core";
-
+import { Color4, DynamicTexture, InputBlock, Material, NodeMaterial, Scene, Texture} from "@babylonjs/core";
 import { GetSimpleImageMaterial } from "../../../Client/src/Materials/SimpleImageMaterial";
-import { AsyncImageDescription, AsyncMaterial, GetAsyncSceneIdentifier } from "@engine/AsyncAssets";
+import { AsyncImageDescription } from "../AsyncAssets/AsyncImage";
+import { AsyncMaterial } from "../AsyncAssets/AsyncMaterial";
 
 /** A default implementation of our unlit material */
 export class AsyncSimpleImageMaterial extends AsyncMaterial {

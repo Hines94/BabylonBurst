@@ -14,15 +14,13 @@ export abstract class SaveableDataField {
 
     static getCustomSaveData(propIdentifier: savedProperty, entity:EntityData, property: any) {
         //Array?
-        if(propIdentifier && propIdentifier.isArray) {
-            propIdentifier.isArray = false;
+        if(propIdentifier && Array.isArray(property)) {
             const ret:any[] = [];
             if(property !== undefined && property !== null) {
                 for(var i = 0; i < property.length;i++) {
                     ret.push(this.getCustomSaveData(propIdentifier,entity,property[i]));
                 }
             }
-            propIdentifier.isArray = true;
             return ret;
         //Custom saveable?
         } else if (propIdentifier && propIdentifier.type["GetSaveableData"]) {

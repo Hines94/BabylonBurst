@@ -15,6 +15,7 @@ export class AssetBundle extends VisualItem {
 
     refreshPromise:Promise<void>;
     bAutoRefresh = true;
+    bHasPSuffix = false;
 
     constructor(data:Partial<AssetBundle>) {
         super();
@@ -87,9 +88,17 @@ export class AssetBundle extends VisualItem {
         this.storedItems = [];
         var ourData = null;
         try {
-            ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
+            if(this.bHasPSuffix) {
+                ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
+            } else {
+                ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
+            }
         } catch {
-            ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
+            if(this.bHasPSuffix) {
+                ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
+            } else {
+                ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
+            }
         }
         const contained = await GetAllZippedFileDatas(ourData);
         contained.forEach(d=>{

@@ -14,6 +14,18 @@ export class EntityTemplate {
         return this.entityData[ent] !== undefined;
     }
 
+    DoesEntityHaveComponentByName(ent:number,compName:string) {
+        if(!this.DoesEntityExist(ent)) {
+            return false;
+        }
+        const compNames = Object.keys(this.typings);
+        if(!compNames.includes(compName)) {
+            return false;
+        }
+        const compData = this.entityData[ent][GetTypingsCompIndex(compName,this.typings)];
+        return compData !== undefined;
+    }
+
     GetEntityComponent<T extends Component>(ent:number,type: { new(): T },newEnt:EntityData, mapping:EntityLoadMapping): T | undefined {
         if(!this.DoesEntityExist(ent)) {
             return undefined;
@@ -37,7 +49,7 @@ export class EntityTemplate {
             return undefined;
         }
         //@ts-ignore
-        const ret = new type();
+        const ret = new type.type();
         this.LoadDataIntoComponent(ent,compName,mapping,ret); 
         return ret;
     }
@@ -84,20 +96,7 @@ export class EntityLoader {
             const newEnt = system.AddEntity();
             entMappings[e] = newEnt;
         });
-        allEnts.forEach(e=>{
-            const originalEntId = parseInt(e);
-            const comps = Object.keys(template.entityData[originalEntId]);
-            for(var c = 0; c < comps.length;c++){
-                const compName = Object.keys(template.typings)[parseInt(comps[c])];
-                const compType = registeredTypes[compName];
-                if(!compType) {
-                    console.error("No registered comp type for: " + compName);
-                    continue;
-                }
-                const compData = template.GetEntityComponent(originalEntId,compType as any,entMappings[e],entMappings);
-                system.AddSetComponentToEntity(entMappings[e],compData);
-            }
-        })
+        this.LoadTemplateIntoSpecifiedEntities(template,system,entMappings);
         return entMappings;
     }
 
@@ -108,7 +107,17 @@ export class EntityLoader {
             const newEnt = system.EnsureEntity(parseInt(e));
             entMappings[e] = newEnt;
         });
+        this.LoadTemplateIntoSpecifiedEntities(template,system,entMappings);
+        return entMappings;
+    }
+
+    static LoadTemplateIntoSpecifiedEntities(template:EntityTemplate,system:EntitySystem, entMappings:EntityLoadMapping):EntityLoadMapping {
+        const allEnts = Object.keys(template.entityData);
         allEnts.forEach(e=>{
+            if(entMappings[e] === undefined) {
+                console.error("No mapping for entity in load: " + e);
+                return;
+            }
             const originalEntId = parseInt(e);
             const comps = Object.keys(template.entityData[originalEntId]);
             for(var c = 0; c < comps.length;c++){
@@ -122,7 +131,7 @@ export class EntityLoader {
                 if(existingComp !== undefined) {
                     template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp);
                 } else {
-                    const compData = template.GetEntityComponent(originalEntId,compType as any,entMappings[e],entMappings);
+                    const compData = template.GetEntityComponent(originalEntId,compType.type as any,entMappings[e],entMappings);
                     system.AddSetComponentToEntity(entMappings[e],compData);
                 }
             }

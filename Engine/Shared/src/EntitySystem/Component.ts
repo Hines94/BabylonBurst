@@ -21,8 +21,10 @@ export function DeepSetupCallback(comp: any,callback:()=>void) {
     // If the component is not an object, is null, or already proxied, return it as-is
     if (typeof comp === 'object' && comp instanceof EntityData === false) {
         comp[proxyCallbackSymbol] = callback;
-
         for (const key in comp) {
+            if(key === proxyCallbackSymbol) {
+                continue;
+            }
             DeepSetupCallback(comp[key],callback);
         }
     }

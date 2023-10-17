@@ -82,7 +82,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 //Save to backend
                 prefab.SaveItemOut();
                 //Reset for each current WASM system
-                console.error("TODO: Reload prefab!")
+                PrefabManager.GetPrefabManager().SetupPrefabFromRaw(prefab.parent.getItemLocation(),prefab.GetSaveName(),prefab.data);
                 ShowToastNotification("Entity Saved", 3000, higherarchy.windowDoc);
             });
             //Exit button

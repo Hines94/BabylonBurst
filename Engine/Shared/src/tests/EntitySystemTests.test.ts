@@ -46,9 +46,9 @@ test("EntitySystemFindEntities", () => {
     const testC = new TestComp();
     entSystem.AddSetComponentToEntity(2,testC);
     entSystem.AddSetComponentToEntity(2,new TestComp2());
+
     const testC2 = new TestComp2()
     entSystem.AddSetComponentToEntity(thirdEnt,testC2);
-
     testC2.someVar = "changed";
     expect(entSystem.IsChangedComponent(thirdEnt,TestComp2)).toBe(true);
     

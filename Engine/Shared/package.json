@@ -27,9 +27,8 @@
         "@babylonjs/inspector": "../../node_modules/@babylonjs/inspector",
         "@babylonjs/serializers": "../../node_modules/@babylonjs/serializers",
         "@msgpack/msgpack": "../../node_modules/@babylonjs/msgpack",
-        "reflect-metadata": "../../node_modules/reflect-metadata",
         "vite": "../../node_modules/vite",
-        "uuid": "../../node_modules/uuid",
+        "uuid": "^9.0.1",
         "typescript": "../../node_modules/typescript",
         "jszip": "^3.10.1",
         "unzipit": "^1.4.0"

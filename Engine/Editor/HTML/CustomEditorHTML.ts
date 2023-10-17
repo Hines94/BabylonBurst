@@ -3,7 +3,6 @@ import { LoadHTMLUITemplate } from "@BabylonBurstClient/HTML/TemplateLoader";
 import { BaseTickableObject } from "@BabylonBurstClient/Utils/BaseTickableObject";
 import { BabylonBurstEditor } from "../BabylonBurstEditor";
 import { ContentItem, ContentItemType } from "./ContentBrowser/ContentItem";
-import { SetupCustomInspectorEditors } from "./InspectorWindow/CustomInspectorInputs";
 import { ContentBrowserHTML, ContentStorageBackend } from "./ContentBrowser/ContentBrowserHTML";
 import { SetupForModelTrackingRefresh } from "../Utils/EditorModelSpecifier";
 import { AssetFolder } from "./ContentBrowser/AssetFolder";
@@ -29,7 +28,6 @@ export class CustomEditorHTML extends BaseTickableObject {
         super();
         this.editor = editor;
         mainEditorScene = editor.scene;
-        SetupCustomInspectorEditors();
         this.setupHTML();
     }
 
@@ -61,7 +59,8 @@ export class CustomEditorHTML extends BaseTickableObject {
         for(var i = 0; i < allObjects.length;i++) {
             const item = allObjects[i];
             const folders = item.Key.split("/");
-            const objectName = folders.pop().replace(".zip", "").replace("~p~","");
+            const fullName = folders.pop();
+            const objectName = fullName.replace(".zip", "").replace("~p~","");
             var currentLevel = topLevelHigherarch;
             //Check folders exist
             folders.forEach(folder => {
@@ -80,7 +79,8 @@ export class CustomEditorHTML extends BaseTickableObject {
                     name:objectName,
                     size: item.Size,
                     parent:currentLevel,
-                    storedBackend:AWS
+                    storedBackend:AWS,
+                    bHasPSuffix:fullName.includes("~p~")
                 });
                 currentLevel.containedItems.push(store);
             }

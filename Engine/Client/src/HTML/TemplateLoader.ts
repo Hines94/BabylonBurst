@@ -24,8 +24,12 @@ export async function LoadHTMLUITemplate(
     const response = await fetch(`HTMLTemplates/${templateName}.html`);
     if (!response.ok) {
         console.error("Error loading: '" + templateName + "' HTML template : " + response.statusText);
-    }
+    } 
     const template = await response.text();
+    if(template.includes("___INDEXPAGE___")) {
+        console.error(`Fetched index page! Likely problem with template: ${templateName}. Fetch response: ${response.url}`);
+        return undefined;
+    }
     //Create temp container to hold instance
     const tempContainer = owningElement.ownerDocument.createElement("div");
     tempContainer.innerHTML = template;

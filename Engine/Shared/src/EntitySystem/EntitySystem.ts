@@ -48,12 +48,19 @@ export class EntitySystem {
         this.ChangedComponents = {};
     }
 
-    RemoveComponent(en:number | EntityData,comp:typeof Component) {
+    RemoveComponent(en:number | EntityData,comp:typeof Component | string) {
         const entData = this.getEntData(en);
         if(!entData.IsValid()) {
             return;
         }
-        const component = entData.GetComponent(comp);
+        
+        var component;
+        if(typeof comp === "string") {
+            component = entData.GetComponentByName(comp);
+        } else {
+            component = entData.GetComponent(comp);
+        }
+
         if(!component) {
             return;
         }

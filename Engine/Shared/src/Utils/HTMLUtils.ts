@@ -26,6 +26,5 @@ export function GenerateInnerOuterPanelWithMinimizer(doc:Document):innerOuterPan
     closerContainer.appendChild(closer);
     outerPanel.appendChild(closerContainer);
     outerPanel.appendChild(innerPanel);
-    innerPanel.innerText = "test";
     return {innerPanel:innerPanel,outerPanel:outerPanel,button:closer};
 }

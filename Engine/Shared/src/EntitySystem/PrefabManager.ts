@@ -4,6 +4,7 @@ import { EntityLoader, EntityTemplate } from "./EntityLoader";
 import { EntitySystem } from "./EntitySystem";
 import { GetAllZippedFileDatas, GetZipPath } from "../AsyncAssets/Utils/ZipUtils";
 import { AsyncAssetManager } from "../AsyncAssets";
+import { Observable } from "@babylonjs/core";
 
 function addPrefabEnd(item:string):string {
     if(item.includes(".Prefab")) {
@@ -14,6 +15,8 @@ function addPrefabEnd(item:string):string {
 
 /** Responsible for loading and managing the prefabs we currently have */
 export class PrefabManager {
+
+    onPrefabAdded = new Observable<string>();
 
     //TODO: we require backend etc to get all prefabs!
     static GetPrefabManager():PrefabManager {
@@ -75,6 +78,7 @@ export class PrefabManager {
         this.prefabBundleNamesToIds[fullPath] = loadData.prefabID;
         this.allPrefabs[loadData.prefabID] = EntityLoader.GetEntityTemplateFromMsgpack(loadData.prefabData);
         console.log("Setup prefab item: " + fullPath)
+        this.onPrefabAdded.notifyObservers(loadData.prefabID);
     }
 
     GetPrefabTemplateById(id:string) {

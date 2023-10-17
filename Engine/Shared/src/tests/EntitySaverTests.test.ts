@@ -5,13 +5,13 @@ import { EntitySaver } from "../EntitySystem/EntitySaver";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 
-@RegisteredType
+@RegisteredType(TestComp)
 class TestComp extends Component {
     @Saved()
     data:string = "test";
 }
 
-@RegisteredType
+@RegisteredType(TestComp2)
 class TestComp2 extends Component {
     data = "testComp2";
     @Saved()
@@ -20,13 +20,13 @@ class TestComp2 extends Component {
     testEntity:EntityData;
 }
 
-@RegisteredType
+@RegisteredType(nestedData)
 class nestedData {
     @Saved()
     nestedEntity:EntityData;
 }
 
-@RegisteredType
+@RegisteredType(TestComp3)
 class TestComp3 extends Component {
     @Saved()
     data:string = "testComp3";

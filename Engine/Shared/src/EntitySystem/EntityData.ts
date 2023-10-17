@@ -7,7 +7,7 @@ export type EntityLoadMapping = {
     [originalId:number]:EntityData;
 }
 
-@RegisteredType
+@RegisteredType(EntityData)
 export class EntityData extends SaveableDataField {
     EntityId:number;
     Components:Component[] = [];

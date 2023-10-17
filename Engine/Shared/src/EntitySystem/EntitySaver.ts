@@ -60,7 +60,7 @@ export class EntitySaver {
                 const keys = Object.keys(compObject);
 
                 //Get default component to check against
-                var defaultComp = new (registeredTypes[compName] as any)();
+                var defaultComp = new (registeredTypes[compName].type as any)();
                 //Get default from prefab?
                 if(prefabComp !== undefined) {
                     const attemptPrefab = PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabComp.PrefabIdentifier);

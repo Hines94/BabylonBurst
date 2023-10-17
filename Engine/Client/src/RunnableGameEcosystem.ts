@@ -101,13 +101,13 @@ export class RunnableGameEcosystem implements GameEcosystem {
     runRenderLoop = true;
 
     stopGameLoop() {
-        if(this.engine) {
+        if (this.engine) {
             this.engine.stopRenderLoop();
         }
     }
 
     runGameLoop(): void {
-        if(!this.runRenderLoop) {
+        if (!this.runRenderLoop) {
             return;
         }
         this.engine.runRenderLoop(() => {

@@ -1,3 +1,5 @@
+import { getViteEnvironmentVariable } from "./EnvVariableGatherer";
+
 export enum DebugMode {
     None,
     Light,
@@ -22,11 +24,7 @@ export class EnvVariableTracker {
         //Check Vite
         const viteName = "VITE_" + varName;
         var value = undefined;
-        try {
-            //@ts-ignore
-            value = import.meta.env[viteName];
-        } finally {
-        }
+        value = getViteEnvironmentVariable(viteName);
 
         if (value !== undefined) {
             return value;

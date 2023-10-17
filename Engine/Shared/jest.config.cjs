@@ -4,17 +4,17 @@ module.exports = {
     moduleNameMapper: {
         "^(\\.{1,2}/.*)\\.js$": "$1",
         "@babylonjs/core": require.resolve("@babylonjs/core"),
+        '.*/EnvVariableGatherer$': '<rootDir>/src/tests/jestMocks.ts'
     },
-    transform: { "\\.[jt]sx?$": ["ts-jest", { useESM: true }] },
+    transform: {
+        "\\.[jt]sx?$": ["ts-jest", { 
+            useESM: true, 
+            isolatedModules: true, 
+            tsconfig: { 
+                allowJs: true, 
+                checkJs: false 
+            } 
+        }]
+    },
     transformIgnorePatterns: ["/node_modules/(?!@babylonjs)(.*)"],
-    globals: {
-        "ts-jest": {
-            isolatedModules: true, // to make type check faster
-            tsConfig: {
-                // to have tsc transform .js files
-                allowJs: true,
-                checkJs: false,
-            },
-        },
-    },
 };

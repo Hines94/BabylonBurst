@@ -1,33 +1,33 @@
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 
-@RegisteredType
+@RegisteredType(ModelSpecifier)
 export class ModelSpecifier {
-    @Saved()
+    @Saved(String)
     FilePath:string;
-    @Saved()
+    @Saved(String)
     FileName:string;
-    @Saved()
+    @Saved(String)
     MeshName:string;
 }
-@RegisteredType
+@RegisteredType(MaterialSpecifier)
 export class MaterialSpecifier {
-    @Saved()
+    @Saved(String)
     FilePath:string;
-    @Saved()
+    @Saved(String)
     FileName:string;
 }
 
 
-@RegisteredType
+@RegisteredType(InstancedRender)
 export class InstancedRender extends Component {
-    @Saved()
+    @Saved(ModelSpecifier)
     ModelData:ModelSpecifier = new ModelSpecifier();
 
     @Saved(MaterialSpecifier)
     MaterialData:MaterialSpecifier[] = [];
     
-    @Saved()
+    @Saved(Number)
     LayerMask:number = 0;
 }
 

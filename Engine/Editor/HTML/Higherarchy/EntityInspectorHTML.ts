@@ -8,6 +8,7 @@ import { Component } from "@engine/EntitySystem/Component";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
 import {GenerateInnerOuterPanelWithMinimizer} from "@engine/Utils/HTMLUtils"
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
+import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils"
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {
@@ -35,14 +36,13 @@ export class EntityInspectorHTML {
         });
         template.querySelector("#EntityTitle").innerHTML = "Entity: " + entityIdentifier;
 
-        console.error("TODO: Fix add component!")
-        return;
 
         //New Component
+        const possibleComps = GetAllComponentClassTypes();
         const compTypes = template.querySelector("#componentTypes");
-        ComponentTypes.forEach(comp => {
+        possibleComps .forEach(comp => {
             const newOpt = this.owner.windowDoc.createElement("option");
-            newOpt.value = comp.name;
+            newOpt.value = comp.type.name;
             compTypes.appendChild(newOpt);
         });
         const selectComp = template.querySelector("#AddComponentSubmit");
@@ -51,19 +51,19 @@ export class EntityInspectorHTML {
         //Add new component
         selectComp.addEventListener("click", () => {
             const compTypeName = newCompType.value;
+
             //Already added?
-            if (entity[compTypeName]) {
+            if (entityData.GetComponentByName(compTypeName) !== undefined) {
                 ShowToastNotification(`Component ${compTypeName} already added!`, 3000, this.owner.windowDoc, "red");
                 newCompType.value = "";
                 return;
             }
 
-            //Try get component types
-            const type = ComponentTypes.find(p => p.name === compTypeName);
+            const type = possibleComps.find(p => p.type.name === compTypeName);
             if (!type) {
                 ShowToastNotification(`Invalid Component Type!`, 3000, this.owner.windowDoc, "red");
             } else {
-                if (this.owner.addComponentToEntity(entityIdentifier, type, allEntComps)) {
+                if (this.owner.addComponentToEntity(entityIdentifier, type.type, allEntComps)) {
                     ShowToastNotification(`Added component ${compTypeName}`, 3000, this.owner.windowDoc);
                     this.owner.RegenerateHigherarchy();
                 } else {
@@ -96,10 +96,22 @@ export class EntityInspectorHTML {
 
         const componentWrapper = GenerateInnerOuterPanelWithMinimizer(inspector.ownerDocument);
         componentWrapper.outerPanel.classList.add("Component");
-        const title = inspector.ownerDocument.createElement("h1");
-        title.textContent = "Inspector: " +  compName;
+        const title = inspector.ownerDocument.createElement("h2");
+        title.textContent = compName;
         componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
         componentWrapper.outerPanel.style.backgroundColor = inspector.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
+        componentWrapper.innerPanel.classList.add("hidden");
+
+        if(registeredTypes[compName].options.bEditorRemovable) {
+            const removeButton = document.createElement("button");
+            removeButton.innerText = "X";
+            componentWrapper.button.parentElement.appendChild(removeButton);
+            removeButton.onclick = () => {
+                higherarch.owner.ecosystem.entitySystem.RemoveComponent(entityId,compName);
+                componentWrapper.outerPanel.remove();
+            };
+        }
+
         inspector.appendChild(componentWrapper.outerPanel);
         
         const compSavedProps = savedProperties[compName];
@@ -150,21 +162,7 @@ export class EntityInspectorHTML {
                 label.innerText = comp;
 
                 //Remove button clicked
-                if (comp !== "Prefab") {
-                    const removeButton = document.createElement("button");
-                    removeButton.innerText = "Remove";
-                    removeButton.style.position = "absolute";
-                    removeButton.style.right = "25px";
-                    removeButton.style.fontSize = "15px";
-                    removeButton.onclick = () => {
-                        delete higherarch.owner.allEntities[entityId][comp];
-                        componentWrapper.remove();
-                        higherarch.owner.ecosystem.wasmWrapper.DelayedRemoveComponent(entityId,comp);
-                        higherarch.owner.RefreshWASMForSpecificEntity(entityId);
-                        higherarch.owner.RegenerateHigherarchy();
-                    };
-                    label.parentElement.appendChild(removeButton);
-                }
+
                 editor.setValue(higherarch.owner.allEntities[entityId][comp]);
                 higherarch.componentDatas.push({ editor: editor, comp: comp });
 

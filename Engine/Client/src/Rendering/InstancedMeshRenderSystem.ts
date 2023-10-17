@@ -49,9 +49,8 @@ export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
         ecosystem.dynamicProperties.LoadedRunners = {};
     }
 
-
     //Perform setup for data
-    allInstEntities.iterateEntities((entData:EntityData) => {
+    allInstEntities.iterateEntities((entData: EntityData) => {
         const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
         const runnerID = getRunnerID(rendItem);
         //Create render runner if not exists
