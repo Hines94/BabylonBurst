@@ -29,7 +29,7 @@ export abstract class SaveableDataField {
         } else if(typeof property === "object") {
             const propType = property.constructor.name;
             if(registeredTypes[propType] === undefined) {
-                console.warn(`Property ${propType} is not a registered type and will not load properly. Please use @RegisteredComponent!`);
+                console.warn(`Property ${propIdentifier.name} is not a registered type (${propType}) and will not load properly. Please use @RegisteredComponent!`);
                 return property;
             }
             var ret = {};
@@ -64,11 +64,12 @@ export abstract class SaveableDataField {
         } 
         //Nested object?
         if(propIdentifier && typeof property === "object") {
-            const ret = {};
+            const propType = propIdentifier.type;
+            const newProp = new propType();
             for(let key in property) {
-                ret[key] = this.loadCustomSaveData(entity,entMap,property[key],propIdentifier.type.name,key);
+                newProp[key] = this.loadCustomSaveData(entity,entMap,property[key],propIdentifier.type.name,key);
             }
-            return ret;
+            return newProp;
         }
 
         //Regular

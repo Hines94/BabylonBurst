@@ -6,9 +6,10 @@ import { HigherarchyHTML } from "./HigherarchyHTML";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Component } from "@engine/EntitySystem/Component";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
-import {GenerateInnerOuterPanelWithMinimizer} from "@engine/Utils/HTMLUtils"
+import { GenerateInnerOuterPanelWithMinimizer } from "@engine/Utils/HTMLUtils"
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
 import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils"
+import { Observer } from "@babylonjs/core";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {
@@ -16,13 +17,17 @@ export class EntityInspectorHTML {
     entityId: number;
     inspector: HTMLElement;
     defaultEntityData:EntityData;
+    observer:Observer<number>;
 
     constructor(owner: HigherarchyHTML, entityIdentifier: number) {
         this.owner = owner;
         this.entityId = entityIdentifier;
 
+        this.observer = owner.ecosystem.entitySystem.onEntityRemovedEv.add(this.entityRemoved.bind(this));
+
         this.inspector = this.owner.windowDoc.getElementById("InspectorPanel") as HTMLElement;
         const template = CloneTemplate("EntityInspector", this.owner.windowDoc);
+        this.inspector.classList.remove("hidden");
         this.inspector.innerHTML = "";
         this.inspector.appendChild(template);
         const allEntComps = template.querySelector("#EntityComponents") as HTMLElement;
@@ -41,6 +46,9 @@ export class EntityInspectorHTML {
         const possibleComps = GetAllComponentClassTypes();
         const compTypes = template.querySelector("#componentTypes");
         possibleComps .forEach(comp => {
+            if(!comp.options.bEditorAddable) {
+                return;
+            }
             const newOpt = this.owner.windowDoc.createElement("option");
             newOpt.value = comp.type.name;
             compTypes.appendChild(newOpt);
@@ -63,7 +71,7 @@ export class EntityInspectorHTML {
             if (!type) {
                 ShowToastNotification(`Invalid Component Type!`, 3000, this.owner.windowDoc, "red");
             } else {
-                if (this.owner.addComponentToEntity(entityIdentifier, type.type, allEntComps)) {
+                if (this.owner.addComponentToEntity(entityIdentifier, type, allEntComps)) {
                     ShowToastNotification(`Added component ${compTypeName}`, 3000, this.owner.windowDoc);
                     this.owner.RegenerateHigherarchy();
                 } else {
@@ -75,6 +83,12 @@ export class EntityInspectorHTML {
         this.inspector.appendChild(template);
     }
     boundGizmoCallback: any;
+
+    entityRemoved(ent:number) {
+        if(ent === this.entityId) {
+            this.dispose();
+        }
+    }
 
     refreshComponentDataValues() {
         this.owner.RefreshDataToWASM();
@@ -104,6 +118,7 @@ export class EntityInspectorHTML {
 
         if(registeredTypes[compName].options.bEditorRemovable) {
             const removeButton = document.createElement("button");
+            removeButton.style.marginLeft = "5px";
             removeButton.innerText = "X";
             componentWrapper.button.parentElement.appendChild(removeButton);
             removeButton.onclick = () => {
@@ -117,7 +132,7 @@ export class EntityInspectorHTML {
         const compSavedProps = savedProperties[compName];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
-            GenerateEditorProperty(componentWrapper.innerPanel,property,comp);
+            GenerateEditorProperty(componentWrapper.innerPanel,property,comp,this.owner.ecosystem);
         }
 
         bindCustomComponentItems();
@@ -226,6 +241,10 @@ export class EntityInspectorHTML {
     dispose() {
         if (this.inspector) {
             this.inspector.innerHTML = "";
+            this.inspector.classList.add("hidden");
+        }
+        if(this.observer) {
+            this.owner.ecosystem.entitySystem.onEntityRemovedEv.remove(this.observer);
         }
         if (this.boundGizmoCallback) {
             GetEditorGizmos(this.owner.ecosystem).changeTransformObserver.remove(this.boundGizmoCallback);

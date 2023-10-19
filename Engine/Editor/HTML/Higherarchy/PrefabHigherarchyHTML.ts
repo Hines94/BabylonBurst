@@ -51,6 +51,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
 
         setupTopMenu();
         this.ecosystem.entitySystem.ResetSystem();
+        console.log(PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabData.prefabID))
         PrefabManager.GetPrefabManager().LoadPrefabFromIdToExisting(prefabData.prefabID,this.ecosystem.entitySystem);
         this.RegenerateHigherarchy();
         this.setupRightClick();
@@ -67,16 +68,10 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                     prefabID: higherarchy.prefabUUID,
                     prefabData: EntitySaver.GetMsgpackForAllEntities(higherarchy.ecosystem.entitySystem,true),
                 };
-                prefab.data = encode(saveData);
 
-                console.log("------------ Saved Prefab Data ------------");
-                console.log(higherarchy.ecosystem.entitySystem.GetEntitiesWithData([],[]));
-                //For direct use with c++ test files etc
-                const hexString = Array.from(prefab.data, byte =>
-                    ("0" + (byte as any & 0xff).toString(16)).slice(-2)
-                ).join("");
-                console.log(hexString);
-                //For direct use with c++ test files etc
+                console.log("------------ Saving Prefab Data ------------");
+                console.log(higherarchy.ecosystem.entitySystem.GetEntitiesWithData([],[]).GetEntitiesArray());
+                prefab.data = encode(saveData);
                 console.log("------------- End Prefab Data -------------");
 
                 //Save to backend

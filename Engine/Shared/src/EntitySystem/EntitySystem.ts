@@ -4,6 +4,7 @@ import { Component, DeepSetupCallback } from "./Component";
 import { EntityBucket } from "./EntityBucket";
 import { EntityData } from "./EntityData"
 import { EntityQuery } from "./EntityQuery";
+import { registeredTypes } from "./TypeRegister";
 
 export class EntitySystem {
     private SpawnedEntities:number = 0;
@@ -26,6 +27,9 @@ export class EntitySystem {
     EnsureEntity(entId:number) : EntityData {
         if(this.EntityExists(entId)){
             return this.GetEntityData(entId);
+        }
+        if(entId > this.SpawnedEntities) {
+            this.SpawnedEntities = entId;
         }
         return this.CreateEntity(entId);
     }
@@ -119,11 +123,32 @@ export class EntitySystem {
         return query;
     }
 
-    AddSetComponentToEntity(en:number | EntityData, comp:Component) {
+    AddSetComponentToEntity(en:number | EntityData, comp:Component) : boolean{
         const entData = this.getEntData(en);
         if(!entData.IsValid()) {
-            return;
+            return false;
         }
+        const regType = registeredTypes[comp.constructor.name];
+        if(!regType) {
+            console.error(`Tried to add component ${comp.constructor.name} but it hasn't been registered with @RegisteredType!`);
+            return false;
+        }
+
+        for(var r = 0;r<regType.options.RequiredComponents.length;r++) {
+            const type = regType.options.RequiredComponents[r];
+            if(!type) {
+                continue;
+            }
+            if(entData.GetComponent(type as any)) {
+                continue;
+            }
+            const requiredComp = new type();
+            if(!this.AddSetComponentToEntity(entData,requiredComp)) {
+                console.error(`could not add required default component ${requiredComp.constructor.name} for ${comp.constructor.name}`)
+                return false;
+            }
+        }
+
         DeepSetupCallback(comp,()=>{
             this.SetChangedComponent(en,comp);
         });
@@ -131,6 +156,7 @@ export class EntitySystem {
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
         comp.onComponentAdded(entData);
+        return true;
     }
 
     ResetChangedComponents() {

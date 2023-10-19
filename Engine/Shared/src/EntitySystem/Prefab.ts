@@ -4,12 +4,16 @@ import { EntityLoader } from "./EntityLoader";
 import { PrefabManager } from "./PrefabManager";
 import { RegisteredType, Saved } from "./TypeRegister";
 
+export class PrefabSpecifier {
+    prefabUUID:string = "";
+}
+
 export type PrefabPackedType = {
     prefabID:string;
     prefabData:any;
 }
 
-@RegisteredType(Prefab,{bEditorRemovable:false})
+@RegisteredType(Prefab,{bEditorRemovable:false,bEditorAddable:false})
 export class Prefab extends Component {
     @Saved(String,{editorViewOnly:true})
     /** UUID that can be used to easily identify prefab type */
@@ -24,11 +28,11 @@ export class Prefab extends Component {
 
 @RegisteredType(PrefabInstance)
 export class PrefabInstance extends Component {
-    @Saved(String)
+    @Saved(PrefabSpecifier)
     /** UUID of the prefab that has been spawned */
-    SpawnedPrefabIdentifier:string;
+    SpawnedPrefabIdentifier:PrefabSpecifier = new PrefabSpecifier();
 
-    @Saved(EntityData)
+    @Saved(EntityData, {editorViewOnly:true})
     /** Entities that are spawned as part of this prefab instance */
     SpawnedPrefabEntities:EntityData[];
 
@@ -36,7 +40,7 @@ export class PrefabInstance extends Component {
 
     constructor(uuid:string = undefined) {
         super();
-        this.SpawnedPrefabIdentifier = uuid;
+        this.SpawnedPrefabIdentifier.prefabUUID = uuid;
     }
 
     onComponentAdded(ent:EntityData):void {
@@ -54,15 +58,21 @@ export class PrefabInstance extends Component {
         //Subscribe for future
         if(this.reloadObserver === undefined) {
             this.reloadObserver = PrefabManager.GetPrefabManager().onPrefabAdded.add((uuid:string)=>{
-                if(uuid === this.SpawnedPrefabIdentifier && ent && ent.owningSystem) {
+                if(uuid === this.SpawnedPrefabIdentifier.prefabUUID && ent && ent.owningSystem) {
                     this.refreshPrefabInstance(ent);
                 }
             })
         }
 
+        const prefabComp = ent.GetComponent(Prefab);
+        if(prefabComp && prefabComp.PrefabIdentifier === this.SpawnedPrefabIdentifier.prefabUUID) {
+            console.error(`Prefab ${prefabComp.PrefabIdentifier} has itself inside prefab instance! Aborting!`);
+            return;
+        }
+
 
         //Create new
-        const template = PrefabManager.GetPrefabManager().GetPrefabTemplateById(this.SpawnedPrefabIdentifier);
+        const template = PrefabManager.GetPrefabManager().GetPrefabTemplateById(this.SpawnedPrefabIdentifier.prefabUUID);
         if(template === undefined) { return; }
 
         var spawnedEnts:EntityData[] = [];

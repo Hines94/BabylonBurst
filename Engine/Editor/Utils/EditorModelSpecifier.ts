@@ -3,6 +3,7 @@ import { Observable, Scene } from "@babylonjs/core";
 import { GetAllEditorObjectsOfType, editorObjectCategoriesChange } from "./ContentTypeTrackers";
 import { mainEditorScene } from "../HTML/CustomEditorHTML";
 import { SceneAsyncLoader } from "@engine/AsyncAssets";
+import { ModelSpecifier } from "@engine/Rendering/InstancedRender";
 
 
 export type ModelInformation = {
@@ -21,6 +22,24 @@ export function SetupForModelTrackingRefresh() {
 /** Paths and material number for all models */
 export var ModelPaths:ModelInformation[] = [];
 export const onModelPathsChangeObserver = new Observable<ModelInformation[]>();
+
+export function IsValidModelSpecifier(model:ModelSpecifier) {
+    if(model.FileName === undefined || model.FileName === "") {
+        return false;
+    }
+    if(model.FilePath === undefined || model.FilePath === "") {
+        return false;
+    }
+    if(model.MeshName === undefined || model.MeshName === "") {
+        return false;
+    }
+    return ModelPaths.find(m=>{
+        if(m.specifier.FileName !== model.FileName){return false;}
+        if(m.specifier.FilePath !== model.FilePath){return false;}
+        if(m.specifier.MeshName !== model.MeshName){return false;}
+        return true;
+    }) !== undefined;
+}
 
 /** Given a way to get the model (file path etc) try to get information for it */
 export function FindModelForParams(data:ModelSpecifier) : ModelInformation {

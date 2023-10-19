@@ -19,6 +19,12 @@ export class EntityQuery {
         return n;
     }
 
+    GetEntitiesArray(): EntityData[] {
+        const ret:EntityData[] = [];
+        this.iterateEntities(e=>{ret.push(e)});
+        return ret;
+    }
+    
     /** All included types have been changed? */
     AddChanged_ALL_Filter() {
         this.filters.push((ent:EntityData,filter:EntityQuery) => {

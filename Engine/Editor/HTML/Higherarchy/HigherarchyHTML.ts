@@ -7,6 +7,7 @@ import { EntityInspectorHTML } from "./EntityInspectorHTML";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Prefab } from "@engine/EntitySystem/Prefab";
+import { storedRegisteredType } from "@engine/EntitySystem/TypeRegister";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */
 export abstract class HigherarchyHTML {
@@ -145,24 +146,15 @@ export abstract class HigherarchyHTML {
         return this.ecosystem.entitySystem.AddEntity().EntityId;
     }
 
-    addComponentToEntity(entityId: number, compType: any, allEntComps: HTMLElement): boolean {
+    addComponentToEntity(entityId: number, compType: storedRegisteredType, allEntComps: HTMLElement): boolean {
         const entity = this.ecosystem.entitySystem.GetEntityData(entityId);
-        if (entity.GetComponentByName(compType.name) !== undefined) {
+        if (entity.GetComponentByName(compType.type.name) !== undefined) {
             return true;
         }
 
-        //Add other components
-        if (compType.GetRequiredComponents) {
-            const otherComponents = compType.GetRequiredComponents();
-            for (var i = 0; i < otherComponents.length; i++) {
-                if (!this.addComponentToEntity(entityId, otherComponents[i], allEntComps)) {
-                    return false;
-                }
-            }
-        }
-
         //Set component as added
-        const newComp = new compType();
+        const spawnType =compType.type;
+        const newComp = new spawnType();
         this.ecosystem.entitySystem.AddSetComponentToEntity(entityId,newComp);
         console.log("Added comp: ")
         console.log(newComp)

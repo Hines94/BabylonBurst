@@ -48,7 +48,10 @@ export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}
 }
 
 export class RegisteredTypeOptions {
+    bEditorAddable = true;
     bEditorRemovable = true;
+    /** Required to be added for this component */
+    RequiredComponents: (typeof Component)[] = [];
 }
 
 export type storedRegisteredType =  {
@@ -58,7 +61,7 @@ export type storedRegisteredType =  {
 
 export const registeredTypes:{[compName:string]:storedRegisteredType} = {};
 export function RegisteredType(target:Function,options:Partial<RegisteredTypeOptions> = {}) {
-    return function(target: Function) {
+    return function(something:Function) {
         if(target === undefined) {
             console.error("Target was not set for registered type!");
             return;
@@ -66,6 +69,7 @@ export function RegisteredType(target:Function,options:Partial<RegisteredTypeOpt
         const className = target.name;
         if(registeredTypes[className]) {
             console.error("Class name clash for registered component: " + className);
+            return;
         }
         const createdOptions = new RegisteredTypeOptions();
         Object.assign(createdOptions,options);

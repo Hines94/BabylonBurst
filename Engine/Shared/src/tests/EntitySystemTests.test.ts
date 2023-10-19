@@ -1,6 +1,7 @@
 import { Component, TrackedVariable } from "../EntitySystem/Component";
 import { EntityData } from "../EntitySystem/EntityData";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
+import { InstancedRender } from "../Rendering/InstancedRender";
 
 const entSystem = new EntitySystem();
 var removeCalled = false;
@@ -65,6 +66,12 @@ test("EntitySystemFindEntities", () => {
     expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(2);
     expect(entSystem.GetEntitiesWithData([TestComp2],[]).GetNumEntities()).toBe(2);
 });
+
+test("EntitySystemRequiredComponents", () => {
+    const newEnt = entSystem.AddEntity();
+    entSystem.AddSetComponentToEntity(newEnt,new InstancedRender());
+    expect(newEnt.GetComponentByName("EntTransform")).not.toBe(undefined);
+})
 
 test("EntitySystemRemoveEntities", () => {
     entSystem.RemoveEntity(1);

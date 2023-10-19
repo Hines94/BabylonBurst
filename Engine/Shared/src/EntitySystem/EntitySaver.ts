@@ -93,7 +93,7 @@ export class EntitySaver {
                 })
 
                 //Tidy if ignore default and prefab
-                if(prefabComp !== undefined && Object.keys(data[ent.EntityId][typingsIndex]).length === 0) {
+                if(prefabComp !== undefined && prefabComp.parent !== undefined && Object.keys(data[ent.EntityId][typingsIndex]).length === 0) {
                     delete(data[ent.EntityId][typingsIndex]);
                 }
             }

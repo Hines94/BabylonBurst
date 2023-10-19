@@ -1,4 +1,5 @@
 import { Component } from "../EntitySystem/Component";
+import { EntTransform } from "../EntitySystem/CoreComponents";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 
 @RegisteredType(ModelSpecifier)
@@ -10,6 +11,7 @@ export class ModelSpecifier {
     @Saved(String)
     MeshName:string;
 }
+
 @RegisteredType(MaterialSpecifier)
 export class MaterialSpecifier {
     @Saved(String)
@@ -18,8 +20,7 @@ export class MaterialSpecifier {
     FileName:string;
 }
 
-
-@RegisteredType(InstancedRender)
+@RegisteredType(InstancedRender,{RequiredComponents:[EntTransform]})
 export class InstancedRender extends Component {
     @Saved(ModelSpecifier)
     ModelData:ModelSpecifier = new ModelSpecifier();
@@ -31,7 +32,7 @@ export class InstancedRender extends Component {
     LayerMask:number = 0;
 }
 
-@RegisteredType
+@RegisteredType(HiddenEntity)
 /** Set this for an easy way to avoid rendering an entity */
 export class HiddenEntity extends Component {
 

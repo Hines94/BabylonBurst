@@ -48,8 +48,8 @@ export class EntityTemplate {
             console.warn("No component type for " + compName)
             return undefined;
         }
-        //@ts-ignore
-        const ret = new type.type();
+        const newCompType = type.type as any;
+        const ret = new newCompType();
         this.LoadDataIntoComponent(ent,compName,mapping,ret); 
         return ret;
     }

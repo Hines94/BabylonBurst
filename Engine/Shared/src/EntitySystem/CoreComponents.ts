@@ -3,7 +3,7 @@ import { Clamp } from "../Utils/MathUtils";
 import { RegisteredType, Saved } from "./TypeRegister";
 import { Component, TrackedVariable } from "./Component";
 
-@RegisteredType
+@RegisteredType(EntVector3)
 export class EntVector3{
     @Saved(Number)
     X: number = 0;
@@ -162,6 +162,7 @@ export class EntVector3{
     }
 }
 
+@RegisteredType(EntVector4)
 export class EntVector4 {
     @Saved(Number)
     X: number = 0;
