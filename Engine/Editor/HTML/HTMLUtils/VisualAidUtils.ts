@@ -4,6 +4,8 @@ import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMes
 import { HemisphericLight, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
 
+const viewItemPriority = 5;
+
 /** All visualistaion options such as view colliders etc */
 export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
     SetupWiremeshVisualistaion(ecosystem);
@@ -20,7 +22,7 @@ function SetupEditorDownLight(ecosystem:GameEcosystem) {
     var light = new HemisphericLight("editorDownLight", new Vector3(-1, 1, 0), ecosystem.scene);
     ecosystem.dynamicProperties["___EDITORPOWERLIGHT___"] = light;
     light.setEnabled(false);
-    GenerateTopMenuToggle(ecosystem,"Show Editor Light", "View","",
+    GenerateTopMenuToggle(ecosystem,"Show Editor Light", "View","",viewItemPriority,
     (ecosystem:GameEcosystem)=>{
         //On callback
         light.setEnabled(true);
@@ -33,7 +35,7 @@ function SetupEditorDownLight(ecosystem:GameEcosystem) {
 }
 
 function SetupColliderVisualisation(ecosystem: GameEcosystem) {
-    GenerateTopMenuToggle(ecosystem,"Show Collider", "View","",
+    GenerateTopMenuToggle(ecosystem,"Show Collider", "View","",viewItemPriority,
         (ecosystem:GameEcosystem)=>{
             //On callback
         },
@@ -45,7 +47,7 @@ function SetupColliderVisualisation(ecosystem: GameEcosystem) {
 }
 
 function SetupWiremeshVisualistaion(ecosystem:GameEcosystem) {
-    GenerateTopMenuToggle(ecosystem,"Show Wireframe", "View","Meshes/",
+    GenerateTopMenuToggle(ecosystem,"Show Wireframe", "View","Meshes/",viewItemPriority,
     (ecosystem:GameEcosystem)=>{
         ecosystem.dynamicProperties["___MATERIALWIREFRAMEMODE___"] = true;
         //On callback

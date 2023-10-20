@@ -29,7 +29,6 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
         SetupAllEditorDebugOptions(ecosystem,{bContentBrowserOption:false})
 
         //Setup data for Higherarch
-        this.RefreshDataToWASMCore();
         this.RegenerateHigherarchy();
     }
 

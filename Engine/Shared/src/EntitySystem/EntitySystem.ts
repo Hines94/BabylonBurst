@@ -204,6 +204,17 @@ export class EntitySystem {
             this.ChangedComponents[entId].push(name);
         }
     }
+
+    /** NOT RECOMMENDED FOR ANYTHING NETWORKED! Good for changing about local prefabs etc. */
+    AddEntityAtAnyEmptySlot() : EntityData {
+        for(var i = 1; i < this.SpawnedEntities+10;i++) {
+            console.log("Checking " + i)
+            if(this.getEntData(i) === undefined) {
+                return this.CreateEntity(i);
+            }
+        }
+        return undefined;
+    }
     
     private CreateEntity(entId:number):EntityData {
         const newEnt = new EntityData();
@@ -238,7 +249,7 @@ export class EntitySystem {
     private getEntData(ent:number | EntityData) :EntityData {
         if (typeof ent === "number") {
             if(!this.EntityExists(ent)) {
-                return new EntityData();
+                return undefined;
             }
             return this.GetEntityData(ent);
         } else {

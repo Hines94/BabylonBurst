@@ -1,19 +1,26 @@
 import { AbstractMesh, GizmoManager, Observable } from "@babylonjs/core";
 import { EntTransform } from "@engine/EntitySystem/CoreComponents";
+import { EntityData } from "@engine/EntitySystem/EntityData";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { BabylonBurstEditor } from "../../BabylonBurstEditor";
+import { AddElementToEditorTopMenu } from "../../Utils/EditorTopMenu";
 
-export function GetEditorGizmos(ecosystem: GameEcosystem) {
-    if (ecosystem.dynamicProperties["EditorGizmos"] === undefined) {
-        ecosystem.dynamicProperties["EditorGizmos"] = new EditorGizmos(ecosystem);
+export async function SetupEditorGizmos(ecosystem: GameEcosystem) {
+    if (ecosystem.dynamicProperties["EditorGizmos"] !== undefined) {
+        return;
     }
-    return ecosystem.dynamicProperties["EditorGizmos"] as EditorGizmos;
+    await ecosystem.waitLoadedPromise;
+    ecosystem.dynamicProperties["EditorGizmos"] = new EditorGizmos(ecosystem);
+    ecosystem.dynamicProperties["EditorGizmos"].HideGizmos();
+    (ecosystem as BabylonBurstEditor).onEntitySelected.add(ecosystem.dynamicProperties["EditorGizmos"].onEntitySelected.bind(ecosystem.dynamicProperties["EditorGizmos"]))
+
 }
 
 export class EditorGizmos {
     owner: GameEcosystem;
     gizmos: GizmoManager;
     gizmoItem: AbstractMesh;
-    entityOwner: number;
+    entityOwner: EntityData;
     changeTransformObserver = new Observable<EntTransform>();
     dropdown: HTMLSelectElement;
 
@@ -30,8 +37,23 @@ export class EditorGizmos {
         this.setupGizmoSelect();
     }
 
+    onEntitySelected(entData:EntityData) {
+        if(entData === undefined) {
+            this.HideGizmos();
+            return;
+        }
+        const transform = entData.GetComponent(EntTransform);;
+        if (!transform) {
+            this.entityOwner = undefined;
+            this.HideGizmos();
+            return;
+        }
+        this.entityOwner = entData;
+        this.oldTransformData = transform;
+        EntTransform.SetTransformForMesh(this.gizmoItem, transform);
+    }
+
     setupGizmoSelect() {
-        const topBar = this.owner.doc.getElementById("editorHeaderPanel");
         const dropdown = this.owner.doc.createElement("select");
         dropdown.classList.add("SFSelect");
         const posType = this.owner.doc.createElement("option");
@@ -50,7 +72,8 @@ export class EditorGizmos {
         dropdown.appendChild(rotType);
         dropdown.appendChild(scaleType);
         dropdown.appendChild(hideType);
-        topBar.appendChild(dropdown);
+
+        AddElementToEditorTopMenu(this.owner,dropdown,10000);
         const gizmo = this;
         dropdown.addEventListener("change", ev => {
             if (dropdown.value === "POS") {
@@ -112,22 +135,9 @@ export class EditorGizmos {
         this.gizmos.scaleGizmoEnabled = false;
     }
 
-    SetupToEntity(entity: number) {
-        const entData = this.owner.entitySystem.GetEntityData(entity);
-        const transform = entData.GetComponent(EntTransform);;
-        if (!transform) {
-            this.entityOwner = undefined;
-            this.HideGizmos();
-            return;
-        }
-        this.entityOwner = entity;
-        this.oldTransformData = transform;
-        EntTransform.SetTransformForMesh(this.gizmoItem, transform);
-    }
-
-    EnsureNotSetToEntity(entity: number) {
+    EnsureNotSetToEntity(entity: EntityData) {
         if (this.entityOwner === entity) {
-            this.SetupToEntity(undefined);
+            this.onEntitySelected(undefined);
         }
     }
 
@@ -154,7 +164,7 @@ export class EditorGizmos {
         if (EntTransform.Equals(this.oldTransformData, transformData)) {
             return;
         }
-        const entTf = this.owner.entitySystem.GetEntityData(this.entityOwner).GetComponent(EntTransform) as EntTransform;
+        const entTf = this.entityOwner.GetComponent(EntTransform) as EntTransform;
         entTf.Copy(transformData);
     }
 }

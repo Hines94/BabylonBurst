@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { Component } from './Component';
+import { DebugMode, environmentVaraibleTracker } from '../Utils/EnvironmentVariableTracker';
 
 export type savedProperty = {
     name:string;
@@ -20,8 +21,12 @@ export class SavedPropertyOptions {
 export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}) {
     return function (target: any, propertyKey: string) {
         const compName = target.constructor.name;
-        const reflectType = Reflect.getMetadata('design:type', target, propertyKey);
-        const propertyType = type || reflectType;
+        const propertyType = type;
+
+
+        if(type === undefined) {
+            console.error(`Type not set for  ${propertyKey} in comp ${compName} in  @Saved(TYPE). Please ensure that the typing is correct`);
+        }
 
         if (!savedProperties[compName]) {
             savedProperties[compName] = [];
@@ -35,15 +40,56 @@ export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}
             options:createdOptions
         });
 
-        // if(isarr && type === undefined) {
-        //     console.error(`Property: ${propertyKey} in comp ${compName} is an array but no type. Please use Saved(TYPEOFARRAYITEM) for arrays.`);
-        // } else TODO: Figure out arrays?
-
         if(propertyType === undefined) {
             console.error(`Property type: ${propertyKey} in comp ${compName} is undefined. Please use Saved(TYPEOFARRAYITEM) to specify type.`);
         } else if(propertyType === Object) {
             console.error(`Property: ${propertyKey} in comp ${compName} has bad type. Please use Saved(TYPEOFITEM) to manually specify.`)
         }
+
+
+        const originalKey = `__${propertyKey}`;
+        target[originalKey] = target[propertyKey];
+
+        if(environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light) {
+            // Define a getter and setter to ensure type
+            Object.defineProperty(target, propertyKey, {
+                get: function() {
+                    return this[originalKey];
+                },
+                set: function(value) {
+                    if (type) {
+                        if(typeof value === 'object' && Array.isArray(value)) {
+                            //Check typing of each element
+                            value.forEach(e=>{
+                                checkTyping(type,e,propertyKey);
+                            })
+                        } else {
+                            checkTyping(type,value,propertyKey);
+                        }
+                    }
+                    this[originalKey] = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+        }
+    }
+}
+
+function checkTyping(type:Function,value:any,keyname:string) {
+    // Handle primitive types
+    if ((type === Number && typeof value !== 'number') ||
+        (type === String && typeof value !== 'string') ||
+        (type === Boolean && typeof value !== 'boolean')) {
+        console.error(`Invalid type set for ${keyname}. Expected ${type.name}, but received ${typeof value}.`);
+        return;
+    }
+
+    // Handle non-primitive types
+    if (!(value instanceof type) && 
+        type !== Number && type !== String && type !== Boolean) {
+        console.error(`Invalid type set for ${keyname}. Expected instance of ${type.name}, but received ${typeof value}.`);
+        return;
     }
 }
 

@@ -1,7 +1,5 @@
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { Component } from "@engine/EntitySystem/Component";
 import { EntityData } from "@engine/EntitySystem/EntityData";
-import { EntitySystem } from "@engine/EntitySystem/EntitySystem";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { GenerateInnerOuterPanelWithMinimizer } from "@engine/Utils/HTMLUtils";
@@ -12,7 +10,7 @@ import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
 
 
-export type editorPropertyCallback = (container:HTMLElement, propType:savedProperty, compData:Component,ecosystem:GameEcosystem)=>boolean;
+export type editorPropertyCallback = (container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem)=>boolean;
 var registeredEditorPropertyCallbacks:editorPropertyCallback[] = [];
 export function RegisterCustomEditorPropertyGenerator(callback:editorPropertyCallback) {
     registeredEditorPropertyCallbacks.push(callback);
@@ -25,24 +23,45 @@ RegisterCustomEditorPropertyGenerator(ProcessMaterialSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessPrefabSpecifierComp);
 
 
-export function GenerateEditorProperty(container:HTMLElement, propType:savedProperty, parentData:any,ecosystem:GameEcosystem) {
-    if(Array.isArray(parentData[propType.name])) {
-        console.error("TODO: Figure out how to display arrays!!!");
+export function GenerateEditorProperty(container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem) {
+    //If array then deal with that
+    if(Array.isArray(existingData)) {
+        const arrayHeader = container.ownerDocument.createElement("p");
+        arrayHeader.textContent = propType.name;
+        container.appendChild(arrayHeader);
+
+        const valuesContainer = container.ownerDocument.createElement("div");
+        container.appendChild(valuesContainer);
+        for(var i = 0; i < existingData.length;i++) {
+            GenerateEditorProperty(valuesContainer,propType,existingData[i],(val)=>{
+                existingData[i] = val;
+            },ecosystem);
+        }
+        //Create buttons to add and remove elements
+        const addButton = container.ownerDocument.createElement("button");
+        addButton.textContent = "+";
+        container.appendChild(addButton);
+
         return;
     }
 
     //Check custom callbacks first
     for(var i = 0; i < registeredEditorPropertyCallbacks.length;i++) {
-        if(registeredEditorPropertyCallbacks[i](container,propType,parentData,ecosystem)) {
+        if(registeredEditorPropertyCallbacks[i](container,propType,existingData,changeCallback,ecosystem)) {
             return;
         }
     }
 
+    //Generic input types
     if(propType.type === String) {
-        generateBasicInput(container, parentData, propType);
+        generateBasicInput(container,existingData,propType,(input)=>{
+            changeCallback(input.value);
+        });
 
     } else if(propType.type === Number) {
-        const input = generateBasicInput(container,parentData,propType);
+        const input = generateBasicInput(container,existingData,propType,(input)=>{
+            changeCallback(input.value);
+        });
         input.type = "number";
         //TODO: min max/slider?
         console.log("TODO: number variant with slider/minmax?");
@@ -50,17 +69,18 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
     } else if(propType.type === EntityData) {
         const callback = (input:HTMLInputElement)=>{
             if(input.valueAsNumber === undefined || input.valueAsNumber === null || input.valueAsNumber === 0) {
-                parentData[propType.name] = undefined;
+                changeCallback(undefined);
             } else {
-                parentData[propType.name] = ecosystem.entitySystem.GetEntityData(input.valueAsNumber);
-                if(parentData[propType.name] === undefined) {
+                var val = ecosystem.entitySystem.GetEntityData(input.valueAsNumber);
+                if(val === undefined) {
                     ShowToastNotification(`Entity ${input.valueAsNumber} does not exist! will be undefined`);
                 }
+                changeCallback(val);
             }
         };
-        const input = generateBasicInput(container,parentData,propType,callback);
-        if(parentData[propType.name] !== undefined) {
-            input.value = parentData[propType.name].owningEntity;
+        const input = generateBasicInput(container,existingData,propType,callback);
+        if(existingData !== undefined) {
+            input.value = existingData.owningEntity;
         } else {
             input.value = "0";
         }
@@ -70,23 +90,24 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
         const callback = (input:HTMLInputElement)=>{
             if(input.valueAsNumber === 1) {
-                parentData[propType.name] = true;
+                changeCallback(true);
             } else {
-                parentData[propType.name] = false;
+                changeCallback(false);
             }
         };
-        const input = generateBasicInput(container,parentData,propType,callback);
+        const input = generateBasicInput(container,existingData,propType,callback);
         input.type = "checkbox";
 
     } else if(isTypeAClass(propType.type)) {
         const subType = registeredTypes[propType.type.name];
         if(subType === undefined) {
-            console.error(`Property type ${propType.type.name} in ${parentData.constructor.name} - ${propType.name} is not a registered type! Won't display in editor!`);
+            console.error(`Property type ${propType.type.name} - ${propType.name} is not a registered type! Won't display in editor!`);
             return;
         }
-        if(parentData[propType.name] === undefined) {
+        if(existingData === undefined) {
             const spawnSubType = subType.type;
-            parentData[propType.name] = new spawnSubType();
+            //@ts-ignore
+            changeCallback(new spawnSubType());
         }
         const nestedWrapper = GenerateInnerOuterPanelWithMinimizer(container.ownerDocument);
         const title = container.ownerDocument.createElement("h3");
@@ -98,25 +119,20 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         const compSavedProps = savedProperties[subType.type.name];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
-            GenerateEditorProperty(nestedWrapper.innerPanel,property,parentData[propType.name],ecosystem);
+            GenerateEditorProperty(nestedWrapper.innerPanel,property,existingData[property.name],(val)=>{
+                existingData[propType.name][property.name] = val;
+            },ecosystem);
         }
         
     } else {
-        console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name} - comp ${parentData.constructor.name}`);
+        console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name}`);
     }
 }
 
-function generateBasicInput(container: HTMLElement, compData: Component, propType: savedProperty, changeCallback:(input:HTMLInputElement)=>void = undefined) {
+function generateBasicInput(container: HTMLElement, existingData: any, propType: savedProperty, changeCallback:(input:HTMLInputElement)=>void) {
     const input = container.ownerDocument.createElement("input");
-    if(changeCallback === undefined) {
-        input.addEventListener("change", () => {
-            //TODO: Validate?
-            compData[propType.name] = input.value;
-        });
-    } else {
-        input.addEventListener("change", ()=>{changeCallback(input)});
-    }
-    input.value = compData[propType.name];
+    input.addEventListener("change", ()=>{changeCallback(input)});
+    input.value = existingData;
     input.style.width = "100%";
     input.style.marginTop = "0px";
     if(propType.options.editorViewOnly) {

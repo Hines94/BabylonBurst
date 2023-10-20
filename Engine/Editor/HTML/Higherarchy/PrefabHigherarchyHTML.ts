@@ -50,8 +50,8 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         await this.ecosystem.waitLoadedPromise;
 
         setupTopMenu();
+
         this.ecosystem.entitySystem.ResetSystem();
-        console.log(PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabData.prefabID))
         PrefabManager.GetPrefabManager().LoadPrefabFromIdToExisting(prefabData.prefabID,this.ecosystem.entitySystem);
         this.RegenerateHigherarchy();
         this.setupRightClick();
@@ -62,7 +62,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         //Prefab specific - with save/exit etc
         function setupTopMenu() {
             //Save button
-            const saveEntButton = AddOptionToEditorTopMenu(higherarchy.ecosystem, "File", "Save Prefab");
+            const saveEntButton = AddOptionToEditorTopMenu(higherarchy.ecosystem, "File", "Save Prefab",-1);
             saveEntButton.addEventListener("click", () => {
                 const saveData: PrefabPackedType = {
                     prefabID: higherarchy.prefabUUID,
@@ -81,7 +81,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 ShowToastNotification("Entity Saved", 3000, higherarchy.windowDoc);
             });
             //Exit button
-            const exitButton = AddOptionToEditorTopMenu(higherarchy.ecosystem, "File", "Exit");
+            const exitButton = AddOptionToEditorTopMenu(higherarchy.ecosystem, "File", "Exit",-1);
             exitButton.addEventListener("click", () => {
                 if (higherarchy.ecosystem.doc.defaultView.confirm("Close Prefab Editing")) {
                     higherarchy.Displayer.window.close();
@@ -91,7 +91,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             //Visualistaions
             SetupAllEditorVisualisations(higherarchy.ecosystem);
             //Debug
-            SetupAllEditorDebugOptions(higherarchy.ecosystem,{});
+            SetupAllEditorDebugOptions(higherarchy.ecosystem,{bContentBrowserOption:false});
         }
     }
 

@@ -1,9 +1,10 @@
-import { Color4, Vector3 } from "@babylonjs/core";
+import { Color4, Observable, Vector3 } from "@babylonjs/core";
 import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
 import { RunnableGameEcosystem } from "@BabylonBurstClient/RunnableGameEcosystem"
 import { EditorCamera } from "./Utils/EditorCamera";
 import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
 import { AngleToRad } from "@engine/Utils/MathUtils";
+import { EntityData } from "@engine/EntitySystem/EntityData";
 
 export type BuildableDescript = {
     CodeName: string;
@@ -23,6 +24,9 @@ type editorOptions = {
 //This is the editor for generating/saving/loading different buildable types for our AI and players to use
 export class BabylonBurstEditor extends RunnableGameEcosystem {
     options: editorOptions;
+
+    onEntitySelected = new Observable<EntityData>();
+
     constructor(canvas: HTMLCanvasElement, options: editorOptions) {
         super(canvas);
         this.options = options;

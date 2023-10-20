@@ -6,8 +6,8 @@
     "type": "module",
     "scripts": {
         "start": "vite --port 5174",
-        "start:game": "VITE_EDITORMODE=play vite --port 5173",
-        "build": "vite build"
+        "start:game": "bunx VITE_EDITORMODE=play vite --port 5173",
+        "build": "bunx --bun vite build"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "../../node_modules/@aws-sdk/client-s3",
@@ -18,8 +18,10 @@
         "@babylonjs/serializers": "../../node_modules/@babylonjs/serializers",
         "@msgpack/msgpack": "../../node_modules/@babylonjs/msgpack",
         "reflect-metadata": "../../node_modules/reflect-metadata",
-        "typescript": "../../node_modules/typescript",
         "uuid": "^9.0.1",
         "vite": "../../node_modules/vite"
+    },
+    "devDependencies": {
+        "typescript": "^5.2.2"
     }
 }

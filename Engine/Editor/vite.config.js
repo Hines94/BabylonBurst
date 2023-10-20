@@ -25,6 +25,6 @@ export default defineConfig({
             configureServer(server) {
                 server.watcher.add(path.resolve(__dirname, "./public/**/*.html"));
             },
-        },
+        }
     ],
 });

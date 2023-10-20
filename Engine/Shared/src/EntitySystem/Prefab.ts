@@ -1,4 +1,4 @@
-import { Component } from "./Component";
+import { Component, TrackedVariable } from "./Component";
 import { EntityData, EntityLoadMapping } from "./EntityData";
 import { EntityLoader } from "./EntityLoader";
 import { PrefabManager } from "./PrefabManager";
@@ -28,6 +28,7 @@ export class Prefab extends Component {
 
 @RegisteredType(PrefabInstance)
 export class PrefabInstance extends Component {
+    @TrackedVariable()
     @Saved(PrefabSpecifier)
     /** UUID of the prefab that has been spawned */
     SpawnedPrefabIdentifier:PrefabSpecifier = new PrefabSpecifier();
@@ -43,15 +44,21 @@ export class PrefabInstance extends Component {
         this.SpawnedPrefabIdentifier.prefabUUID = uuid;
     }
 
-    onComponentAdded(ent:EntityData):void {
-        const prefabInst = ent.GetComponent<PrefabInstance>(PrefabInstance);
-        prefabInst.refreshPrefabInstance(ent);
+    onComponentAdded(entData:EntityData):void {
+        const prefabInst = entData.GetComponent<PrefabInstance>(PrefabInstance);
+        prefabInst.refreshPrefabInstance(entData);
     }
 
     onComponentRemoved(entData: EntityData): void {
         if(this.reloadObserver !== undefined) {
             PrefabManager.GetPrefabManager().onPrefabAdded.remove(this.reloadObserver);
         }
+    }
+
+    onComponentChanged(entData: EntityData): void {
+        console.log("Prefab instance changed - reloading")
+        const prefabInst = entData.GetComponent<PrefabInstance>(PrefabInstance);
+        prefabInst.refreshPrefabInstance(entData);
     }
 
     refreshPrefabInstance(ent:EntityData) {

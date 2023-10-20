@@ -6,7 +6,7 @@ import { GameEcosystem } from "@engine/GameEcosystem";
 import { PrefabSpecifier } from "@engine/EntitySystem/Prefab";
 
 /** Warns if material numbers not correct */
-export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:savedProperty, compData:any,ecosystem:GameEcosystem) : boolean {
+export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem) : boolean {
 
     if(propType.type !== PrefabSpecifier) {
         return false;
@@ -23,13 +23,12 @@ export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:saved
             const data = await val.GetData();
             value = (await decode(data) as any).prefabID;
         }
-        compData[propType.name].prefabUUID = value;
-        if(compData.onComponentAdded) {
-            compData.onComponentAdded();
-        }
+        const newData = new PrefabSpecifier();
+        newData.prefabUUID = value;
+        changeCallback(newData);
     })
-    if(compData[propType.name].prefabUUID !== undefined) {
-        newInput.value = compData[propType.name].prefabUUID;
+    if(existingData.prefabUUID !== undefined) {
+        newInput.value = existingData.prefabUUID;
     }
     return true;
 }

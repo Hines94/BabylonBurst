@@ -5,7 +5,7 @@ import { Component } from "@engine/EntitySystem/Component";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { MaterialSpecifier } from "@engine/Rendering/InstancedRender";
 
-export function ProcessMaterialSpecifierComp(container:HTMLElement, propType:savedProperty, compData:any,ecosystem:GameEcosystem) : boolean {
+export function ProcessMaterialSpecifierComp(container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem) : boolean {
 
     if(propType.type !== MaterialSpecifier) {
         return false;
@@ -21,13 +21,12 @@ export function ProcessMaterialSpecifierComp(container:HTMLElement, propType:sav
         const newMat = new MaterialSpecifier();
         newMat.FileName = val.GetSaveName();
         newMat.FilePath = val.parent.getItemLocation();
-        compData[propType.name] = newMat;
+        changeCallback(newMat);
     })
     container.appendChild(input);
 
-    const exist = compData[propType.name];
-    if(exist.FilePath !== undefined && exist.FileName !== undefined){
-        var existingItem = GetEditorObjectWithValues(ContentItemType.Material,exist.FilePath,exist.FileName);
+    if(existingData.FilePath !== undefined && existingData.FileName !== undefined){
+        var existingItem = GetEditorObjectWithValues(ContentItemType.Material,existingData.FilePath,existingData.FileName);
         SetInputValueFromDatalist(input,existingItem);
     }
     return true;

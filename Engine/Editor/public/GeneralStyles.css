@@ -163,3 +163,13 @@ button:hover {
     left: 100%;  /* position the nested dropdown to the right of the parent dropdown */
     top: 0;
 }
+
+.unselectable {
+    -webkit-touch-callout: none;  /* iOS Safari */
+    -webkit-user-select: none;    /* Safari */
+    -khtml-user-select: none;     /* Konqueror HTML */
+    -moz-user-select: none;       /* Old versions of Firefox */
+    -ms-user-select: none;        /* Internet Explorer/Edge */
+    user-select: none;            /* Non-prefixed version, currently supported by Chrome, Opera and Firefox */
+    cursor: default;
+}

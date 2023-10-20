@@ -14,6 +14,7 @@ print_cyan "--- Starting setup for Babylon Burst ---\n"
 
 # Install modules common to all packages
 print_cyan "--- Installing Common Modules ---\n"
+sudo npm install -g bun
 npm install
 
 print_cyan "--- Installing Engine Modules ---\n"

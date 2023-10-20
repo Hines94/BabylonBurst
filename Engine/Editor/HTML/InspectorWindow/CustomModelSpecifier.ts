@@ -7,7 +7,7 @@ import { ModelSpecifier } from "@engine/Rendering/InstancedRender";
 
 
 
-export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedProperty, compData:any,ecosystem:GameEcosystem) : boolean {
+export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedProperty, existingData:ModelSpecifier, changeCallback:(any)=>void,ecosystem:GameEcosystem) : boolean {
 
     if(propType.type !== ModelSpecifier) {
         return false;
@@ -34,14 +34,13 @@ export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedP
     input.classList.add('form-control');
     input.style.marginBottom = '5px';
 
-    if(compData[propType.name] === undefined){
-        compData[propType.name] = new ModelSpecifier();
+    if(existingData === undefined){
+        changeCallback(new ModelSpecifier());
     }
-    const existData = compData[propType.name] as ModelSpecifier;
-    if(existData.MeshName !== undefined && !IsValidModelSpecifier(existData)) {
-        input.value = "INVALID: " + GetModelSpecifierAbbrevText(existData);
+    if(existingData.MeshName !== undefined && !IsValidModelSpecifier(existingData)) {
+        input.value = "INVALID: " + GetModelSpecifierAbbrevText(existingData);
     } else {
-        input.value = GetModelSpecifierAbbrevText(existData);
+        input.value = GetModelSpecifierAbbrevText(existingData);
     }
     
 
@@ -51,9 +50,9 @@ export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedP
         const option = Array.from(optionsList.querySelectorAll('option')).find(opt => opt.innerText === selectedText);
         if (option) {
             const value = JSON.parse(option.getAttribute("data-model")) as ModelSpecifier;
-            compData[propType.name].FileName = value.FileName;
-            compData[propType.name].FilePath = value.FilePath;
-            compData[propType.name].MeshName = value.MeshName;
+            const newItem = new ModelSpecifier();
+            Object.assign(newItem,value);
+            changeCallback(newItem);
         } else {
             ShowToastError("Issue finding value for mesh option " + selectedText);
         }

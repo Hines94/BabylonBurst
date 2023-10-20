@@ -2,12 +2,12 @@ import { SetInspectorOwner } from "../InspectorWindow/InspectorHTML";
 import { RemoveClassFromAllItems, WaitForEvent } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
-import { GetEditorGizmos } from "./EditorGizmos";
 import { EntityInspectorHTML } from "./EntityInspectorHTML";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Prefab } from "@engine/EntitySystem/Prefab";
 import { storedRegisteredType } from "@engine/EntitySystem/TypeRegister";
+import { SetupEditorGizmos } from "./EditorGizmos";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */
 export abstract class HigherarchyHTML {
@@ -17,13 +17,14 @@ export abstract class HigherarchyHTML {
     inspector: HTMLElement;
     higherarchPanel: HTMLElement;
     contentOptions: HTMLElement;
-    ecosystem: GameEcosystem;
+    ecosystem: BabylonBurstEditor;
     generatedEntityRows: { [entId: number]: HTMLDivElement } = {};
 
     setEcosystem(ecosystem:GameEcosystem) {
-        this.ecosystem = ecosystem;
+        this.ecosystem = ecosystem as BabylonBurstEditor;
         ecosystem.entitySystem.onEntityCreatedEv.add(this.GenerateEntityRow.bind(this));
         ecosystem.entitySystem.onEntityRemovedEv.add(this.RemoveEntityRow.bind(this));
+        SetupEditorGizmos(ecosystem);
     }
 
     protected setupHigherarchyEcosystem() {
@@ -53,6 +54,17 @@ export abstract class HigherarchyHTML {
                 return;
             }
             higherarchy.setupContextMenu(ev);
+        });
+        this.setupNormalClick();
+    }
+
+    protected setupNormalClick() {
+        const higherarchy = this;
+        higherarchy.Displayer.window.document.addEventListener("click", ev => {
+            if (ev.target != higherarchy.higherarchPanel) {
+                return;
+            }
+            this.setupInspectorForEntity(undefined);
         });
     }
 
@@ -93,14 +105,9 @@ export abstract class HigherarchyHTML {
 
         //View Entity components etc
         row.addEventListener("click", async () => {
-            RemoveClassFromAllItems("selectedHigherarchy", this.higherarchyItems);
-            row.classList.add("selectedHigherarchy");
-            this.inspector.innerHTML = "";
-            this.inspector.classList.remove("hidden");
-            SetInspectorOwner(row);
             this.setupInspectorForEntity(entId);
-            GetEditorGizmos(this.ecosystem).SetupToEntity(entId);
-            GetEditorGizmos(this.ecosystem).SetPositionGizmoEnabled();
+            row.classList.add("selectedHigherarchy");
+            SetInspectorOwner(row);
         });
         //Entity context menu
         row.addEventListener("contextmenu", event => {
@@ -127,7 +134,6 @@ export abstract class HigherarchyHTML {
     }
 
     RemoveEntityRow(entId:number) {
-        this.ecosystem.entitySystem.RemoveEntity(entId);
         this.RegenerateHigherarchy();
     }
 
@@ -143,7 +149,7 @@ export abstract class HigherarchyHTML {
     }
 
     protected addNewEntity(): number {
-        return this.ecosystem.entitySystem.AddEntity().EntityId;
+        return this.ecosystem.entitySystem.AddEntityAtAnyEmptySlot().EntityId;
     }
 
     addComponentToEntity(entityId: number, compType: storedRegisteredType, allEntComps: HTMLElement): boolean {
@@ -154,6 +160,7 @@ export abstract class HigherarchyHTML {
 
         //Set component as added
         const spawnType =compType.type;
+        //@ts-ignore
         const newComp = new spawnType();
         this.ecosystem.entitySystem.AddSetComponentToEntity(entityId,newComp);
         console.log("Added comp: ")
@@ -179,6 +186,10 @@ export abstract class HigherarchyHTML {
         if (this.currrentInspector) {
             this.currrentInspector.dispose();
         }
-        this.currrentInspector = new EntityInspectorHTML(this, entityId);
+        if(entityId !== undefined) {
+            this.currrentInspector = new EntityInspectorHTML(this, entityId);
+        }
+        RemoveClassFromAllItems("selectedHigherarchy", this.higherarchyItems);
+        this.ecosystem.onEntitySelected.notifyObservers(this.ecosystem.entitySystem.GetEntityData(entityId));
     }
 }

@@ -1,73 +1,75 @@
-import * as BABYLONGUI from "@babylonjs/gui";
-import { GetGameSettings } from "../../Settings";
 import { DebugMode, environmentVaraibleTracker } from "../../../../Shared/src/Utils/EnvironmentVariableTracker";
-import { uiLayerMask } from "../../Utils/LayerMasks";
 
 export class FramerateCounter {
-    advancedTexture = BABYLONGUI.AdvancedDynamicTexture.CreateFullscreenUI("FramerateUI");
-    averageFramesText = new BABYLONGUI.TextBlock("FramerateCount");
-    lowFramesText = new BABYLONGUI.TextBlock("LowFramesCount");
-    lowestFramesText = new BABYLONGUI.TextBlock("LowFramesCount");
+    // HTML elements for the framerate counter
+    averageFramesElement: HTMLElement;
+    lowFramesElement: HTMLElement;
+    lowestFramesElement: HTMLElement;
     framesToCollect = 200;
+    distFromTop = 5;
 
     running = false;
 
-    constructor() {
-        this.advancedTexture.renderScale = GetGameSettings().GetRenderScale();
-        this.advancedTexture.addControl(this.averageFramesText);
-        this.advancedTexture.layer.layerMask = uiLayerMask;
-        this.averageFramesText.horizontalAlignment = BABYLONGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.averageFramesText.verticalAlignment = BABYLONGUI.Control.VERTICAL_ALIGNMENT_TOP;
-        this.averageFramesText.textHorizontalAlignment = BABYLONGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.averageFramesText.height = "50px";
-        this.averageFramesText.width = "50px";
-        this.averageFramesText.color = "white";
-        this.averageFramesText.outlineColor = "black";
-        this.averageFramesText.outlineWidth = 3;
-        this.averageFramesText.paddingRightInPixels = 10;
+    constructor(doc = document) {
+        // Create the elements
+        this.averageFramesElement = doc.createElement('div');
+        this.lowFramesElement = doc.createElement('div');
+        this.lowestFramesElement = doc.createElement('div');
 
-        this.advancedTexture.addControl(this.lowFramesText);
-        this.lowFramesText.horizontalAlignment = BABYLONGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.lowFramesText.verticalAlignment = BABYLONGUI.Control.VERTICAL_ALIGNMENT_TOP;
-        this.lowFramesText.textHorizontalAlignment = BABYLONGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.lowFramesText.height = "50px";
-        this.lowFramesText.width = "150px";
-        this.lowFramesText.color = "red";
-        this.lowFramesText.topInPixels = 20;
-        this.lowFramesText.outlineColor = "black";
-        this.lowFramesText.outlineWidth = 3;
-        this.lowFramesText.paddingRightInPixels = 10;
+        // Style the elements
+        const baseStyles = {
+            position: 'absolute',
+            right: '10px',
+            color: 'white',
+            width: '150px',
+            height: '20px',
+            textAlign: 'right',
+        };
 
-        this.advancedTexture.addControl(this.lowestFramesText);
-        this.lowestFramesText.horizontalAlignment = BABYLONGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.lowestFramesText.verticalAlignment = BABYLONGUI.Control.VERTICAL_ALIGNMENT_TOP;
-        this.lowestFramesText.textHorizontalAlignment = BABYLONGUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-        this.lowestFramesText.height = "50px";
-        this.lowestFramesText.width = "150px";
-        this.lowestFramesText.color = "red";
-        this.lowestFramesText.topInPixels = 40;
-        this.lowestFramesText.outlineColor = "black";
-        this.lowestFramesText.outlineWidth = 3;
-        this.lowestFramesText.paddingRightInPixels = 10;
+        Object.assign(this.averageFramesElement.style, baseStyles, {
+            top: `${this.distFromTop}px`
+        });
 
-        this.updateIsRunning();
+        Object.assign(this.lowFramesElement.style, baseStyles, {
+            top: `${this.distFromTop+20}px`,
+            color: 'red'
+        });
+
+        Object.assign(this.lowestFramesElement.style, baseStyles, {
+            top: `${this.distFromTop+40}px`,
+            color: 'red'
+        });
+
+        // Append the elements to the body (or any other container element)
+        doc.body.appendChild(this.averageFramesElement);
+        doc.body.appendChild(this.lowFramesElement);
+        doc.body.appendChild(this.lowestFramesElement);
+
+        this.setDefaultVisible();
     }
 
-    private updateIsRunning() {
+    private setDefaultVisible() {
         if (environmentVaraibleTracker.GetDebugMode() < DebugMode.Light) {
-            this.running = false;
-            this.averageFramesText.isVisible = false;
-            this.lowFramesText.isVisible = false;
-            this.lowestFramesText.isVisible = false;
+            this.setHidden(true);
         } else {
-            this.running = true;
-            this.averageFramesText.isVisible = true;
-            this.lowFramesText.isVisible = true;
-            this.lowestFramesText.isVisible = true;
+            this.setHidden(false);
         }
     }
 
+    setHidden(bHidden:boolean) {
+        this.running = !bHidden;
+        this.averageFramesElement.hidden = bHidden;
+        this.lowFramesElement.hidden = bHidden;
+        this.lowestFramesElement.hidden = bHidden;
+    }
+
     recentFrames: number[] = [];
+
+    private changeIfDifferent(element:HTMLElement,changed:string) {
+        if(changed != element.innerText) {
+            element.innerText = changed;
+        }
+    }
 
     updateFramerate(deltaTime: number) {
         if (this.running === false) {
@@ -80,22 +82,22 @@ export class FramerateCounter {
         }
         //Average frames
         const average = averageArray(this.recentFrames);
-        this.averageFramesText.text = average.toFixed(0);
+        this.changeIfDifferent(this.averageFramesElement,average.toFixed(0));
         //Check bottom tanky frames
         const lowFract = averageArray(bottomFraction(this.recentFrames, 0.05));
         if (lowFract < 0.95 * average) {
-            this.lowFramesText.isVisible = true;
-            this.lowFramesText.text = "Lowest 5%: " + lowFract.toFixed(0);
+            this.lowFramesElement.hidden = false;
+            this.changeIfDifferent(this.lowFramesElement,"Lowest 5%: " + lowFract.toFixed(0));
         } else {
-            this.lowFramesText.isVisible = false;
+            this.lowFramesElement.hidden = true;
         }
         //Check rock bottom tanks
         const lowestFract = averageArray(bottomFraction(this.recentFrames, 0.01));
         if (lowFract < 0.9 * average) {
-            this.lowestFramesText.isVisible = true;
-            this.lowestFramesText.text = "Lowest 1%: " + lowestFract.toFixed(0);
+            this.lowestFramesElement.hidden = false;
+            this.changeIfDifferent(this.lowestFramesElement,"Lowest 1%: " + lowestFract.toFixed(0));
         } else {
-            this.lowestFramesText.isVisible = false;
+            this.lowestFramesElement.hidden = true;
         }
     }
 }

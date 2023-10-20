@@ -61,8 +61,9 @@ export class EntitySaver {
 
                 //Get default component to check against
                 var defaultComp = new (registeredTypes[compName].type as any)();
+
                 //Get default from prefab?
-                if(prefabComp !== undefined) {
+                if(prefabComp !== undefined && prefabComp.parent !== undefined) {
                     const attemptPrefab = PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabComp.PrefabIdentifier);
                     if(attemptPrefab) {
                         const defaultPrefab = attemptPrefab.GetEntityComponentByName(ent.EntityId,compName,undefined,query.owningSystem.GetAllEntities());

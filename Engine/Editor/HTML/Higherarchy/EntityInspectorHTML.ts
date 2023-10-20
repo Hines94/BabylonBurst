@@ -1,7 +1,6 @@
 
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { CloneTemplate } from "@BabylonBurstClient/HTML/HTMLUtils";
-import { GetEditorGizmos } from "./EditorGizmos";
 import { HigherarchyHTML } from "./HigherarchyHTML";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Component } from "@engine/EntitySystem/Component";
@@ -26,25 +25,24 @@ export class EntityInspectorHTML {
         this.observer = owner.ecosystem.entitySystem.onEntityRemovedEv.add(this.entityRemoved.bind(this));
 
         this.inspector = this.owner.windowDoc.getElementById("InspectorPanel") as HTMLElement;
-        const template = CloneTemplate("EntityInspector", this.owner.windowDoc);
         this.inspector.classList.remove("hidden");
         this.inspector.innerHTML = "";
-        this.inspector.appendChild(template);
-        const allEntComps = template.querySelector("#EntityComponents") as HTMLElement;
 
-        this.defaultEntityData = owner.ecosystem.entitySystem.GetEntityData(entityIdentifier);
+        //Entity inspection template
+        const entTemplate = CloneTemplate("EntityInspector", this.owner.windowDoc);
+        entTemplate.querySelector("#EntityTitle").innerHTML = "Entity: " + entityIdentifier;
 
         //Existing items
+        const allEntComps = entTemplate.querySelector("#EntityComponents") as HTMLElement;
+        this.defaultEntityData = owner.ecosystem.entitySystem.GetEntityData(entityIdentifier);
         const entityData = owner.ecosystem.entitySystem.GetEntityData(this.entityId);
         entityData.Components.forEach(comp => {
             this.addComponentToInspector(comp, allEntComps, entityIdentifier);
         });
-        template.querySelector("#EntityTitle").innerHTML = "Entity: " + entityIdentifier;
-
 
         //New Component
         const possibleComps = GetAllComponentClassTypes();
-        const compTypes = template.querySelector("#componentTypes");
+        const compTypes = entTemplate.querySelector("#componentTypes");
         possibleComps .forEach(comp => {
             if(!comp.options.bEditorAddable) {
                 return;
@@ -53,8 +51,8 @@ export class EntityInspectorHTML {
             newOpt.value = comp.type.name;
             compTypes.appendChild(newOpt);
         });
-        const selectComp = template.querySelector("#AddComponentSubmit");
-        const newCompType = template.querySelector("#addComponent") as HTMLInputElement;
+        const selectComp = entTemplate.querySelector("#AddComponentSubmit");
+        const newCompType = entTemplate.querySelector("#addComponent") as HTMLInputElement;
 
         //Add new component
         selectComp.addEventListener("click", () => {
@@ -80,23 +78,13 @@ export class EntityInspectorHTML {
             }
         });
 
-        this.inspector.appendChild(template);
+        this.inspector.appendChild(entTemplate);
     }
-    boundGizmoCallback: any;
 
     entityRemoved(ent:number) {
         if(ent === this.entityId) {
             this.dispose();
         }
-    }
-
-    refreshComponentDataValues() {
-        this.owner.RefreshDataToWASM();
-        this.componentDatas.forEach(dat => {
-            dat.editor.setValue(this.owner.allEntities[this.entityId][dat.comp]);
-            this.runCustomComponentChanges(dat.comp);
-            this.refreshNonDefaultValues(dat.comp, dat.editor);
-        });
     }
 
     addComponentToInspector(comp: Component, inspector: HTMLElement, entityId: number) {
@@ -132,82 +120,7 @@ export class EntityInspectorHTML {
         const compSavedProps = savedProperties[compName];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
-            GenerateEditorProperty(componentWrapper.innerPanel,property,comp,this.owner.ecosystem);
-        }
-
-        bindCustomComponentItems();
-
-        function BindComponentChange() {
-            editor.on("change", RefreshValues());
-
-            function RefreshValues(): any {
-                return function () {
-                    const newData = editor.getValue();
-                    const keys = Object.keys(newData);
-                    var isNew = false;
-                    keys.forEach(k => {
-                        if (higherarch.owner.allEntities[entityId][comp][k] !== newData[k]) {
-                            isNew = true;
-                        }
-                    });
-                    if (!isNew) {
-                        return;
-                    }
-                    //Preserve any hidden items (eg items that have no comp typings)
-                    const existingKeys = Object.keys(higherarch.owner.allEntities[entityId][comp]);
-                    for(var ek = 0; ek < existingKeys.length;ek++) {
-                        const existKey = existingKeys[ek];
-                        if(newData[existKey] === undefined) {
-                            newData[existKey] = higherarch.owner.allEntities[entityId][comp][existKey];
-                        }
-                    }
-                    //Set new data into owner
-                    higherarch.owner.allEntities[entityId][comp] = newData;
-                    higherarch.owner.RefreshWASMForSpecificEntity(entityId);
-                    higherarch.runCustomComponentChanges(comp);
-                };
-            }
-        }
-
-        function SetupComponentEditor() {
-            editor.on("ready", () => {
-                //Start collapsed for ease
-                editor.editors.root.collapse_control.click();
-                const label = componentWrapper.querySelector("label");
-                label.innerText = comp;
-
-                //Remove button clicked
-
-                editor.setValue(higherarch.owner.allEntities[entityId][comp]);
-                higherarch.componentDatas.push({ editor: editor, comp: comp });
-
-                higherarch.refreshNonDefaultValues(comp, editor);
-
-                CheckEditorForCustomElements(editor);
-
-                BindComponentChange();
-            });
-        }
-
-        function GenereateComponentEditor(): JSONEditor {
-            return new JSONEditor(componentWrapper, {
-                schema: schema,
-                theme: "bootstrap5",
-                iconlib: "fontawesome5",
-                disable_edit_json: true,
-                disable_properties: true,
-                no_additional_properties: true,
-                remove_empty_properties: true,
-                object_layout: "normal",
-                show_errors: "always",
-            });
-        }
-
-        function bindCustomComponentItems() {
-            if (comp === "EntTransform") {
-                higherarch.boundGizmoCallback = higherarch.refreshComponentDataValues.bind(higherarch);
-                GetEditorGizmos(higherarch.owner.ecosystem).changeTransformObserver.add(higherarch.boundGizmoCallback);
-            }
+            GenerateEditorProperty(componentWrapper.innerPanel,property,comp[property.name],(v)=>{comp[property.name] = v;},this.owner.ecosystem);
         }
     }
 
@@ -232,12 +145,6 @@ export class EntityInspectorHTML {
         }
     }
 
-    runCustomComponentChanges(comp: string) {
-        if (comp === "EntTransform") {
-            GetEditorGizmos(this.owner.ecosystem).SetupToEntity(this.entityId);
-        }
-    }
-
     dispose() {
         if (this.inspector) {
             this.inspector.innerHTML = "";
@@ -245,9 +152,6 @@ export class EntityInspectorHTML {
         }
         if(this.observer) {
             this.owner.ecosystem.entitySystem.onEntityRemovedEv.remove(this.observer);
-        }
-        if (this.boundGizmoCallback) {
-            GetEditorGizmos(this.owner.ecosystem).changeTransformObserver.remove(this.boundGizmoCallback);
         }
     }
 

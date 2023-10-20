@@ -1,20 +1,31 @@
-import { GameEcosystem } from "@BabylonBurstClient/GameEcosystem";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 export function AddOptionToEditorTopMenu(
     ecosystem: GameEcosystem,
     menuName: string,
-    elementName: string
+    elementName: string,
+    priority:number
 ): HTMLLIElement {
-    const menu = ensureEditorMenu(ecosystem, menuName);
+    const menu = ensureEditorMenu(ecosystem, menuName,priority);
     return menu.GetMenuOption(elementName);
 }
 
-function ensureEditorMenu(ecosystem: GameEcosystem, menuName: string): EditorTopMenu {
+export function AddElementToEditorTopMenu(ecosystem: GameEcosystem,element: HTMLElement,priority:number) {
+    const topBar = ecosystem.doc.getElementById("editorHeaderPanel");
+    element[priorityIdentifier] = priority;
+    topBar.appendChild(element);
+    reOrderTopBar(topBar);
+}
+
+function ensureEditorMenu(ecosystem: GameEcosystem, menuName: string, priority:number): EditorTopMenu {
     if (!ecosystem.dynamicProperties["__EDTORTOPMENU___" + menuName]) {
-        ecosystem.dynamicProperties["__EDTORTOPMENU___" + menuName] = new EditorTopMenu(ecosystem, menuName);
+        ecosystem.dynamicProperties["__EDTORTOPMENU___" + menuName] = new EditorTopMenu(ecosystem, menuName,priority);
     }
+
     return ecosystem.dynamicProperties["__EDTORTOPMENU___" + menuName];
 }
+
+const priorityIdentifier = "___PRIORITY___";
 
 /** A Top menu that can have dynamically added content (eg file->save etc) */
 export class EditorTopMenu {
@@ -28,10 +39,13 @@ export class EditorTopMenu {
     /** Top level for menu */
     topLevelHolder: HTMLElement;
 
-    constructor(ecosystem: GameEcosystem, name: string) {
+    priority:number;
+
+    constructor(ecosystem: GameEcosystem, name: string,priority:number) {
         this.ecosystem = ecosystem;
         this.topBar = ecosystem.doc.getElementById("editorHeaderPanel");
         this.name = name;
+        this.priority = priority;
         this.setupEditorMenu();
     }
 
@@ -76,6 +90,7 @@ export class EditorTopMenu {
     private setupEditorMenu() {
         this.topLevelHolder = this.ecosystem.doc.createElement("div");
         this.topLevelHolder.className = "dropdown";
+        this.topLevelHolder[priorityIdentifier] = this.priority;
         const itembutton = this.ecosystem.doc.createElement("button");
         itembutton.innerText = this.name;
         this.topLevelHolder.appendChild(itembutton);
@@ -84,21 +99,37 @@ export class EditorTopMenu {
         (this.dropdownContent as any).elements = [];
         this.topLevelHolder.appendChild(this.dropdownContent);
         this.topBar.appendChild(this.topLevelHolder);
+        reOrderTopBar(this.topBar);
     }
+
 
     dispose() {
         this.topLevelHolder.remove();
     }
 }
 
+/** Re-order top bar items by priority */
+function reOrderTopBar(topBar:HTMLElement) {
+    const childElements = [...topBar.children];
+    const sortedElements = childElements.sort((a, b) => {
+        return a[priorityIdentifier] - b[priorityIdentifier];
+    });
+
+    sortedElements.forEach(element => {
+        topBar.appendChild(element);
+    });
+
+}
+
 /** A nice handy on/off s */
-export function GenerateTopMenuToggle(ecosystem:GameEcosystem,name:string, category:string, subfolders:string, onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void, bDefaultOn = false) {
+export function GenerateTopMenuToggle(ecosystem:GameEcosystem,name:string, category:string, subfolders:string, priority:number, onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void, bDefaultOn = false) {
     const propName = "___" + name + "___";
     const indicatorName = category+propName+"___INDICATOR___";
     if(ecosystem.dynamicProperties[indicatorName]) {
         return;
     }
-    const ddOption = AddOptionToEditorTopMenu(ecosystem, category, subfolders + name);
+    const ddOption = AddOptionToEditorTopMenu(ecosystem, category, subfolders + name,priority);
+    ddOption.classList.add("unselectable");
     ecosystem.dynamicProperties[indicatorName] = ddOption;
     ddOption.addEventListener("click", () => {
         if (ecosystem.dynamicProperties[propName]) {
