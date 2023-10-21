@@ -2,6 +2,7 @@ import { Color4, DynamicTexture, InputBlock, Material, NodeMaterial, Scene, Text
 import { GetSimpleImageMaterial } from "../../../Client/src/Materials/SimpleImageMaterial";
 import { AsyncImageDescription } from "../AsyncAssets/AsyncImage";
 import { AsyncMaterial } from "../AsyncAssets/AsyncMaterial";
+import { GetAsyncSceneIdentifier } from "../AsyncAssets";
 
 /** A default implementation of our unlit material */
 export class AsyncSimpleImageMaterial extends AsyncMaterial {

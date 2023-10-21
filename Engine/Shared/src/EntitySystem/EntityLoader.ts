@@ -1,10 +1,9 @@
 import { decode } from "@msgpack/msgpack";
-import { EntitySavedTypings, GetTypingsCompIndex } from "./EntitySaver";
 import { EntitySystem } from "./EntitySystem";
 import { EntityData, EntityLoadMapping } from "./EntityData";
-import { SaveableDataField } from "./SaveableDataField";
 import { Component } from "./Component";
 import { registeredTypes } from "./TypeRegister";
+import { EntitySavedTypings, GetTypingsCompIndex, LoadCustomSaveData } from "../Utils/SaveableDataUtils";
 
 export class EntityTemplate {
     typings:EntitySavedTypings;
@@ -28,6 +27,7 @@ export class EntityTemplate {
 
     GetEntityComponent<T extends Component>(ent:number,type: { new(): T },newEnt:EntityData, mapping:EntityLoadMapping): T | undefined {
         if(!this.DoesEntityExist(ent)) {
+            console.warn("No entity for template: " + ent);
             return undefined;
         }
         const compName = type.name;
@@ -35,16 +35,16 @@ export class EntityTemplate {
     }
 
     GetEntityComponentByName(ent:number,compName: string,newEnt:EntityData, mapping:EntityLoadMapping) {
-        const compNames = Object.keys(this.typings);
-        if(!compNames.includes(compName)) {
+        const compIndex  = GetTypingsCompIndex(compName,this.typings,false);
+        if(compIndex === undefined) {
             return undefined;
         }
-        const compData = this.entityData[ent][GetTypingsCompIndex(compName,this.typings)];
-        if(!compData){
+        const compData = this.entityData[ent][compIndex];
+        if(compData === undefined){
             return undefined;
         }
         const type = registeredTypes[compName];
-        if(!type) {
+        if(type === undefined) {
             console.warn("No component type for " + compName)
             return undefined;
         }
@@ -56,15 +56,16 @@ export class EntityTemplate {
 
     /** Given a component - load the data we have into that component */
     LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component) {
-        const compData = this.entityData[ent][GetTypingsCompIndex(compName,this.typings)];
+        const compIndex = GetTypingsCompIndex(compName,this.typings);
+        const compData = this.entityData[ent][compIndex];
         if(!compData){
             return;
         }
         const params = Object.keys(compData);
         for(var i = 0; i < params.length;i++) {
             const paramIndex = parseInt(params[i]);
-            const paramName = this.typings[compName][paramIndex];
-            comp[paramName] = SaveableDataField.loadCustomSaveData(mapping[ent],mapping,compData[paramIndex],compName,paramName);
+            const paramName = this.typings[compIndex].compParams[paramIndex];
+            comp[paramName] = LoadCustomSaveData(mapping[ent],mapping,compData[paramIndex],compName,paramName,this.typings);
         }
     }
 
@@ -121,7 +122,8 @@ export class EntityLoader {
             const originalEntId = parseInt(e);
             const comps = Object.keys(template.entityData[originalEntId]);
             for(var c = 0; c < comps.length;c++){
-                const compName = Object.keys(template.typings)[parseInt(comps[c])];
+                const compKey = parseInt(Object.keys(template.typings)[parseInt(comps[c])]);
+                const compName:string = template.typings[compKey].compName;
                 const compType = registeredTypes[compName];
                 if(!compType) {
                     console.error("No registered comp type for: " + compName);
@@ -132,7 +134,9 @@ export class EntityLoader {
                     template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp);
                 } else {
                     const compData = template.GetEntityComponent(originalEntId,compType.type as any,entMappings[e],entMappings);
-                    system.AddSetComponentToEntity(entMappings[e],compData);
+                    if(compData !== undefined) {
+                        system.AddSetComponentToEntity(entMappings[e],compData);
+                    }
                 }
             }
         })

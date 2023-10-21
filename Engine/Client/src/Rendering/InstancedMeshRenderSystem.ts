@@ -57,7 +57,7 @@ export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
         if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
             const mats = GetMaterials(rendItem.MaterialData, ecosystem);
             //Materials not ready yet?
-            if (mats.length === 0) {
+            if (mats.length === 0 && rendItem.MaterialData.length > 0) {
                 return;
             }
             ecosystem.dynamicProperties.LoadedRunners[runnerID] = new AsyncStaticMeshInstanceRunner(
@@ -91,6 +91,11 @@ function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Mate
     const ret: Material[] = [];
     for (var m = 0; m < mats.length; m++) {
         const spec = mats[m];
+        if(spec.FilePath === undefined || spec.FileName === undefined) {
+            console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
+            ret.push(null);
+            continue;
+        }
         //Load material identifier from async
         var matLoader = GetPreviouslyLoadedAWSAsset(spec.FilePath, spec.FileName) as AsyncArrayBufferLoader;
         if (!matLoader) {

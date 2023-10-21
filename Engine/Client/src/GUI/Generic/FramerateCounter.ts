@@ -12,32 +12,32 @@ export class FramerateCounter {
 
     constructor(doc = document) {
         // Create the elements
-        this.averageFramesElement = doc.createElement('div');
-        this.lowFramesElement = doc.createElement('div');
-        this.lowestFramesElement = doc.createElement('div');
+        this.averageFramesElement = doc.createElement("div");
+        this.lowFramesElement = doc.createElement("div");
+        this.lowestFramesElement = doc.createElement("div");
 
         // Style the elements
         const baseStyles = {
-            position: 'absolute',
-            right: '10px',
-            color: 'white',
-            width: '150px',
-            height: '20px',
-            textAlign: 'right',
+            position: "absolute",
+            right: "10px",
+            color: "white",
+            width: "150px",
+            height: "20px",
+            textAlign: "right",
         };
 
         Object.assign(this.averageFramesElement.style, baseStyles, {
-            top: `${this.distFromTop}px`
+            top: `${this.distFromTop}px`,
         });
 
         Object.assign(this.lowFramesElement.style, baseStyles, {
-            top: `${this.distFromTop+20}px`,
-            color: 'red'
+            top: `${this.distFromTop + 20}px`,
+            color: "red",
         });
 
         Object.assign(this.lowestFramesElement.style, baseStyles, {
-            top: `${this.distFromTop+40}px`,
-            color: 'red'
+            top: `${this.distFromTop + 40}px`,
+            color: "red",
         });
 
         // Append the elements to the body (or any other container element)
@@ -56,7 +56,7 @@ export class FramerateCounter {
         }
     }
 
-    setHidden(bHidden:boolean) {
+    setHidden(bHidden: boolean) {
         this.running = !bHidden;
         this.averageFramesElement.hidden = bHidden;
         this.lowFramesElement.hidden = bHidden;
@@ -65,8 +65,8 @@ export class FramerateCounter {
 
     recentFrames: number[] = [];
 
-    private changeIfDifferent(element:HTMLElement,changed:string) {
-        if(changed != element.innerText) {
+    private changeIfDifferent(element: HTMLElement, changed: string) {
+        if (changed != element.innerText) {
             element.innerText = changed;
         }
     }
@@ -82,12 +82,12 @@ export class FramerateCounter {
         }
         //Average frames
         const average = averageArray(this.recentFrames);
-        this.changeIfDifferent(this.averageFramesElement,average.toFixed(0));
+        this.changeIfDifferent(this.averageFramesElement, average.toFixed(0));
         //Check bottom tanky frames
         const lowFract = averageArray(bottomFraction(this.recentFrames, 0.05));
         if (lowFract < 0.95 * average) {
             this.lowFramesElement.hidden = false;
-            this.changeIfDifferent(this.lowFramesElement,"Lowest 5%: " + lowFract.toFixed(0));
+            this.changeIfDifferent(this.lowFramesElement, "Lowest 5%: " + lowFract.toFixed(0));
         } else {
             this.lowFramesElement.hidden = true;
         }
@@ -95,7 +95,7 @@ export class FramerateCounter {
         const lowestFract = averageArray(bottomFraction(this.recentFrames, 0.01));
         if (lowFract < 0.9 * average) {
             this.lowestFramesElement.hidden = false;
-            this.changeIfDifferent(this.lowestFramesElement,"Lowest 1%: " + lowestFract.toFixed(0));
+            this.changeIfDifferent(this.lowestFramesElement, "Lowest 1%: " + lowestFract.toFixed(0));
         } else {
             this.lowestFramesElement.hidden = true;
         }

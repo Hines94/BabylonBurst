@@ -110,13 +110,13 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
         this.startedLoadingProcess = true;
 
         //Start materials loading so they get a headstart - Note this assumes they will not change between now and setting them later
-        const mats = [];
+        var matInstances = [];
         for (var i = 0; i < this.materials.length; i++) {
             //If material was not overriden then set it so
             if (this.materials[i] !== null && this.materials[i] !== undefined) {
-                mats.push(ExtractMaterialFromAny(this.materials[i], scene));
+                matInstances.push(ExtractMaterialFromAny(this.materials[i], scene));
             } else {
-                mats.push(null);
+                matInstances.push(null);
             }
         }
 
@@ -131,41 +131,34 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
         //Extract submeshes that we want
         var foundMeshElements = asyncLoader.extractMeshElements(this.meshName);
 
-        //Validation
-        if (foundMeshElements.length !== this.materials.length) {
-            if (this.bNoFailMaterialDiff) {
-                if (foundMeshElements.length > this.materials.length) {
-                    for (var m = this.materials.length - 1; m < foundMeshElements.length; m++) {
-                        this.materials.push(null);
-                    }
-                } else {
-                    this.materials = this.materials.slice(0, foundMeshElements.length);
+        //Mat Validation
+        if (foundMeshElements.length !== matInstances.length) {
+            var backupMat = null;
+            const warnMessage = `Specified different number of materials for mesh: ${this.meshName}. in GLTF: ${asyncLoader.requestedAssetPath}. Number of materials in GLTF: ${foundMeshElements.length}. Number Specified: ${this.materials.length}`;
+            if (!this.bNoFailMaterialDiff) {
+                backupMat = GetBadMeshMaterial(scene);
+                console.error(warnMessage);
+            } else {
+                console.warn(warnMessage);
+            }
+
+            if (foundMeshElements.length > this.materials.length) {
+                for (var m = this.materials.length; m < foundMeshElements.length; m++) {
+                    matInstances[m]=backupMat;
                 }
             } else {
-                console.error(
-                    "Specified different number of materials for mesh: " +
-                        this.meshName +
-                        " in GLTF: " +
-                        asyncLoader.requestedAssetPath +
-                        ". Number of materials in GLTF: " +
-                        foundMeshElements.length +
-                        ". Number Specified: " +
-                        this.materials.length +
-                        ". Cancelling description creation."
-                );
-                this.setReplacementErrorBox(scene);
-                return;
+                matInstances = matInstances.slice(0, foundMeshElements.length);
             }
         }
 
         //Change to specified materials
-        for (var i = 0; i < mats.length; i++) {
+        for (var i = 0; i < matInstances.length; i++) {
             //If material was not overriden then set it so
-            if (mats[i] !== null) {
+            if (matInstances[i] !== null) {
                 if (foundMeshElements[i].material !== null && foundMeshElements[i].material !== undefined) {
                     foundMeshElements[i].material.dispose();
                 }
-                foundMeshElements[i].material = mats[i];
+                foundMeshElements[i].material = matInstances[i];
             }
             //Else fill in the blank in our materials
             else {

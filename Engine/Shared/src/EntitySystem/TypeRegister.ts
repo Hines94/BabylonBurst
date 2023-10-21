@@ -46,11 +46,9 @@ export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}
             console.error(`Property: ${propertyKey} in comp ${compName} has bad type. Please use Saved(TYPEOFITEM) to manually specify.`)
         }
 
-
-        const originalKey = `__${propertyKey}`;
-        target[originalKey] = target[propertyKey];
-
         if(environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light) {
+            const originalKey = `___CUSTOMTYPECHECKED___${propertyKey}`;
+            target[originalKey] = target[propertyKey];
             // Define a getter and setter to ensure type
             Object.defineProperty(target, propertyKey, {
                 get: function() {

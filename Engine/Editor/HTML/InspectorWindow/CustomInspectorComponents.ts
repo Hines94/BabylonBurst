@@ -26,21 +26,54 @@ RegisterCustomEditorPropertyGenerator(ProcessPrefabSpecifierComp);
 export function GenerateEditorProperty(container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem) {
     //If array then deal with that
     if(Array.isArray(existingData)) {
+        const arrayContainer = container.ownerDocument.createElement("div");
+        container.appendChild(arrayContainer);
+
+        const removeButtons:({ele:HTMLButtonElement,clickEv:any})[] = [];
+
         const arrayHeader = container.ownerDocument.createElement("p");
         arrayHeader.textContent = propType.name;
-        container.appendChild(arrayHeader);
+        arrayContainer.appendChild(arrayHeader);
 
         const valuesContainer = container.ownerDocument.createElement("div");
-        container.appendChild(valuesContainer);
+        arrayContainer.appendChild(valuesContainer);
         for(var i = 0; i < existingData.length;i++) {
-            GenerateEditorProperty(valuesContainer,propType,existingData[i],(val)=>{
+            const arrayElementContainer = container.ownerDocument.createElement("div");
+            GenerateEditorProperty(arrayElementContainer,propType,existingData[i],(val)=>{
                 existingData[i] = val;
             },ecosystem);
+            GenerateArrayRemoveButton(i,removeButtons,arrayElementContainer);
+            valuesContainer.appendChild(arrayElementContainer);
         }
         //Create buttons to add and remove elements
+        const buttonsContainer = container.ownerDocument.createElement("div");
+        buttonsContainer.style.marginTop = "20px";
+        arrayContainer.appendChild(buttonsContainer);
+
         const addButton = container.ownerDocument.createElement("button");
         addButton.textContent = "+";
-        container.appendChild(addButton);
+        addButton.style.width = "50%";
+        addButton.addEventListener("click",()=>{
+            const arrayElementContainer = container.ownerDocument.createElement("div");
+            existingData.push(new propType.type());
+            GenerateEditorProperty(arrayElementContainer,propType,existingData[i],(val)=>{
+                existingData[i] = val;
+            },ecosystem);
+            GenerateArrayRemoveButton(existingData.length-1,removeButtons,arrayElementContainer);
+            valuesContainer.appendChild(arrayElementContainer);
+        })
+        buttonsContainer.appendChild(addButton);
+        const clearButton = container.ownerDocument.createElement("button");
+        clearButton.textContent = "Clear";
+        clearButton.style.width = "50%";
+        clearButton.addEventListener("click",()=>{
+            if(container.ownerDocument.defaultView.confirm(`Clear the array ${propType.name}?`)) {
+                existingData.splice(0,existingData.length);
+                valuesContainer.innerHTML = "";
+                removeButtons.splice(0,removeButtons.length);
+            }
+        })
+        buttonsContainer.appendChild(clearButton);
 
         return;
     }
@@ -64,7 +97,6 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         });
         input.type = "number";
         //TODO: min max/slider?
-        console.log("TODO: number variant with slider/minmax?");
 
     } else if(propType.type === EntityData) {
         const callback = (input:HTMLInputElement)=>{
@@ -126,6 +158,33 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         
     } else {
         console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name}`);
+    }
+
+    function GenerateArrayRemoveButton(index:number,removeButtons:({ele:HTMLButtonElement,clickEv:any})[], elementContainer: HTMLDivElement) {
+        const removeButton = container.ownerDocument.createElement("button");
+        removeButtons.push({ele:removeButton,clickEv:undefined});
+        removeButton.style.width = `100%`;
+        GenerateArrayRemoveEvent(index,removeButtons);
+        elementContainer.appendChild(removeButton);
+    }
+
+    function GenerateArrayRemoveEvent(index:number,removeButtons:({ele:HTMLButtonElement,clickEv:any})[]) {
+        removeButtons[index].ele.innerText = "Remove: " + index;
+        if(removeButtons[index].clickEv !== undefined) {
+            removeButtons[index].ele.removeEventListener('click',removeButtons[index].clickEv);
+        }
+        removeButtons[index].clickEv = () => {
+            if (container.ownerDocument.defaultView.confirm(`Remove element ${index}?`)) {
+                existingData.splice(index, 1);
+                removeButtons[index].ele.parentElement.remove();
+                removeButtons.splice(index,1);
+                //Regenerate later events
+                for(var b = index; b < removeButtons.length;b++) {
+                    GenerateArrayRemoveEvent(b,removeButtons);
+                }
+            }
+        }
+        removeButtons[index].ele.addEventListener('click',removeButtons[index].clickEv);
     }
 }
 
