@@ -25,6 +25,9 @@ export class EditorGizmos {
     dropdown: HTMLSelectElement;
 
     bHidden = false;
+    bPositionEnabled = false;
+    bRotationEnabled = false;
+    bScaleEnabled = false;
 
     constructor(owner: GameEcosystem) {
         this.owner = owner;
@@ -35,22 +38,24 @@ export class EditorGizmos {
         this.gizmos.attachToMesh(this.gizmoItem);
         this.owner.onUpdate.add(this.UpdateEditorGizos.bind(this));
         this.setupGizmoSelect();
+        this.SetPositionGizmoEnabled();
     }
 
     onEntitySelected(entData:EntityData) {
         if(entData === undefined) {
-            this.HideGizmos();
+            this.bHidden = true;
             return;
         }
-        const transform = entData.GetComponent(EntTransform);;
+        const transform = entData.GetComponent(EntTransform);
         if (!transform) {
             this.entityOwner = undefined;
-            this.HideGizmos();
+            this.bHidden = true;
             return;
         }
         this.entityOwner = entData;
         this.oldTransformData = transform;
         EntTransform.SetTransformForMesh(this.gizmoItem, transform);
+        this.bHidden = false;
     }
 
     setupGizmoSelect() {
@@ -77,13 +82,10 @@ export class EditorGizmos {
         const gizmo = this;
         dropdown.addEventListener("change", ev => {
             if (dropdown.value === "POS") {
-                this.bHidden = false;
                 gizmo.SetPositionGizmoEnabled();
             } else if (dropdown.value === "ROT") {
-                this.bHidden = false;
                 gizmo.SetRotationGizmoEnabled();
             } else if (dropdown.value === "SCALE") {
-                this.bHidden = false;
                 gizmo.SetScaleGizmoEnabled();
             } else if (dropdown.value === "NONE") {
                 this.HideGizmos();
@@ -100,9 +102,9 @@ export class EditorGizmos {
         if (this.bHidden) {
             return;
         }
-        this.gizmos.positionGizmoEnabled = true;
-        this.gizmos.rotationGizmoEnabled = false;
-        this.gizmos.scaleGizmoEnabled = false;
+        this.bPositionEnabled = true;
+        this.bRotationEnabled = false;
+        this.bScaleEnabled = false;
         this.dropdown.value = "POS";
     }
     SetRotationGizmoEnabled() {
@@ -112,9 +114,9 @@ export class EditorGizmos {
         if (this.bHidden) {
             return;
         }
-        this.gizmos.positionGizmoEnabled = false;
-        this.gizmos.rotationGizmoEnabled = true;
-        this.gizmos.scaleGizmoEnabled = false;
+        this.bPositionEnabled = false;
+        this.bRotationEnabled = true;
+        this.bScaleEnabled = false;
         this.dropdown.value = "ROT";
     }
     SetScaleGizmoEnabled() {
@@ -124,15 +126,37 @@ export class EditorGizmos {
         if (this.bHidden) {
             return;
         }
-        this.gizmos.positionGizmoEnabled = false;
-        this.gizmos.rotationGizmoEnabled = false;
-        this.gizmos.scaleGizmoEnabled = true;
+        this.bPositionEnabled = false;
+        this.bRotationEnabled = false;
+        this.bScaleEnabled = true;
         this.dropdown.value = "SCALE";
     }
+
     HideGizmos() {
-        this.gizmos.positionGizmoEnabled = false;
-        this.gizmos.rotationGizmoEnabled = false;
-        this.gizmos.scaleGizmoEnabled = false;
+        if(this.gizmos.positionGizmoEnabled) {
+            this.gizmos.positionGizmoEnabled = false;
+        }
+        if(this.gizmos.rotationGizmoEnabled) {
+            this.gizmos.rotationGizmoEnabled = false;
+        }
+        if(this.gizmos.scaleGizmoEnabled) {
+            this.gizmos.scaleGizmoEnabled = false;
+        }
+    }
+
+    UpdateGizmoVisibility() {
+        if(this.bHidden) {
+            this.HideGizmos();
+        }
+        if(this.gizmos.positionGizmoEnabled !== this.bPositionEnabled) {
+            this.gizmos.positionGizmoEnabled = this.bPositionEnabled;
+        }
+        if(this.gizmos.rotationGizmoEnabled !== this.bRotationEnabled) {
+            this.gizmos.rotationGizmoEnabled = this.bRotationEnabled;
+        }
+        if(this.gizmos.scaleGizmoEnabled !== this.bScaleEnabled) {
+            this.gizmos.scaleGizmoEnabled = this.bScaleEnabled;
+        }
     }
 
     EnsureNotSetToEntity(entity: EntityData) {
@@ -145,6 +169,10 @@ export class EditorGizmos {
 
     UpdateEditorGizos() {
         if (this.entityOwner === undefined) {
+            this.bHidden = true;
+        }
+
+        if(this.bHidden || this.gizmoItem === undefined || this.oldTransformData === undefined) {
             this.HideGizmos();
             return;
         }
@@ -158,6 +186,8 @@ export class EditorGizmos {
         if (this.owner.InputValues.Gkey.wasJustActivated()) {
             this.SetScaleGizmoEnabled();
         }
+
+        this.UpdateGizmoVisibility();
 
         //Set entity transform to gizmo
         const transformData = EntTransform.MeshToTransform(this.gizmoItem);

@@ -91,7 +91,7 @@ function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Mate
     const ret: Material[] = [];
     for (var m = 0; m < mats.length; m++) {
         const spec = mats[m];
-        if(spec.FilePath === undefined || spec.FileName === undefined) {
+        if (spec.FilePath === undefined || spec.FileName === undefined) {
             console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
             ret.push(null);
             continue;
