@@ -1,7 +1,8 @@
-import { Component, TrackedVariable } from "./Component";
+import { Component } from "./Component";
 import { EntityData, EntityLoadMapping } from "./EntityData";
 import { EntityLoader } from "./EntityLoader";
 import { PrefabManager } from "./PrefabManager";
+import { TrackedVariable } from "./TrackedVariable";
 import { RegisteredType, Saved } from "./TypeRegister";
 
 export class PrefabSpecifier {

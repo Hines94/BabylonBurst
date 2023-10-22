@@ -1,10 +1,11 @@
 import { Observable } from "@babylonjs/core";
 import { ArraysContainEqualItems } from "../Utils/ArrayUtils";
-import { Component, DeepSetupCallback } from "./Component";
+import { Component } from "./Component";
 import { EntityBucket } from "./EntityBucket";
 import { EntityData } from "./EntityData"
 import { EntityQuery } from "./EntityQuery";
 import { registeredTypes } from "./TypeRegister";
+import { DeepSetupCallback } from "./TrackedVariable";
 
 export class EntitySystem {
     private SpawnedEntities:number = 0;
@@ -156,6 +157,9 @@ export class EntitySystem {
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
         comp.onComponentAdded(entData);
+
+        this.SetChangedComponent(entData,comp);
+
         return true;
     }
 
@@ -208,7 +212,6 @@ export class EntitySystem {
     /** NOT RECOMMENDED FOR ANYTHING NETWORKED! Good for changing about local prefabs etc. */
     AddEntityAtAnyEmptySlot() : EntityData {
         for(var i = 1; i < this.SpawnedEntities+10;i++) {
-            console.log("Checking " + i)
             if(this.getEntData(i) === undefined) {
                 return this.CreateEntity(i);
             }

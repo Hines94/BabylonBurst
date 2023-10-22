@@ -107,13 +107,10 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
             if(nestPropIdentifier !== undefined) {
                 //Ignore defaults
                 if(bIgnoreDefaults && defaultComp[key] === property[key]) {
-                    console.log(`Same as default: ${key} in ${propType}`)
                     continue;
                 }
                 const typeIndex = GetTypingsParamIndex(propType,key,typings);
                 ret[typeIndex] = GetCustomSaveData(nestPropIdentifier,entity,property[key],bIgnoreDefaults,typings);
-            } else {
-                console.warn(`No property identifier for ${key} in ${propType}`);
             }
         }
         return ret;

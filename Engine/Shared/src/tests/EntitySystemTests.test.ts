@@ -1,6 +1,7 @@
-import { Component, TrackedVariable } from "../EntitySystem/Component";
+import { Component } from "../EntitySystem/Component";
 import { EntityData } from "../EntitySystem/EntityData";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
+import { TrackedVariable } from "../EntitySystem/TrackedVariable";
 import { InstancedRender } from "../Rendering/InstancedRender";
 
 const entSystem = new EntitySystem();

@@ -1,14 +1,20 @@
 import { AbstractMesh, Matrix, Quaternion, Vector3, Vector4 } from "@babylonjs/core";
 import { Clamp } from "../Utils/MathUtils";
 import { RegisteredType, Saved } from "./TypeRegister";
-import { Component, TrackedVariable } from "./Component";
+import { Component } from "./Component";
+import { TrackedVariable } from "./TrackedVariable";
 
 @RegisteredType(EntVector3)
 export class EntVector3{
+    @TrackedVariable()
     @Saved(Number)
     X: number = 0;
+
+    @TrackedVariable()
     @Saved(Number)
     Y: number = 0;
+
+    @TrackedVariable()
     @Saved(Number)
     Z: number = 0;
 
@@ -170,12 +176,19 @@ export class EntVector3{
 
 @RegisteredType(EntVector4)
 export class EntVector4 {
+    @TrackedVariable()
     @Saved(Number)
     X: number = 0;
+
+    @TrackedVariable()
     @Saved(Number)
     Y: number = 0;
+
+    @TrackedVariable()
     @Saved(Number)
     Z: number = 0;
+
+    @TrackedVariable()
     @Saved(Number)
     W: number = 1;
 
@@ -406,10 +419,15 @@ export class EntVector4 {
 
 @RegisteredType(EntTransform)
 export class EntTransform extends Component {
+    @TrackedVariable()
     @Saved(EntVector3)
     Position = new EntVector3();
+
+    @TrackedVariable()
     @Saved(EntVector4)
     Rotation = new EntVector4(0,0,0,1);
+
+    @TrackedVariable()
     @Saved(EntVector3)
     Scale = new EntVector3(1,1,1);
     

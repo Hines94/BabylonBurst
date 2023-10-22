@@ -32,8 +32,14 @@ type ArrayElementSpecifier = {
 
 
 export function GenerateEditorProperty(container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) {
-    const existingData = parentData[propType.name];
-    //If array then deal with that
+    if(parentData === undefined) {
+        console.error("No parent data for " + propType.name)
+        return;
+    }
+    
+    var existingData = parentData[propType.name];
+
+//Array
     if(Array.isArray(existingData)) {
         const arrayContainer = container.ownerDocument.createElement("div");
         container.appendChild(arrayContainer);
@@ -77,26 +83,29 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         return;
     }
 
-    //Check custom callbacks first
+//Custom  callbacks
     for(var i = 0; i < registeredEditorPropertyCallbacks.length;i++) {
         if(registeredEditorPropertyCallbacks[i](container,propType,parentData,changeCallback,ecosystem,requireRefresh)) {
             return;
         }
     }
 
-    //Generic input types
+//String
     if(propType.type === String) {
         generateBasicInput(container,parentData,propType,(input)=>{
             changeCallback(input.value);
         },requireRefresh);
-
+//Number
     } else if(propType.type === Number) {
         const input = generateBasicInput(container,parentData,propType,(input)=>{
             changeCallback(parseFloat(input.value));
         },requireRefresh);
+        if(input.value === "") {
+            input.value = "0";
+        }
         input.type = "number";
         //TODO: min max/slider?
-
+//Entity Data
     } else if(propType.type === EntityData) {
         const callback = (input:HTMLInputElement)=>{
             if(input.valueAsNumber === undefined || input.valueAsNumber === null || input.valueAsNumber === 0) {
@@ -116,7 +125,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             input.value = "0";
         }
         input.type = "number";
-
+//Boolean
     } else if (propType.type === Boolean) {
 
         const callback = (input:HTMLInputElement)=>{
@@ -129,6 +138,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         const input = generateBasicInput(container,parentData,propType,callback,requireRefresh);
         input.type = "checkbox";
 
+//Nested objects
     } else if(isTypeAClass(propType.type)) {
         const subType = registeredTypes[propType.type.name];
         if(subType === undefined) {
@@ -139,6 +149,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             const spawnSubType = subType.type;
             //@ts-ignore
             changeCallback(new spawnSubType());
+            existingData = spawnSubType;
         }
         const nestedWrapper = GenerateInnerOuterPanelWithMinimizer(container.ownerDocument);
         const title = container.ownerDocument.createElement("h3");
@@ -146,7 +157,6 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         nestedWrapper.innerPanel.classList.add("hidden");
         nestedWrapper.outerPanel.insertBefore(title,nestedWrapper.innerPanel);
         container.appendChild(nestedWrapper.outerPanel);
-        //TODO: get all properties
         const compSavedProps = savedProperties[subType.type.name];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
@@ -154,7 +164,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
                 existingData[property.name] = val;
             },ecosystem,requireRefresh);
         }
-        
+//Fail 
     } else {
         console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name}`);
     }

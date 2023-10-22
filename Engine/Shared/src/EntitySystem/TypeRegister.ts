@@ -2,6 +2,11 @@ import 'reflect-metadata';
 import { Component } from './Component';
 import { DebugMode, environmentVaraibleTracker } from '../Utils/EnvironmentVariableTracker';
 
+/** So we can hide a variable and use a getter/setter instead */
+export function GetDescriptorHideVarName(propertyKey:string) {
+    return `___CUSTOMTYPECHECKED___${propertyKey}`
+}
+
 export type savedProperty = {
     name:string;
     type:any;
@@ -17,7 +22,8 @@ export class SavedPropertyOptions {
     isNetworked = true;
     editorViewOnly = false;
 }
-// Saved decorator
+
+/** Define a property as 'saved'. Property type must be primitive or a registered type. */
 export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}) {
     return function (target: any, propertyKey: string) {
         const compName = target.constructor.name;
@@ -47,33 +53,41 @@ export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}
         }
 
         if(environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light) {
-            const originalKey = `___CUSTOMTYPECHECKED___${propertyKey}`;
+            //Set to protected and get other descriptors
+            let originalDescriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
+            const originalKey = GetDescriptorHideVarName(propertyKey);
             target[originalKey] = target[propertyKey];
-            // Define a getter and setter to ensure type
+
+            // Print errors if wrong type
             Object.defineProperty(target, propertyKey, {
                 get: function() {
                     return this[originalKey];
                 },
                 set: function(value) {
-                    if (type) {
-                        if(typeof value === 'object' && Array.isArray(value)) {
-                            //Check typing of each element
-                            value.forEach(e=>{
-                                checkTyping(type,e,propertyKey);
-                            })
-                        } else {
-                            checkTyping(type,value,propertyKey);
-                        }
+                    if(originalDescriptor && originalDescriptor.set) {
+                        originalDescriptor.set(value);
                     }
-                    //TODO: Make debug option to log changes to data
-                    // if(target['___proxyCallbackSymbol___']) {
-                    //     console.warn(`changed: ${originalKey} - ${value}`)
-                    // }
+                    CheckTypingForProperty(value, propertyKey, compName);
                     this[originalKey] = value;
                 },
                 enumerable: true,
                 configurable: true
             });
+        }
+    }
+}
+
+/** Debug Check to see if property typing is correct (not in production due to overhead) */
+export function CheckTypingForProperty(newVal: any, propertyKey: string, compName:string) {
+    const desiredType = FindSavedProperty(compName,propertyKey);
+    if (desiredType) {
+        if (typeof newVal === 'object' && Array.isArray(newVal)) {
+            //Check typing of each element
+            newVal.forEach(e => {
+                checkTyping(desiredType.type, e, propertyKey);
+            });
+        } else {
+            checkTyping(desiredType.type, newVal, propertyKey);
         }
     }
 }
