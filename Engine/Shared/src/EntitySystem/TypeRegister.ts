@@ -65,6 +65,10 @@ export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}
                             checkTyping(type,value,propertyKey);
                         }
                     }
+                    //TODO: Make debug option to log changes to data
+                    // if(target['___proxyCallbackSymbol___']) {
+                    //     console.warn(`changed: ${originalKey} - ${value}`)
+                    // }
                     this[originalKey] = value;
                 },
                 enumerable: true,
@@ -124,3 +128,56 @@ export function RegisteredType(target:Function,options:Partial<RegisteredTypeOpt
     }
 }
 
+export function DeepComponentSavedPropsEquals(obj1, obj2) {
+
+    //TODO: Something about the prop keys not working
+    return false;
+
+    // If both are the same instance, return true
+    if (obj1 === obj2) return true;
+
+    // If one of them is null or undefined but not the other, return false
+    if (!obj1 || !obj2) return false;
+
+    // If objects are not of type "object", compare them directly
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return obj1 === obj2;
+
+    // Get the keys of both objects
+    var keys1 = Object.keys(obj1);
+    var keys2 = Object.keys(obj2);
+
+    var compType = registeredTypes[obj1.constructor.name];
+    if(compType === undefined) {
+        compType = registeredTypes[obj2.constructor.name];
+    }
+
+    if(compType !== undefined) {
+        //Filter keys by only those with saved property
+        var newKeys1 = [];
+        for(var i = 0; i < keys1.length;i++) {
+            const trimmedKey = keys1[i].replace("___CUSTOMTYPECHECKED___","");
+            if(savedProperties[compType.type.name][trimmedKey] !== undefined) {
+                newKeys1.push(trimmedKey);
+            }
+        }
+        var newKeys2 = [];
+        for(var i = 0; i < keys2.length;i++) {
+            const trimmedKey = keys2[i].replace("___CUSTOMTYPECHECKED___","");
+            if(savedProperties[compType.type.name][trimmedKey] !== undefined) {
+                newKeys2.push(trimmedKey);
+            }
+        }
+        keys1=newKeys1;
+        keys2=newKeys2;
+    }
+
+    // If they don't have the same number of keys, they are not equal
+    if (keys1.length !== keys2.length) return false;
+
+    // If any key is missing in the second object or its value is different from the first, return false
+    for (let key of keys1) {
+        if (!keys2.includes(key) || !DeepComponentSavedPropsEquals(obj1[key], obj2[key])) return false;
+    }
+
+    return true;
+}

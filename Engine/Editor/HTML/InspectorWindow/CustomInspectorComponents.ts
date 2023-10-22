@@ -2,15 +2,16 @@ import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { GenerateInnerOuterPanelWithMinimizer } from "@engine/Utils/HTMLUtils";
+import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@engine/Utils/HTMLUtils";
 import { ProcessInstancedRenderComp } from "./CustomInstancedRendererComponent";
 import { ProcessModelSpecifierComp } from "./CustomModelSpecifier";
 import { isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
 import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
+import { Observable } from "@babylonjs/core";
 
 
-export type editorPropertyCallback = (container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem)=>boolean;
+export type editorPropertyCallback = (container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>)=>boolean;
 var registeredEditorPropertyCallbacks:editorPropertyCallback[] = [];
 export function RegisterCustomEditorPropertyGenerator(callback:editorPropertyCallback) {
     registeredEditorPropertyCallbacks.push(callback);
@@ -22,14 +23,22 @@ RegisterCustomEditorPropertyGenerator(ProcessModelSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessMaterialSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessPrefabSpecifierComp);
 
+type ArrayElementSpecifier = {
+    ele:HTMLButtonElement;
+    clickEv:any;
+    changeEvent:(any)=>void;
+    mainProperty:any;
+}
 
-export function GenerateEditorProperty(container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem) {
+
+export function GenerateEditorProperty(container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) {
+    const existingData = parentData[propType.name];
     //If array then deal with that
     if(Array.isArray(existingData)) {
         const arrayContainer = container.ownerDocument.createElement("div");
         container.appendChild(arrayContainer);
 
-        const removeButtons:({ele:HTMLButtonElement,clickEv:any})[] = [];
+        const removeButtons:ArrayElementSpecifier[] = [];
 
         const arrayHeader = container.ownerDocument.createElement("p");
         arrayHeader.textContent = propType.name;
@@ -38,12 +47,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         const valuesContainer = container.ownerDocument.createElement("div");
         arrayContainer.appendChild(valuesContainer);
         for(var i = 0; i < existingData.length;i++) {
-            const arrayElementContainer = container.ownerDocument.createElement("div");
-            GenerateEditorProperty(arrayElementContainer,propType,existingData[i],(val)=>{
-                existingData[i] = val;
-            },ecosystem);
-            GenerateArrayRemoveButton(i,removeButtons,arrayElementContainer);
-            valuesContainer.appendChild(arrayElementContainer);
+            GenerateArrayElement(i, removeButtons, valuesContainer);
         }
         //Create buttons to add and remove elements
         const buttonsContainer = container.ownerDocument.createElement("div");
@@ -54,13 +58,8 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         addButton.textContent = "+";
         addButton.style.width = "50%";
         addButton.addEventListener("click",()=>{
-            const arrayElementContainer = container.ownerDocument.createElement("div");
             existingData.push(new propType.type());
-            GenerateEditorProperty(arrayElementContainer,propType,existingData[i],(val)=>{
-                existingData[i] = val;
-            },ecosystem);
-            GenerateArrayRemoveButton(existingData.length-1,removeButtons,arrayElementContainer);
-            valuesContainer.appendChild(arrayElementContainer);
+            GenerateArrayElement(existingData.length-1, removeButtons, valuesContainer);
         })
         buttonsContainer.appendChild(addButton);
         const clearButton = container.ownerDocument.createElement("button");
@@ -80,21 +79,21 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
     //Check custom callbacks first
     for(var i = 0; i < registeredEditorPropertyCallbacks.length;i++) {
-        if(registeredEditorPropertyCallbacks[i](container,propType,existingData,changeCallback,ecosystem)) {
+        if(registeredEditorPropertyCallbacks[i](container,propType,parentData,changeCallback,ecosystem,requireRefresh)) {
             return;
         }
     }
 
     //Generic input types
     if(propType.type === String) {
-        generateBasicInput(container,existingData,propType,(input)=>{
+        generateBasicInput(container,parentData,propType,(input)=>{
             changeCallback(input.value);
-        });
+        },requireRefresh);
 
     } else if(propType.type === Number) {
-        const input = generateBasicInput(container,existingData,propType,(input)=>{
-            changeCallback(input.value);
-        });
+        const input = generateBasicInput(container,parentData,propType,(input)=>{
+            changeCallback(parseFloat(input.value));
+        },requireRefresh);
         input.type = "number";
         //TODO: min max/slider?
 
@@ -110,7 +109,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
                 changeCallback(val);
             }
         };
-        const input = generateBasicInput(container,existingData,propType,callback);
+        const input = generateBasicInput(container,parentData,propType,callback,requireRefresh);
         if(existingData !== undefined) {
             input.value = existingData.owningEntity;
         } else {
@@ -127,7 +126,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
                 changeCallback(false);
             }
         };
-        const input = generateBasicInput(container,existingData,propType,callback);
+        const input = generateBasicInput(container,parentData,propType,callback,requireRefresh);
         input.type = "checkbox";
 
     } else if(isTypeAClass(propType.type)) {
@@ -151,24 +150,44 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         const compSavedProps = savedProperties[subType.type.name];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
-            GenerateEditorProperty(nestedWrapper.innerPanel,property,existingData[property.name],(val)=>{
-                existingData[propType.name][property.name] = val;
-            },ecosystem);
+            GenerateEditorProperty(nestedWrapper.innerPanel,property,existingData,(val)=>{
+                existingData[property.name] = val;
+            },ecosystem,requireRefresh);
         }
         
     } else {
         console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name}`);
     }
 
-    function GenerateArrayRemoveButton(index:number,removeButtons:({ele:HTMLButtonElement,clickEv:any})[], elementContainer: HTMLDivElement) {
+    function GenerateArrayElement(index:number,removeButtons: ArrayElementSpecifier[], valuesContainer: HTMLDivElement) {
+        const arrayElementContainer = container.ownerDocument.createElement("div");
+        const newEle: ArrayElementSpecifier = {
+            ele: undefined,
+            changeEvent: undefined,
+            clickEv: undefined,
+            mainProperty: existingData
+        };
+        const arraySpecificElement = Object.assign({}, propType);
+        arraySpecificElement.name = index.toString();
+        GenerateEditorProperty(arrayElementContainer, arraySpecificElement, existingData, (val) => {
+            newEle.changeEvent(val);
+        }, ecosystem,requireRefresh);
+        GenerateArrayRemoveButton(index, removeButtons, arrayElementContainer, newEle);
+        valuesContainer.appendChild(arrayElementContainer);
+    }
+
+    function GenerateArrayRemoveButton(index:number,removeButtons:ArrayElementSpecifier[], elementContainer: HTMLDivElement, newElementData:ArrayElementSpecifier) {
         const removeButton = container.ownerDocument.createElement("button");
-        removeButtons.push({ele:removeButton,clickEv:undefined});
+        newElementData.ele = removeButton;
+        newElementData.clickEv=undefined;
+        newElementData.changeEvent=undefined;
+        removeButtons.push(newElementData);
         removeButton.style.width = `100%`;
         GenerateArrayRemoveEvent(index,removeButtons);
         elementContainer.appendChild(removeButton);
     }
 
-    function GenerateArrayRemoveEvent(index:number,removeButtons:({ele:HTMLButtonElement,clickEv:any})[]) {
+    function GenerateArrayRemoveEvent(index:number,removeButtons:ArrayElementSpecifier[]) {
         removeButtons[index].ele.innerText = "Remove: " + index;
         if(removeButtons[index].clickEv !== undefined) {
             removeButtons[index].ele.removeEventListener('click',removeButtons[index].clickEv);
@@ -185,15 +204,21 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             }
         }
         removeButtons[index].ele.addEventListener('click',removeButtons[index].clickEv);
+        removeButtons[index].changeEvent = (dat)=>{   
+            removeButtons[index].mainProperty[index] = dat;
+        }
     }
 }
 
-function generateBasicInput(container: HTMLElement, existingData: any, propType: savedProperty, changeCallback:(input:HTMLInputElement)=>void) {
+function generateBasicInput(container: HTMLElement, parentData:any, propType: savedProperty, changeCallback:(input:HTMLInputElement)=>void,requireRefresh:Observable<void>) {
     const input = container.ownerDocument.createElement("input");
     input.addEventListener("change", ()=>{changeCallback(input)});
-    input.value = existingData;
+    input.value = parentData[propType.name];
     input.style.width = "100%";
     input.style.marginTop = "0px";
+    requireRefresh.add(()=>{
+        input.value = parentData[propType.name];
+    });
     if(propType.options.editorViewOnly) {
         input.disabled = true;
     }

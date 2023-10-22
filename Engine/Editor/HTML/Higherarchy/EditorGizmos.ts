@@ -53,8 +53,8 @@ export class EditorGizmos {
             return;
         }
         this.entityOwner = entData;
-        this.oldTransformData = transform;
         EntTransform.SetTransformForMesh(this.gizmoItem, transform);
+        this.oldTransformData = EntTransform.MeshToTransform(this.gizmoItem);
         this.bHidden = false;
     }
 
@@ -190,11 +190,12 @@ export class EditorGizmos {
         this.UpdateGizmoVisibility();
 
         //Set entity transform to gizmo
-        const transformData = EntTransform.MeshToTransform(this.gizmoItem);
-        if (EntTransform.Equals(this.oldTransformData, transformData)) {
-            return;
-        }
+        const gizmoTransform = EntTransform.MeshToTransform(this.gizmoItem);
         const entTf = this.entityOwner.GetComponent(EntTransform) as EntTransform;
-        entTf.Copy(transformData);
+        if (!EntTransform.Equals(this.oldTransformData, gizmoTransform)) {
+            entTf.Copy(gizmoTransform);
+        }
+        EntTransform.SetTransformForMesh(this.gizmoItem,entTf);
+        this.oldTransformData = EntTransform.MeshToTransform(this.gizmoItem);
     }
 }

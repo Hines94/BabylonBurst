@@ -160,6 +160,12 @@ export class EntVector3{
     static MultiplyFloat(val: EntVector3, float: number): EntVector3 {
         return new EntVector3(val.X * float, val.Y * float, val.Z * float);
     }
+
+    static Copy(target:EntVector3,object:EntVector3) {
+        target.X = object.X;
+        target.Y = object.Y;
+        target.Z = object.Z;
+    }
 }
 
 @RegisteredType(EntVector4)
@@ -389,6 +395,13 @@ export class EntVector4 {
         ret.W = a.W * b.W - a.X * b.X - a.Y * b.Y - a.Z * b.Z;
         return ret;
     }
+
+    static Copy(target:EntVector4,object:EntVector4) {
+        target.X = object.X;
+        target.Y = object.Y;
+        target.Z = object.Z;
+        target.W = object.W;
+    }
 }
 
 @RegisteredType(EntTransform)
@@ -446,8 +459,8 @@ export class EntTransform extends Component {
     }
 
     Copy(other:EntTransform) {
-        this.Position = EntVector3.clone(other.Position);
-        this.Rotation = EntVector4.clone(other.Rotation);
-        this.Scale = EntVector3.clone(other.Scale);
+        EntVector3.Copy(this.Position,other.Position);
+        EntVector4.Copy(this.Rotation,other.Rotation);
+        EntVector3.Copy(this.Scale,other.Scale);
     }
 }

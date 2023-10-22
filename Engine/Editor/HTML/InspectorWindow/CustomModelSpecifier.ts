@@ -4,10 +4,9 @@ import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { Component } from "@engine/EntitySystem/Component";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { ModelSpecifier } from "@engine/Rendering/InstancedRender";
+import { Observable } from "@babylonjs/core";
 
-
-
-export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedProperty, existingData:ModelSpecifier, changeCallback:(any)=>void,ecosystem:GameEcosystem) : boolean {
+export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedProperty, parentData:ModelSpecifier, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) : boolean {
 
     if(propType.type !== ModelSpecifier) {
         return false;
@@ -34,15 +33,9 @@ export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedP
     input.classList.add('form-control');
     input.style.marginBottom = '5px';
 
-    if(existingData === undefined){
-        changeCallback(new ModelSpecifier());
-    }
-    if(existingData.MeshName !== undefined && !IsValidModelSpecifier(existingData)) {
-        input.value = "INVALID: " + GetModelSpecifierAbbrevText(existingData);
-    } else {
-        input.value = GetModelSpecifierAbbrevText(existingData);
-    }
-    
+
+    RefreshToData();
+    requireRefresh.add(RefreshToData);
 
     input.addEventListener("change",()=>{
         const selectedText = input.value;
@@ -60,6 +53,18 @@ export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedP
 
     container.appendChild(input);
     return true;
+
+    function RefreshToData() {
+        const existingData = parentData[propType.name];
+        if (existingData === undefined) {
+            changeCallback(new ModelSpecifier());
+        }
+        if (existingData.MeshName !== undefined && !IsValidModelSpecifier(existingData)) {
+            input.value = "INVALID: " + GetModelSpecifierAbbrevText(existingData);
+        } else {
+            input.value = GetModelSpecifierAbbrevText(existingData);
+        }
+    }
 }
 
 function GetModelSpecifierAbbrevText(element:ModelSpecifier) {

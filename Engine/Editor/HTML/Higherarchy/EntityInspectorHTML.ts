@@ -5,10 +5,11 @@ import { HigherarchyHTML } from "./HigherarchyHTML";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Component } from "@engine/EntitySystem/Component";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
-import { GenerateInnerOuterPanelWithMinimizer } from "@engine/Utils/HTMLUtils"
+import { DeepEquals, GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@engine/Utils/HTMLUtils"
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
 import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils"
-import { Observer } from "@babylonjs/core";
+import { DeepCopier, Observable, Observer } from "@babylonjs/core";
+import { GetCustomSaveData } from "@engine/Utils/SaveableDataUtils";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {
@@ -87,7 +88,7 @@ export class EntityInspectorHTML {
         }
     }
 
-    addComponentToInspector(comp: Component, inspector: HTMLElement, entityId: number) {
+    addComponentToInspector(comp: Component, inspector: HTMLElement, entityId: number, componentInner = undefined) {
         const compName = comp.constructor.name;
         if(!registeredTypes[compName]) {
             console.error("No schema for component: " + compName);
@@ -95,33 +96,63 @@ export class EntityInspectorHTML {
         }
 
         const higherarch = this;
+        //Need to re-setup?
+        if(componentInner === undefined) {
+            const componentWrapper = GenerateInnerOuterPanelWithMinimizer(inspector.ownerDocument);
+            componentWrapper.outerPanel.classList.add("Component");
+            const title = inspector.ownerDocument.createElement("h2");
+            title.textContent = compName;
+            componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
+            componentWrapper.outerPanel.style.backgroundColor = inspector.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
+            componentWrapper.innerPanel.classList.add("hidden");
+            
+            if(registeredTypes[compName].options.bEditorRemovable) {
+                const removeButton = document.createElement("button");
+                removeButton.style.marginLeft = "5px";
+                removeButton.innerText = "X";
+                componentWrapper.button.parentElement.appendChild(removeButton);
+                removeButton.onclick = () => {
+                    higherarch.owner.ecosystem.entitySystem.RemoveComponent(entityId,compName);
+                    componentWrapper.outerPanel.remove();
+                };
+            }
+            inspector.appendChild(componentWrapper.outerPanel);
 
-        const componentWrapper = GenerateInnerOuterPanelWithMinimizer(inspector.ownerDocument);
-        componentWrapper.outerPanel.classList.add("Component");
-        const title = inspector.ownerDocument.createElement("h2");
-        title.textContent = compName;
-        componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
-        componentWrapper.outerPanel.style.backgroundColor = inspector.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
-        componentWrapper.innerPanel.classList.add("hidden");
-
-        if(registeredTypes[compName].options.bEditorRemovable) {
-            const removeButton = document.createElement("button");
-            removeButton.style.marginLeft = "5px";
-            removeButton.innerText = "X";
-            componentWrapper.button.parentElement.appendChild(removeButton);
-            removeButton.onclick = () => {
-                higherarch.owner.ecosystem.entitySystem.RemoveComponent(entityId,compName);
-                componentWrapper.outerPanel.remove();
-            };
+            componentInner = componentWrapper.innerPanel;
+        } else {
+            componentInner.innerHTML = "";
         }
 
-        inspector.appendChild(componentWrapper.outerPanel);
+        const requireRefreshEvent = new Observable<void>();
         
         const compSavedProps = savedProperties[compName];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
-            GenerateEditorProperty(componentWrapper.innerPanel,property,comp[property.name],(v)=>{comp[property.name] = v;},this.owner.ecosystem);
+            GenerateEditorProperty(componentInner,property,comp,(v)=>{comp[property.name] = v;},this.owner.ecosystem,requireRefreshEvent);
         }
+
+        //TODO: Poll
+        setTimeout(()=>{
+            const checkpointedData = GetCustomSaveData(undefined,this.owner.ecosystem.entitySystem.GetEntityData(this.entityId),comp,false,[]);
+            this.pollComponentRefresh(comp,checkpointedData,requireRefreshEvent);
+        },200);
+    }
+
+    pollComponentRefresh(comp: Component, lastCompData:any, refreshRequireEv:Observable<void>) {
+        if(this.entityId === undefined) {
+            return;
+        }
+        const newCheckpoint = GetCustomSaveData(undefined,this.owner.ecosystem.entitySystem.GetEntityData(this.entityId),comp,false,[]);
+        
+        // Check the value
+        if(!DeepEquals(newCheckpoint,lastCompData)) {
+            refreshRequireEv.notifyObservers();
+        }
+
+        // Schedule the next poll
+        setTimeout(() => {
+            this.pollComponentRefresh(comp,newCheckpoint,refreshRequireEv);
+        }, 200); 
     }
 
     refreshNonDefaultValues(comp: string, editor: JSONEditor) {
@@ -150,6 +181,7 @@ export class EntityInspectorHTML {
             this.inspector.innerHTML = "";
             this.inspector.classList.add("hidden");
         }
+        this.entityId = undefined;
         if(this.observer) {
             this.owner.ecosystem.entitySystem.onEntityRemovedEv.remove(this.observer);
         }

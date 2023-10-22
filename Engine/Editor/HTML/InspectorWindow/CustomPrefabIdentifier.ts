@@ -4,9 +4,10 @@ import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { decode } from "@msgpack/msgpack";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { PrefabSpecifier } from "@engine/EntitySystem/Prefab";
+import { Observable } from "@babylonjs/core";
 
 /** Warns if material numbers not correct */
-export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:savedProperty, existingData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem) : boolean {
+export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) : boolean {
 
     if(propType.type !== PrefabSpecifier) {
         return false;
@@ -27,8 +28,16 @@ export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:saved
         newData.prefabUUID = value;
         changeCallback(newData);
     })
-    if(existingData.prefabUUID !== undefined) {
-        newInput.value = existingData.prefabUUID;
-    }
+
+    RefreshToData();
+    requireRefresh.add(RefreshToData);
+
     return true;
+
+    function RefreshToData() {
+        const existingData = parentData[propType.name];
+        if (existingData.prefabUUID !== undefined) {
+            newInput.value = existingData.prefabUUID;
+        }
+    }
 }
