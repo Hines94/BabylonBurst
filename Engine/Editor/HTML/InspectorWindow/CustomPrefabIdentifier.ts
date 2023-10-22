@@ -5,6 +5,7 @@ import { decode } from "@msgpack/msgpack";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { PrefabSpecifier } from "@engine/EntitySystem/Prefab";
 import { Observable } from "@babylonjs/core";
+import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
 
 /** Warns if material numbers not correct */
 export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) : boolean {
@@ -17,11 +18,15 @@ export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:saved
     title.innerText = propType.name;
     container.appendChild(title);
     const newInput = container.ownerDocument.createElement("input");
+    newInput.style.width = "100%";
     container.appendChild(newInput);
     SetupContentInputWithDatalist(ContentItemType.Prefab,newInput,async (val:ContentItem) =>{
         var value = "";
         if(val !== undefined) {
-            const data = await val.GetData();
+            var data = await val.GetData();
+            if(data instanceof Blob) {
+                data = await data.arrayBuffer();
+            }
             value = (await decode(data) as any).prefabID;
         }
         const newData = new PrefabSpecifier();
@@ -37,7 +42,9 @@ export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:saved
     function RefreshToData() {
         const existingData = parentData[propType.name];
         if (existingData.prefabUUID !== undefined) {
-            newInput.value = existingData.prefabUUID;
+            newInput.value = PrefabManager.GetPrefabManager().GetPrefabBundleNameFromId(existingData.prefabUUID);
+        } else {
+            newInput.value = "";
         }
     }
 }

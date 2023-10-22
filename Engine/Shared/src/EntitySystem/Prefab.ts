@@ -5,6 +5,7 @@ import { PrefabManager } from "./PrefabManager";
 import { TrackedVariable } from "./TrackedVariable";
 import { RegisteredType, Saved } from "./TypeRegister";
 
+@RegisteredType(PrefabSpecifier)
 export class PrefabSpecifier {
     prefabUUID:string = "";
 }
@@ -36,7 +37,7 @@ export class PrefabInstance extends Component {
 
     @Saved(EntityData, {editorViewOnly:true})
     /** Entities that are spawned as part of this prefab instance */
-    SpawnedPrefabEntities:EntityData[];
+    SpawnedPrefabEntities:EntityData[] = [];
 
     reloadObserver:any;
 
@@ -120,8 +121,22 @@ export class PrefabInstance extends Component {
         //Setup so we know which ents we have
         const origEnts = Object.keys(mappings);
         for(var e = 0; e < origEnts.length;e++) {
-            this.SpawnedPrefabEntities.push(mappings[origEnts[e]]);   
+            this.SpawnedPrefabEntities.push(mappings[origEnts[e]]); 
+            console.log("Added spawned entity!")  
         }
         //Remove ents that no longer exist
+
+        //Setup parent
+        const loadedEnts = Object.keys(mappings);
+        for(var i = 0; i < loadedEnts.length;i++) {
+            const origEntId = loadedEnts[i];
+            const entData = mappings[origEntId] as EntityData;
+            const prefab = entData.GetComponent<Prefab>(Prefab);
+            if(prefab === undefined) {
+                console.error(`Prefab instance ent has no prefab comp! ${origEntId}`);
+            } else {
+                prefab.parent = ent;
+            }
+        }
     }
 }

@@ -70,7 +70,6 @@ export function SetupAllEditorDebugOptions(ecosystem: GameEcosystem, options:Par
     }
 
     if(debugOptions.bFramerateOption && !ecosystem.dynamicProperties["___FRAMERATE___"]) { 
-        console.log("Creating framerate")
         const fr = new FramerateCounter(ecosystem.doc);
         ecosystem.dynamicProperties["___FRAMERATE___"] = fr;
         ecosystem.onUpdate.add(()=>{fr.updateFramerate(ecosystem.deltaTime);})

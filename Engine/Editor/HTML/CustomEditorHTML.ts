@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from "uuid";
 import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
 import { AsyncAWSBackend, AsyncAssetManager } from "@engine/AsyncAssets";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { SetupAllEditorVisualisations } from "./HTMLUtils/VisualAidUtils";
+import { SetupAllEditorDebugOptions } from "./HTMLUtils/DebugOptionUtils";
 
 //This assumes only one editor per time - pretty reasonable
 export var topLevelEditorFolder:AssetFolder;
@@ -43,6 +45,9 @@ export class CustomEditorHTML extends BaseTickableObject {
         );
 
         this.setupEditorContentBrowser();
+
+        SetupAllEditorVisualisations(this.editor);
+        SetupAllEditorDebugOptions(this.editor,{bHigherarchyOption:false});
     }
 
     setupEditorContentBrowser() {
@@ -80,7 +85,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                     size: item.Size,
                     parent:currentLevel,
                     storedBackend:AWS,
-                    bHasPSuffix:fullName.includes("~p~")
+                    bSavedAsPredownload:fullName.includes("~p~")
                 });
                 currentLevel.containedItems.push(store);
             }

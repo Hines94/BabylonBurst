@@ -5,7 +5,6 @@ import { GameEcosystem } from "@engine/GameEcosystem";
 
 declare function FetchInjectAdditionalHTML(arg: string): Promise<any>;
 
-
 /** The 'play' version of our higherarchy. Deliberately more specific and efficient with data as we could have a large number of ents. */
 export class PlayHigherarchyHTML extends HigherarchyHTML {
     //TODO: Keep only data on entity id's & prefab nests in higherarchy

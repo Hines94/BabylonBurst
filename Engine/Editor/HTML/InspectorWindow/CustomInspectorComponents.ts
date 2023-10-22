@@ -52,33 +52,45 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
         const valuesContainer = container.ownerDocument.createElement("div");
         arrayContainer.appendChild(valuesContainer);
+
+        valuesContainer.innerHTML = "";
         for(var i = 0; i < existingData.length;i++) {
             GenerateArrayElement(i, removeButtons, valuesContainer);
         }
-        //Create buttons to add and remove elements
-        const buttonsContainer = container.ownerDocument.createElement("div");
-        buttonsContainer.style.marginTop = "20px";
-        arrayContainer.appendChild(buttonsContainer);
 
-        const addButton = container.ownerDocument.createElement("button");
-        addButton.textContent = "+";
-        addButton.style.width = "50%";
-        addButton.addEventListener("click",()=>{
-            existingData.push(new propType.type());
-            GenerateArrayElement(existingData.length-1, removeButtons, valuesContainer);
-        })
-        buttonsContainer.appendChild(addButton);
-        const clearButton = container.ownerDocument.createElement("button");
-        clearButton.textContent = "Clear";
-        clearButton.style.width = "50%";
-        clearButton.addEventListener("click",()=>{
-            if(container.ownerDocument.defaultView.confirm(`Clear the array ${propType.name}?`)) {
-                existingData.splice(0,existingData.length);
-                valuesContainer.innerHTML = "";
-                removeButtons.splice(0,removeButtons.length);
+        requireRefresh.add(()=>{
+            console.log("Rebuild Array!")
+            for(var i = 0; i < parentData[propType.name].length;i++) {
+                GenerateArrayElement(i, removeButtons, valuesContainer);
             }
         })
-        buttonsContainer.appendChild(clearButton);
+
+        if(!propType.options.editorViewOnly) {
+            //Create buttons to add and remove elements
+            const buttonsContainer = container.ownerDocument.createElement("div");
+            buttonsContainer.style.marginTop = "20px";
+            arrayContainer.appendChild(buttonsContainer);
+
+            const addButton = container.ownerDocument.createElement("button");
+            addButton.textContent = "+";
+            addButton.style.width = "50%";
+            addButton.addEventListener("click",()=>{
+                existingData.push(new propType.type());
+                GenerateArrayElement(existingData.length-1, removeButtons, valuesContainer);
+            })
+            buttonsContainer.appendChild(addButton);
+            const clearButton = container.ownerDocument.createElement("button");
+            clearButton.textContent = "Clear";
+            clearButton.style.width = "50%";
+            clearButton.addEventListener("click",()=>{
+                if(container.ownerDocument.defaultView.confirm(`Clear the array ${propType.name}?`)) {
+                    existingData.splice(0,existingData.length);
+                    valuesContainer.innerHTML = "";
+                    removeButtons.splice(0,removeButtons.length);
+                }
+            })
+            buttonsContainer.appendChild(clearButton);
+        }
 
         return;
     }
@@ -118,12 +130,11 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
                 changeCallback(val);
             }
         };
-        const input = generateBasicInput(container,parentData,propType,callback,requireRefresh);
-        if(existingData !== undefined) {
-            input.value = existingData.owningEntity;
-        } else {
-            input.value = "0";
-        }
+        const input = generateBasicInput(container,parentData,propType,callback,undefined);
+        refreshEntityData(input);
+        requireRefresh.add(()=>{
+            refreshEntityData(input);
+        });
         input.type = "number";
 //Boolean
     } else if (propType.type === Boolean) {
@@ -169,24 +180,32 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name}`);
     }
 
+    function refreshEntityData(input: HTMLInputElement) {
+        if (parentData[propType.name] !== undefined) {
+            input.value = (parentData[propType.name] as EntityData).EntityId.toString();
+        } else {
+            input.value = "0";
+        }
+    }
+
     function GenerateArrayElement(index:number,removeButtons: ArrayElementSpecifier[], valuesContainer: HTMLDivElement) {
         const arrayElementContainer = container.ownerDocument.createElement("div");
         const newEle: ArrayElementSpecifier = {
             ele: undefined,
             changeEvent: undefined,
             clickEv: undefined,
-            mainProperty: existingData
+            mainProperty: parentData[propType.name]
         };
         const arraySpecificElement = Object.assign({}, propType);
         arraySpecificElement.name = index.toString();
-        GenerateEditorProperty(arrayElementContainer, arraySpecificElement, existingData, (val) => {
+        GenerateEditorProperty(arrayElementContainer, arraySpecificElement, parentData[propType.name], (val) => {
             newEle.changeEvent(val);
         }, ecosystem,requireRefresh);
-        GenerateArrayRemoveButton(index, removeButtons, arrayElementContainer, newEle);
+        GenerateArrayRemoveButton(index, propType, removeButtons, arrayElementContainer, newEle);
         valuesContainer.appendChild(arrayElementContainer);
     }
 
-    function GenerateArrayRemoveButton(index:number,removeButtons:ArrayElementSpecifier[], elementContainer: HTMLDivElement, newElementData:ArrayElementSpecifier) {
+    function GenerateArrayRemoveButton(index:number,propType:savedProperty,removeButtons:ArrayElementSpecifier[], elementContainer: HTMLDivElement, newElementData:ArrayElementSpecifier) {
         const removeButton = container.ownerDocument.createElement("button");
         newElementData.ele = removeButton;
         newElementData.clickEv=undefined;
@@ -194,7 +213,9 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         removeButtons.push(newElementData);
         removeButton.style.width = `100%`;
         GenerateArrayRemoveEvent(index,removeButtons);
-        elementContainer.appendChild(removeButton);
+        if(!propType.options.editorViewOnly) {
+            elementContainer.appendChild(removeButton);
+        }
     }
 
     function GenerateArrayRemoveEvent(index:number,removeButtons:ArrayElementSpecifier[]) {
@@ -226,9 +247,11 @@ function generateBasicInput(container: HTMLElement, parentData:any, propType: sa
     input.value = parentData[propType.name];
     input.style.width = "100%";
     input.style.marginTop = "0px";
-    requireRefresh.add(()=>{
-        input.value = parentData[propType.name];
-    });
+    if(requireRefresh !== undefined) {
+        requireRefresh.add(()=>{
+            input.value = parentData[propType.name];
+        });
+    }
     if(propType.options.editorViewOnly) {
         input.disabled = true;
     }

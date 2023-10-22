@@ -15,7 +15,8 @@ export class AssetBundle extends VisualItem {
 
     refreshPromise:Promise<void>;
     bAutoRefresh = true;
-    bHasPSuffix = false;
+    /** Previously saved as predownload asset? */
+    bSavedAsPredownload = false;
 
     constructor(data:Partial<AssetBundle>) {
         super();
@@ -28,6 +29,13 @@ export class AssetBundle extends VisualItem {
     async SaveItemOut(): Promise<boolean> {
         //Get all data for this item
         const backend = (this.storedBackend as AsyncAWSBackend);
+
+        //Changed from Predownload?
+        if(this.bSavedAsPredownload !== this.isPredownloadAsset()) {
+            backend.deleteObject(this.getPredownloadOpposite());
+        }
+        
+        //Get all items ready for saving
         const dataItems:FileZipData[] = [];
         for(var d = 0; d < this.storedItems.length;d++) {
             const dat = this.storedItems[d];
@@ -37,10 +45,15 @@ export class AssetBundle extends VisualItem {
             }
             dataItems.push(data);
         }
+
+        //Perform save
         const result = await backend.StoreZipAtLocation(dataItems,this.getItemLocation());
         if(result) {
             RefreshObjectTypeTracking();
         }
+
+        this.bSavedAsPredownload = this.isPredownloadAsset();
+
         return result;
     }
     async DeleteItem(): Promise<boolean> {
@@ -88,13 +101,13 @@ export class AssetBundle extends VisualItem {
         this.storedItems = [];
         var ourData = null;
         try {
-            if(this.bHasPSuffix) {
+            if(this.bSavedAsPredownload) {
                 ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
             } else {
                 ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
             }
         } catch {
-            if(this.bHasPSuffix) {
+            if(this.bSavedAsPredownload) {
                 ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
             } else {
                 ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());

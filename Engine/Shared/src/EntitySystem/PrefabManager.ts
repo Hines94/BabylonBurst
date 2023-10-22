@@ -85,6 +85,16 @@ export class PrefabManager {
         return this.allPrefabs[id];
     }
 
+    GetPrefabBundleNameFromId(id:string) {
+        const keys = Object.keys(this.prefabBundleNamesToIds);
+        for(var i = 0; i < keys.length;i++) {
+            if(this.prefabBundleNamesToIds[keys[i]] === id) {
+                return keys[i];
+            }
+        }
+        return undefined;
+    }
+
     GetPrefabTemplateByBundleFileName(bundlePath:string,fileName:string) {
         const fullPath = GetZipPath(bundlePath)+"_"+addPrefabEnd(fileName);
         if(this.prefabBundleNamesToIds[fullPath] !== undefined) {

@@ -163,8 +163,6 @@ export abstract class HigherarchyHTML {
         //@ts-ignore
         const newComp = new spawnType();
         this.ecosystem.entitySystem.AddSetComponentToEntity(entityId,newComp);
-        console.log("Added comp: ")
-        console.log(newComp)
         this.refreshInspectorIfEntity(entityId);
 
         return true;

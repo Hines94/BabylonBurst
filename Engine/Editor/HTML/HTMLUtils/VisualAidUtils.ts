@@ -1,16 +1,21 @@
 import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
 import { GenerateTopMenuToggle } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
-import { HemisphericLight, Vector3 } from "@babylonjs/core";
+import { Color4, HemisphericLight, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { BabylonBurstEditor } from "BabylonBurstEditor";
+import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
+import { AngleToRad } from "@engine/Utils/MathUtils";
 
 const viewItemPriority = 5;
 
 /** All visualistaion options such as view colliders etc */
-export function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
+export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
+    await ecosystem.waitLoadedPromise;
     SetupWiremeshVisualistaion(ecosystem);
     SetupColliderVisualisation(ecosystem);
     SetupEditorDownLight(ecosystem);
+    SetupEditorGridFloor(ecosystem);
 }
 
 
@@ -34,7 +39,34 @@ function SetupEditorDownLight(ecosystem:GameEcosystem) {
 )
 }
 
+function SetupEditorGridFloor(ecosystem:GameEcosystem) {
+    if(ecosystem.dynamicProperties["___EDITORGRIDFLOOR___"]) {
+        return;
+    }
+    //Create light
+    const gridfloor = new GridFloorOverlay(ecosystem.scene, {
+        gridWidthX: 30,
+        gridWidthY: 30,
+        gridTileSize: 0.5,
+        tileMargin: 0.05,
+        gridColor: new Color4(0.1, 0.1, 0.1, 0.01),
+    });
+    gridfloor.moveableNode.rotation = new Vector3(AngleToRad(90), 0, 0);
+    ecosystem.dynamicProperties["___EDITORGRIDFLOOR___"] = gridfloor;
+    GenerateTopMenuToggle(ecosystem,"Show Floor Grid", "View","",viewItemPriority,
+        (ecosystem:GameEcosystem)=>{
+            //On callback
+            ecosystem.dynamicProperties["___EDITORGRIDFLOOR___"].setVisible(true);
+        },
+        (ecosystem:GameEcosystem)=>{
+            //Off callback
+            ecosystem.dynamicProperties["___EDITORGRIDFLOOR___"].setVisible(false);
+        }, true
+    )
+}
+
 function SetupColliderVisualisation(ecosystem: GameEcosystem) {
+    return;//TODO: Fix collider visuals
     GenerateTopMenuToggle(ecosystem,"Show Collider", "View","",viewItemPriority,
         (ecosystem:GameEcosystem)=>{
             //On callback

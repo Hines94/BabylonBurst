@@ -46,11 +46,31 @@ export function DeepEquals(obj1, obj2) {
     // If objects are not of type "object", compare them directly
     const obj1T = typeof obj1;
     const obj2T = typeof obj2;
+
+    if(obj1T !== obj2T) {
+        return false;
+    }
+
     if (obj1T !== 'object' || obj2T  !== 'object') { 
         if(obj1T === "number" && obj2T === "number") {
             return obj1.toFixed(10) === obj2.toFixed(10);
         }
         return obj1 === obj2; 
+    }
+
+    //Array case
+    if(Array.isArray(obj1) || Array.isArray(obj2)) {
+        if(Array.isArray(obj1) !== Array.isArray(obj2)) {
+            return false;
+        }
+        if(obj1.length !== obj2.length) {
+            return false;
+        }
+        for(var i = 0; i < obj1.length;i++) {
+            if(!DeepEquals(obj1[i],obj2[i])) {
+                return false;
+            }
+        }
     }
 
     // Get the keys of both objects

@@ -39,6 +39,9 @@ export class EntityTemplate {
         if(compIndex === undefined) {
             return undefined;
         }
+        if(this.entityData[ent] === undefined) {
+            return undefined;
+        }
         const compData = this.entityData[ent][compIndex];
         if(compData === undefined){
             return undefined;
@@ -91,6 +94,9 @@ export class EntityLoader {
     }
 
     static LoadTemplateIntoNewEntities(template:EntityTemplate,system:EntitySystem):EntityLoadMapping {
+        if(!isValidTemplate(template)) {
+            return;
+        }
         const allEnts = Object.keys(template.entityData);
         const entMappings:EntityLoadMapping = {};
         allEnts.forEach(e=>{
@@ -102,6 +108,9 @@ export class EntityLoader {
     }
 
     static LoadTemplateIntoExistingEntities(template:EntityTemplate,system:EntitySystem):EntityLoadMapping {
+        if(!isValidTemplate(template)) {
+            return;
+        }
         const allEnts = Object.keys(template.entityData);
         const entMappings:EntityLoadMapping = {};
         allEnts.forEach(e=>{
@@ -113,6 +122,9 @@ export class EntityLoader {
     }
 
     static LoadTemplateIntoSpecifiedEntities(template:EntityTemplate,system:EntitySystem, entMappings:EntityLoadMapping):EntityLoadMapping {
+        if(!isValidTemplate(template)) {
+            return;
+        }
         const allEnts = Object.keys(template.entityData);
         allEnts.forEach(e=>{
             if(entMappings[e] === undefined) {
@@ -142,4 +154,11 @@ export class EntityLoader {
         })
         return entMappings;
     }
+}
+
+function isValidTemplate(template:EntityTemplate) {
+    if(template === undefined || template === null || template.entityData === undefined || template.entityData === null || template.typings === undefined || template.typings === null) {
+        return false;
+    }
+    return true;
 }

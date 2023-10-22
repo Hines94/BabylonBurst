@@ -80,7 +80,7 @@ export class ContentBrowserFolderHTML extends ContentBrowserIconedItemHTML {
     }
 
     cleanupItem(): void {
-        console.log("TODO: Cleanup!");
+
     }
 
     getDraggingText(): string {

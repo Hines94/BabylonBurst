@@ -24,6 +24,7 @@ export class FramerateCounter {
             width: "150px",
             height: "20px",
             textAlign: "right",
+            zIndex: "100",
         };
 
         Object.assign(this.averageFramesElement.style, baseStyles, {

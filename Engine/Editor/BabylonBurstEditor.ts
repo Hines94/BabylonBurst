@@ -2,8 +2,6 @@ import { Color4, Observable, Vector3 } from "@babylonjs/core";
 import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
 import { RunnableGameEcosystem } from "@BabylonBurstClient/RunnableGameEcosystem"
 import { EditorCamera } from "./Utils/EditorCamera";
-import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
-import { AngleToRad } from "@engine/Utils/MathUtils";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 
 export type BuildableDescript = {
@@ -50,14 +48,6 @@ export class BabylonBurstEditor extends RunnableGameEcosystem {
         if (!this.options.noCam) {
             this.cam = new EditorCamera(this);
         }
-        const gridfloor = new GridFloorOverlay(this.scene, {
-            gridWidthX: 20,
-            gridWidthY: 20,
-            gridTileSize: 0.5,
-            tileMargin: 0.05,
-            gridColor: new Color4(0.1, 0.1, 0.1, 0.01),
-        });
-        gridfloor.moveableNode.rotation = new Vector3(AngleToRad(90), 0, 0);
     }
 
     protected override updateEcosystemLoop(): void {
