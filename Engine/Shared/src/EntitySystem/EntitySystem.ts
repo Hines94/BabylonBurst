@@ -7,6 +7,11 @@ import { EntityQuery } from "./EntityQuery";
 import { registeredTypes } from "./TypeRegister";
 import { DeepSetupCallback } from "./TrackedVariable";
 
+export type ComponentNotify = {
+    ent:EntityData;
+    comp:Component;
+}
+
 export class EntitySystem {
     private SpawnedEntities:number = 0;
     private AllEntities:{[entId:number]:EntityData} = {};
@@ -15,6 +20,8 @@ export class EntitySystem {
 
     onEntityCreatedEv = new Observable<number>();
     onEntityRemovedEv = new Observable<number>();
+    onComponentAddedEv = new Observable<ComponentNotify>();
+    onComponentChangedEv = new Observable<ComponentNotify>();
 
     AddEntity(): EntityData {
         this.SpawnedEntities++;
@@ -160,6 +167,8 @@ export class EntitySystem {
 
         this.SetChangedComponent(entData,comp);
 
+        this.onComponentAddedEv.notifyObservers({ent:entData,comp:comp});
+
         return true;
     }
 
@@ -178,6 +187,7 @@ export class EntitySystem {
                     continue;
                 }
                 component.onComponentChanged(data);
+                this.onComponentChangedEv.notifyObservers({ent:data,comp:component});
             }
         }
         this.ChangedComponents = {};

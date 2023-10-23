@@ -10,20 +10,26 @@ import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorCompon
 import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils"
 import { DeepCopier, Observable, Observer } from "@babylonjs/core";
 import { GetCustomSaveData } from "@engine/Utils/SaveableDataUtils";
+import { ComponentNotify } from "@engine/EntitySystem/EntitySystem";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {
     owner: HigherarchyHTML;
     entityId: number;
     inspector: HTMLElement;
+    componentsHolderElement:HTMLElement;
     defaultEntityData:EntityData;
     observer:Observer<number>;
+    compObserver:Observer<ComponentNotify>;
+
+    componentInspectors:{[compId:string]:HTMLElement} = {};
 
     constructor(owner: HigherarchyHTML, entityIdentifier: number) {
         this.owner = owner;
         this.entityId = entityIdentifier;
 
         this.observer = owner.ecosystem.entitySystem.onEntityRemovedEv.add(this.entityRemoved.bind(this));
+        this.compObserver = owner.ecosystem.entitySystem.onComponentAddedEv.add(this.compAdded.bind(this));
 
         this.inspector = this.owner.windowDoc.getElementById("InspectorPanel") as HTMLElement;
         this.inspector.classList.remove("hidden");
@@ -34,11 +40,11 @@ export class EntityInspectorHTML {
         entTemplate.querySelector("#EntityTitle").innerHTML = "Entity: " + entityIdentifier;
 
         //Existing items
-        const allEntComps = entTemplate.querySelector("#EntityComponents") as HTMLElement;
+        this.componentsHolderElement = entTemplate.querySelector("#EntityComponents") as HTMLElement;
         this.defaultEntityData = owner.ecosystem.entitySystem.GetEntityData(entityIdentifier);
         const entityData = owner.ecosystem.entitySystem.GetEntityData(this.entityId);
         entityData.Components.forEach(comp => {
-            this.addComponentToInspector(comp, allEntComps, entityIdentifier);
+            this.addComponentToInspector(comp);
         });
 
         //New Component
@@ -70,7 +76,7 @@ export class EntityInspectorHTML {
             if (!type) {
                 ShowToastNotification(`Invalid Component Type!`, 3000, this.owner.windowDoc, "red");
             } else {
-                if (this.owner.addComponentToEntity(entityIdentifier, type, allEntComps)) {
+                if (this.owner.addComponentToEntity(entityIdentifier, type)) {
                     ShowToastNotification(`Added component ${compTypeName}`, 3000, this.owner.windowDoc);
                     this.owner.RegenerateHigherarchy();
                 } else {
@@ -88,47 +94,58 @@ export class EntityInspectorHTML {
         }
     }
 
-    addComponentToInspector(comp: Component, inspector: HTMLElement, entityId: number, componentInner = undefined) {
+    compAdded(evData:ComponentNotify) {
+        if(evData.ent.EntityId !== this.entityId) {
+            return;
+        }
+        const compName = evData.comp.constructor.name;
+        if(this.componentInspectors[compName] === undefined) {
+            this.addComponentToInspector(evData.comp);
+        }
+    }
+
+    addComponentToInspector(comp: Component) {
         const compName = comp.constructor.name;
         if(!registeredTypes[compName]) {
             console.error("No schema for component: " + compName);
             return;
         }
 
-        const higherarch = this;
-        //Need to re-setup?
-        if(componentInner === undefined) {
-            const componentWrapper = GenerateInnerOuterPanelWithMinimizer(inspector.ownerDocument);
-            componentWrapper.outerPanel.classList.add("Component");
-            const title = inspector.ownerDocument.createElement("h2");
-            title.textContent = compName;
-            componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
-            componentWrapper.outerPanel.style.backgroundColor = inspector.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
-            componentWrapper.innerPanel.classList.add("hidden");
-            
-            if(registeredTypes[compName].options.bEditorRemovable) {
-                const removeButton = document.createElement("button");
-                removeButton.style.marginLeft = "5px";
-                removeButton.innerText = "X";
-                componentWrapper.button.parentElement.appendChild(removeButton);
-                removeButton.onclick = () => {
-                    higherarch.owner.ecosystem.entitySystem.RemoveComponent(entityId,compName);
-                    componentWrapper.outerPanel.remove();
-                };
-            }
-            inspector.appendChild(componentWrapper.outerPanel);
-
-            componentInner = componentWrapper.innerPanel;
-        } else {
-            componentInner.innerHTML = "";
+        if(this.componentInspectors[compName] !== undefined) {
+            this.componentInspectors[compName] 
         }
+
+        const higherarch = this;
+
+        const componentWrapper = GenerateInnerOuterPanelWithMinimizer(higherarch.componentsHolderElement.ownerDocument);
+        componentWrapper.outerPanel.classList.add("Component");
+        const title = higherarch.componentsHolderElement.ownerDocument.createElement("h2");
+        title.textContent = compName;
+        componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
+        componentWrapper.outerPanel.style.backgroundColor = higherarch.componentsHolderElement.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
+        componentWrapper.innerPanel.classList.add("hidden");
+
+        this.componentInspectors[compName] = componentWrapper.outerPanel;
+        
+        if(registeredTypes[compName].options.bEditorRemovable) {
+            const removeButton = document.createElement("button");
+            removeButton.style.marginLeft = "5px";
+            removeButton.innerText = "X";
+            componentWrapper.button.parentElement.appendChild(removeButton);
+            removeButton.onclick = () => {
+                higherarch.owner.ecosystem.entitySystem.RemoveComponent(higherarch.entityId,compName);
+                componentWrapper.outerPanel.remove();
+            };
+        }
+        higherarch.componentsHolderElement.appendChild(componentWrapper.outerPanel);
+
 
         const requireRefreshEvent = new Observable<void>();
         
         const compSavedProps = savedProperties[compName];
         for(var c = 0; c < compSavedProps.length;c++) {
             const property = compSavedProps[c];
-            GenerateEditorProperty(componentInner,property,comp,(v)=>{comp[property.name] = v;},this.owner.ecosystem,requireRefreshEvent);
+            GenerateEditorProperty(componentWrapper.innerPanel,property,comp,(v)=>{comp[property.name] = v;},this.owner.ecosystem,requireRefreshEvent);
         }
 
         //TODO: Poll
@@ -142,7 +159,14 @@ export class EntityInspectorHTML {
         if(this.entityId === undefined) {
             return;
         }
-        const newCheckpoint = GetCustomSaveData(undefined,this.owner.ecosystem.entitySystem.GetEntityData(this.entityId),comp,false,[]);
+        //Comp no longer attached to entity?
+        const entData = this.owner.ecosystem.entitySystem.GetEntityData(this.entityId);
+        if(entData.GetComponentByName(comp.constructor.name) === undefined) {
+            return;
+        }
+
+        //Get a timestamp for now that we can check for changes
+        const newCheckpoint = GetCustomSaveData(undefined,entData,comp,false,[]);
         
         // Check the value
         if(!DeepEquals(newCheckpoint,lastCompData)) {

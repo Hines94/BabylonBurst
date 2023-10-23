@@ -99,10 +99,6 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         }
     }
 
-    protected override GetPrefabInsetLevel(entity: EntityData): number {
-        return super.GetPrefabInsetLevel(entity);
-    }
-
     protected override setupContextMenu(event: MouseEvent): void {
         ShowContextMenu(
             event,

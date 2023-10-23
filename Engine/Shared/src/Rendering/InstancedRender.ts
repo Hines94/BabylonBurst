@@ -1,24 +1,8 @@
 import { Component } from "../EntitySystem/Component";
 import { EntTransform } from "../EntitySystem/CoreComponents";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
-
-@RegisteredType(ModelSpecifier)
-export class ModelSpecifier {
-    @Saved(String)
-    FilePath:string;
-    @Saved(String)
-    FileName:string;
-    @Saved(String)
-    MeshName:string;
-}
-
-@RegisteredType(MaterialSpecifier)
-export class MaterialSpecifier {
-    @Saved(String)
-    FilePath:string;
-    @Saved(String)
-    FileName:string;
-}
+import { MaterialSpecifier } from "./MaterialSpecifier";
+import { ModelSpecifier } from "./ModelSpecifier";
 
 @RegisteredType(InstancedRender,{RequiredComponents:[EntTransform]})
 export class InstancedRender extends Component {

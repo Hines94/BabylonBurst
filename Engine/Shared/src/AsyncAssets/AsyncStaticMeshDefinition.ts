@@ -11,10 +11,6 @@ import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 import { GetBadMeshMaterial } from "../Materials/AsyncSimpleImageMaterial";
 
-/** A Dictionary of all mesh definitions with details on if they are  */
-var AllMDefinitions: {
-    [file: string]: { [mesh: string]: AsyncStaticMeshDefinition[] };
-} = {};
 var UpdateRequireSMDefinitions: AsyncStaticMeshDefinition[] = [];
 
 var maxLocUpdatesPerFrame = 5;
@@ -71,15 +67,17 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
         this.meshName = meshName;
         this.materials = materials;
         this.layerMask = layerMask;
+    }
 
-        //Add to our mesh definitions so networked etc can find this definition
-        const meshPath = awsPath + "_" + fileName;
-        if (AllMDefinitions[meshPath] === undefined) {
-            AllMDefinitions[meshPath] = {};
+    static blankDefinitions:{[id:string]:AsyncStaticMeshDefinition} = {};
+
+    /** More efficient than using a new AsyncStaticMeshDefinition() */
+    static GetStaticMeshDefinitionNoMats(awsPath: string, meshName: string, fileName: string) {
+        if(this.blankDefinitions[awsPath+meshName+fileName] === undefined) {
+            this.blankDefinitions[awsPath+meshName+fileName] = new AsyncStaticMeshDefinition(awsPath,meshName,[],fileName);
+            this.blankDefinitions[awsPath+meshName+fileName].bNoFailMaterialDiff = true;
         }
-        if (AllMDefinitions[meshPath][meshName] === undefined) {
-            AllMDefinitions[meshPath][meshName] = [];
-        }
+        return this.blankDefinitions[awsPath+meshName+fileName];
     }
 
     /** Background cache as game is running to reduce asset load times */

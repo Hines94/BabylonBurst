@@ -1,6 +1,7 @@
 import { Component } from "./Component";
 import { EntityData, EntityLoadMapping } from "./EntityData";
 import { EntityLoader } from "./EntityLoader";
+import { EntitySystem } from "./EntitySystem";
 import { PrefabManager } from "./PrefabManager";
 import { TrackedVariable } from "./TrackedVariable";
 import { RegisteredType, Saved } from "./TypeRegister";
@@ -54,6 +55,9 @@ export class PrefabInstance extends Component {
     onComponentRemoved(entData: EntityData): void {
         if(this.reloadObserver !== undefined) {
             PrefabManager.GetPrefabManager().onPrefabAdded.remove(this.reloadObserver);
+        }
+        for(var i = 0; i < this.SpawnedPrefabEntities.length;i++) {
+            (entData.owningSystem as EntitySystem).RemoveEntity(this.SpawnedPrefabEntities[i]);
         }
     }
 

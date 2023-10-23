@@ -27,7 +27,6 @@ export class DirectionalLightComp extends Component {
     onComponentRemoved(entData: EntityData): void {
         if(this.createdLight !== undefined) {
             this.createdLight.dispose();
-            console.log("Light disposed")
         }
     }
 
@@ -38,8 +37,6 @@ export class DirectionalLightComp extends Component {
         this.createdLight.position = EntVector3.GetVector3(this.Position);
         this.createdLight.direction = EntVector3.GetVector3(this.Direction);
         this.createdLight.intensity = this.Intensity;
-        console.log(this)
-        console.log("Light rebuilt")
     }
     
 }

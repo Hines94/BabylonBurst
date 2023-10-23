@@ -62,6 +62,11 @@ export function GetTypingsParamName(comp:string,param:number,typings:EntitySaved
 
 
 export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityData, property: any, bIgnoreDefaults:boolean, typings:EntitySavedTypings) {
+    if(entity === undefined || entity === null) {
+        console.warn(`Get save data got null entity`);
+        return;
+    }
+    
     //Array?
     if(propIdentifier && Array.isArray(property)) {
         const ret:any[] = [];

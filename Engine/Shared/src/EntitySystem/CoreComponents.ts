@@ -482,3 +482,13 @@ export class EntTransform extends Component {
         EntVector3.Copy(this.Scale,other.Scale);
     }
 }
+
+@RegisteredType(EntNamingComponent)
+export class EntNamingComponent extends Component {
+    @TrackedVariable()
+    @Saved(String)
+    EntName = "";
+
+    @Saved(String)
+    EntityNotes = "";
+}

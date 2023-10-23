@@ -8,6 +8,8 @@ import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Prefab } from "@engine/EntitySystem/Prefab";
 import { storedRegisteredType } from "@engine/EntitySystem/TypeRegister";
 import { SetupEditorGizmos } from "./EditorGizmos";
+import { ComponentNotify } from "@engine/EntitySystem/EntitySystem";
+import { EntNamingComponent } from "@engine/EntitySystem/CoreComponents";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */
 export abstract class HigherarchyHTML {
@@ -24,6 +26,8 @@ export abstract class HigherarchyHTML {
         this.ecosystem = ecosystem as BabylonBurstEditor;
         ecosystem.entitySystem.onEntityCreatedEv.add(this.GenerateEntityRow.bind(this));
         ecosystem.entitySystem.onEntityRemovedEv.add(this.RemoveEntityRow.bind(this));
+        ecosystem.entitySystem.onComponentAddedEv.add(this.EntCompAddChange.bind(this));
+        ecosystem.entitySystem.onComponentChangedEv.add(this.EntCompAddChange.bind(this));
         SetupEditorGizmos(ecosystem);
     }
 
@@ -89,19 +93,38 @@ export abstract class HigherarchyHTML {
         }
     }
 
+    EntCompAddChange(entData:ComponentNotify) {
+        if(entData.comp.constructor.name === "Prefab" && this.generatedEntityRows[entData.ent.EntityId]) {
+            this.setEntRowInset(this.generatedEntityRows[entData.ent.EntityId],entData.ent.EntityId);
+        }  
+        if(entData.comp.constructor.name === "EntNamingComponent") {
+            this.setEntityName(this.generatedEntityRows[entData.ent.EntityId],entData.ent);
+        }
+    }
+
+    setEntityName(row: HTMLDivElement, entData:EntityData) {
+        const namingComp = entData.GetComponent(EntNamingComponent);
+        if(namingComp === undefined || namingComp.EntName === undefined  || namingComp.EntName === "") {
+            row.innerText = `Entity: ${entData.EntityId}`;
+        } else {
+            row.innerText = `Entity: ${entData.EntityId} - ${namingComp.EntName}`;
+        }
+    }
+
     /** Entity row on higherarchy that lets us select and TODO: re-parent etc */
     GenerateEntityRow(entId: number): HTMLDivElement {
+        const entData = this.ecosystem.entitySystem.GetEntityData(entId);
         //Basic items
         const row = this.windowDoc.createElement("div");
         this.generatedEntityRows[entId] = row;
         row.style.marginTop = "2px";
         row.classList.add("higherarchyEntity");
         const entityId = this.windowDoc.createElement("p");
-        entityId.innerText += "Entity " + entId;
+        this.setEntityName(row,entData);
         entityId.classList.add("higherarchEntityText");
         row.appendChild(entityId);
         this.higherarchyItems.appendChild(row);
-        row.style.marginLeft = ((this.GetPrefabInsetLevel(this.ecosystem.entitySystem.GetEntityData(entId)) * 10)+5).toString() + "%";
+        this.setEntRowInset(row, entId);
 
         //View Entity components etc
         row.addEventListener("click", async () => {
@@ -133,17 +156,23 @@ export abstract class HigherarchyHTML {
         return row;
     }
 
+    private setEntRowInset(row: HTMLDivElement, entId: number) {
+        row.style.marginLeft = ((this.GetPrefabInsetLevel(this.ecosystem.entitySystem.GetEntityData(entId)) * 5)).toString() + "%";
+    }
+
     RemoveEntityRow(entId:number) {
         this.RegenerateHigherarchy();
     }
 
     protected GetPrefabInsetLevel(entity: EntityData): number {
-        const pf = entity.GetComponent(Prefab);
-        if(pf) {
-            //TODO: Trace up for this?
-            if(pf.parent) {
-                return 1;
+        var pf = entity.GetComponent(Prefab);
+        if(pf !== undefined) {
+            var insetLevel = 0;
+            while(pf.parent !== undefined) {
+                insetLevel++;
+                pf = pf.parent.GetComponent<Prefab>(Prefab);
             }
+            return insetLevel;
         }
         return 0;
     }
@@ -152,7 +181,7 @@ export abstract class HigherarchyHTML {
         return this.ecosystem.entitySystem.AddEntityAtAnyEmptySlot().EntityId;
     }
 
-    addComponentToEntity(entityId: number, compType: storedRegisteredType, allEntComps: HTMLElement): boolean {
+    addComponentToEntity(entityId: number, compType: storedRegisteredType): boolean {
         const entity = this.ecosystem.entitySystem.GetEntityData(entityId);
         if (entity.GetComponentByName(compType.type.name) !== undefined) {
             return true;

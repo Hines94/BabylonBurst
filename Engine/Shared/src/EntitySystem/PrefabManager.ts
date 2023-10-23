@@ -18,7 +18,6 @@ export class PrefabManager {
 
     onPrefabAdded = new Observable<string>();
 
-    //TODO: we require backend etc to get all prefabs!
     static GetPrefabManager():PrefabManager {
         if(this.Manager === undefined) {
             new PrefabManager();
