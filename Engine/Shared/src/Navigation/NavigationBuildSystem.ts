@@ -1,8 +1,9 @@
-import { Color3, RecastJSPlugin, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, RecastJSPlugin, StandardMaterial, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "../GameEcosystem";
 import { NavigationSurface } from "./NavigationSurface";
 import { AsyncStaticMeshDefinition } from "../AsyncAssets";
 import { EntTransform } from "../EntitySystem/CoreComponents";
+import { NavigationLayer } from "./NavigationLayer";
 
 
 export function setupNavBuildSystem(ecosystem:GameEcosystem) {
@@ -13,26 +14,26 @@ function checkRebuildNavSystem() {
 
 }
 
-async function RebuildNavigationLayer(ecosystem:GameEcosystem) {
-    if(this.navLayerPlugin === undefined) {
-        this.navLayerPlugin = new RecastJSPlugin();
+async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEcosystem) {
+    if(navLayer.navLayerPlugin === undefined) {
+        navLayer.navLayerPlugin = new RecastJSPlugin();
         //TODO: Service worker?
     }
 
     var navmeshParameters = {
-        cs: this.CellSize,
-        ch: this.CellHeight,
-        walkableSlopeAngle: this.walkableSlopeAngle,
-        walkableHeight: this.walkableHeight,
-        walkableClimb: this.walkableClimb,
-        walkableRadius: this.walkableRadius,
-        maxEdgeLen: this.maxEdgeLen,
-        maxSimplificationError: this.maxSimplificationError,
-        minRegionArea: this.minRegionArea,
-        mergeRegionArea: this.mergeRegionArea,
-        maxVertsPerPoly: this.maxVertsPerPoly,
-        detailSampleDist: this.detailSampleDist,
-        detailSampleMaxError: this.detailSampleMaxError,
+        cs: navLayer.CellSize,
+        ch: navLayer.CellHeight,
+        walkableSlopeAngle: navLayer.walkableSlopeAngle,
+        walkableHeight: navLayer.walkableHeight,
+        walkableClimb: navLayer.walkableClimb,
+        walkableRadius: navLayer.walkableRadius,
+        maxEdgeLen: navLayer.maxEdgeLen,
+        maxSimplificationError: navLayer.maxSimplificationError,
+        minRegionArea: navLayer.minRegionArea,
+        mergeRegionArea: navLayer.mergeRegionArea,
+        maxVertsPerPoly: navLayer.maxVertsPerPoly,
+        detailSampleDist: navLayer.detailSampleDist,
+        detailSampleMaxError: navLayer.detailSampleMaxError,
     };
 
     const cloneMeshes:Mesh[] = [];
@@ -41,7 +42,7 @@ async function RebuildNavigationLayer(ecosystem:GameEcosystem) {
     const navSurfaceVec = allNavSurfaces.GetEntitiesArray();
     for(var i = 0; i < navSurfaceVec.length;i++) {
         const surfElement = navSurfaceVec[i].GetComponent(NavigationSurface);
-        if(surfElement.NavigationLayerName !== this.NavigationLayerName) {
+        if(surfElement.NavigationLayerName !== navLayer.NavigationLayerName) {
             continue;
         }
         if(surfElement.SurfaceModel === undefined || surfElement.SurfaceModel.isEmptyModelSpecifier()) {
@@ -64,7 +65,7 @@ async function RebuildNavigationLayer(ecosystem:GameEcosystem) {
         
     }
 
-    this.navLayerPlugin.createNavMesh(navSurfaces,navmeshParameters);
+    navLayer.navLayerPlugin.createNavMesh(navSurfaces,navmeshParameters);
     
     //Cleanup clone meshes
     for(var m = 0; m < cloneMeshes.length;m++) {
@@ -72,15 +73,15 @@ async function RebuildNavigationLayer(ecosystem:GameEcosystem) {
     }
 
     //TODO: Hide navmesh unless option is shown
-    if(this.debugMesh === undefined) {
-        this.debugMesh.dispose(); 
+    if(navLayer.debugMesh === undefined) {
+        navLayer.debugMesh.dispose(); 
     }
-    this.debugMesh = this.navLayerPlugin.createDebugNavMesh(ecosystem.scene);
+    navLayer.debugMesh = navLayer.navLayerPlugin.createDebugNavMesh(ecosystem.scene);
     if(ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"] === undefined) {
         var matdebug = new StandardMaterial('matdebug', ecosystem.scene);
         matdebug.diffuseColor = new Color3(0.1, 0.2, 1);
         matdebug.alpha = 0.2;
     }
-    this.debugMesh.material = ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"];
-    this.debugMesh.position = new Vector3(0,0.01,0);
+    navLayer.debugMesh.material = ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"];
+    navLayer.debugMesh.position = new Vector3(0,0.01,0);
 }
