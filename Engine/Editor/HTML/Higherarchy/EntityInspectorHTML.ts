@@ -106,7 +106,8 @@ export class EntityInspectorHTML {
 
     addComponentToInspector(comp: Component) {
         const compName = comp.constructor.name;
-        if(!registeredTypes[compName]) {
+        const compType = registeredTypes[compName];
+        if(!compType) {
             console.error("No schema for component: " + compName);
             return;
         }
@@ -121,13 +122,22 @@ export class EntityInspectorHTML {
         componentWrapper.outerPanel.classList.add("Component");
         const title = higherarch.componentsHolderElement.ownerDocument.createElement("h2");
         title.textContent = compName;
-        componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
+
+        if(compType.options.comment) {
+            const comment = higherarch.componentsHolderElement.ownerDocument.createElement("p");
+            comment.textContent = compType.options.comment;
+            componentWrapper.outerPanel.insertBefore(comment,componentWrapper.innerPanel);
+            componentWrapper.outerPanel.insertBefore(title,comment);
+        } else {
+            componentWrapper.outerPanel.insertBefore(title,componentWrapper.innerPanel);
+        }
+
         componentWrapper.outerPanel.style.backgroundColor = higherarch.componentsHolderElement.children.length % 2 === 1 ? "#2a2c2e" : "#151517";
         componentWrapper.innerPanel.classList.add("hidden");
 
         this.componentInspectors[compName] = componentWrapper.outerPanel;
         
-        if(registeredTypes[compName].options.bEditorRemovable) {
+        if(compType.options.bEditorRemovable) {
             const removeButton = document.createElement("button");
             removeButton.style.marginLeft = "5px";
             removeButton.innerText = "X";

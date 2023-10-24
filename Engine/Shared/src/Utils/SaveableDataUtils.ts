@@ -2,6 +2,7 @@ import { EntityData, EntityLoadMapping } from "../EntitySystem/EntityData";
 import { Prefab } from "../EntitySystem/Prefab";
 import { PrefabManager } from "../EntitySystem/PrefabManager";
 import { FindSavedProperty, registeredTypes, savedProperty } from "../EntitySystem/TypeRegister";
+import { IsIntArrayInstance } from "./TypeRegisterUtils";
 
 export type SavedCompTyping = {
     compName:string;
@@ -59,8 +60,6 @@ export function GetTypingsParamName(comp:string,param:number,typings:EntitySaved
     return undefined;
 }
 
-
-
 export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityData, property: any, bIgnoreDefaults:boolean, typings:EntitySavedTypings) {
     if(entity === undefined || entity === null) {
         console.warn(`Get save data got null entity`);
@@ -80,7 +79,7 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
     } else if (propIdentifier && propIdentifier.type["GetSaveableData"]) {
         return propIdentifier.type.GetSaveableData(entity,property);
     //Nested object?
-    } else if(typeof property === "object") {
+    } else if(typeof property === "object" && !IsIntArrayInstance(property)) {
         const propType = property.constructor.name;
         if(registeredTypes[propType] === undefined) {
             console.warn(`Property ${propIdentifier.name} is not a registered type (${propType}) and will not load properly. Please use @RegisteredComponent!`);
@@ -140,7 +139,7 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
         return propIdentifier.type.LoadSaveableData(entity,property,entMap);
     } 
     //Nested object?
-    if(propIdentifier && typeof property === "object") {
+    if(propIdentifier && typeof property === "object" && !IsIntArrayInstance(property)) {
         const propType = propIdentifier.type;
         const newProp = new propType();
         const keys = Object.keys(property);

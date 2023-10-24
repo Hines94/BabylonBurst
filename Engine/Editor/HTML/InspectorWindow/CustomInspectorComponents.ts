@@ -5,7 +5,7 @@ import { GameEcosystem } from "@engine/GameEcosystem";
 import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@engine/Utils/HTMLUtils";
 import { ProcessInstancedRenderComp } from "./CustomInstancedRendererComponent";
 import { ProcessModelSpecifierComp } from "./CustomModelSpecifier";
-import { isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
+import { IsIntArrayType, isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
 import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
 import { Observable } from "@babylonjs/core";
@@ -39,6 +39,22 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
     
     var existingData = parentData[propType.name];
 
+    //Create comment and title for our element
+    const generatedTitle = container.ownerDocument.createElement("p");
+    generatedTitle.innerText = propType.name;
+    generatedTitle.id = "GeneratedTitle";
+    generatedTitle.classList.add("Property");
+    container.appendChild(generatedTitle);
+
+    var generatedComment:HTMLElement = undefined;
+    if(propType.options.comment) {
+        generatedComment = container.ownerDocument.createElement("p");
+        generatedComment.id = "GeneratedComment";
+        generatedComment.innerText = propType.options.comment;
+        generatedComment.classList.add("Comment");
+        container.appendChild(generatedComment);
+    }
+
 //Array
     if(Array.isArray(existingData)) {
         const arrayContainer = container.ownerDocument.createElement("div");
@@ -46,20 +62,22 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
         const removeButtons:ArrayElementSpecifier[] = [];
 
-        const arrayHeader = container.ownerDocument.createElement("p");
-        arrayHeader.textContent = propType.name;
-        arrayContainer.appendChild(arrayHeader);
-
+        //Container that all our values will be stored in
         const valuesContainer = container.ownerDocument.createElement("div");
+        valuesContainer.style.minHeight = "20px";
+        valuesContainer.style.marginBottom = "10px";
+        valuesContainer.style.backgroundColor = "rgba(255, 255, 255, 0.02)";
+        valuesContainer.style.width = "90%";
+        valuesContainer.style.marginLeft = "5%";
         arrayContainer.appendChild(valuesContainer);
-
         valuesContainer.innerHTML = "";
+
         for(var i = 0; i < existingData.length;i++) {
             GenerateArrayElement(i, removeButtons, valuesContainer);
         }
 
         requireRefresh.add(()=>{
-            console.log("Rebuild Array!")
+            valuesContainer.innerHTML = "";
             for(var i = 0; i < parentData[propType.name].length;i++) {
                 GenerateArrayElement(i, removeButtons, valuesContainer);
             }
@@ -103,7 +121,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
     }
 
 //String
-    if(propType.type === String) {
+    if(propType.type === String || IsIntArrayType(propType.type)) {
         generateBasicInput(container,parentData,propType,(input)=>{
             changeCallback(input.value);
         },requireRefresh);
@@ -148,6 +166,8 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         };
         const input = generateBasicInput(container,parentData,propType,callback,requireRefresh);
         input.type = "checkbox";
+        input.style.width = "25px";
+        input.style.height = "25px";
 
 //Nested objects
     } else if(isTypeAClass(propType.type)) {
@@ -156,6 +176,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             console.error(`Property type ${propType.type.name} - ${propType.name} is not a registered type! Won't display in editor!`);
             return;
         }
+        //Ensure we have an object to set into
         if(existingData === undefined) {
             const spawnSubType = subType.type;
             //@ts-ignore
@@ -163,10 +184,26 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             existingData = spawnSubType;
         }
         const nestedWrapper = GenerateInnerOuterPanelWithMinimizer(container.ownerDocument);
+
+        //Title for our new nested element
         const title = container.ownerDocument.createElement("h3");
         title.innerText = propType.name;
+        generatedTitle.remove();
+
+        //Optional comment
+        const comment = propType.options.comment || subType.options.comment;
+        if(comment) {
+            const comment = container.ownerDocument.createElement("p");
+            comment.innerText = propType.options.comment;
+            nestedWrapper.outerPanel.insertBefore(comment,nestedWrapper.innerPanel);
+            nestedWrapper.outerPanel.insertBefore(title,comment);
+            generatedComment.remove();
+        } else {
+            nestedWrapper.outerPanel.insertBefore(title,nestedWrapper.innerPanel);
+        }
+
         nestedWrapper.innerPanel.classList.add("hidden");
-        nestedWrapper.outerPanel.insertBefore(title,nestedWrapper.innerPanel);
+
         container.appendChild(nestedWrapper.outerPanel);
         const compSavedProps = savedProperties[subType.type.name];
         for(var c = 0; c < compSavedProps.length;c++) {
@@ -242,11 +279,15 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 }
 
 function generateBasicInput(container: HTMLElement, parentData:any, propType: savedProperty, changeCallback:(input:HTMLInputElement)=>void,requireRefresh:Observable<void>) {
+    //Main input
     const input = container.ownerDocument.createElement("input");
     input.addEventListener("change", ()=>{changeCallback(input)});
     input.value = parentData[propType.name];
-    input.style.width = "100%";
+    input.style.width = "90%";
     input.style.marginTop = "0px";
+    input.style.marginLeft = "5%";
+    input.style.marginBottom = "20px";
+    input.style.marginTop = "10px";
     if(requireRefresh !== undefined) {
         requireRefresh.add(()=>{
             input.value = parentData[propType.name];
@@ -255,11 +296,6 @@ function generateBasicInput(container: HTMLElement, parentData:any, propType: sa
     if(propType.options.editorViewOnly) {
         input.disabled = true;
     }
-    const label = container.ownerDocument.createElement("p");
-    label.innerText = propType.name;
-    label.style.marginBottom = "0px";
-    label.style.marginTop = "10px";
-    container.appendChild(label);
     container.appendChild(input);
     return input;
 }

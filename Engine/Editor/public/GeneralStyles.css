@@ -33,6 +33,21 @@ body {
     display: none;
 }
 
+.comment {
+    color:rgb(83, 83, 83);
+    font-size: medium;
+    margin: 0px;
+    margin-left: 5%;
+}
+
+.property {
+    color:white;
+    font-size:large;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    margin-left: 2%;
+}
+
 select {
     appearance: none;
     background-color: #444654;

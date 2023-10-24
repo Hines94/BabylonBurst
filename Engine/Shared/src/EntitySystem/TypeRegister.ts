@@ -21,6 +21,7 @@ export const savedProperties:{[compName:string]:savedProperty[]} = {};
 export class SavedPropertyOptions {
     isNetworked = true;
     editorViewOnly = false;
+    comment = "";
 }
 
 /** Define a property as 'saved'. Property type must be primitive or a registered type. */
@@ -114,6 +115,7 @@ export class RegisteredTypeOptions {
     bEditorRemovable = true;
     /** Required to be added for this component */
     RequiredComponents: (typeof Component)[] = [];
+    comment = "";
 }
 
 export type storedRegisteredType =  {

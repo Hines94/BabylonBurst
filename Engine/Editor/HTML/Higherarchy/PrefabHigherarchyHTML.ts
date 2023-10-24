@@ -6,13 +6,11 @@ import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentStorageBackend } from "../ContentBrowser/ContentBrowserHTML";
 import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
-import { SetupAllEditorVisualisations } from "../HTMLUtils/VisualAidUtils";
 import { decode, encode } from "@msgpack/msgpack";
-import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
 import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
-import { EntityData } from "@engine/EntitySystem/EntityData";
 import {Prefab, PrefabPackedType} from "@engine/EntitySystem/Prefab"
 import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
+import { SetupAllTopBarOptions } from "../HTMLUtils/TopBarSetup";
 
 /** Used for specifically loading prefabs into a seperate window */
 export class PrefabHigherarchyHTML extends HigherarchyHTML {
@@ -92,10 +90,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 }
             });
 
-            //Visualistaions
-            SetupAllEditorVisualisations(higherarchy.ecosystem);
-            //Debug
-            SetupAllEditorDebugOptions(higherarchy.ecosystem,{bContentBrowserOption:false});
+            SetupAllTopBarOptions(higherarchy.ecosystem,{},{bContentBrowserOption:false})
         }
     }
 

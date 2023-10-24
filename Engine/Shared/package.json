@@ -27,6 +27,7 @@
         "@babylonjs/inspector": "../../node_modules/@babylonjs/inspector",
         "@babylonjs/serializers": "../../node_modules/@babylonjs/serializers",
         "@msgpack/msgpack": "../../node_modules/@babylonjs/msgpack",
+        "recast-detour": "../../node_modules/recast-detour",
         "vite": "../../node_modules/vite",
         "uuid": "^9.0.1",
         "typescript": "../../node_modules/typescript",

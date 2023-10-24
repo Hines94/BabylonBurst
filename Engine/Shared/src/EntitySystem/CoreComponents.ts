@@ -483,12 +483,12 @@ export class EntTransform extends Component {
     }
 }
 
-@RegisteredType(EntNamingComponent)
+@RegisteredType(EntNamingComponent,{comment:`Used to organise entities within a scene and prefab`})
 export class EntNamingComponent extends Component {
     @TrackedVariable()
-    @Saved(String)
+    @Saved(String,{comment:`Will be displayed on higherarchy when looking at different entities`})
     EntName = "";
 
-    @Saved(String)
+    @Saved(String,{comment:`Just for your records`})
     EntityNotes = "";
 }

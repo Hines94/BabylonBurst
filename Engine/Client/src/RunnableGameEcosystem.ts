@@ -11,6 +11,7 @@ import { GameEcosystem } from "@engine/GameEcosystem";
 import { EntitySystem } from "@engine/EntitySystem/EntitySystem";
 import { setupAsyncManager } from "@BabylonBurstClient/Setup/AWSAssetSetup";
 import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
+import { setupAutoNavBuildSystem } from "@engine/Navigation/NavigationBuildSystem";
 
 /** Custom game launch - eg editor or client side performance checks */
 export class RunnableGameEcosystem implements GameEcosystem {
@@ -64,6 +65,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
         await this.setupEngine(canvas);
         await setupAsyncManager();
         await PrefabManager.GetPrefabManager().setupAllPrefabs();
+        setupAutoNavBuildSystem(this);
         //Window resize utils
         const ecosystem = this;
         canvas.ownerDocument.defaultView.onresize = function () {

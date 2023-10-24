@@ -1,10 +1,9 @@
 import { savedProperty } from "@engine/EntitySystem/TypeRegister";
 import { IsValidModelSpecifier, ModelPaths, onModelPathsChangeObserver } from "../../Utils/EditorModelSpecifier";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { Component } from "@engine/EntitySystem/Component";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { ModelSpecifier } from "@engine/Rendering/InstancedRender";
 import { Observable } from "@babylonjs/core";
+import { ModelSpecifier } from "@engine/Rendering/ModelSpecifier";
 
 export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedProperty, parentData:ModelSpecifier, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) : boolean {
 

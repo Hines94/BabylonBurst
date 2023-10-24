@@ -3,8 +3,8 @@ import { GetEditorObjectWithValues, SetInputValueFromDatalist, SetupContentInput
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { Component } from "@engine/EntitySystem/Component";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { MaterialSpecifier } from "@engine/Rendering/InstancedRender";
 import { Observable } from "@babylonjs/core";
+import { MaterialSpecifier } from "@engine/Rendering/MaterialSpecifier";
 
 export function ProcessMaterialSpecifierComp(container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>) : boolean {
 

@@ -1,7 +1,6 @@
 import { HigherarchyHTML } from "./HigherarchyHTML";
-import { SetupAllEditorVisualisations } from "../HTMLUtils/VisualAidUtils";
-import { SetupAllEditorDebugOptions } from "../HTMLUtils/DebugOptionUtils";
 import { GameEcosystem } from "@engine/GameEcosystem";
+import { SetupAllTopBarOptions } from "../HTMLUtils/TopBarSetup";
 
 declare function FetchInjectAdditionalHTML(arg: string): Promise<any>;
 
@@ -22,10 +21,7 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
         this.windowDoc = ecosystem.doc;
         this.setupEditorPanel();
 
-        //Visualistaions
-        SetupAllEditorVisualisations(ecosystem);
-        //Debug
-        SetupAllEditorDebugOptions(ecosystem,{bContentBrowserOption:false})
+        SetupAllTopBarOptions(ecosystem,{},{bContentBrowserOption:false})
 
         //Setup data for Higherarch
         this.RegenerateHigherarchy();

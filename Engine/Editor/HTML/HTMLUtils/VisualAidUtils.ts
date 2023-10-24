@@ -1,13 +1,10 @@
 import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
-import { GenerateTopMenuToggle } from "../../Utils/EditorTopMenu";
+import { GenerateTopMenuToggle, viewItemPriority } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 import { Color4, HemisphericLight, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { BabylonBurstEditor } from "BabylonBurstEditor";
 import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
 import { AngleToRad } from "@engine/Utils/MathUtils";
-
-const viewItemPriority = 5;
 
 /** All visualistaion options such as view colliders etc */
 export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
@@ -17,7 +14,6 @@ export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
     SetupEditorDownLight(ecosystem);
     SetupEditorGridFloor(ecosystem);
 }
-
 
 function SetupEditorDownLight(ecosystem:GameEcosystem) {
     if(ecosystem.dynamicProperties["___EDITORPOWERLIGHT___"]) {

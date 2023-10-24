@@ -25,6 +25,14 @@ export default defineConfig({
             configureServer(server) {
                 server.watcher.add(path.resolve(__dirname, "./public/**/*.html"));
             },
-        }
+        },
+        {
+            name: 'fix-recast',
+            transform(code, id) {
+              if (id.includes('recast-detour.js')) {
+                return code.replace(`this["Recast"]`, 'window["Recast"]');
+              }
+            }
+        }      
     ],
 });

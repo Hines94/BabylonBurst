@@ -13,8 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
 import { AsyncAWSBackend, AsyncAssetManager } from "@engine/AsyncAssets";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { SetupAllEditorVisualisations } from "./HTMLUtils/VisualAidUtils";
-import { SetupAllEditorDebugOptions } from "./HTMLUtils/DebugOptionUtils";
+import { SetupAllTopBarOptions } from "./HTMLUtils/TopBarSetup";
 
 //This assumes only one editor per time - pretty reasonable
 export var topLevelEditorFolder:AssetFolder;
@@ -46,8 +45,7 @@ export class CustomEditorHTML extends BaseTickableObject {
 
         this.setupEditorContentBrowser();
 
-        SetupAllEditorVisualisations(this.editor);
-        SetupAllEditorDebugOptions(this.editor,{bHigherarchyOption:false});
+        SetupAllTopBarOptions(this.editor,{},{bHigherarchyOption:false})
     }
 
     setupEditorContentBrowser() {

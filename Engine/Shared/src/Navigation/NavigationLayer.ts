@@ -1,11 +1,12 @@
-import { Mesh, RecastJSPlugin } from "@babylonjs/core";
+import { ICrowd, Mesh, RecastJSPlugin } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
+import { EntityData } from "../EntitySystem/EntityData";
 
 
-@RegisteredType(NavigationLayer)
+@RegisteredType(NavigationLayer,{comment:`E.g sea/land/rocks. Use default if only desire one layer.`})
 export class NavigationLayer extends Component {
 
     @TrackedVariable()
@@ -13,43 +14,47 @@ export class NavigationLayer extends Component {
     NavigationLayerName = "default";
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Boolean,{comment:"Will auto rebuild on any change. Can be preformance heavy if adding multiple nav surfaces in sequence."})
+    autoRebuildLayer = false;
+
+    @TrackedVariable()
+    @Saved(Number,{comment:"Smaller is more granular but takes longer"})
     CellSize = 0.5;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Smaller is more granular but takes longer"})
     CellHeight = 0.5;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Max degrees of walkable slope"})
     walkableSlopeAngle = 35;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Max height (cell Units) that is considered climbale"})
     walkableHeight = 1;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Minimum floor to 'ceiling' height that will still allow the floor area to be considered walkable"})
     walkableClimb = 1;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"How close an agent can get to an obstruction"})
     walkableRadius = 1;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Will auto rebuild on any change. Can be preformance heavy if adding multiple nav surfaces in sequence."})
     maxEdgeLen = 12;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Will auto rebuild on any change. Can be preformance heavy if adding multiple nav surfaces in sequence."})
     maxSimplificationError = 1.3;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Minimum size in cells allowed to form an island region"})
     minRegionArea = 8;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Any regions smaller than this will be merged if possible"})
     mergeRegionArea = 20;
 
     @TrackedVariable()
@@ -57,14 +62,29 @@ export class NavigationLayer extends Component {
     maxVertsPerPoly = 6;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"distance between height samples used for the detail mesh. Smaller - more detail but more memory."})
     detailSampleDist = 6;
 
     @TrackedVariable()
-    @Saved(Number)
+    @Saved(Number,{comment:"Maximum distance the detail mesh surface should deviate from the heightfield data. Smaller increases complexity."})
     detailSampleMaxError = 1;
 
+    @TrackedVariable()
+    @Saved(Number,{comment:"Maximum number of agents allowed in a crowd"})
+    maxCrowdNumber = 100;
+
+    @TrackedVariable()
+    @Saved(Number,{comment:"Maximum radius of any agent in a crowd"})
+    maxAgentRadius = 10;
+
+
+    @Saved(EntityData,{editorViewOnly:true,comment:"Entities that haved been used previously to store our data against"})
+    builtSurfaces:EntityData[] = [];
+    @Saved(Uint8Array,{editorViewOnly:true,comment:"Preloaded data that has been previously generated for our navmesh"})
+    builtData:Uint8Array;
+
     navLayerPlugin:RecastJSPlugin;
+    navLayerCrowd:ICrowd;
     debugMesh:Mesh;
 
     /** Get a navigation layer comp by name that has been created and added to an Entity */

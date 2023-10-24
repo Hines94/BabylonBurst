@@ -1,5 +1,17 @@
 import { GameEcosystem } from "@engine/GameEcosystem";
 
+// --------------- PRESET MENU PRIORITIES ------------------------
+
+export const fileMenuPriority = 0;
+export const buildMenuPriority = 50;
+export const viewItemPriority = 100;
+export const debugOptionPriority = 150;
+export const gizmosPriority = 200;
+
+// ---------------------------------------------------------------
+
+
+
 export function AddOptionToEditorTopMenu(
     ecosystem: GameEcosystem,
     menuName: string,
@@ -121,7 +133,23 @@ function reOrderTopBar(topBar:HTMLElement) {
 
 }
 
-/** A nice handy on/off s */
+/** A button that can be used to trigger an even on our top editor menu */
+export function GenerateTopMenuButton(ecosystem:GameEcosystem,name:string, category:string, subfolders:string, priority:number, onCallback:(system:GameEcosystem)=>void) {
+    const propName = "___" + name + "___";
+    const indicatorName = category+propName+"___BUTTON___";
+    if(ecosystem.dynamicProperties[indicatorName]) {
+        return;
+    }
+    const ddOption = AddOptionToEditorTopMenu(ecosystem, category, subfolders + name,priority);
+    ddOption.classList.add("unselectable");
+    ecosystem.dynamicProperties[indicatorName] = ddOption;
+    ddOption.addEventListener("click", () => {
+        onCallback(ecosystem);
+    });
+    ddOption.innerText = name;
+}
+
+/** A nice handy on/off switch to toggle effects on or off */
 export function GenerateTopMenuToggle(ecosystem:GameEcosystem,name:string, category:string, subfolders:string, priority:number, onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void, bDefaultOn = false) {
     const propName = "___" + name + "___";
     const indicatorName = category+propName+"___INDICATOR___";

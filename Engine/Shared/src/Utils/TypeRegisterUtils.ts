@@ -23,3 +23,12 @@ export function isTypeAClass(type: any): boolean {
            type.prototype.constructor === type &&
            !builtInConstructors.includes(type.name);
 }
+
+export function IsIntArrayType(type:any) {
+    return type === Uint8Array || type === Uint16Array || type === Uint32Array;
+}
+
+export function IsIntArrayInstance(object:any) {
+    return object instanceof Uint8Array || object instanceof Uint16Array || object instanceof  Uint32Array;
+}
+

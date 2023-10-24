@@ -16,27 +16,27 @@ export type PrefabPackedType = {
     prefabData:any;
 }
 
-@RegisteredType(Prefab,{bEditorRemovable:false,bEditorAddable:false})
+@RegisteredType(Prefab,{bEditorRemovable:false,bEditorAddable:false,comment:`Present on all prefab entities. Automatically populated.`})
 export class Prefab extends Component {
-    @Saved(String,{editorViewOnly:true})
+    @Saved(String,{editorViewOnly:true,comment:`Unique identifier to easily identify which prefab we are looking at without having to show filename/path etc`})
     /** UUID that can be used to easily identify prefab type */
     PrefabIdentifier:string;
-    @Saved(Number,{editorViewOnly:true})
+    @Saved(Number,{editorViewOnly:true,comment:`The relative index of this entity in our prefab`})
     /** entity Index identifier */
     EntityIndex:number;
-    @Saved(EntityData,{editorViewOnly:true})
+    @Saved(EntityData,{editorViewOnly:true,comment:`If not 0 (or undefined) then this prefab has been added/managed from a PrefabInstance`})
     /** Parent prefabInstance - means this is an active 'instance' of a prefab */
     parent:EntityData;
 }
 
-@RegisteredType(PrefabInstance)
+@RegisteredType(PrefabInstance,{comment:`A way of spawning/managing prefabs into a scene`})
 export class PrefabInstance extends Component {
     @TrackedVariable()
     @Saved(PrefabSpecifier)
     /** UUID of the prefab that has been spawned */
     SpawnedPrefabIdentifier:PrefabSpecifier = new PrefabSpecifier();
 
-    @Saved(EntityData, {editorViewOnly:true})
+    @Saved(EntityData, {editorViewOnly:true,comment:`Entities that have been currently spawned from the specified identifier`})
     /** Entities that are spawned as part of this prefab instance */
     SpawnedPrefabEntities:EntityData[] = [];
 

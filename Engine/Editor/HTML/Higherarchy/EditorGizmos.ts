@@ -3,7 +3,7 @@ import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
-import { AddElementToEditorTopMenu } from "../../Utils/EditorTopMenu";
+import { AddElementToEditorTopMenu, gizmosPriority } from "../../Utils/EditorTopMenu";
 
 export async function SetupEditorGizmos(ecosystem: GameEcosystem) {
     if (ecosystem.dynamicProperties["EditorGizmos"] !== undefined) {
@@ -78,7 +78,7 @@ export class EditorGizmos {
         dropdown.appendChild(scaleType);
         dropdown.appendChild(hideType);
 
-        AddElementToEditorTopMenu(this.owner,dropdown,10000);
+        AddElementToEditorTopMenu(this.owner,dropdown,gizmosPriority);
         const gizmo = this;
         dropdown.addEventListener("change", ev => {
             if (dropdown.value === "POS") {
