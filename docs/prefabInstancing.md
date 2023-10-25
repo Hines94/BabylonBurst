@@ -23,12 +23,11 @@ Instances can be integrated into other prefabs or maps/scenes. All default set v
 
 ### Conventional Loading:
 1. Add a PrefabInstance component
-2. Write the specific UUID of the prefab to use (found by clicking that prefab and looking at the details)
-3. The default data for that prefab will then be loaded and referenced back to the instance that has been added.
-
-**TODO:** Drag and drop feature.
+2. Use the dropdown to select the prefab that you want to load
+3. The default data for that prefab will then be loaded and referenced back to the instance that has been added
+4. On removal of the component the prefab entities will also be removed
 
 ### Changing Data from Default:
-- Data can be easily altered.
-- Any deviations from the prefab default will be retained.
-- Additional entities, not part of the prefab type, will be eradicated upon re-load.
+- Data can be easily altered
+- Any deviations from the prefab default will be retained
+- Additional entities & components, not part of a the prefab type if it changes, will be eradicated upon re-load

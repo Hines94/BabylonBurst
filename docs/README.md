@@ -10,10 +10,10 @@
 - [Engine Upgrade](engineUpgrade.md) - How to upgrade to the latest engine version
 
 ## Launching In Dev Mode
-> **./bbStartDev.sh** to launch. 
+> **./bbStartDev.sh** to launch
 
-This will start the linux backend server + start the frontend on localhost.5173
-> **./bbStartDev.sh -edit** to launch with additional editor functionality. 
+This will start the bun backend server & vite frontend
+> **./bbStartDev.sh -edit** to launch with additional editor functionality
 
 ## Details
 Detailed explanations of how the underlying systems work in BabylonBoost. Includes further details and more technical segments to help provide context on technical decisions and how to use all engine features.
@@ -28,9 +28,6 @@ Detailed explanations of how the underlying systems work in BabylonBoost. Includ
 
 ### Navigation
 - [Navigation Overview](navigationOverview.md) - Outline of how to use Recast & Detour with the ECS system
-
-### Physics
-- [Physics Overview](physicsOverview.md) - Outline of how to use the inbuilt Bullet Physics system
 
 ### Prefabs
 - [Prefab Instancing](prefabInstancing.md) - How to create and use Prefabs

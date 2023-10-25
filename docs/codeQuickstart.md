@@ -4,112 +4,136 @@
 # Coding Quickstart
 Code readability and ease has been prioritised in BabylonBurst. The idea is that the ECS syntax should be obvious and minimal. Additional client functionality and editor functionality should also be easy to implement via hooks and the [ecosystem](ecosystemOverview.md).
 
-## Cpp Coding
-The idea is that hopefully we maintain simple and easy to follow syntax even for those that are not experienced c++ developers. Each component and custom property can easily be specified using the CCOMPONENT and CPROPERTY tags along with simple calls for saving and loading data.
-The only gotcha with this system is that while iterating through a system unless EntityComponentSystem::FlushSystem() is called (note dangerous when working in parallel) then some data on exact entity types could be outdated.
-```cpp
-#include "Engine/Entities/EntitySystem.h"
+## Coding
+The idea here is to give the user everything they need within the Ecosystem. Therefore, we can do things like adding/removing entities from the ecosystem and in particular the EntitySystem.
 
-REQUIRE_OTHER_COMPONENTS(EntTransform) //For the editor to know EntTransform is required
-CCOMPONENT(NOTYPINGS) //Custom component that will not generate client typings
-//A basic component that has some custom properties (CPROPERTY)
-struct myComponent : public Component {
-    //REQUIRED:
-    DECLARE_COMPONENT_METHODS(myComponent)
 
-    //This property will auto have networking and saving capability. No typings will be generated for client side.
-    CPROPERTY(int, someProperty, NO_DEFAULT, NET, SAVE, NOTYPINGS)
-
-    //Regular property that is not saved, networked or typed
-    float otherProperty;
-}
-
-void CreateEntityAddComponent() {
-    auto myEnt = EntityComponentSystem::AddEntity();
-    auto newComp = new MyComponent();
-    EntityComponentSystem::AddSetComponentToEntity(myEnt,newComp);
-}
-
-//Manually update our system
-updateSystem(systemInit, deltaTime, TestSystem::UpdateTestSystem, "TestMain");
-//Register our system to be automatically updated in the middle of our game loop
-#include "Engine/GameLoop/CommonGameLoop.h"
-REGISTER_MIDDLE_SYSTEM_UPDATE(testSystem, TestSystem::UpdateTestSystem, -1)
-
-void UpdateTestSystem(bool alreadyInit, double deltaTime) {
-    //Rapidly find entities with our component
-    auto ourEntities = EntityComponentSystem::GetEntitiesWithData({typeid(myComponent)}, {});
-    ourEntities.get()->AddChangedOnlyQuery_Any(); //Only entities with data changed this frame will be run
-
-    //This will run 'myTask' for each entity (and will be tracked in perf)
-    EntityTaskRunners::AutoPerformTasksParallel("myTask", ourEntities , myTask, deltaTime);
-
-    //We already know that myComponent is present due to get request
-    void myTask(double dt, EntityData* ent) {
-        //Change data
-        auto ourComp = EntityComponentSystem::GetComponent<myComponent>(ent);
-        //Lock just in case 
-        std::shared_lock lock(ourComp->writeMutex);
-        ourComp.someProperty = 10; //Change is automatically tracked so we can tell later this frame comp is changed
-
-        //(Optional) network down data changes
-        EntityComponentSystem::MarkCompToNetwork<myComponent>(ent);
-    }
-}
-
-void SaveEntities() {
-    //Get basic savepack
-    auto save = EntitySaver::GetFullSavePack();
-
-    //Load data
-    std::vector<uint8_t> vec(save->data(), save->data() + save->size());
-    auto saveTemplate = EntityLoader::LoadTemplateFromSave(vec);
-    //Generate new entities with the data from originals (preserves entity relationships within save)
-    EntityLoader::LoadTemplateToNewEntities(saveTemplate);
-    //Write data into the original entities
-    EntityLoader::LoadTemplateToExistingEntities(saveTemplate);
-}
-
-void RemoveEntity() {
-    //Manually find our Entitiy data as we know ent id
-    auto myEntity = EntityComponentSystem::GetComponentDataForEntity(1);
-
-    //Remove our new component
-    EntityComponentSystem::DelayedRemoveComponent(myEntity,EntityComponentSystem::GetComponent<myComponent>(myEntity));
-    //Note: This will run after the current system is finished
-
-    //Remove entity entirely
-    EntityComponentSytem::DelayedRemoveEntity(myEntity);
-    //Note: This will run after the current system is finished
-}
-
-```
-
-## Typescript Coding
-The idea here is to provide access to the running Ecosystem and enough hooks that the user never needs to leave the Source folder.
+### Client Methods
 ```ts
 import { encode } from "msgpack.hpp"
 import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 import { MessageToServType, serverConnection } from "@engine/Networking/ServerConnection";
+import { InstancedRender } from "@engine/Rendering/InstancedRender"
+import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
 
-// UpdateTick function REQUIRED in Source/TsSource/main.ts
-export function UpdateTick(ecosystem:GameEcosystem) {
-    //Create new box mesh for babylon
+// UpdateTick function REQUIRED in Source/ClientMain.ts and Source/ServerMain.ts
+export function UpdateTickClient(ecosystem:GameEcosystem) {
+    //Create new box mesh for babylon (or do any other regular Babylon things that we want with the scene)
     MeshBuilder.createBox("testBox",ecosystem.scene);
-    //Get data from ECS for components
-    const transformEnts = ecosystem.wasmWrapper.GetEntitiesWithData([EntTransform],[]);
-    const entities = Object.keys(transformEnts);
-    entities.foreach((e)=>{
-        const entId = parseInt(e)l;
-        console.log("Components for entity: " + JSON.stringify(transformEnts[entId]));
-    })
-    //Send inputs from player to server
-    SendDataToServer(ecosystem);
-}
 
-export function SendDataToServer(ecosystem: GameEcosystem) {
-    //Send payload to server with custom data
+    CreateNewEntity(ecosystem);
+
+    IterateEntities(ecosystem);
+
+    FilterEntities(ecosystem);
+
+    LoadPrefabs(ecosystem);
+
+    SaveLoadEntities(ecosystem);
+
+    //Send inputs from player to server (if client)
     serverConnection.SendMessageToServer(encode(ThisFrameServerData), MessageToServType.inputs);
 }
+
+function CreateNewEntity(ecosystem: GameEcosystem) {
+    const newEntity =  ecosystem.entitySystem.AddEntity();
+    const renderer = new InstancedRender();
+    //Setup a model etc here for the render to use
+    //EntTransform will automatically be added as it is required by InstancedRender
+    ecosystem.entitySystem.AddSetComponentToEntity(newEntity,renderer);
+}
+
+function IterateEntites(ecosystem: GameEcosystem) {
+    //Get data from ECS for components
+    const transformEnts = ecosystem.entitySystem.GetEntitiesWithData([EntTransform],[]);
+    
+    //Easily iterate with built in method
+    transformEnts.IterateEntities(e=>{
+        console.log(e);
+        const transformData = e.GetComponent(EntTransform);
+    })
+
+    //Alternatively for loop them
+    const entitiesArray = transformEnts.GetEntitiesArray();
+    for(var e = 0; e < entitiesArray.length;e++) {
+        const ent = entitiesArray[e];
+    }
+}
+
+function FilterEntities(ecosystem:GameEcosystem) {
+    //Exclude those with instanced render
+    const transformEnts = ecosystem.entitySystem.GetEntitiesWithData([EntTransform],[InstancedRender]);
+    //Get only those with changed components?
+    transformEnts.AddChanged_ALL_Filter();
+
+    //Add custom filter
+    transformEnts.filters.push((ent:EntityData,filter:EntityQuery) => {
+        //Exclude entity 5 as its special?
+        if(ent.EntityId === 5) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function LoadPrefabs(ecosystem:GameEcosystem) {
+    //Load into fresh entities
+    const id = PrefabManager.GetIdFromBundleFileName("someZippedBundle","someNamedPrefabInside");
+    if(id) {
+        PrefabManager.LoadPrefabFromIdToNew(id,ecosystem.entitySystem);
+    }
+    //Load into existing entities
+    PrefabManager.LoadPrefabFromIdToExisting("KnownPrefabUUID-asgfena12312bjsjkajge",ecosystem.entitySystem);
+}
+
+function SaveLoadEntities(ecosystem:GameEcosystem) {
+    const desiredSaveEntities = ecosystem.entitySystem.GetEntitiesWithData([DesiredComponent],[]);
+
+    //If ignore defaults then will not waste save data on items the same as default values
+    const uintData = EntitySaver.GetMsgpackForQuery(desiredSaveEntities,true);
+
+    //First load into a 'template' which will allow multiple loads and inspection of the data
+    const reloadTemplate = EntityLoader.GetEntityTemplateFromMsgpack(uintData);
+    //Next load that template into either new or existing entities
+    EntityLoader.LoadTemplateIntoNewEntities(reloadTemplate,entSystem);
+}
+
+```
+
+### Creating New Components
+
+```ts
+//REQUIRED: Make sure that the file containing your component is included (TODO: Remove the need for this?)
+
+    @RegisteredType(TestComp3,{RequiredComponents:[EntTransform],comment:"An example comp that can be used in Editor and Game!"})
+    class ExampleComponent extends Component {
+
+        //Specify the type in the @Saved
+        @Saved(String)
+        data = "testComp3";
+
+        //Use custom object to specify options
+        @Saved(nestedData,{comment:"Nested within the example component"})
+        nestData = new nestedData();
+
+        //REQUIRED: For arrays make sure you init to [] (TODO: Remove the need for this?)
+        @Saved(EntityData,{})
+        testArray:EntityData[] = [];
+    }
+
+    ecosystem.AddSetComponentToEntity(someEntity,new ExampleComponent());
+    ecosystem.GetEntitiesWithData([ExampleComponent],[]);
+
+```
+
+
+### Coding Server
+```ts
+
+export function UpdateTickServer(ecosystem:GameEcosystem) {
+    //Very similar to client
+    //TODO: To network just mark entity/component to network
+}
+
 
 ```
