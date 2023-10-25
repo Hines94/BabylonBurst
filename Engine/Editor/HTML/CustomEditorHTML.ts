@@ -45,7 +45,7 @@ export class CustomEditorHTML extends BaseTickableObject {
 
         this.setupEditorContentBrowser();
 
-        SetupAllTopBarOptions(this.editor,{},{bHigherarchyOption:false})
+        SetupAllTopBarOptions(this.editor,{},{},{bHigherarchyOption:false})
     }
 
     setupEditorContentBrowser() {

@@ -3,6 +3,7 @@ import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
 import { RunnableGameEcosystem } from "@BabylonBurstClient/RunnableGameEcosystem"
 import { EditorCamera } from "./Utils/EditorCamera";
 import { EntityData } from "@engine/EntitySystem/EntityData";
+import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 
 export type BuildableDescript = {
     CodeName: string;
@@ -24,6 +25,16 @@ export class BabylonBurstEditor extends RunnableGameEcosystem {
     options: editorOptions;
 
     onEntitySelected = new Observable<EntityData>();
+
+    DisplayErrorIfEditor = (message: string) =>{ 
+        ShowToastError(message,this.doc);
+    }
+    DisplayMessageIfEditor = (message: string) => {
+        ShowToastNotification(message,3000,this.doc)
+    }
+    DisplayError = (message: string) => {
+        ShowToastError(message,this.doc);
+    }
 
     constructor(canvas: HTMLCanvasElement, options: editorOptions) {
         super(canvas);

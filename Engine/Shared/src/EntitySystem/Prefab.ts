@@ -54,7 +54,7 @@ export class PrefabInstance extends Component {
 
     onComponentRemoved(entData: EntityData): void {
         if(this.reloadObserver !== undefined) {
-            PrefabManager.GetPrefabManager().onPrefabAdded.remove(this.reloadObserver);
+            PrefabManager.onPrefabAdded.remove(this.reloadObserver);
         }
         for(var i = 0; i < this.SpawnedPrefabEntities.length;i++) {
             (entData.owningSystem as EntitySystem).RemoveEntity(this.SpawnedPrefabEntities[i]);
@@ -70,7 +70,7 @@ export class PrefabInstance extends Component {
     refreshPrefabInstance(ent:EntityData) {
         //Subscribe for future
         if(this.reloadObserver === undefined) {
-            this.reloadObserver = PrefabManager.GetPrefabManager().onPrefabAdded.add((uuid:string)=>{
+            this.reloadObserver = PrefabManager.onPrefabAdded.add((uuid:string)=>{
                 if(uuid === this.SpawnedPrefabIdentifier.prefabUUID && ent && ent.owningSystem) {
                     this.refreshPrefabInstance(ent);
                 }
@@ -85,7 +85,7 @@ export class PrefabInstance extends Component {
 
 
         //Create new
-        const template = PrefabManager.GetPrefabManager().GetPrefabTemplateById(this.SpawnedPrefabIdentifier.prefabUUID);
+        const template = PrefabManager.GetPrefabTemplateById(this.SpawnedPrefabIdentifier.prefabUUID);
         if(template === undefined) { return; }
 
         var spawnedEnts:EntityData[] = [];
@@ -126,7 +126,6 @@ export class PrefabInstance extends Component {
         const origEnts = Object.keys(mappings);
         for(var e = 0; e < origEnts.length;e++) {
             this.SpawnedPrefabEntities.push(mappings[origEnts[e]]); 
-            console.log("Added spawned entity!")  
         }
         //Remove ents that no longer exist
 

@@ -1,14 +1,17 @@
-import { IAgentParameters } from "@babylonjs/core";
+import { IAgentParameters, TransformNode } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { EntTransform, EntVector3 } from "../EntitySystem/CoreComponents";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
+import { GameEcosystem } from "../GameEcosystem";
+import { EntityData } from "../EntitySystem/EntityData";
+import { NavigationLayer } from "./NavigationLayer";
 
 
 @RegisteredType(NavigationAgent,{RequiredComponents:[EntTransform],comment:`An agent that will be able to move around a navmesh`})
 export class NavigationAgent extends Component {
     @TrackedVariable()
-    @Saved(EntVector3,{comment:"TODO: Look at agents using multiple layers etc"})
+    @Saved(String,{comment:"TODO: Look at agents using multiple layers etc"})
     targetNavigationLayer = "default";
 
     @TrackedVariable()
@@ -44,11 +47,60 @@ export class NavigationAgent extends Component {
     separationWeight = 1.0;
 
     //This will be set when our agent has been added to their intended layers
+    IsStopped = true;
     agentIndex:number;
     priorBuildParams:IAgentParameters;
     priorMoveTarget:EntVector3;
+    transformNode:TransformNode;
 
     getAgentParams():IAgentParameters {
+        return {
+            radius:this.radius,
+            height:this.height,
+            maxAcceleration:this.maxAcceleration,
+            maxSpeed:this.maxSpeed,
+            collisionQueryRange:this.collisionQueryRange,
+            pathOptimizationRange:this.pathOptimizationRange,
+            separationWeight:this.separationWeight
+        }
+    }
 
+    IsSetup() : boolean {
+        return this.agentIndex && this.transformNode && this.priorBuildParams !== undefined;
+    }
+
+    /** For instant travel. For regular use the desiredLocation vector instead. */
+    TeleportToLocation(desiredLoc:EntVector3,owningEnt:EntityData, bStopCurrentTarget = true) : boolean {
+        if(owningEnt === undefined) {
+            return false;
+        }
+        if(!this.IsSetup()) {
+            return false;
+        }
+        const navLayer = NavigationLayer.GetNavigationLayer(this.targetNavigationLayer,owningEnt.owningSystem);
+        if(navLayer === undefined) {
+            return false;
+        }
+        navLayer.navLayerCrowd.agentTeleport(this.agentIndex,EntVector3.GetVector3(desiredLoc));
+        EntVector3.Copy(owningEnt.GetComponent(EntTransform).Position,desiredLoc);
+        if(bStopCurrentTarget) {
+            this.IsStopped = true;
+            this.priorMoveTarget = desiredLoc;
+            this.TargetLocation = desiredLoc;
+        }
+    }
+
+
+    static UpdateAgentTransforms(ecosystem:GameEcosystem) {
+        const allAgents = ecosystem.entitySystem.GetEntitiesWithData([EntTransform,NavigationAgent],[]);
+        allAgents.iterateEntities(e=>{
+            const navAgent = e.GetComponent(NavigationAgent);
+            if(navAgent.transformNode === undefined || navAgent.agentIndex === undefined) {
+                return;
+            }
+
+            const entTransform = e.GetComponent(EntTransform);
+            entTransform.copyFromMesh(navAgent.transformNode);
+        })
     }
 }

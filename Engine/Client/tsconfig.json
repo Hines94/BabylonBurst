@@ -19,7 +19,7 @@
         "paths": {
             "@BabylonBurstClient/*": ["src/*"],
             "@engine/*": ["../Shared/src/*"],
-            "@userCode/*": ["../../Source/ClientSource/*"]
+            "@userCode/*": ["../../Source/*"]
         },
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
@@ -27,6 +27,6 @@
     "include": [
         "src/**/*", 
         "../Shared/src/**/*", 
-        "../../Source/ClientSource/**/*"
+        "../../Source/**/*"
     ]
 }

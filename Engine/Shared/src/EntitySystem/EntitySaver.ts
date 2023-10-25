@@ -7,6 +7,7 @@ import { SaveableDataField } from "./SaveableDataField";
 import { Component } from "./Component";
 import { FindSavedProperty, registeredTypes, savedProperties } from "./TypeRegister";
 import { EntitySavedTypings, GetCustomSaveData, GetTypingsCompIndex } from "../Utils/SaveableDataUtils";
+
 export class EntitySaver {
 
     static GetMsgpackForAllEntities(system:EntitySystem, bIgnoreDefaults = false) {
@@ -14,6 +15,7 @@ export class EntitySaver {
         return this.GetMsgpackForQuery(allEnts,bIgnoreDefaults);
     }
 
+    /** If ignore defaults then will not waste save data on items the same as default values */
     static GetMsgpackForQuery(query:EntityQuery, bIgnoreDefaults:boolean) : Uint8Array {
         const typings:EntitySavedTypings = [];
         const data = {};

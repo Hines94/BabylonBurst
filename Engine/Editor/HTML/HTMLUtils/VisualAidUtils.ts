@@ -5,12 +5,20 @@ import { Color4, HemisphericLight, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
 import { AngleToRad } from "@engine/Utils/MathUtils";
+import { NavigationLayer } from "@engine/Navigation/NavigationLayer";
+
+export class EditorVisOptions {
+    bShowNavmeshByDefault = true;
+}
 
 /** All visualistaion options such as view colliders etc */
-export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem) {
+export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem, options:Partial<EditorVisOptions>) {
+    const spawnoptions = new EditorVisOptions();
+    Object.assign(spawnoptions,options);
     await ecosystem.waitLoadedPromise;
     SetupWiremeshVisualistaion(ecosystem);
     SetupColliderVisualisation(ecosystem);
+    SetupNavmeshVisualisation(ecosystem,spawnoptions);
     SetupEditorDownLight(ecosystem);
     SetupEditorGridFloor(ecosystem);
 }
@@ -71,6 +79,23 @@ function SetupColliderVisualisation(ecosystem: GameEcosystem) {
             //Off callback
             hideColliderVisualSystem(ecosystem);
         }
+    )
+}
+
+function SetupNavmeshVisualisation(ecosystem: GameEcosystem,options:EditorVisOptions) {
+    GenerateTopMenuToggle(ecosystem,"Show Navmesh", "View","",viewItemPriority,
+        (ecosystem:GameEcosystem)=>{
+            //On callback
+            ecosystem.dynamicProperties["___DEBUGVISNAVMESH___"] = true;
+            NavigationLayer.ShowDebugNavmeshes(true,ecosystem.entitySystem);
+
+        },
+        (ecosystem:GameEcosystem)=>{
+            //Off callback
+            ecosystem.dynamicProperties["___DEBUGVISNAVMESH___"] = false;
+            NavigationLayer.ShowDebugNavmeshes(false,ecosystem.entitySystem);
+        },
+        options.bShowNavmeshByDefault
     )
 }
 

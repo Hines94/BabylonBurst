@@ -5,10 +5,11 @@ import { DebugMode, environmentVaraibleTracker } from "../../Shared/src/Utils/En
 import { serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
-import { UpdateTick } from "@userCode/Main";
+import { UpdateTickClient } from "@userCode/ClientMain";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { RunLightsSystem } from "./Rendering/LightsSystem";
 import { UpdateAsyncSystemOnTick } from "@engine/AsyncAssets";
+import { NavigationAgent } from "@engine/Navigation/NavigationAgent";
 
 /** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
@@ -16,7 +17,7 @@ export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
         serverConnection.ProcessQueuedServerMessages(gameClient);
     }
     //Update game specific code
-    UpdateTick(gameClient);
+    UpdateTickClient(gameClient);
 }
 
 /** Our tick system that contains general functions like rendering that we will want on a range of windows */
@@ -36,6 +37,7 @@ export function UpdateSystemsLoop(gameClient: GameEcosystem, specificSystems: (e
     runSystem(gameClient, RunInstancedMeshRenderSystem);
     runSystem(gameClient, RunColliderVisualSystem);
     runSystem(gameClient, RunLightsSystem);
+    runSystem(gameClient, NavigationAgent.UpdateAgentTransforms);
 
     //Debug
     debugBoxVis.UpdateDebugItems(gameClient.deltaTime);

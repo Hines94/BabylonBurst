@@ -76,11 +76,11 @@ export class EntityTemplate {
         if(!this.DoesEntityExist(ent)) {
             return undefined;
         }
-        const compNames = Object.keys(this.typings);
-        if(!compNames.includes(compName)) {
+        const index = GetTypingsCompIndex(compName,this.typings,false);
+        if(index === undefined) {
             return undefined;
         }
-        return this.entityData[ent][GetTypingsCompIndex(compName,this.typings)];
+        return this.entityData[ent][index];
     }
 }
 

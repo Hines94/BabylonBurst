@@ -87,6 +87,8 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             //Create buttons to add and remove elements
             const buttonsContainer = container.ownerDocument.createElement("div");
             buttonsContainer.style.marginTop = "20px";
+            buttonsContainer.style.marginLeft = "3%";
+            buttonsContainer.style.marginRight = "3%";
             arrayContainer.appendChild(buttonsContainer);
 
             const addButton = container.ownerDocument.createElement("button");
@@ -184,6 +186,9 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             existingData = spawnSubType;
         }
         const nestedWrapper = GenerateInnerOuterPanelWithMinimizer(container.ownerDocument);
+        nestedWrapper.outerPanel.style.width = "96%";
+        nestedWrapper.outerPanel.style.marginLeft = "3%";
+
 
         //Title for our new nested element
         const title = container.ownerDocument.createElement("h3");

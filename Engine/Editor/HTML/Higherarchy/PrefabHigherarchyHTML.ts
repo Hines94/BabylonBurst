@@ -50,9 +50,9 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         setupTopMenu();
 
         this.ecosystem.entitySystem.ResetSystem();
-        PrefabManager.GetPrefabManager().LoadPrefabFromIdToExisting(prefabData.prefabID,this.ecosystem.entitySystem);
+        PrefabManager.LoadPrefabFromIdToExisting(prefabData.prefabID,this.ecosystem.entitySystem);
         console.log("------------ Loading Prefab Data ------------");
-        console.log(PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabData.prefabID))
+        console.log(PrefabManager.GetPrefabTemplateById(prefabData.prefabID))
         console.log(higherarchy.ecosystem.entitySystem.GetEntitiesWithData([],[]).GetEntitiesArray());
         console.log("------------ End Loading Prefab Data ------------");
         this.RegenerateHigherarchy();
@@ -79,7 +79,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 //Save to backend
                 prefab.SaveItemOut();
                 //Reset for each current WASM system
-                PrefabManager.GetPrefabManager().SetupPrefabFromRaw(prefab.parent.getItemLocation(),prefab.GetSaveName(),prefab.data);
+                PrefabManager.SetupPrefabFromRaw(prefab.parent.getItemLocation(),prefab.GetSaveName(),prefab.data);
                 ShowToastNotification("Entity Saved", 3000, higherarchy.windowDoc);
             });
             //Exit button
@@ -90,7 +90,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 }
             });
 
-            SetupAllTopBarOptions(higherarchy.ecosystem,{},{bContentBrowserOption:false})
+            SetupAllTopBarOptions(higherarchy.ecosystem,{},{},{bContentBrowserOption:false})
         }
     }
 

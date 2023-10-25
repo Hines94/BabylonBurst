@@ -42,7 +42,7 @@ export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:saved
     function RefreshToData() {
         const existingData = parentData[propType.name];
         if (existingData.prefabUUID !== undefined) {
-            newInput.value = PrefabManager.GetPrefabManager().GetPrefabBundleNameFromId(existingData.prefabUUID);
+            newInput.value = PrefabManager.GetPrefabBundleNameFromId(existingData.prefabUUID);
         } else {
             newInput.value = "";
         }

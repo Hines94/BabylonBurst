@@ -1,4 +1,4 @@
-import { AbstractMesh, Matrix, Quaternion, Vector3, Vector4 } from "@babylonjs/core";
+import { AbstractMesh, Matrix, Quaternion, TransformNode, Vector3, Vector4 } from "@babylonjs/core";
 import { Clamp } from "../Utils/MathUtils";
 import { RegisteredType, Saved } from "./TypeRegister";
 import { Component } from "./Component";
@@ -35,6 +35,9 @@ export class EntVector3{
     }
 
     static Equals(a: EntVector3, b: EntVector3, margin: number = 0.01): boolean {
+        if(a === undefined || a === null || b === undefined || b === null) {
+            return false;
+        }
         const sqMargin = Math.pow(margin, 2);
         if (Math.pow(a.X - b.X, 2) > sqMargin) {
             return false;
@@ -84,6 +87,13 @@ export class EntVector3{
                 }
             }
         }
+    }
+
+    static Zero(vec:EntVector3, margin = 0.01) {
+        if(vec === undefined || vec === null) {
+            return false;
+        }
+        return EntVector3.Length(vec) < margin;
     }
 
     static DistanceSq(vecA: EntVector3, vecB: EntVector3) {
@@ -167,10 +177,16 @@ export class EntVector3{
         return new EntVector3(val.X * float, val.Y * float, val.Z * float);
     }
 
-    static Copy(target:EntVector3,object:EntVector3) {
-        target.X = object.X;
-        target.Y = object.Y;
-        target.Z = object.Z;
+    static Copy(target:EntVector3,object:EntVector3 | Vector3) {
+        if(object instanceof EntVector3) {
+            target.X = object.X;
+            target.Y = object.Y;
+            target.Z = object.Z;
+        } else {
+            target.X = object.x;
+            target.Y = object.y;
+            target.Z = object.z;
+        }
     }
 }
 
@@ -245,6 +261,9 @@ export class EntVector4 {
     }
 
     static Equals(a: EntVector4, b: EntVector4, margin: number = 0.01): boolean {
+        if(a === undefined || a === null || b === undefined || b === null) {
+            return false;
+        }
         const sqMargin = Math.pow(margin, 2);
         if (Math.pow(a.X - b.X, 2) > sqMargin) {
             return false;
@@ -409,11 +428,18 @@ export class EntVector4 {
         return ret;
     }
 
-    static Copy(target:EntVector4,object:EntVector4) {
-        target.X = object.X;
-        target.Y = object.Y;
-        target.Z = object.Z;
-        target.W = object.W;
+    static Copy(target:EntVector4,object:EntVector4 | Vector4 | Quaternion) {
+        if(object instanceof EntVector4) {
+            target.X = object.X;
+            target.Y = object.Y;
+            target.Z = object.Z;
+            target.W = object.W;
+        } else {
+            target.X = object.x;
+            target.Y = object.y;
+            target.Z = object.z;
+            target.W = object.w;
+        }
     }
 }
 
@@ -454,6 +480,9 @@ export class EntTransform extends Component {
     }
 
     static Equals(valA: EntTransform, valB: EntTransform) {
+        if(valA === undefined || valA === null || valB === undefined || valB === null) {
+            return false;
+        }
         return (
             EntVector3.Equals(valA.Position, valB.Position) &&
             EntVector4.Equals(valA.Rotation, valB.Rotation) &&
@@ -461,13 +490,23 @@ export class EntTransform extends Component {
         );
     }
 
-    static MeshToTransform(mesh: AbstractMesh) {
+    static MeshToTransform(mesh: AbstractMesh | TransformNode) {
         const tf = new EntTransform();
         tf.Position = EntVector3.VectorToEnt(mesh.position);
         //TODO: Check htis
         tf.Rotation = EntVector4.EulerToQuaternion(mesh.rotation);
         tf.Scale = EntVector3.VectorToEnt(mesh.scaling);
         return tf;
+    }
+
+    copyFromMesh(mesh: AbstractMesh | TransformNode) {
+        EntVector3.Copy(this.Position,mesh.position);
+        if(mesh.rotationQuaternion) {
+            EntVector4.Copy(this.Rotation,mesh.rotationQuaternion);
+        } else {
+            EntVector4.Copy(this.Rotation,EntVector4.EulerToQuaternion(mesh.rotation));
+        }
+        EntVector3.Copy(this.Scale,mesh.scaling);
     }
 
     static SetTransformForMesh(mesh: AbstractMesh, transform: EntTransform) {

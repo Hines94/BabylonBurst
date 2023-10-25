@@ -12,9 +12,6 @@ export function ProcessMaterialSpecifierComp(container:HTMLElement, propType:sav
         return false;
     }
     
-    const title = container.ownerDocument.createElement("p");
-    title.innerText = propType.name;
-    container.appendChild(title);
     const input = container.ownerDocument.createElement("input");
     input.classList.add('form-control');
     input.style.marginBottom = '5px';

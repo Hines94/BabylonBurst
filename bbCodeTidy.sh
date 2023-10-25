@@ -25,7 +25,7 @@ if grep -q "^FORMAT_SOURCE=true$" .env; then
     echo -e ${MAGENTA}"--- Performing Code Tidy of Source ---"${RESET}
 
     cd ${base_path}/Source
-    ${base_path}/Engine/Client/node_modules/.bin/prettier prettier --write "ClientSource/**/*.ts" --config ${base_path}/Engine/Client/.prettierrc
+    ${base_path}/Engine/Client/node_modules/.bin/prettier prettier --write "Source/**/*.ts" --config ${base_path}/Engine/Client/.prettierrc
 else
      echo -e ${MAGENTA}"--- Not tidying Source code. Set FORMAT_SOURCE=true in .env ---"${RESET}
 fi

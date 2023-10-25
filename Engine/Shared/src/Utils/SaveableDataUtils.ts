@@ -52,7 +52,7 @@ export function GetTypingsParamName(comp:string,param:number,typings:EntitySaved
             continue;
         }
         if(typings[t].compParams.length <= param) {
-            console.error("No param type for " + param + " for comp " + compName);
+            console.error(`No param type for ${param} for comp ${comp}`);
             return undefined;
         }
         return typings[t].compParams[param];
@@ -91,7 +91,7 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
         var defaultComp = new (registeredTypes[propType].type as any)();
         //Get default from prefab?
         if(prefabComp !== undefined && prefabComp.parent !== undefined) {
-            const attemptPrefab = PrefabManager.GetPrefabManager().GetPrefabTemplateById(prefabComp.PrefabIdentifier);
+            const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
             if(attemptPrefab) {
                 const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId,propType,undefined,entity.owningSystem.GetAllEntities());
                 if(defaultPrefab) {

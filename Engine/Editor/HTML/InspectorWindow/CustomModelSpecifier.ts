@@ -21,17 +21,14 @@ export function ProcessModelSpecifierComp(container:HTMLElement, propType:savedP
         })
         container.ownerDocument.body.appendChild(modelsList);
     }
-
-    const title = container.ownerDocument.createElement("p");
-    title.innerText = propType.name;
-    container.appendChild(title);
     
     const input = container.ownerDocument.createElement("input");
     input.setAttribute('list', '___ModelsList___');
     input.setAttribute('name', 'addModels');
     input.classList.add('form-control');
     input.style.marginBottom = '5px';
-
+    input.style.marginLeft = "3%";
+    input.style.marginRight = "3%";
 
     RefreshToData();
     requireRefresh.add(RefreshToData);

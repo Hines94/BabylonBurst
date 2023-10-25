@@ -1,4 +1,4 @@
-import { Color3, Mesh, RecastJSPlugin, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, RecastJSPlugin, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "../GameEcosystem";
 import { NavigationSurface } from "./NavigationSurface";
 import { AsyncStaticMeshDefinition } from "../AsyncAssets";
@@ -15,12 +15,14 @@ import { DeepEquals } from "../Utils/HTMLUtils";
 var recast:any;
 
 enum rebuildType {
+    /** Warn if out of date */
+    Warn,
     /** If data does not exist or is not up to date then no rebuild */
     OnlyIfData,
     /** If existing data exists then we will rebuild */
     TryWithData,
     /** Rebuild no matter what */
-    Force
+    Force,
 }
 
 /** Setup navigation systems to automatically rebuild themselves on change if opted into this */
@@ -52,21 +54,26 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
             await RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.TryWithData);
         } else if(bAdded) {
             await RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.OnlyIfData);
+        } else {
+            RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.Warn);
         }
     }
     if(notify.comp instanceof NavigationSurface) {
         for(var i = 0; i < notify.comp.NavigationLayers.length;i++) {
             const layer = NavigationLayer.GetNavigationLayer(notify.comp.NavigationLayers[i],ecosystem.entitySystem);
-            if(layer && layer.autoRebuildLayer) {
-                await RebuildNavigationLayer(layer,ecosystem,rebuildType.TryWithData);
+            if(layer) {
+                if(layer.autoRebuildLayer) {
+                    await RebuildNavigationLayer(layer,ecosystem,rebuildType.TryWithData);
+                } else {
+                    RebuildNavigationLayer(layer,ecosystem,rebuildType.Warn);
+                }
             }
         }
     }
     if(notify.comp instanceof NavigationAgent) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
-        RebuildAgent(navLayer,notify.ent);
-        
-        MoveAgent(ecosystem,notify.comp);   
+        RebuildAgent(navLayer,notify.ent,ecosystem);
+        MoveAgent(navLayer,notify.ent);   
     }
 }
 
@@ -85,22 +92,6 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         navLayer.navLayerPlugin = new RecastJSPlugin(recast);
         //TODO: Service worker?
     }
-
-    var navmeshParameters = {
-        cs: navLayer.CellSize,
-        ch: navLayer.CellHeight,
-        walkableSlopeAngle: navLayer.walkableSlopeAngle,
-        walkableHeight: navLayer.walkableHeight,
-        walkableClimb: navLayer.walkableClimb,
-        walkableRadius: navLayer.walkableRadius,
-        maxEdgeLen: navLayer.maxEdgeLen,
-        maxSimplificationError: navLayer.maxSimplificationError,
-        minRegionArea: navLayer.minRegionArea,
-        mergeRegionArea: navLayer.mergeRegionArea,
-        maxVertsPerPoly: navLayer.maxVertsPerPoly,
-        detailSampleDist: navLayer.detailSampleDist,
-        detailSampleMaxError: navLayer.detailSampleMaxError,
-    };
 
     //Get the navigation surfaces we want to build with
     const builtSurfaces:EntityData[] = [];
@@ -137,10 +128,14 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     const equalToLastBuild = ArraysContainEqualItems(navLayer.builtSurfaces ,builtSurfaces);
     if(buildType === rebuildType.Force || (!equalToLastBuild && buildType === rebuildType.TryWithData)) {
         navLayer.builtSurfaces = builtSurfaces;
-        navLayer.navLayerPlugin.createNavMesh(navSurfaces,navmeshParameters); 
+        navLayer.navLayerPlugin.createNavMesh(navSurfaces,navLayer.GetNavmeshParameters()); 
         navLayer.builtData = navLayer.navLayerPlugin.getNavmeshData();  
     } else if(equalToLastBuild) {
-        navLayer.navLayerPlugin.buildFromNavmeshData(navLayer.builtData);
+        if(buildType !== rebuildType.Warn) {
+            navLayer.navLayerPlugin.buildFromNavmeshData(navLayer.builtData);
+        }
+    } else {
+        ecosystem.DisplayErrorIfEditor("Navmesh is dirty and requires a rebuild (view->RebuildNavmesh)")
     }
     
     //Cleanup clone meshes
@@ -148,7 +143,12 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         cloneMeshes[m].dispose();
     }
 
-    //TODO: Hide navmesh unless option is shown
+    //If just warning then return no need to go further
+    if(buildType === rebuildType.Warn) {
+        return;
+    }
+    
+    //Create debug mesh
     if(navLayer.debugMesh !== undefined) {
         navLayer.debugMesh.dispose(); 
     }
@@ -157,19 +157,32 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         var matdebug = new StandardMaterial('matdebug', ecosystem.scene);
         matdebug.diffuseColor = getRandomColor3()
         matdebug.alpha = 0.2;
+        matdebug.specularPower = 0;
         ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] = matdebug;
     }
     navLayer.debugMesh.material = ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName];
     navLayer.debugMesh.position = new Vector3(0,0.01,0);
+    if(!ecosystem.dynamicProperties["___DEBUGVISNAVMESH___"]) {
+        navLayer.debugMesh.isVisible = false;
+    }
 
     //Rebuild navigation crowd
     navLayer.navLayerCrowd = navLayer.navLayerPlugin.createCrowd(navLayer.maxCrowdNumber,navLayer.maxAgentRadius,ecosystem.scene);
 
-    //TODO: Rebuild all agents
-    console.error("Rebuild all agents!")
+    //Rebuild all agents
+    const allAgents = ecosystem.entitySystem.GetEntitiesWithData([NavigationAgent],[]).GetEntitiesArray();
+    for(var a = 0; a < allAgents.length;a++) {
+        const agentComp = allAgents[a].GetComponent(NavigationAgent);
+        if(agentComp.targetNavigationLayer !== navLayer.NavigationLayerName) {
+            continue;
+        }
+        RebuildAgent(navLayer,allAgents[a],ecosystem);
+        MoveAgent(navLayer,allAgents[a]);
+    }
+    
 }
 
-function RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData) {
+function RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData, ecosystem:GameEcosystem) {
     if(navLayer === undefined) {
         return;
     }
@@ -188,12 +201,19 @@ function RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData) {
     if(transform === undefined) {
         return;
     }
-    agent.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,);
+    if(agent.transformNode === undefined) {
+        agent.transformNode = new TransformNode(`NavAgentTransform_${agentEnt.EntityId}`,ecosystem.scene);
+    }
+    agent.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,agent.transformNode);
     agent.priorBuildParams = newParams;
+    EntVector3.Copy(transform.Position,EntVector3.VectorToEnt(agent.transformNode.position));
 }
 
 function MoveAgent(navLayer:NavigationLayer,agentEnt:EntityData) {
     if(navLayer === undefined) {
+        return;
+    }
+    if(agentEnt === undefined) {
         return;
     }
     const agent = agentEnt.GetComponent(NavigationAgent);
@@ -208,7 +228,12 @@ function MoveAgent(navLayer:NavigationLayer,agentEnt:EntityData) {
         return;
     }
 
-    navLayer.navLayerCrowd.agentGoto(agent.agentIndex,EntVector3.GetVector3(agent.TargetLocation));
-
+    if(EntVector3.Zero(agent.TargetLocation)) {
+        agent.IsStopped = true;
+    } else {
+        const closestPos = navLayer.navLayerPlugin.getClosestPoint(EntVector3.GetVector3(agent.TargetLocation));
+        navLayer.navLayerCrowd.agentGoto(agent.agentIndex,closestPos);
+        agent.IsStopped = false;
+    }
     agent.priorMoveTarget = EntVector3.clone(agent.TargetLocation);
 }

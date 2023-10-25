@@ -2,6 +2,7 @@ import { Component } from "../EntitySystem/Component";
 import { EntityData } from "../EntitySystem/EntityData";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
+import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { InstancedRender } from "../Rendering/InstancedRender";
 
 const entSystem = new EntitySystem();
@@ -9,12 +10,15 @@ var removeCalled = false;
 var addCalled = false;
 var changeCalled = false;
 
-class TestComp extends Component {
+@RegisteredType(TestEntComp)
+class TestEntComp extends Component {
 
 }
 
-class TestComp2 extends Component {
+@RegisteredType(TestEntComp2)
+class TestEntComp2 extends Component {
     @TrackedVariable()
+    @Saved(String)
     someVar = "test";
 
     override onComponentRemoved(entData: EntityData): void {
@@ -36,37 +40,41 @@ test("EntitySystemAddEntity", () => {
 });
 
 test("EntitySystemAddComponent", () => {
-    const testC = new TestComp();
+    const testC = new TestEntComp();
     entSystem.AddSetComponentToEntity(1,testC);
     const entData = entSystem.GetEntityData(1);
     expect(entData.Components.includes(testC)).toBe(true);
-    expect(entData.GetComponent(TestComp)).toBe(testC);
+    expect(entData.GetComponent(TestEntComp)).toBe(testC);
 });
 
 test("EntitySystemFindEntities", () => {
     const thirdEnt = entSystem.AddEntity();
-    const testC = new TestComp();
+    const testC = new TestEntComp();
     entSystem.AddSetComponentToEntity(2,testC);
-    entSystem.AddSetComponentToEntity(2,new TestComp2());
+    entSystem.AddSetComponentToEntity(2,new TestEntComp2());
+    entSystem.ResetChangedComponents();
 
-    const testC2 = new TestComp2()
+    const testC2 = new TestEntComp2()
     entSystem.AddSetComponentToEntity(thirdEnt,testC2);
     testC2.someVar = "changed";
-    expect(entSystem.IsChangedComponent(thirdEnt,TestComp2)).toBe(true);
+    expect(entSystem.IsChangedComponent(thirdEnt,TestEntComp2)).toBe(true);
     
     //Query with changed only
-    const ALLQuery = entSystem.GetEntitiesWithData([TestComp2],[]);
+    const ALLQuery = entSystem.GetEntitiesWithData([TestEntComp2],[]);
     ALLQuery.AddChanged_ALL_Filter();
     expect(ALLQuery.GetNumEntities()).toBe(1);
     
     entSystem.ResetChangedComponents();
-    expect(entSystem.IsChangedComponent(2,TestComp2)).toBe(false);
+    expect(entSystem.IsChangedComponent(2,TestEntComp2)).toBe(false);
+    expect(changeCalled).toBe(true);
 
-    expect(entSystem.GetEntitiesWithData([TestComp],[TestComp2]).GetNumEntities()).toBe(1);
-    expect(entSystem.GetEntitiesWithData([TestComp,TestComp2],[]).GetNumEntities()).toBe(1);
-    expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(2);
-    expect(entSystem.GetEntitiesWithData([TestComp2],[]).GetNumEntities()).toBe(2);
+    expect(entSystem.GetEntitiesWithData([TestEntComp],[TestEntComp2]).GetNumEntities()).toBe(1);
+    expect(entSystem.GetEntitiesWithData([TestEntComp,TestEntComp2],[]).GetNumEntities()).toBe(1);
+    expect(entSystem.GetEntitiesWithData([TestEntComp],[]).GetNumEntities()).toBe(2);
+    expect(entSystem.GetEntitiesWithData([TestEntComp2],[]).GetNumEntities()).toBe(2);
 });
+
+
 
 test("EntitySystemRequiredComponents", () => {
     const newEnt = entSystem.AddEntity();
@@ -76,12 +84,12 @@ test("EntitySystemRequiredComponents", () => {
 
 test("EntitySystemRemoveEntities", () => {
     entSystem.RemoveEntity(1);
-    expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(1);
+    expect(entSystem.GetEntitiesWithData([TestEntComp],[]).GetNumEntities()).toBe(1);
 })
 
 test("EntitySystemRemoveComponent", () => {
-    entSystem.RemoveComponent(2,TestComp);
-    expect(entSystem.GetEntitiesWithData([TestComp],[]).GetNumEntities()).toBe(0);
+    entSystem.RemoveComponent(2,TestEntComp);
+    expect(entSystem.GetEntitiesWithData([TestEntComp],[]).GetNumEntities()).toBe(0);
 })
 
 test("EntitySystemResetSystem", () => {
@@ -92,5 +100,4 @@ test("EntitySystemResetSystem", () => {
 test("EntitySystemEventsFired", () => {
     expect(addCalled).toBe(true);
     expect(removeCalled).toBe(true);
-    expect(changeCalled).toBe(true);
 })

@@ -94,6 +94,11 @@ export function CheckTypingForProperty(newVal: any, propertyKey: string, compNam
 }
 
 function checkTyping(type:Function,value:any,keyname:string) {
+    //Allow setting of anything to undefined
+    if(value === undefined) {
+        return;
+    }
+
     // Handle primitive types
     if ((type === Number && typeof value !== 'number') ||
         (type === String && typeof value !== 'string') ||

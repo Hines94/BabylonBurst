@@ -1,4 +1,4 @@
-import { ICrowd, Mesh, RecastJSPlugin } from "@babylonjs/core";
+import { ICrowd, INavMeshParameters, Mesh, RecastJSPlugin } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
@@ -87,6 +87,26 @@ export class NavigationLayer extends Component {
     navLayerCrowd:ICrowd;
     debugMesh:Mesh;
 
+    GetNavmeshParameters() : INavMeshParameters {
+        const navLayer = this;
+        return {
+            cs: navLayer.CellSize,
+            ch: navLayer.CellHeight,
+            walkableSlopeAngle: navLayer.walkableSlopeAngle,
+            walkableHeight: navLayer.walkableHeight,
+            walkableClimb: navLayer.walkableClimb,
+            walkableRadius: navLayer.walkableRadius,
+            maxEdgeLen: navLayer.maxEdgeLen,
+            maxSimplificationError: navLayer.maxSimplificationError,
+            minRegionArea: navLayer.minRegionArea,
+            mergeRegionArea: navLayer.mergeRegionArea,
+            maxVertsPerPoly: navLayer.maxVertsPerPoly,
+            detailSampleDist: navLayer.detailSampleDist,
+            detailSampleMaxError: navLayer.detailSampleMaxError,
+        };
+    
+    }
+
     /** Get a navigation layer comp by name that has been created and added to an Entity */
     static GetNavigationLayer(layerName = "default",entSystem:EntitySystem) : NavigationLayer {
         const allLayers = entSystem.GetEntitiesWithData([NavigationLayer],[]);
@@ -99,5 +119,15 @@ export class NavigationLayer extends Component {
         }
         console.error(`No navigation layer created for name ${layerName}`);
         return undefined;
+    }
+
+    static ShowDebugNavmeshes(bShow:boolean,entSystem:EntitySystem) {
+        const allNavmeshes = entSystem.GetEntitiesWithData([NavigationLayer],[]);
+        allNavmeshes.iterateEntities(e=>{
+            const nmLayer = e.GetComponent(NavigationLayer);
+            if(nmLayer.debugMesh) {
+                nmLayer.debugMesh.isVisible = bShow;
+            }
+        })
     }
 }

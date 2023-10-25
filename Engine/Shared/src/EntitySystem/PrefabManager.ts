@@ -16,7 +16,7 @@ function addPrefabEnd(item:string):string {
 /** Responsible for loading and managing the prefabs we currently have */
 export class PrefabManager {
 
-    onPrefabAdded = new Observable<string>();
+    static onPrefabAdded = new Observable<string>();
 
     static GetPrefabManager():PrefabManager {
         if(this.Manager === undefined) {
@@ -37,9 +37,10 @@ export class PrefabManager {
     allPrefabs:{[id:string]:EntityTemplate} = {};
     prefabBundleNamesToIds:{[bundleName:string]:string} = {};
 
-    async setupAllPrefabs() {
+    static async setupAllPrefabs() {
+        const Manager = this.GetPrefabManager();
         //Already setup?
-        if(Object.keys(this.allPrefabs).length > 0) {
+        if(Object.keys(Manager.allPrefabs).length > 0) {
             return;
         }
         const assetManager = AsyncAssetManager.GetAssetManager();
@@ -60,12 +61,13 @@ export class PrefabManager {
                 if(!zipped.name.includes(".Prefab")) {
                     continue;
                 }
-                this.SetupPrefabFromRaw(bundlePath,zipped.name,await zipped.entry.arrayBuffer());
+                PrefabManager.SetupPrefabFromRaw(bundlePath,zipped.name,await zipped.entry.arrayBuffer());
             }
         }
     }
 
-    SetupPrefabFromRaw(bundlePath:string,fileName:string,data: ArrayLike<number> | BufferSource) {
+    static SetupPrefabFromRaw(bundlePath:string,fileName:string,data: ArrayLike<number> | BufferSource) {
+        const Manager = this.GetPrefabManager();
         const loadData = decode(data) as PrefabPackedType;
         if(loadData.prefabID === undefined) {
             console.error("Invalid prefab type!");
@@ -74,47 +76,58 @@ export class PrefabManager {
             console.error("Invalid prefab data!");
         }
         const fullPath = GetZipPath(bundlePath)+"_"+addPrefabEnd(fileName);
-        this.prefabBundleNamesToIds[fullPath] = loadData.prefabID;
-        this.allPrefabs[loadData.prefabID] = EntityLoader.GetEntityTemplateFromMsgpack(loadData.prefabData);
+        Manager.prefabBundleNamesToIds[fullPath] = loadData.prefabID;
+        Manager.allPrefabs[loadData.prefabID] = EntityLoader.GetEntityTemplateFromMsgpack(loadData.prefabData);
         console.log("Setup prefab item: " + fullPath)
-        this.onPrefabAdded.notifyObservers(loadData.prefabID);
+        PrefabManager.onPrefabAdded.notifyObservers(loadData.prefabID);
     }
 
-    GetPrefabTemplateById(id:string) {
-        return this.allPrefabs[id];
+    static GetPrefabTemplateById(id:string) {
+        const Manager = this.GetPrefabManager();
+        return Manager.allPrefabs[id];
     }
 
-    GetPrefabBundleNameFromId(id:string) {
-        const keys = Object.keys(this.prefabBundleNamesToIds);
+    static GetPrefabBundleNameFromId(id:string) {
+        const Manager = this.GetPrefabManager();
+        const keys = Object.keys(Manager.prefabBundleNamesToIds);
         for(var i = 0; i < keys.length;i++) {
-            if(this.prefabBundleNamesToIds[keys[i]] === id) {
+            if(Manager.prefabBundleNamesToIds[keys[i]] === id) {
                 return keys[i];
             }
         }
         return undefined;
     }
 
-    GetPrefabTemplateByBundleFileName(bundlePath:string,fileName:string) {
+    static GetIdFromBundleFileName(bundlePath:string,fileName:string) {
+        const Manager = this.GetPrefabManager();
         const fullPath = GetZipPath(bundlePath)+"_"+addPrefabEnd(fileName);
-        if(this.prefabBundleNamesToIds[fullPath] !== undefined) {
-            return this.allPrefabs[this.prefabBundleNamesToIds[fullPath]];
+        return Manager.prefabBundleNamesToIds[fullPath];
+    }
+
+    static GetPrefabTemplateByBundleFileName(bundlePath:string,fileName:string) {
+        const Manager = this.GetPrefabManager();
+        const fullPath = GetZipPath(bundlePath)+"_"+addPrefabEnd(fileName);
+        if(Manager.prefabBundleNamesToIds[fullPath] !== undefined) {
+            return Manager.allPrefabs[Manager.prefabBundleNamesToIds[fullPath]];
         }
         return undefined;
     }
 
-    LoadPrefabFromIdToNew(id:string, entitySystem:EntitySystem) {
-        if(this.allPrefabs[id] === undefined) {
+    static LoadPrefabFromIdToNew(id:string, entitySystem:EntitySystem) {
+        const Manager = this.GetPrefabManager();
+        if(Manager.allPrefabs[id] === undefined) {
             console.error(`Tried to load bad prefab: ${id}`);
             return;
         }
-        EntityLoader.LoadTemplateIntoNewEntities(this.allPrefabs[id],entitySystem);
+        EntityLoader.LoadTemplateIntoNewEntities(Manager.allPrefabs[id],entitySystem);
     }
 
-    LoadPrefabFromIdToExisting(id:string, entitySystem:EntitySystem) {
-        if(this.allPrefabs[id] === undefined) {
+    static LoadPrefabFromIdToExisting(id:string, entitySystem:EntitySystem) {
+        const Manager = this.GetPrefabManager();
+        if(Manager.allPrefabs[id] === undefined) {
             console.error(`Tried to load bad prefab: ${id}`);
             return;
         }
-        EntityLoader.LoadTemplateIntoExistingEntities(this.allPrefabs[id],entitySystem);
+        EntityLoader.LoadTemplateIntoExistingEntities(Manager.allPrefabs[id],entitySystem);
     }
 }

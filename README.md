@@ -18,7 +18,7 @@ VsCode:
 - Install vscode extension
 
 Working With Examples:
-Simply copy the ServerSource and ClientSource folders into your Source folder and re-run
+Simply copy the Source folder into your Source folder and re-run
 
 Start Editor:
 run StartEditor.sh
