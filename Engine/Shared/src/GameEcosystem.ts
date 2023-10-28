@@ -25,6 +25,7 @@ export interface GameEcosystem {
     scene: Scene;
 
     //---ERRORCALLBACKS---
+    isEditor:boolean;
     /** Used for displaying important errors in Editor */
     DisplayErrorIfEditor:(message:string)=>void;
     /** Used for displaying important messages in Editor */

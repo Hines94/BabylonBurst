@@ -39,15 +39,16 @@ export class RunnableGameEcosystem implements GameEcosystem {
     controlHasFocus: boolean;
     hoveredOverGUI: boolean;
 
-    DisplayErrorIfEditor = (message: string) =>{ 
+    isEditor = false;
+    DisplayErrorIfEditor = (message: string) => {
         console.error(message);
-    }
+    };
     DisplayMessageIfEditor = (message: string) => {
-        console.log(message)
-    }
+        console.log(message);
+    };
     DisplayError = (message: string) => {
-        ShowToastError(message,this.doc);
-    }
+        ShowToastError(message, this.doc);
+    };
 
     constructor(canvas: HTMLCanvasElement) {
         this.doc = canvas.ownerDocument;

@@ -1,65 +1,91 @@
-import { decode } from "@msgpack/msgpack";
-import { GameEcosystem } from "../GameEcosystem";
 import { DisposeOfObject, WaitForTime } from "../Utils/SceneUtils";
 
-export var serverConnection: ServerConnection;
-
-var retryConnectionAttempts = 0;
-
-async function retryServerConnection() {
-    if (retryConnectionAttempts > 10) {
-        console.log(">10 retry connect attempts. Quitting");
-        return;
-    }
-    await WaitForTime(1);
-    retryConnectionAttempts++;
-    new ServerConnection();
-}
+export var serverConnection:ServerConnection;
 
 /** A connection to the server that we are currently on */
 export class ServerConnection {
     socket: WebSocket;
+    bDesireClose = false;
     currentLatency: number = 0;
+    maxConnectionRetryAttempts = 10;
 
     serverMessages: ArrayBuffer[] = [];
+    attemptConnectPromise:Promise<void>;
 
-    constructor() {
-        serverConnection = this;
-        console.log("Attempting to connect to server");
+    private connectionAddress = "ws://localhost:8080/ws";
+    private retryConnectionAttempts = 0;
 
-        const ws = new WebSocket("ws://localhost:8080/ws");
-        ws.binaryType = "arraybuffer";
-        this.socket = ws;
+    constructor(desiredAddress = "ws://localhost:8080/ws") {
+        this.connectionAddress = desiredAddress;
+        console.log(`Attempting to connect to server @ ${desiredAddress}`);
+    }
 
-        ws.addEventListener("open", function (event) {
-            console.log("Server connection established");
-            retryConnectionAttempts = 0;
+    async AttemptToConnect() {
+        if (this.socket !== undefined) {
+            this.socket.close();
+        }
+    
+        const connect = this;
+    
+        return new Promise((resolve, reject) => {
+            const ws = new WebSocket(this.connectionAddress);
+            ws.binaryType = "arraybuffer";
+            this.socket = ws;
+    
+            ws.addEventListener("open", function (event) {
+                console.log("Server connection established");
+                connect.retryConnectionAttempts = 0;
+                resolve(connect.connectionAddress); // Successfully connected
+            });
+    
+            ws.addEventListener("message", function (event) {
+                connect.ProcessIncomingServerMessage(event.data);
+            });
+    
+            ws.addEventListener("error", function (event) {
+                console.log("Websocket error");
+                attemptReconnection(resolve,reject);
+                
+            });
+    
+            ws.addEventListener("close", function (event) {
+                console.log("Disconnected from server websocket");
+                attemptReconnection(resolve, reject);
+            });
         });
 
-        ws.addEventListener("message", function (event) {
-            serverConnection.ProcessIncomingServerMessage(event.data);
-        });
-
-        ws.addEventListener("error", function (event) {
-            //console.log("Websocket error");
-        });
-
-        ws.addEventListener("close", function (event) {
-            console.log("Disconnected from server websocket");
-            serverConnection.dispose();
-            retryServerConnection();
-        });
+        function attemptReconnection(resolve: (value: unknown) => void, reject: (reason?: any) => void) {
+            if (!connect.bDesireClose) {
+                connect.retryConnectionAttempt()
+                    .then(resolve) // This will propagate the successful connection resolve to the outer promise
+                    .catch(reject);
+            } else {
+                connect.dispose();
+            }
+        }
+    }
+    
+    async retryConnectionAttempt() {
+        if (this.retryConnectionAttempts >= this.maxConnectionRetryAttempts) {
+            const errorMsg = `>${this.maxConnectionRetryAttempts} retry connect attempts to ${this.connectionAddress}. Quitting`;
+            console.error(errorMsg);
+            throw new Error(errorMsg);
+        }
+        this.retryConnectionAttempts += 1;
+        await WaitForTime(1);
+        return this.AttemptToConnect(); 
     }
 
     async ProcessIncomingServerMessage(message: any) {
         const serverData = await inflateArrayBuffer(message);
-        serverConnection.serverMessages.push(serverData);
+        this.serverMessages.push(serverData);
     }
 
     ProcessQueuedServerMessages(ecosystem: GameEcosystem) {
-        for (var i = 0; i < this.serverMessages.length; i++) {
-            ecosystem.wasmWrapper.ProcessServerMessage(this.serverMessages[i]);
-        }
+        console.error("TODO: Process queued messages!")
+        // for (var i = 0; i < this.serverMessages.length; i++) {
+        //     ecosystem.wasmWrapper.ProcessServerMessage(this.serverMessages[i]);
+        // }
         this.serverMessages = [];
     }
 
@@ -72,8 +98,9 @@ export class ServerConnection {
     }
 
     dispose() {
-        console.error("TODO: Cleanup WASM?");
-        serverConnection = undefined;
+        if(serverConnection === this) {
+            serverConnection = undefined;
+        }
         DisposeOfObject(this);
     }
 }

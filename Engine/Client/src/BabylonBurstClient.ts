@@ -1,8 +1,7 @@
 import { UpdateGameSpecificSystems as UpdateGameplaySpecificSystems } from "./SystemsLoop";
 import { FramerateCounter } from "./GUI/Generic/FramerateCounter";
-import { ServerConnection } from "./Networking/ServerConnection";
 import { RunnableGameEcosystem } from "./RunnableGameEcosystem";
-import { GameEcosystem } from "./GameEcosystem";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 /** Game specific ecosystem client. Has main scene for rendering main game. */
 export class BabylonBurstClient extends RunnableGameEcosystem {
@@ -20,8 +19,6 @@ export class BabylonBurstClient extends RunnableGameEcosystem {
 
     override async setupEngineRunLoop(canvas: HTMLCanvasElement): Promise<void> {
         await super.setupEngineRunLoop(canvas);
-        //TODO: Proper connection
-        new ServerConnection();
     }
 
     override async setupScene() {

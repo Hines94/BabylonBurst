@@ -9,6 +9,8 @@ import { HiddenEntity, InstancedRender, MaterialSpecifier } from "@engine/Render
 import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { GameSystem } from "@engine/GameLoop/GameSystem";
+import { InstancedRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
 
 function getRunnerID(rend: InstancedRender): string {
     var ret: string = rend.ModelData.FilePath + "_" + rend.ModelData.MeshName + "_" + 0 + "_";
@@ -41,50 +43,56 @@ function GetLayerMask(val: InstancedRender): number {
     return val.LayerMask;
 }
 
-export function RunInstancedMeshRenderSystem(ecosystem: GameEcosystem) {
-    const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData([InstancedRender, EntTransform], [HiddenEntity]);
-    var thisFrameTransformData: { [id: string]: number[] } = {};
+export class InstancedMeshRenderSystem extends GameSystem {
 
-    if (ecosystem.dynamicProperties.LoadedRunners === undefined) {
-        ecosystem.dynamicProperties.LoadedRunners = {};
+    SystemOrdering = InstancedRenderSystemPriority;
+
+    RunSystem(ecosystem: GameEcosystem) {
+        const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData([InstancedRender, EntTransform], [HiddenEntity]);
+        var thisFrameTransformData: { [id: string]: number[] } = {};
+    
+        if (ecosystem.dynamicProperties.LoadedRunners === undefined) {
+            ecosystem.dynamicProperties.LoadedRunners = {};
+        }
+    
+        //Perform setup for data
+        allInstEntities.iterateEntities((entData: EntityData) => {
+            const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
+            const runnerID = getRunnerID(rendItem);
+            //Create render runner if not exists
+            if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
+                const mats = GetMaterials(rendItem.MaterialData, ecosystem);
+                //Materials not ready yet?
+                if (mats.length === 0 && rendItem.MaterialData.length > 0) {
+                    return;
+                }
+                ecosystem.dynamicProperties.LoadedRunners[runnerID] = new AsyncStaticMeshInstanceRunner(
+                    rendItem.ModelData.FilePath,
+                    rendItem.ModelData.MeshName,
+                    mats,
+                    rendItem.ModelData.FileName,
+                    GetLayerMask(rendItem)
+                );
+            }
+            //Set our data for this frame
+            if (thisFrameTransformData[runnerID] === undefined) {
+                thisFrameTransformData[runnerID] = [];
+            }
+            const transform = entData.GetComponent<EntTransform>(EntTransform);
+            thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
+                EntTransform.getAsInstanceArray(transform)
+            );
+        });
+    
+        //Run instances
+        const keys = Object.keys(ecosystem.dynamicProperties.LoadedRunners);
+        keys.forEach(key => {
+            const data = thisFrameTransformData[key];
+            const floatData = data === undefined ? new Float32Array() : new Float32Array(data);
+            ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(ecosystem.scene, floatData);
+        });
     }
 
-    //Perform setup for data
-    allInstEntities.iterateEntities((entData: EntityData) => {
-        const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
-        const runnerID = getRunnerID(rendItem);
-        //Create render runner if not exists
-        if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
-            const mats = GetMaterials(rendItem.MaterialData, ecosystem);
-            //Materials not ready yet?
-            if (mats.length === 0 && rendItem.MaterialData.length > 0) {
-                return;
-            }
-            ecosystem.dynamicProperties.LoadedRunners[runnerID] = new AsyncStaticMeshInstanceRunner(
-                rendItem.ModelData.FilePath,
-                rendItem.ModelData.MeshName,
-                mats,
-                rendItem.ModelData.FileName,
-                GetLayerMask(rendItem)
-            );
-        }
-        //Set our data for this frame
-        if (thisFrameTransformData[runnerID] === undefined) {
-            thisFrameTransformData[runnerID] = [];
-        }
-        const transform = entData.GetComponent<EntTransform>(EntTransform);
-        thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
-            EntTransform.getAsInstanceArray(transform)
-        );
-    });
-
-    //Run instances
-    const keys = Object.keys(ecosystem.dynamicProperties.LoadedRunners);
-    keys.forEach(key => {
-        const data = thisFrameTransformData[key];
-        const floatData = data === undefined ? new Float32Array() : new Float32Array(data);
-        ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(ecosystem.scene, floatData);
-    });
 }
 
 function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Material[] {

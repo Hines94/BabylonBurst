@@ -6,6 +6,7 @@ import { GameEcosystem } from "@engine/GameEcosystem";
 import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
 import { AngleToRad } from "@engine/Utils/MathUtils";
 import { NavigationLayer } from "@engine/Navigation/NavigationLayer";
+import { ShowAgentViz } from "@engine/Navigation/NavAgentVisualistaionSystem";
 
 export class EditorVisOptions {
     bShowNavmeshByDefault = true;
@@ -19,6 +20,7 @@ export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem, opt
     SetupWiremeshVisualistaion(ecosystem);
     SetupColliderVisualisation(ecosystem);
     SetupNavmeshVisualisation(ecosystem,spawnoptions);
+    SetupNavAgentVisualisation(ecosystem,spawnoptions);
     SetupEditorDownLight(ecosystem);
     SetupEditorGridFloor(ecosystem);
 }
@@ -94,6 +96,21 @@ function SetupNavmeshVisualisation(ecosystem: GameEcosystem,options:EditorVisOpt
             //Off callback
             ecosystem.dynamicProperties["___DEBUGVISNAVMESH___"] = false;
             NavigationLayer.ShowDebugNavmeshes(false,ecosystem.entitySystem);
+        },
+        options.bShowNavmeshByDefault
+    )
+}
+
+function SetupNavAgentVisualisation(ecosystem: GameEcosystem,options:EditorVisOptions) {
+    GenerateTopMenuToggle(ecosystem,"Show NavAgent Paths", "View","",viewItemPriority,
+        (ecosystem:GameEcosystem)=>{
+            //On callback
+            ecosystem.dynamicProperties[ShowAgentViz] = true;
+
+        },
+        (ecosystem:GameEcosystem)=>{
+            //Off callback
+            ecosystem.dynamicProperties[ShowAgentViz] = false;
         },
         options.bShowNavmeshByDefault
     )

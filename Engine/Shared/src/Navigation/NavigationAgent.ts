@@ -6,6 +6,8 @@ import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { GameEcosystem } from "../GameEcosystem";
 import { EntityData } from "../EntitySystem/EntityData";
 import { NavigationLayer } from "./NavigationLayer";
+import { GameSystem } from "../GameLoop/GameSystem";
+import { NavAgentTransformUpdatePriority } from "../GameLoop/GameSystemPriorities";
 
 
 @RegisteredType(NavigationAgent,{RequiredComponents:[EntTransform],comment:`An agent that will be able to move around a navmesh`})
@@ -52,6 +54,7 @@ export class NavigationAgent extends Component {
     priorBuildParams:IAgentParameters;
     priorMoveTarget:EntVector3;
     transformNode:TransformNode;
+    static onAgentRebuild
 
     getAgentParams():IAgentParameters {
         return {
@@ -66,7 +69,7 @@ export class NavigationAgent extends Component {
     }
 
     IsSetup() : boolean {
-        return this.agentIndex && this.transformNode && this.priorBuildParams !== undefined;
+        return this.agentIndex !== undefined && this.transformNode !== undefined && this.priorBuildParams !== undefined;
     }
 
     /** For instant travel. For regular use the desiredLocation vector instead. */
@@ -89,9 +92,12 @@ export class NavigationAgent extends Component {
             this.TargetLocation = desiredLoc;
         }
     }
+}
 
+export class NavAgentTransformSystem extends GameSystem {
+    SystemOrdering = NavAgentTransformUpdatePriority;
 
-    static UpdateAgentTransforms(ecosystem:GameEcosystem) {
+    RunSystem(ecosystem: GameEcosystem) {
         const allAgents = ecosystem.entitySystem.GetEntitiesWithData([EntTransform,NavigationAgent],[]);
         allAgents.iterateEntities(e=>{
             const navAgent = e.GetComponent(NavigationAgent);
@@ -103,4 +109,5 @@ export class NavigationAgent extends Component {
             entTransform.copyFromMesh(navAgent.transformNode);
         })
     }
+
 }

@@ -6,6 +6,8 @@ import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/
 /** Special version of the game client that allows entity inspection, editor visualistaions etc */
 export class GameEditor extends BabylonBurstClient {
 
+    isEditor = true;
+    
     DisplayErrorIfEditor = (message: string) =>{ 
         ShowToastError(message,this.doc);
     }

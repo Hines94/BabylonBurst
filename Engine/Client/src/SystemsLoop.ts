@@ -1,15 +1,19 @@
-import { RunInstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
+import { InstancedMeshRenderSystem, RunInstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
 import { debugBoxVis } from "./Admin/DebugBoxVisualiser";
 import { UpdateAdminInterface } from "./Admin/AdminDebugInterface";
 import { DebugMode, environmentVaraibleTracker } from "../../Shared/src/Utils/EnvironmentVariableTracker";
 import { serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
-import { RunColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
+import { ColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateTickClient } from "@userCode/ClientMain";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { RunLightsSystem } from "./Rendering/LightsSystem";
+import { LightingGameSystem } from "./Rendering/LightsSystem";
 import { UpdateAsyncSystemOnTick } from "@engine/AsyncAssets";
 import { NavigationAgent } from "@engine/Navigation/NavigationAgent";
+import { NavAgentVisualisationSystem } from "@engine/Navigation/NavAgentVisualistaionSystem";
+import { GetSystemOfType } from "@engine/GameLoop/GameSystemLoop";
+import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
+import { RegisterDefaultCoreSystems } from "@engine/GameLoop/GameSystemPriorities";
 
 /** Game specific systems like building only for main game */
 export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
@@ -20,50 +24,48 @@ export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
     UpdateTickClient(gameClient);
 }
 
-/** Our tick system that contains general functions like rendering that we will want on a range of windows */
-export function UpdateSystemsLoop(gameClient: GameEcosystem, specificSystems: (ecosystem: GameEcosystem) => void) {
-    if (gameClient.sceneSettings.sceneFullySetup() === false) {
+function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
+    if(GetSystemOfType(InstancedMeshRenderSystem)) {
         return;
     }
 
-    //Anim interp is needed if we are running higher framerates to smooth movement
-    evaluateAnimInterp(gameClient);
+    new InstancedMeshRenderSystem();
+    new AnimationInterpSystem();
+    new LightingGameSystem();
+
+    const colSystem = new ColliderVisualSystem();
+    const navAgentViz = new NavAgentVisualisationSystem();
+
+    if(ecosystem.isEditor === false) {
+        colSystem.bSystemEnabled = false;
+        navAgentViz.bSystemEnabled = false;
+    }
+
+    RegisterDefaultCoreSystems();
+}
+
+/** Our tick system that contains general functions like rendering that we will want on a range of windows */
+export function UpdateSystemsLoop(ecosystem: GameEcosystem, specificSystems: (ecosystem: GameEcosystem) => void) {
+    if (ecosystem.sceneSettings.sceneFullySetup() === false) {
+        return;
+    }
+    RegisterDefaultClientSystems(ecosystem);
 
     //Generic tickables (eg html GUI etc)
-    UpdateAllTickables(gameClient);
+    UpdateAllTickables(ecosystem);
 
     //Update each of our core systems
-    specificSystems(gameClient);
-    runSystem(gameClient, RunInstancedMeshRenderSystem);
-    runSystem(gameClient, RunColliderVisualSystem);
-    runSystem(gameClient, RunLightsSystem);
-    runSystem(gameClient, NavigationAgent.UpdateAgentTransforms);
+    specificSystems(ecosystem);
 
     //Debug
-    debugBoxVis.UpdateDebugItems(gameClient.deltaTime);
+    debugBoxVis.UpdateDebugItems(ecosystem.deltaTime);
 
     if (environmentVaraibleTracker.GetDebugMode() >= DebugMode.None) {
-        UpdateAdminInterface(gameClient);
+        UpdateAdminInterface(ecosystem);
     }
 
     //Update our visual models on tick (instances and downloading etc)
     UpdateAsyncSystemOnTick();
 
-    gameClient.entitySystem.ResetChangedComponents();
-}
-
-function runSystem(ecosystem: GameEcosystem, system: (ecosystem: GameEcosystem) => void) {
-    //tODO: Track performance
-    system(ecosystem);
-}
-
-//Anim interp is needed if we are running higher framerates to smooth movement
-var timeSinceAnimEval = 10;
-function evaluateAnimInterp(gameClient: GameEcosystem) {
-    timeSinceAnimEval += gameClient.deltaTime;
-    if (timeSinceAnimEval < 3) {
-        return;
-    }
-    timeSinceAnimEval = 0;
-    gameClient.sceneSettings.SetAnimationInterp(1 / gameClient.deltaTime > 50);
+    ecosystem.entitySystem.ResetChangedComponents();
 }
