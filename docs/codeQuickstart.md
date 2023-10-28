@@ -8,32 +8,13 @@ Code readability and ease has been prioritised in BabylonBurst. The idea is that
 The idea here is to give the user everything they need within the Ecosystem. Therefore, we can do things like adding/removing entities from the ecosystem and in particular the EntitySystem.
 
 
-### Client Methods
+### Entity Basics
 ```ts
 import { encode } from "msgpack.hpp"
 import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 import { MessageToServType, serverConnection } from "@engine/Networking/ServerConnection";
 import { InstancedRender } from "@engine/Rendering/InstancedRender"
 import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
-
-// UpdateTick function REQUIRED in Source/ClientMain.ts and Source/ServerMain.ts
-export function UpdateTickClient(ecosystem:GameEcosystem) {
-    //Create new box mesh for babylon (or do any other regular Babylon things that we want with the scene)
-    MeshBuilder.createBox("testBox",ecosystem.scene);
-
-    CreateNewEntity(ecosystem);
-
-    IterateEntities(ecosystem);
-
-    FilterEntities(ecosystem);
-
-    LoadPrefabs(ecosystem);
-
-    SaveLoadEntities(ecosystem);
-
-    //Send inputs from player to server (if client)
-    serverConnection.SendMessageToServer(encode(ThisFrameServerData), MessageToServType.inputs);
-}
 
 function CreateNewEntity(ecosystem: GameEcosystem) {
     const newEntity =  ecosystem.entitySystem.AddEntity();
@@ -76,6 +57,12 @@ function FilterEntities(ecosystem:GameEcosystem) {
     });
 }
 
+```
+
+
+### Prefabs
+
+```ts
 function LoadPrefabs(ecosystem:GameEcosystem) {
     //Load into fresh entities
     const id = PrefabManager.GetIdFromBundleFileName("someZippedBundle","someNamedPrefabInside");
@@ -85,7 +72,11 @@ function LoadPrefabs(ecosystem:GameEcosystem) {
     //Load into existing entities
     PrefabManager.LoadPrefabFromIdToExisting("KnownPrefabUUID-asgfena12312bjsjkajge",ecosystem.entitySystem);
 }
+```
 
+
+### Saving/Loading
+```ts
 function SaveLoadEntities(ecosystem:GameEcosystem) {
     const desiredSaveEntities = ecosystem.entitySystem.GetEntitiesWithData([DesiredComponent],[]);
 
@@ -97,37 +88,86 @@ function SaveLoadEntities(ecosystem:GameEcosystem) {
     //Next load that template into either new or existing entities
     EntityLoader.LoadTemplateIntoNewEntities(reloadTemplate,entSystem);
 }
-
 ```
 
-### Creating New Components
+### Components
 
 ```ts
 //REQUIRED: Make sure that the file containing your component is included (TODO: Remove the need for this?)
 
-    @RegisteredType(TestComp3,{RequiredComponents:[EntTransform],comment:"An example comp that can be used in Editor and Game!"})
-    class ExampleComponent extends Component {
+@RegisteredType(TestComp3,{RequiredComponents:[EntTransform],comment:"An example comp that can be used in Editor and Game!"})
+class ExampleComponent extends Component {
 
-        //Specify the type in the @Saved
-        @Saved(String)
-        data = "testComp3";
+    //Specify the type in the @Saved
+    @Saved(String)
+    data = "testComp3";
 
-        //Use custom object to specify options
-        @Saved(nestedData,{comment:"Nested within the example component"})
-        nestData = new nestedData();
+    //Use custom object to specify options
+    @Saved(nestedData,{comment:"Nested within the example component"})
+    nestData = new nestedData();
 
-        //REQUIRED: For arrays make sure you init to [] (TODO: Remove the need for this?)
-        @Saved(EntityData,{})
-        testArray:EntityData[] = [];
-    }
+    //REQUIRED: For arrays make sure you init to [] (TODO: Remove the need for this?)
+    @Saved(EntityData,{})
+    testArray:EntityData[] = [];
+}
 
-    ecosystem.AddSetComponentToEntity(someEntity,new ExampleComponent());
-    ecosystem.GetEntitiesWithData([ExampleComponent],[]);
+ecosystem.AddSetComponentToEntity(someEntity,new ExampleComponent());
+ecosystem.GetEntitiesWithData([ExampleComponent],[]);
 
 ```
 
+### Systems 
+Systems have custom performance tracking and can be easily enabled/disabled. They are generally preferred over using on tick. Engine systems can be altered and tailored by changing the RunSystem method on the instance.
+```ts
+import { GetSystemOfType() } from "@engine/GameLoop/GameSystemLoop"
 
-### Coding Server
+//REQUIRED: Make sure that the file containing your system is included (TODO: Remove the need for this?)
+class someSystem extends GameSystem {
+    //Lower run earlier in the system stack
+    SystemOrdering = -10;
+
+    RunSystem(ecosystem: GameEcosystem) {
+    }
+}
+
+//easily register the system
+new someSystem();
+
+//Alter the engine default instance rendering system
+const defaultInstanceRenderer = GetSystemOfType(InstancedMeshRenderSystem);
+defaultInstanceRenderer.RunSystem = (ecosystem:GameEcosystem) {
+    //Changed behaviour?
+}
+
+```
+### Client Specific
+```ts
+// UpdateTick function REQUIRED in Source/ClientMain.ts and Source/ServerMain.ts
+export function UpdateTickClient(ecosystem:GameEcosystem) {
+    //Create new box mesh for babylon (or do any other regular Babylon things that we want with the scene)
+    MeshBuilder.createBox("testBox",ecosystem.scene);
+
+    //Run whatever you want on tick here
+}
+
+async function OpenServerConnectionAndSendMessage() {
+    //Create a new server connection
+    new ServerConnection("ws://localhost:8080/ws");
+    //Try to connect with this new connection
+    try {
+        await serverConnection.AttemptToConnect();
+    } catch {
+        console.error("Could not connect to server");
+        return;
+    }
+
+    //Send inputs from player to server (if client)
+    serverConnection.SendMessageToServer(encode(ThisFrameServerData), MessageToServType.inputs);
+}
+```
+
+
+### Server Specific
 ```ts
 
 export function UpdateTickServer(ecosystem:GameEcosystem) {

@@ -23,6 +23,7 @@ TODO: Provide different options for surface types and build types
 - Create a NavAgent component type and add to an Entity
 - Change the TargetLocation for automatic movement
 - Use TeleportToLocation for instant teleport
+- Inspect the next path directon for an agent using view->Show NavAgent Paths
 
 ## Extending nav agents
 TODO: Allow extension with regards to request movement and rotation (eg look at direction before/whilst moving etc)
