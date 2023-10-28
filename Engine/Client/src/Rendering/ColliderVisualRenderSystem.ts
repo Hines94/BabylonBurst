@@ -28,10 +28,10 @@ export class ColliderVisualSystem extends GameSystem {
         if (!ecosystem.dynamicProperties[showVisualsProp]) {
             return;
         }
-    
+
         const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData([PhysicsCollider, EntTransform], []);
         var thisFrameTransformData: { [id: string]: number[] } = {};
-    
+
         if (!ecosystem.dynamicProperties[loadedVisuals]) {
             ecosystem.dynamicProperties[loadedVisuals] = {};
         }
@@ -41,7 +41,7 @@ export class ColliderVisualSystem extends GameSystem {
             ecosystem.dynamicProperties[colliderMaterial].diffuseColor = Color3.Blue();
             ecosystem.dynamicProperties[colliderMaterial].emissiveColor = Color3.Blue();
         }
-    
+
         //Get data from instances
         const entities = Object.keys(allInstEntities);
         //Perform setup for data
@@ -68,7 +68,7 @@ export class ColliderVisualSystem extends GameSystem {
                 EntTransform.getAsInstanceArray(transform)
             );
         });
-    
+
         //Run instances
         const keys = Object.keys(ecosystem.dynamicProperties[loadedVisuals]);
         keys.forEach(key => {
@@ -77,6 +77,4 @@ export class ColliderVisualSystem extends GameSystem {
             ecosystem.dynamicProperties[loadedVisuals][key].RunTransformSystem(ecosystem.scene, floatData);
         });
     }
-
 }
-

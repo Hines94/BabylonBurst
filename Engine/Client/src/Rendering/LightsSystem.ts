@@ -3,7 +3,6 @@ import { GameSystem } from "@engine/GameLoop/GameSystem";
 import { LightingGameSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
 import { DirectionalLightComp } from "@engine/Rendering/DirectionalLight";
 
-
 export class LightingGameSystem extends GameSystem {
     SystemOrdering = LightingGameSystemPriority;
 
@@ -15,5 +14,4 @@ export class LightingGameSystem extends GameSystem {
             dirLight.rebuildLight(e, ecosystem);
         });
     }
-
 }

@@ -25,7 +25,7 @@ export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
 }
 
 function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
-    if(GetSystemOfType(InstancedMeshRenderSystem)) {
+    if (GetSystemOfType(InstancedMeshRenderSystem)) {
         return;
     }
 
@@ -36,7 +36,7 @@ function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     const colSystem = new ColliderVisualSystem();
     const navAgentViz = new NavAgentVisualisationSystem();
 
-    if(ecosystem.isEditor === false) {
+    if (ecosystem.isEditor === false) {
         colSystem.bSystemEnabled = false;
         navAgentViz.bSystemEnabled = false;
     }

@@ -44,17 +44,19 @@ function GetLayerMask(val: InstancedRender): number {
 }
 
 export class InstancedMeshRenderSystem extends GameSystem {
-
     SystemOrdering = InstancedRenderSystemPriority;
 
     RunSystem(ecosystem: GameEcosystem) {
-        const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData([InstancedRender, EntTransform], [HiddenEntity]);
+        const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData(
+            [InstancedRender, EntTransform],
+            [HiddenEntity]
+        );
         var thisFrameTransformData: { [id: string]: number[] } = {};
-    
+
         if (ecosystem.dynamicProperties.LoadedRunners === undefined) {
             ecosystem.dynamicProperties.LoadedRunners = {};
         }
-    
+
         //Perform setup for data
         allInstEntities.iterateEntities((entData: EntityData) => {
             const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
@@ -83,7 +85,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 EntTransform.getAsInstanceArray(transform)
             );
         });
-    
+
         //Run instances
         const keys = Object.keys(ecosystem.dynamicProperties.LoadedRunners);
         keys.forEach(key => {
@@ -92,7 +94,6 @@ export class InstancedMeshRenderSystem extends GameSystem {
             ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(ecosystem.scene, floatData);
         });
     }
-
 }
 
 function GetMaterials(mats: MaterialSpecifier[], ecosystem: GameEcosystem): Material[] {
