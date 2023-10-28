@@ -5,12 +5,13 @@ import { GetPreviouslyLoadedAWSAsset } from "@engine/AsyncAssets/Framework/Async
 import { decode } from "@msgpack/msgpack";
 import { GetMaterialDescription } from "@BabylonBurstClient/Materials/EngineMaterialDescriptions";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { HiddenEntity, InstancedRender, MaterialSpecifier } from "@engine/Rendering/InstancedRender";
+import { HiddenEntity, InstancedRender } from "@engine/Rendering/InstancedRender";
 import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { GameSystem } from "@engine/GameLoop/GameSystem";
 import { InstancedRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
+import { MaterialSpecifier } from "@engine/Rendering/MaterialSpecifier";
 
 function getRunnerID(rend: InstancedRender): string {
     var ret: string = rend.ModelData.FilePath + "_" + rend.ModelData.MeshName + "_" + 0 + "_";

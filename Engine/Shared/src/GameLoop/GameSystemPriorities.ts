@@ -1,7 +1,7 @@
 import { NavAgentTransformSystem } from "../Navigation/NavigationAgent";
 import { GetSystemOfType } from "./GameSystemLoop";
 
-
+export const ConnectionProcessingPriority = 100;
 export const NavAgentTransformUpdatePriority = 150;
 export const InstancedRenderSystemPriority = 200;
 export const ColliderRenderSystemPriority = 250;

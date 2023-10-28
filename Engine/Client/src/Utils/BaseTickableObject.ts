@@ -1,5 +1,5 @@
+import { GameEcosystem } from "@engine/GameEcosystem";
 import { v4 as uuidv4 } from "uuid";
-import { GameEcosystem } from "../GameEcosystem";
 
 const allTickables: { [id: string]: BaseTickableObject } = {};
 

@@ -1,6 +1,18 @@
+import { GameSystem } from "@engine/GameLoop/GameSystem";
 import { DisposeOfObject, WaitForTime } from "../Utils/SceneUtils";
+import { GameEcosystem } from "@engine/GameEcosystem";
+import { ConnectionProcessingPriority } from "@engine/GameLoop/GameSystemPriorities";
 
 export var serverConnection: ServerConnection;
+
+export class ServerConnectionProcesserSystem extends GameSystem {
+    SystemOrdering = ConnectionProcessingPriority;
+    RunSystem(ecosystem: GameEcosystem) {
+        if(serverConnection !== undefined) {
+            serverConnection.ProcessQueuedServerMessages(ecosystem);
+        }
+    }
+}
 
 /** A connection to the server that we are currently on */
 export class ServerConnection {

@@ -1,8 +1,8 @@
-import { InstancedMeshRenderSystem, RunInstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
+import { InstancedMeshRenderSystem } from "./Rendering/InstancedMeshRenderSystem";
 import { debugBoxVis } from "./Admin/DebugBoxVisualiser";
 import { UpdateAdminInterface } from "./Admin/AdminDebugInterface";
 import { DebugMode, environmentVaraibleTracker } from "../../Shared/src/Utils/EnvironmentVariableTracker";
-import { serverConnection } from "./Networking/ServerConnection";
+import { ServerConnectionProcesserSystem, serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { ColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateTickClient } from "@userCode/ClientMain";
@@ -11,7 +11,7 @@ import { LightingGameSystem } from "./Rendering/LightsSystem";
 import { UpdateAsyncSystemOnTick } from "@engine/AsyncAssets";
 import { NavigationAgent } from "@engine/Navigation/NavigationAgent";
 import { NavAgentVisualisationSystem } from "@engine/Navigation/NavAgentVisualistaionSystem";
-import { GetSystemOfType } from "@engine/GameLoop/GameSystemLoop";
+import { GetSystemOfType, RunGameSystems } from "@engine/GameLoop/GameSystemLoop";
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
 import { RegisterDefaultCoreSystems } from "@engine/GameLoop/GameSystemPriorities";
 
@@ -32,6 +32,7 @@ function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     new InstancedMeshRenderSystem();
     new AnimationInterpSystem();
     new LightingGameSystem();
+    new ServerConnectionProcesserSystem();
 
     const colSystem = new ColliderVisualSystem();
     const navAgentViz = new NavAgentVisualisationSystem();
@@ -51,8 +52,11 @@ export function UpdateSystemsLoop(ecosystem: GameEcosystem, specificSystems: (ec
     }
     RegisterDefaultClientSystems(ecosystem);
 
-    //Generic tickables (eg html GUI etc)
-    UpdateAllTickables(ecosystem);
+    //Our main systems updater
+    RunGameSystems(ecosystem);
+
+    //Our client tick
+    UpdateTickClient(ecosystem);
 
     //Update each of our core systems
     specificSystems(ecosystem);
@@ -63,6 +67,9 @@ export function UpdateSystemsLoop(ecosystem: GameEcosystem, specificSystems: (ec
     if (environmentVaraibleTracker.GetDebugMode() >= DebugMode.None) {
         UpdateAdminInterface(ecosystem);
     }
+
+    //Generic tickables (eg html GUI etc)
+    UpdateAllTickables(ecosystem);
 
     //Update our visual models on tick (instances and downloading etc)
     UpdateAsyncSystemOnTick();

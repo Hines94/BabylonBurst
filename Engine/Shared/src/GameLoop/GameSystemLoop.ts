@@ -28,7 +28,11 @@ export function RegisterGameSystem(system:GameSystem) {
         }
     }
     registeredSystems.push(system);
-    registeredSystems.sort((a,b)=>{return a.SystemOrdering - b.SystemOrdering});
+    SortGameSystems();
+}
+
+export function SortGameSystems() {
+    registeredSystems.sort((a, b) => { return a.SystemOrdering - b.SystemOrdering; });
 }
 
 export function RunGameSystems(ecosystem:GameEcosystem) {
