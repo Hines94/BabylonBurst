@@ -23,6 +23,7 @@ type editorOptions = {
 //This is the editor for generating/saving/loading different buildable types for our AI and players to use
 export class BabylonBurstEditor extends RunnableGameEcosystem {
     options: editorOptions;
+    isGame = false;
 
     onEntitySelected = new Observable<EntityData>();
 

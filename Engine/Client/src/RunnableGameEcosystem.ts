@@ -39,6 +39,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
     controlHasFocus: boolean;
     hoveredOverGUI: boolean;
 
+    isGame = true;
     isEditor = false;
     DisplayErrorIfEditor = (message: string) => {
         console.error(message);
