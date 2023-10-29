@@ -17,5 +17,15 @@ export default {
             '@engine': path.resolve(__dirname, '../Shared/src'),
             '@userCode': path.resolve(__dirname, '../../Source'),
         }
-    }
+    },
+    plugins: [
+        {
+            name: 'fix-recast',
+            transform(code, id) {
+              if (id.includes('recast-detour.js')) {
+                return code.replace(`this["Recast"]`, 'window["Recast"]');
+              }
+            }
+        }      
+    ],
 };

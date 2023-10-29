@@ -130,10 +130,12 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     if(buildType === rebuildType.Force || (!equalToLastBuild && buildType === rebuildType.TryWithData)) {
         navLayer.builtSurfaces = builtSurfaces;
         navLayer.navLayerPlugin.createNavMesh(navSurfaces,navLayer.GetNavmeshParameters()); 
-        navLayer.builtData = navLayer.navLayerPlugin.getNavmeshData();  
+        navLayer.builtData = navLayer.navLayerPlugin.getNavmeshData(); 
+        navLayer.navLayerBuilt = true; 
     } else if(equalToLastBuild) {
         if(buildType !== rebuildType.Warn) {
             navLayer.navLayerPlugin.buildFromNavmeshData(navLayer.builtData);
+            navLayer.navLayerBuilt = true; 
         }
     } else {
         ecosystem.DisplayErrorIfEditor("Navmesh is dirty and requires a rebuild (view->RebuildNavmesh)")

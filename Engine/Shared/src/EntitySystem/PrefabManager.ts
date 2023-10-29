@@ -119,7 +119,7 @@ export class PrefabManager {
             console.error(`Tried to load bad prefab: ${id}`);
             return;
         }
-        EntityLoader.LoadTemplateIntoNewEntities(Manager.allPrefabs[id],entitySystem);
+        return EntityLoader.LoadTemplateIntoNewEntities(Manager.allPrefabs[id],entitySystem);
     }
 
     static LoadPrefabFromIdToExisting(id:string, entitySystem:EntitySystem) {

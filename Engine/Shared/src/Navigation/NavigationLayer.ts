@@ -83,6 +83,7 @@ export class NavigationLayer extends Component {
     @Saved(Uint8Array,{editorViewOnly:true,comment:"Preloaded data that has been previously generated for our navmesh"})
     builtData:Uint8Array;
 
+    navLayerBuilt = false;
     navLayerPlugin:RecastJSPlugin;
     navLayerCrowd:ICrowd;
     debugMesh:Mesh;
@@ -117,7 +118,6 @@ export class NavigationLayer extends Component {
                 return navLayerItem;
             }
         }
-        console.error(`No navigation layer created for name ${layerName}`);
         return undefined;
     }
 
