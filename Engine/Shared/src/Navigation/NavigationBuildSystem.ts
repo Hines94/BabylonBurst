@@ -32,7 +32,7 @@ export function setupAutoNavBuildSystem(ecosystem:GameEcosystem) {
         return;
     }
     ecosystem.entitySystem.onComponentChangedEv.add((notify)=>{
-        checkRebuildNavSystem(ecosystem,notify,false);
+        checkRebuildNavSystem(ecosystem,notify);
     });
     RebuildAllNavmeshLayers(ecosystem, rebuildType.OnlyIfData);
     ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"] = true;
@@ -46,14 +46,12 @@ export function RebuildAllNavmeshLayers(ecosystem:GameEcosystem, rebuild = rebui
 }
 
 /** Check for rebuild if components have been changed */
-async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNotify, bAdded:boolean) {
+async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNotify) {
     if(notify.comp instanceof NavigationLayer) {
         if(notify.comp.autoRebuildLayer) {
             await RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.TryWithData);
-        } else if(bAdded) {
-            await RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.OnlyIfData);
         } else {
-            RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.Warn);
+            await RebuildNavigationLayer(notify.comp,ecosystem,rebuildType.OnlyIfData);
         }
     }
     if(notify.comp instanceof NavigationSurface) {

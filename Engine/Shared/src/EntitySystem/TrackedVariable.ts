@@ -8,12 +8,18 @@ const proxyCallbackSymbol ='___proxyCallbackSymbol___';
 export function DeepSetupCallback(comp: any,callback:()=>void) {
     // If the component is not an object, is null, or already proxied, return it as-is
     if (typeof comp === 'object' && comp instanceof EntityData === false) {
-        comp[proxyCallbackSymbol] = callback;
-        for (const key in comp) {
-            if(key === proxyCallbackSymbol) {
-                continue;
+        if(Array.isArray(comp)) {
+            for(var k = 0; k < comp.length;k++) {
+                DeepSetupCallback(comp[k],callback);
             }
-            DeepSetupCallback(comp[key],callback);
+        } else {
+            comp[proxyCallbackSymbol] = callback;
+            for (const key in comp) {
+                if(key === proxyCallbackSymbol) {
+                    continue;
+                }
+                DeepSetupCallback(comp[key],callback);
+            }
         }
     }
 }
