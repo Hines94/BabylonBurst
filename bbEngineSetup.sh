@@ -18,6 +18,9 @@ sudo npm install -g bun
 npm install
 
 print_cyan "--- Installing Engine Modules ---\n"
+cd Engine/Shared || exit
+npm install
+cd ${base_path}
 cd Engine/Client || exit
 npm install
 cd ${base_path}
