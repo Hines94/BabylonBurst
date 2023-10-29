@@ -147,7 +147,7 @@ export class EntityLoader {
                 } else {
                     const compData = template.GetEntityComponent(originalEntId,compType.type as any,entMappings[e],entMappings);
                     if(compData !== undefined) {
-                        system.AddSetComponentToEntity(entMappings[e],compData);
+                        system.AddSetComponentToEntity(entMappings[e],compData,false);
                     }
                 }
             }

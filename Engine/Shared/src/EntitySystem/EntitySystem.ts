@@ -22,7 +22,7 @@ export class EntitySystem {
     onEntityCreatedEv = new Observable<number>();
     /** When an entity removed from the system this will fire */
     onEntityRemovedEv = new Observable<number>();
-    /** When a component added to an entity this will fire */
+    /** When a component added to an entity this will fire. WARNING: Can be fired before a prefab fully loaded! */
     onComponentAddedEv = new Observable<ComponentNotify>();
     /** When tracked variables are changed this will fire. Also called on component added at end of frame. */
     onComponentChangedEv = new Observable<ComponentNotify>();

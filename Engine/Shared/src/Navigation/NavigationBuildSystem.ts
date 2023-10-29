@@ -31,9 +31,6 @@ export function setupAutoNavBuildSystem(ecosystem:GameEcosystem) {
     if(ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"]) {
         return;
     }
-    ecosystem.entitySystem.onComponentAddedEv.add((notify)=>{
-        checkRebuildNavSystem(ecosystem,notify,true);
-    });
     ecosystem.entitySystem.onComponentChangedEv.add((notify)=>{
         checkRebuildNavSystem(ecosystem,notify,false);
     });
