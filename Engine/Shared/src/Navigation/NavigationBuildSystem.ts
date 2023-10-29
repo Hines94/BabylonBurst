@@ -156,7 +156,7 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     navLayer.debugMesh = navLayer.navLayerPlugin.createDebugNavMesh(ecosystem.scene);
     if(ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] === undefined) {
         const color = GetRandomColor4(0.1);
-        var matdebug = new AsyncSimpleImageMaterial({color:color});
+        var matdebug = new AsyncSimpleImageMaterial({color:color}).GetMaterial(ecosystem.scene);
         ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] = matdebug;
     }
     navLayer.debugMesh.material = ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName];
