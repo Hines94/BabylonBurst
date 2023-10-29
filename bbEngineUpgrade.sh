@@ -33,7 +33,8 @@ rsync -av --progress "$TEMP_DIR/" "$SCRIPT_DIR/" \
       --exclude LICENSE \
       --exclude README.md \
       --exclude CONTRIBUTING.md \
-      --exclude Source/
+      --exclude Source/ \
+      --exclude .gitignore
 
 # Clean up by removing the temporary directory
 rm -rf "$TEMP_DIR"
