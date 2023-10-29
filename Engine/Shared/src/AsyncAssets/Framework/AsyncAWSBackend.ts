@@ -68,6 +68,9 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         try {
             const response = await this.s3.send(listCommand);
             const ret: string[] = [];
+            if(!response.Contents) {
+                return ret;
+            }
             response.Contents.forEach(f => {
                 ret.push(f.Key);
             });

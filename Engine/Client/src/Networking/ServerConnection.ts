@@ -8,7 +8,7 @@ export var serverConnection: ServerConnection;
 export class ServerConnectionProcesserSystem extends GameSystem {
     SystemOrdering = ConnectionProcessingPriority;
     RunSystem(ecosystem: GameEcosystem) {
-        if(serverConnection !== undefined) {
+        if (serverConnection !== undefined) {
             serverConnection.ProcessQueuedServerMessages(ecosystem);
         }
     }

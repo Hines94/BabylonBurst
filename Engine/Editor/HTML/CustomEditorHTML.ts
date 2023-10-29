@@ -59,6 +59,10 @@ export class CustomEditorHTML extends BaseTickableObject {
         const topLevelHigherarch = new AssetFolder(undefined,AWS);
         topLevelHigherarch.name = "ASSETS_ROOT";
 
+        if(!allObjects){
+            return topLevelHigherarch;
+        }
+
         for(var i = 0; i < allObjects.length;i++) {
             const item = allObjects[i];
             const folders = item.Key.split("/");

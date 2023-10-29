@@ -39,7 +39,7 @@ mv "$BACKUP_DIR" Source
 
 # Merge the changes from the engine-upstream's main branch into the user's current branch
 echo "Merging changes from the latest engine version into your branch..."
-git merge engine-upstream/main
+git merge engine-upstream/main --allow-unrelated-histories
 
 # Restore the Source folder from the backup (after merge just in case)
 echo "Restoring your 'Source' directory..."
