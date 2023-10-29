@@ -13,6 +13,7 @@ export class PBRMaterialShader extends MateralDescription {
     GetPossibleMaterialParameters(): { [propName: string]: MaterialSetupParameter } {
         return {
             albedoTexture: new AsyncTextureSetupParameter(),
+            bumpTexture: new AsyncTextureSetupParameter(),
             roughness: new ScalarSetupParameter(),
         };
     }
