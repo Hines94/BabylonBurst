@@ -11,6 +11,7 @@ import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
 import {Prefab, PrefabPackedType} from "@engine/EntitySystem/Prefab"
 import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
 import { SetupAllTopBarOptions } from "../HTMLUtils/TopBarSetup";
+import { EntNamingComponent } from "@engine/EntitySystem/CoreComponents";
 
 /** Used for specifically loading prefabs into a seperate window */
 export class PrefabHigherarchyHTML extends HigherarchyHTML {
@@ -116,6 +117,8 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
         prefabData.PrefabIdentifier = this.prefabUUID;
         prefabData.EntityIndex = added;
         this.ecosystem.entitySystem.AddSetComponentToEntity(added,prefabData);
+        const namingComp = new EntNamingComponent();
+        this.ecosystem.entitySystem.AddSetComponentToEntity(added,namingComp);
         return added;
     }
 

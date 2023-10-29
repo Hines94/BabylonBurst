@@ -8,9 +8,10 @@ import { ComponentNotify } from "../EntitySystem/EntitySystem";
 import { EntityData } from "../EntitySystem/EntityData";
 import { ArraysContainEqualItems } from "../Utils/ArrayUtils";
 import Recast from "recast-detour";
-import { getRandomColor3 } from "../Utils/MeshUtils";
+import { GetRandomColor4, getRandomColor3 } from "../Utils/MeshUtils";
 import { NavigationAgent } from "./NavigationAgent";
 import { DeepEquals } from "../Utils/HTMLUtils";
+import { AsyncSimpleImageMaterial } from "../Materials/AsyncSimpleImageMaterial";
 
 var recast:any;
 
@@ -154,10 +155,8 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     }
     navLayer.debugMesh = navLayer.navLayerPlugin.createDebugNavMesh(ecosystem.scene);
     if(ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] === undefined) {
-        var matdebug = new StandardMaterial('matdebug', ecosystem.scene);
-        matdebug.diffuseColor = getRandomColor3()
-        matdebug.alpha = 0.2;
-        matdebug.specularPower = 0;
+        const color = GetRandomColor4(0.1);
+        var matdebug = new AsyncSimpleImageMaterial({color:color});
         ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] = matdebug;
     }
     navLayer.debugMesh.material = ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName];
