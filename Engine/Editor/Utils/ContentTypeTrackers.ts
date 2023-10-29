@@ -40,19 +40,20 @@ export function SetInputValueFromDatalist(dropdownSelector:HTMLInputElement, ite
 /** Easy way of automatically setting up dropdown to select a file */
 export function SetupContentInputWithDatalist(contentType:ContentItemType,dropdownSelector:HTMLInputElement, onChange:(val:ContentItem)=>void){
     const datalistName = "___DATALIST___" + contentType + "___ITEMS___";
-    if(!dropdownSelector.ownerDocument.getElementById(datalistName)) {
-        const datalist = dropdownSelector.ownerDocument.createElement("datalist");
-        datalist.id = datalistName;
-        const allItems = GetAllEditorObjectsOfType(contentType);
-        allItems.forEach(i=>{
-            const opt =  dropdownSelector.ownerDocument.createElement("option");
-            opt.value = i.parent.name + " - " + i.name;
-            (opt as any).dataItem = i;
-            datalist.appendChild(opt);
-        })
-        dropdownSelector.ownerDocument.body.appendChild(datalist);
+    if(dropdownSelector.ownerDocument.getElementById(datalistName)) {
+        dropdownSelector.ownerDocument.getElementById(datalistName).remove();
     }
-    const datalist = dropdownSelector.ownerDocument.getElementById(datalistName) as HTMLDataListElement;
+
+    const datalist = dropdownSelector.ownerDocument.createElement("datalist");
+    datalist.id = datalistName;
+    const allItems = GetAllEditorObjectsOfType(contentType);
+    allItems.forEach(i=>{
+        const opt =  dropdownSelector.ownerDocument.createElement("option");
+        opt.value = i.parent.name + " - " + i.name;
+        (opt as any).dataItem = i;
+        datalist.appendChild(opt);
+    })
+    dropdownSelector.ownerDocument.body.appendChild(datalist);
 
     dropdownSelector.setAttribute("list",datalistName);
     dropdownSelector.addEventListener("change",()=>{

@@ -78,6 +78,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
         requireRefresh.add(()=>{
             valuesContainer.innerHTML = "";
+            removeButtons.splice(0,removeButtons.length);
             for(var i = 0; i < parentData[propType.name].length;i++) {
                 GenerateArrayElement(i, removeButtons, valuesContainer);
             }
@@ -95,8 +96,8 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
             addButton.textContent = "+";
             addButton.style.width = "50%";
             addButton.addEventListener("click",()=>{
+                //Auto refresh system should pickup the changes
                 existingData.push(new propType.type());
-                GenerateArrayElement(existingData.length-1, removeButtons, valuesContainer);
             })
             buttonsContainer.appendChild(addButton);
             const clearButton = container.ownerDocument.createElement("button");
@@ -248,6 +249,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
     }
 
     function GenerateArrayRemoveButton(index:number,propType:savedProperty,removeButtons:ArrayElementSpecifier[], elementContainer: HTMLDivElement, newElementData:ArrayElementSpecifier) {
+        console.warn("Called")
         const removeButton = container.ownerDocument.createElement("button");
         newElementData.ele = removeButton;
         newElementData.clickEv=undefined;
@@ -262,6 +264,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
     function GenerateArrayRemoveEvent(index:number,removeButtons:ArrayElementSpecifier[]) {
         removeButtons[index].ele.innerText = "Remove: " + index;
+        console.log(removeButtons)
         if(removeButtons[index].clickEv !== undefined) {
             removeButtons[index].ele.removeEventListener('click',removeButtons[index].clickEv);
         }
