@@ -87,3 +87,12 @@ export function DeepEquals(obj1, obj2) {
 
     return true;
 }
+
+export async function CopyToClipboard(text: string) {
+    try {
+        await navigator.clipboard.writeText(text);
+        console.log('Text copied to clipboard');
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+    }
+}

@@ -2,6 +2,7 @@ import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { decode } from "@msgpack/msgpack";
+import { CopyToClipboard } from "@engine/Utils/HTMLUtils";
 
 export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
     protected cleanupItem(): void {
@@ -51,9 +52,16 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
     override async drawInspectorInfo(): Promise<void> {
         await super.drawInspectorInfo();
         await this.loadContent();
+        const prefabId = (await decode(this.ourItem.data) as any).prefabID;
         const inspector = this.ourContentHolder.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         const newEle = inspector.ownerDocument.createElement("p");
-        newEle.innerText = "PrefabUUID: " + (await decode(this.ourItem.data) as any).prefabID;
+        newEle.innerText = "PrefabUUID: " + prefabId;
         inspector.appendChild(newEle);
+        const copyButton = inspector.ownerDocument.createElement("button");
+        copyButton.innerText = "Copy Id";
+        copyButton.addEventListener("click",()=>{
+            CopyToClipboard(prefabId);
+        })
+        inspector.appendChild(copyButton);
     }
 }
