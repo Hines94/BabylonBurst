@@ -81,7 +81,10 @@ export class EntitySystem {
             return;
         }
         component.onComponentRemoved(entData);
-        entData.Components = entData.Components.filter(c=>{c !== component});
+        const indexToRemove = entData.Components.indexOf(component);
+        if (indexToRemove !== -1) {
+            entData.Components.splice(indexToRemove, 1);
+        }
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
     }

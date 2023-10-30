@@ -25,8 +25,6 @@ export class BabylonBurstEditor extends RunnableGameEcosystem {
     options: editorOptions;
     isGame = false;
 
-    onEntitySelected = new Observable<EntityData>();
-
     isEditor = true;
 
     DisplayErrorIfEditor = (message: string) =>{ 

@@ -18,8 +18,8 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
 
         //Hide the Content browser
         (ecosystem.doc.querySelector("#ContentBrowser") as HTMLElement).style.display = "none";
-        this.windowDoc = ecosystem.doc;
-        this.setupEditorPanel();
+        this.ecosystem.doc = ecosystem.doc;
+        this.finishUISetup();
 
         SetupAllTopBarOptions(ecosystem,{},{},{bContentBrowserOption:false})
 

@@ -6,8 +6,8 @@
     "type": "module",
     "scripts": {
         "start": "vite --port 5174",
-        "start:game": "bunx VITE_EDITORMODE=play vite --port 5173",
-        "build": "bunx --bun vite build"
+        "start:game": "VITE_EDITORMODE=play vite --port 5173",
+        "build": "vite build"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "../../node_modules/@aws-sdk/client-s3",

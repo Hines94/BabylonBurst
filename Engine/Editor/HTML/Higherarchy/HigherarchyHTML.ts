@@ -10,29 +10,26 @@ import { storedRegisteredType } from "@engine/EntitySystem/TypeRegister";
 import { SetupEditorGizmos } from "./EditorGizmos";
 import { ComponentNotify } from "@engine/EntitySystem/EntitySystem";
 import { EntNamingComponent } from "@engine/EntitySystem/CoreComponents";
+import { Observable } from "@babylonjs/core";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */
 export abstract class HigherarchyHTML {
     higherarchyItems: HTMLElement;
     Displayer: { loadingElement: Promise<HTMLDivElement>; window: Window };
-    windowDoc: Document;
     inspector: HTMLElement;
     higherarchPanel: HTMLElement;
     contentOptions: HTMLElement;
     ecosystem: BabylonBurstEditor;
     generatedEntityRows: { [entId: number]: HTMLDivElement } = {};
 
+    onEntitySelected = new Observable<EntityData>();
+
     setEcosystem(ecosystem:GameEcosystem) {
         this.ecosystem = ecosystem as BabylonBurstEditor;
-        ecosystem.entitySystem.onEntityCreatedEv.add(this.GenerateEntityRow.bind(this));
-        ecosystem.entitySystem.onEntityRemovedEv.add(this.RemoveEntityRow.bind(this));
-        ecosystem.entitySystem.onComponentAddedEv.add(this.EntCompAddChange.bind(this));
-        ecosystem.entitySystem.onComponentChangedEv.add(this.EntCompAddChange.bind(this));
-        SetupEditorGizmos(ecosystem);
     }
 
     protected setupHigherarchyEcosystem() {
-        const gamePanel = this.windowDoc.getElementById("renderCanvas");
+        const gamePanel = this.ecosystem.doc.getElementById("renderCanvas");
         this.setEcosystem(new BabylonBurstEditor(gamePanel as HTMLCanvasElement, {
             noHTML: true,
         }));
@@ -42,13 +39,21 @@ export abstract class HigherarchyHTML {
         });
     }
 
-    protected setupEditorPanel() {
-        const uploader = this.windowDoc.getElementById("ContentUpload");
+    protected finishUISetup() {
+        //Setup UI
+        const uploader = this.ecosystem.doc.getElementById("ContentUpload");
         uploader.classList.add("hidden");
-        this.higherarchPanel = this.windowDoc.getElementById("Higherarchy");
+        this.higherarchPanel = this.ecosystem.doc.getElementById("Higherarchy");
         this.higherarchyItems = this.higherarchPanel.querySelector("#HigherarchyItems");
-        this.inspector = this.windowDoc.getElementById("InspectorPanel");
-        this.contentOptions = this.windowDoc.getElementById("ContentOptions");
+        this.inspector = this.ecosystem.doc.getElementById("InspectorPanel");
+        this.contentOptions = this.ecosystem.doc.getElementById("ContentOptions");
+
+        //Setup events to update UI when we change
+        this.ecosystem.entitySystem.onEntityCreatedEv.add(this.GenerateEntityRow.bind(this));
+        this.ecosystem.entitySystem.onEntityRemovedEv.add(this.RemoveEntityRow.bind(this));
+        this.ecosystem.entitySystem.onComponentAddedEv.add(this.EntCompAddChange.bind(this));
+        this.ecosystem.entitySystem.onComponentChangedEv.add(this.EntCompAddChange.bind(this));
+        SetupEditorGizmos(this);
     }
 
     protected setupRightClick() {
@@ -115,11 +120,11 @@ export abstract class HigherarchyHTML {
     GenerateEntityRow(entId: number): HTMLDivElement {
         const entData = this.ecosystem.entitySystem.GetEntityData(entId);
         //Basic items
-        const row = this.windowDoc.createElement("div");
+        const row = this.ecosystem.doc.createElement("div");
         this.generatedEntityRows[entId] = row;
         row.style.marginTop = "2px";
         row.classList.add("higherarchyEntity");
-        const entityId = this.windowDoc.createElement("p");
+        const entityId = this.ecosystem.doc.createElement("p");
         this.setEntityName(row,entData);
         entityId.classList.add("higherarchEntityText");
         row.appendChild(entityId);
@@ -142,7 +147,7 @@ export abstract class HigherarchyHTML {
                     {
                         name: "Delete Entity",
                         callback: () => {
-                            if (this.windowDoc.defaultView.confirm("Delete Entity " + entId + "?")) {
+                            if (this.ecosystem.doc.defaultView.confirm("Delete Entity " + entId + "?")) {
                                 row.remove();
                                 this.ecosystem.entitySystem.RemoveEntity(entId);
                                 this.RegenerateHigherarchy();
@@ -217,6 +222,6 @@ export abstract class HigherarchyHTML {
             this.currrentInspector = new EntityInspectorHTML(this, entityId);
         }
         RemoveClassFromAllItems("selectedHigherarchy", this.higherarchyItems);
-        this.ecosystem.onEntitySelected.notifyObservers(this.ecosystem.entitySystem.GetEntityData(entityId));
+        this.onEntitySelected.notifyObservers(this.ecosystem.entitySystem.GetEntityData(entityId));
     }
 }

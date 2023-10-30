@@ -4,15 +4,17 @@ import { EntityData } from "@engine/EntitySystem/EntityData";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { AddElementToEditorTopMenu, gizmosPriority } from "../../Utils/EditorTopMenu";
+import { HigherarchyHTML } from "./HigherarchyHTML";
 
-export async function SetupEditorGizmos(ecosystem: GameEcosystem) {
+export async function SetupEditorGizmos(higherarchy:HigherarchyHTML) {
+    const ecosystem = higherarchy.ecosystem;
     if (ecosystem.dynamicProperties["EditorGizmos"] !== undefined) {
         return;
     }
     await ecosystem.waitLoadedPromise;
     ecosystem.dynamicProperties["EditorGizmos"] = new EditorGizmos(ecosystem);
     ecosystem.dynamicProperties["EditorGizmos"].HideGizmos();
-    (ecosystem as BabylonBurstEditor).onEntitySelected.add(ecosystem.dynamicProperties["EditorGizmos"].onEntitySelected.bind(ecosystem.dynamicProperties["EditorGizmos"]))
+    higherarchy.onEntitySelected.add(ecosystem.dynamicProperties["EditorGizmos"].onEntitySelected.bind(ecosystem.dynamicProperties["EditorGizmos"]))
 
 }
 

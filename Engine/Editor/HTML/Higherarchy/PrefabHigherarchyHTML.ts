@@ -30,10 +30,10 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             return;
         }
 
-        this.windowDoc = this.Displayer.window.document;
-        await WaitForEvent("PrefabDisplayerSetup", this.windowDoc);
-        this.setupEditorPanel();
-        this.windowDoc.getElementById("ContentBrowser").remove(); //TODO: if it becomes useful again show
+        this.ecosystem.doc = this.Displayer.window.document;
+        await WaitForEvent("PrefabDisplayerSetup", this.ecosystem.doc);
+        this.finishUISetup();
+        this.ecosystem.doc.getElementById("ContentBrowser").remove(); //TODO: if it becomes useful again show
 
         //Setup new game ecosystem so we can render any prefab items
         this.setupHigherarchyEcosystem();
@@ -81,7 +81,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                 prefab.SaveItemOut();
                 //Reset for each current WASM system
                 PrefabManager.SetupPrefabFromRaw(prefab.parent.getItemLocation(),prefab.GetSaveName(),prefab.data);
-                ShowToastNotification("Entity Saved", 3000, higherarchy.windowDoc);
+                ShowToastNotification("Entity Saved", 3000, higherarchy.ecosystem.doc);
             });
             //Exit button
             const exitButton = AddOptionToEditorTopMenu(higherarchy.ecosystem, "File", "Exit",-1);

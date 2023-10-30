@@ -35,7 +35,6 @@ export async function LoadHTMLUITemplate(
     //Create temp container to hold instance
     const tempContainer = owningElement.ownerDocument.createElement("div");
     tempContainer.innerHTML = template;
-    //Execute scripts
 
     const scripts = tempContainer.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {

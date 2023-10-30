@@ -31,12 +31,12 @@ export class EntityInspectorHTML {
         this.observer = owner.ecosystem.entitySystem.onEntityRemovedEv.add(this.entityRemoved.bind(this));
         this.compObserver = owner.ecosystem.entitySystem.onComponentAddedEv.add(this.compAdded.bind(this));
 
-        this.inspector = this.owner.windowDoc.getElementById("InspectorPanel") as HTMLElement;
+        this.inspector = this.owner.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         this.inspector.classList.remove("hidden");
         this.inspector.innerHTML = "";
 
         //Entity inspection template
-        const entTemplate = CloneTemplate("EntityInspector", this.owner.windowDoc);
+        const entTemplate = CloneTemplate("EntityInspector", this.owner.ecosystem.doc);
         entTemplate.querySelector("#EntityTitle").innerHTML = "Entity: " + entityIdentifier;
 
         //Existing items
@@ -54,7 +54,7 @@ export class EntityInspectorHTML {
             if(!comp.options.bEditorAddable) {
                 return;
             }
-            const newOpt = this.owner.windowDoc.createElement("option");
+            const newOpt = this.owner.ecosystem.doc.createElement("option");
             newOpt.value = comp.type.name;
             compTypes.appendChild(newOpt);
         });
@@ -67,20 +67,20 @@ export class EntityInspectorHTML {
 
             //Already added?
             if (entityData.GetComponentByName(compTypeName) !== undefined) {
-                ShowToastNotification(`Component ${compTypeName} already added!`, 3000, this.owner.windowDoc, "red");
+                ShowToastNotification(`Component ${compTypeName} already added!`, 3000, this.owner.ecosystem.doc, "red");
                 newCompType.value = "";
                 return;
             }
 
             const type = possibleComps.find(p => p.type.name === compTypeName);
             if (!type) {
-                ShowToastNotification(`Invalid Component Type!`, 3000, this.owner.windowDoc, "red");
+                ShowToastNotification(`Invalid Component Type!`, 3000, this.owner.ecosystem.doc, "red");
             } else {
                 if (this.owner.addComponentToEntity(entityIdentifier, type)) {
-                    ShowToastNotification(`Added component ${compTypeName}`, 3000, this.owner.windowDoc);
+                    ShowToastNotification(`Added component ${compTypeName}`, 3000, this.owner.ecosystem.doc);
                     this.owner.RegenerateHigherarchy();
                 } else {
-                    ShowToastNotification(`Could not add component ${compTypeName}`, 3000, this.owner.windowDoc, "red");
+                    ShowToastNotification(`Could not add component ${compTypeName}`, 3000, this.owner.ecosystem.doc, "red");
                 }
             }
         });

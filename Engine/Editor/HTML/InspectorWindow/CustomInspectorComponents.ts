@@ -249,7 +249,6 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
     }
 
     function GenerateArrayRemoveButton(index:number,propType:savedProperty,removeButtons:ArrayElementSpecifier[], elementContainer: HTMLDivElement, newElementData:ArrayElementSpecifier) {
-        console.warn("Called")
         const removeButton = container.ownerDocument.createElement("button");
         newElementData.ele = removeButton;
         newElementData.clickEv=undefined;
@@ -264,7 +263,6 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
 
     function GenerateArrayRemoveEvent(index:number,removeButtons:ArrayElementSpecifier[]) {
         removeButtons[index].ele.innerText = "Remove: " + index;
-        console.log(removeButtons)
         if(removeButtons[index].clickEv !== undefined) {
             removeButtons[index].ele.removeEventListener('click',removeButtons[index].clickEv);
         }
