@@ -1,4 +1,4 @@
-import { ICrowd, INavMeshParameters, Mesh, RecastJSPlugin } from "@babylonjs/core";
+import { ICrowd, INavMeshParameters, Mesh, PickingInfo, Ray, RecastJSPlugin, Vector3 } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
@@ -108,6 +108,18 @@ export class NavigationLayer extends Component {
     
     }
 
+    /** Raycast the navigation layer to get the nearest position */
+    RaycastForPosition(ray:Ray) : Vector3 {
+        if(this.debugMesh === undefined || !this.navLayerBuilt) {
+            return undefined;
+        }
+        const hit = ray.intersectsMesh(this.debugMesh);
+        if(!hit.hit) {
+            return undefined;
+        }
+        return this.navLayerPlugin.getClosestPoint(hit.pickedPoint);
+    }
+    
     /** Get a navigation layer comp by name that has been created and added to an Entity */
     static GetNavigationLayer(layerName = "default",entSystem:EntitySystem) : NavigationLayer {
         const allLayers = entSystem.GetEntitiesWithData([NavigationLayer],[]);

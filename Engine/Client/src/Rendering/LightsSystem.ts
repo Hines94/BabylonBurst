@@ -6,6 +6,10 @@ import { DirectionalLightComp } from "@engine/Rendering/DirectionalLight";
 export class LightingGameSystem extends GameSystem {
     SystemOrdering = LightingGameSystemPriority;
 
+    SetupGameSystem(ecosystem: GameEcosystem) {
+
+    }
+
     RunSystem(ecosystem: GameEcosystem) {
         const directLights = ecosystem.entitySystem.GetEntitiesWithData([DirectionalLightComp], []);
         directLights.AddChanged_ALL_Filter();

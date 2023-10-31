@@ -23,6 +23,11 @@ export function hideColliderVisualSystem(ecosystem: GameEcosystem) {
 
 export class ColliderVisualSystem extends GameSystem {
     SystemOrdering = ColliderRenderSystemPriority;
+
+    SetupGameSystem(ecosystem: GameEcosystem) {
+
+    }
+
     RunSystem(ecosystem: GameEcosystem) {
         return;
         if (!ecosystem.dynamicProperties[showVisualsProp]) {

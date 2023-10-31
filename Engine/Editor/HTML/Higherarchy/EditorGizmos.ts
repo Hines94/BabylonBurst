@@ -15,7 +15,7 @@ export async function SetupEditorGizmos(higherarchy:HigherarchyHTML) {
     ecosystem.dynamicProperties["EditorGizmos"] = new EditorGizmos(ecosystem);
     ecosystem.dynamicProperties["EditorGizmos"].HideGizmos();
     higherarchy.onEntitySelected.add(ecosystem.dynamicProperties["EditorGizmos"].onEntitySelected.bind(ecosystem.dynamicProperties["EditorGizmos"]))
-
+    
 }
 
 export class EditorGizmos {

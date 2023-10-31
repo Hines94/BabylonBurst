@@ -29,7 +29,7 @@ export abstract class HigherarchyHTML {
     }
 
     protected setupHigherarchyEcosystem() {
-        const gamePanel = this.ecosystem.doc.getElementById("renderCanvas");
+        const gamePanel = this.Displayer.window.document.getElementById("renderCanvas");
         this.setEcosystem(new BabylonBurstEditor(gamePanel as HTMLCanvasElement, {
             noHTML: true,
         }));
@@ -44,6 +44,7 @@ export abstract class HigherarchyHTML {
         const uploader = this.ecosystem.doc.getElementById("ContentUpload");
         uploader.classList.add("hidden");
         this.higherarchPanel = this.ecosystem.doc.getElementById("Higherarchy");
+        (this.higherarchPanel as any).OwningHigherarchElement = this;
         this.higherarchyItems = this.higherarchPanel.querySelector("#HigherarchyItems");
         this.inspector = this.ecosystem.doc.getElementById("InspectorPanel");
         this.contentOptions = this.ecosystem.doc.getElementById("ContentOptions");
@@ -54,6 +55,17 @@ export abstract class HigherarchyHTML {
         this.ecosystem.entitySystem.onComponentAddedEv.add(this.EntCompAddChange.bind(this));
         this.ecosystem.entitySystem.onComponentChangedEv.add(this.EntCompAddChange.bind(this));
         SetupEditorGizmos(this);
+    }
+
+    HideHigherarchy() {
+        this.higherarchPanel.classList.add("hidden");
+        if(this.ecosystem.dynamicProperties["EditorGizmos"]) {
+            this.ecosystem.dynamicProperties["EditorGizmos"].HideGizmos();
+        }
+    }
+
+    ShowHigherarchy() {
+        this.higherarchPanel.classList.remove("hidden");
     }
 
     protected setupRightClick() {

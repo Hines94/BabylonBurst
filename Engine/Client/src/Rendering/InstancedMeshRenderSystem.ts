@@ -47,6 +47,10 @@ function GetLayerMask(val: InstancedRender): number {
 export class InstancedMeshRenderSystem extends GameSystem {
     SystemOrdering = InstancedRenderSystemPriority;
 
+    SetupGameSystem(ecosystem: GameEcosystem) {
+
+    }
+
     RunSystem(ecosystem: GameEcosystem) {
         const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData(
             [InstancedRender, EntTransform],

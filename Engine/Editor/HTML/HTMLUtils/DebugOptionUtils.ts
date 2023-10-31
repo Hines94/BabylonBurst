@@ -45,11 +45,19 @@ export function SetupAllEditorDebugOptions(ecosystem: GameEcosystem, options:Par
             Higherarchy.classList.remove("hidden");
         },
         (ecosystem:GameEcosystem)=>{
-            Higherarchy.classList.add("hidden");
+            if((Higherarchy as any).OwningHigherarchElement) {
+                (Higherarchy as any).OwningHigherarchElement.ShowHigherarchy();
+            } else {
+                Higherarchy.classList.remove("hidden");
+            }
         },debugOptions.bDefaultHigherarchy)
     } else {
         //Just hide
-        Higherarchy.classList.add("hidden");
+        if((Higherarchy as any).OwningHigherarchElement) {
+            (Higherarchy as any).OwningHigherarchElement.HideHigherarchy();
+        } else {
+            Higherarchy.classList.add("hidden");
+        }
     }
 
     const Inspector =  ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;

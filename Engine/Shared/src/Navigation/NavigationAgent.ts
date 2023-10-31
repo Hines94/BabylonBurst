@@ -48,13 +48,16 @@ export class NavigationAgent extends Component {
     @Saved(Number,{comment:"Higher weight means the agent will prioritize keeping distance from others but might interfere with aligntment/cohesion etc."})
     separationWeight = 1.0;
 
-    //This will be set when our agent has been added to their intended layers
     IsStopped = true;
+    /** This can be set to false if we want our agent to use some other custom behaviour */
+    AutoMoveToTarget = true;
+    
+    //This will be set when our agent has been added to their intended layers
     agentIndex:number;
     priorBuildParams:IAgentParameters;
     priorMoveTarget:EntVector3;
     transformNode:TransformNode;
-    static onAgentRebuild
+    navLayer:NavigationLayer;
 
     getAgentParams():IAgentParameters {
         return {
@@ -92,10 +95,56 @@ export class NavigationAgent extends Component {
             this.TargetLocation = desiredLoc;
         }
     }
+
+    /** Called from Nav build system when detected that agent movement changed */
+    AgentAutoMove(navLayer:NavigationLayer) {
+        if(this.AutoMoveToTarget === false) {
+            return;
+        }
+        this.MoveToCurrentTarget(navLayer);
+    }
+
+    RequiresMoveTowardsTarget(navLayer:NavigationLayer) {
+        if(this.navLayer === undefined) {
+            return false;
+        }
+        if(this.agentIndex === undefined) {
+            return false;
+        }   
+        if(this.navLayer.NavigationLayerName !== this.targetNavigationLayer) {
+            console.error("Agent has incorrect layer!");
+            return false;
+        }
+        if(EntVector3.Equals(this.TargetLocation, this.priorMoveTarget)) {
+            return false;
+        }
+        return true;
+    }
+
+    /** Call this to directly move to next target */
+    MoveToCurrentTarget(navLayer:NavigationLayer) {
+        if(!this.RequiresMoveTowardsTarget(navLayer)) {
+            return;
+        }
+    
+        if(EntVector3.Zero(this.TargetLocation)) {
+            this.IsStopped = true;
+        } else {
+            const closestPos = navLayer.navLayerPlugin.getClosestPoint(EntVector3.GetVector3(this.TargetLocation));
+            navLayer.navLayerCrowd.agentGoto(this.agentIndex,closestPos);
+            this.IsStopped = false;
+        }
+        this.priorMoveTarget = EntVector3.clone(this.TargetLocation);
+    }
 }
 
+/** Updates the transform position to the nav agent */
 export class NavAgentTransformSystem extends GameSystem {
     SystemOrdering = NavAgentTransformUpdatePriority;
+
+    SetupGameSystem(ecosystem: GameEcosystem) {
+
+    }
 
     RunSystem(ecosystem: GameEcosystem) {
         const allAgents = ecosystem.entitySystem.GetEntitiesWithData([EntTransform,NavigationAgent],[]);

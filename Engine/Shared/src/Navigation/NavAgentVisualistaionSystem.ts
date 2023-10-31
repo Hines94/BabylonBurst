@@ -11,6 +11,10 @@ var lineSystem:LinesMesh;
 export class NavAgentVisualisationSystem extends GameSystem {
     SystemOrdering = NavAgentVisualisationSystemPriority;
 
+    SetupGameSystem(ecosystem: GameEcosystem) {
+        
+    }
+
     RunSystem(ecosystem: GameEcosystem) {
         //If show agent viz is false then disable all lines
         if(!ecosystem.dynamicProperties[ShowAgentViz]) {
@@ -44,6 +48,6 @@ export class NavAgentVisualisationSystem extends GameSystem {
             }
             return;
         }
-        lineSystem = MeshBuilder.CreateLineSystem("NavAgentLines",{lines:desiredLines,instance:lineSystem});
+        lineSystem = MeshBuilder.CreateLineSystem("NavAgentLines",{lines:desiredLines,instance:lineSystem,updatable:true});
     }
 }

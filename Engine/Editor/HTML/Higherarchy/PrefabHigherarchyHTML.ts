@@ -30,13 +30,15 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
             return;
         }
 
-        this.ecosystem.doc = this.Displayer.window.document;
-        await WaitForEvent("PrefabDisplayerSetup", this.ecosystem.doc);
-        this.finishUISetup();
-        this.ecosystem.doc.getElementById("ContentBrowser").remove(); //TODO: if it becomes useful again show
+        //Wait for our window to fully load
+        await WaitForEvent("PrefabDisplayerSetup", this.Displayer.window.document);
 
         //Setup new game ecosystem so we can render any prefab items
         this.setupHigherarchyEcosystem();
+
+        //Finish off our UI setup so we can display ents etc
+        this.finishUISetup();
+        this.ecosystem.doc.getElementById("ContentBrowser").remove(); //TODO: if it becomes useful again show
 
         //Load new prefab
         var prefabData:PrefabPackedType;

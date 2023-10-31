@@ -69,7 +69,7 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
     if(notify.comp instanceof NavigationAgent) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
         RebuildAgent(navLayer,notify.ent,ecosystem);
-        MoveAgent(navLayer,notify.ent);   
+        notify.comp.AgentAutoMove(navLayer);   
     }
 }
 
@@ -173,7 +173,7 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
             continue;
         }
         RebuildAgent(navLayer,allAgents[a],ecosystem);
-        MoveAgent(navLayer,allAgents[a]);
+        agentComp.AgentAutoMove(navLayer);
     }
     
 }
@@ -202,34 +202,6 @@ function RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData, ecosystem:Ga
     }
     agent.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,agent.transformNode);
     agent.priorBuildParams = newParams;
+    agent.navLayer = navLayer;
     EntVector3.Copy(transform.Position,EntVector3.VectorToEnt(agent.transformNode.position));
-}
-
-function MoveAgent(navLayer:NavigationLayer,agentEnt:EntityData) {
-    if(navLayer === undefined) {
-        return;
-    }
-    if(agentEnt === undefined) {
-        return;
-    }
-    const agent = agentEnt.GetComponent(NavigationAgent);
-    if(agent === undefined){
-        return;
-    }
-    if(agent.agentIndex === undefined) {
-        return;
-    }   
-    //Already set target?
-    if(EntVector3.Equals(agent.TargetLocation, agent.priorMoveTarget)) {
-        return;
-    }
-
-    if(EntVector3.Zero(agent.TargetLocation)) {
-        agent.IsStopped = true;
-    } else {
-        const closestPos = navLayer.navLayerPlugin.getClosestPoint(EntVector3.GetVector3(agent.TargetLocation));
-        navLayer.navLayerCrowd.agentGoto(agent.agentIndex,closestPos);
-        agent.IsStopped = false;
-    }
-    agent.priorMoveTarget = EntVector3.clone(agent.TargetLocation);
 }

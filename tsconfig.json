@@ -1,0 +1,34 @@
+//NOTE: This is just to make it easier to code in Source - if you are not bothered then remove this
+
+{
+    "compilerOptions": {
+        "target": "ES2019",
+        "outDir": "dist",
+        "lib": ["dom", "dom.iterable"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "strictNullChecks": false,
+        "baseUrl": "./", 
+        "paths": {
+            "@BabylonBurstClient/*": ["./Engine/Client/src/*"],
+            "@engine/*": ["./Engine/Shared/src/*"],
+            "@userCode/*": ["./Source/*"]
+        },
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+    },
+    "include": [
+        "./Engine/Clientsrc/**/*", 
+        "./Engine/Shared/src/**/*", 
+        "./Source/**/*"
+    ]
+}

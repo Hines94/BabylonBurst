@@ -21,7 +21,7 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
         this.ecosystem.doc = ecosystem.doc;
         this.finishUISetup();
 
-        SetupAllTopBarOptions(ecosystem,{},{},{bContentBrowserOption:false})
+        SetupAllTopBarOptions(ecosystem,{},{bShowNavmeshByDefault:false},{bContentBrowserOption:false,bDefaultHigherarchy:false})
 
         //Setup data for Higherarch
         this.RegenerateHigherarchy();
