@@ -34,16 +34,9 @@ echo -e ${MAGENTA}"--- Code Formatting Complete ---"${RESET}
 if [ -d .git ]; then
     # Check for any changes
     if [ -n "$(git status --porcelain)" ]; then
-        echo -e ${YELLOW}"There are changes made by prettier."${RESET}
-        read -p "Do you want to add and commit these changes? (y/n) " choice
-        
-        if [ "$choice" = "y" ]; then
-            git add .
-            git commit -m "Formatted code with Prettier"
-            echo -e ${GREEN}"Changes added and committed."${RESET}
-        else
-            echo -e ${RED}"Changes not committed."${RESET}
-        fi
+        git add .
+        git commit -m "Formatted code with Prettier"
+        echo -e ${GREEN}"Prettier changes comitted."${RESET}
     else
         echo -e ${GREEN}"No changes detected by prettier."${RESET}
     fi
