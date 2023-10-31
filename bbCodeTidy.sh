@@ -10,12 +10,10 @@ cd ${base_path}
 if grep -q "^FORMAT_ENGINE=true$" .env; then
     echo -e ${MAGENTA}"--- Performing Code Tidy of Engine ---"${RESET}
 
-    cd ${base_path}/Engine/Server
-    find ./src -iname *.h -o -iname *.cpp -o -iname *.hpp -o -iname *.cc | while read file; do echo "Formatting: $file"; clang-format -i "$file"; done
-
-
     cd ${base_path}/Engine/Client
     npx prettier --write "src/**/*.ts"
+    cd ${base_path}/Engine/Editor
+    npx prettier --write "src/**/*.ts" --config ${base_path}/Engine/Client/.prettierrc
 else
      echo -e ${MAGENTA}"--- Not tidying Engine code. Set FORMAT_ENGINE=true in .env ---"${RESET}
 fi
@@ -31,3 +29,22 @@ else
 fi
 
 echo -e ${MAGENTA}"--- Code Formatting Complete ---"${RESET}
+
+# Check if it's a git repo
+if [ -d .git ]; then
+    # Check for any changes
+    if [ -n "$(git status --porcelain)" ]; then
+        echo -e ${YELLOW}"There are changes made by prettier."${RESET}
+        read -p "Do you want to add and commit these changes? (y/n) " choice
+        
+        if [ "$choice" = "y" ]; then
+            git add .
+            git commit -m "Formatted code with Prettier"
+            echo -e ${GREEN}"Changes added and committed."${RESET}
+        else
+            echo -e ${RED}"Changes not committed."${RESET}
+        fi
+    else
+        echo -e ${GREEN}"No changes detected by prettier."${RESET}
+    fi
+fi

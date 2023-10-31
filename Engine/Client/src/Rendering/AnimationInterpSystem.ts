@@ -5,9 +5,7 @@ export class AnimationInterpSystem extends GameSystem {
     SystemOrdering = 0;
     RateLimit = 3;
 
-    SetupGameSystem(ecosystem: GameEcosystem) {
-
-    }
+    SetupGameSystem(ecosystem: GameEcosystem) {}
 
     RunSystem(ecosystem: GameEcosystem) {
         //Anim interp is needed if we are running higher framerates to smooth movement

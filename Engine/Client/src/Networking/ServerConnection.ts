@@ -8,9 +8,7 @@ export var serverConnection: ServerConnection;
 export class ServerConnectionProcesserSystem extends GameSystem {
     SystemOrdering = ConnectionProcessingPriority;
 
-    SetupGameSystem(ecosystem: GameEcosystem) {
-
-    }
+    SetupGameSystem(ecosystem: GameEcosystem) {}
 
     RunSystem(ecosystem: GameEcosystem) {
         if (serverConnection !== undefined) {
