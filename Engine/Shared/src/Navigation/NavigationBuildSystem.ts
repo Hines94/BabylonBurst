@@ -172,36 +172,8 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         if(agentComp.targetNavigationLayer !== navLayer.NavigationLayerName) {
             continue;
         }
-        RebuildAgent(navLayer,allAgents[a],ecosystem);
+        agentComp.RebuildAgent(navLayer,allAgents[a],ecosystem);
         agentComp.AgentAutoMove(navLayer);
     }
     
-}
-
-function RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData, ecosystem:GameEcosystem) {
-    if(navLayer === undefined) {
-        return;
-    }
-    const agent = agentEnt.GetComponent(NavigationAgent);
-    if(agent === undefined){
-        return;
-    }
-    const newParams = agent.getAgentParams();
-    if(DeepEquals(newParams,agent.priorBuildParams)) {
-        return;
-    }
-    if(navLayer.navLayerCrowd === undefined) {
-        return;
-    }
-    const transform = agentEnt.GetComponent(EntTransform);
-    if(transform === undefined) {
-        return;
-    }
-    if(agent.transformNode === undefined) {
-        agent.transformNode = new TransformNode(`NavAgentTransform_${agentEnt.EntityId}`,ecosystem.scene);
-    }
-    agent.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,agent.transformNode);
-    agent.priorBuildParams = newParams;
-    agent.navLayer = navLayer;
-    EntVector3.Copy(transform.Position,EntVector3.VectorToEnt(agent.transformNode.position));
 }

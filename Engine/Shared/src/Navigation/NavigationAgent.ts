@@ -8,6 +8,7 @@ import { EntityData } from "../EntitySystem/EntityData";
 import { NavigationLayer } from "./NavigationLayer";
 import { GameSystem } from "../GameLoop/GameSystem";
 import { NavAgentTransformUpdatePriority } from "../GameLoop/GameSystemPriorities";
+import { DeepEquals } from "../Utils/HTMLUtils";
 
 
 @RegisteredType(NavigationAgent,{RequiredComponents:[EntTransform],comment:`An agent that will be able to move around a navmesh`})
@@ -48,6 +49,9 @@ export class NavigationAgent extends Component {
     @Saved(Number,{comment:"Higher weight means the agent will prioritize keeping distance from others but might interfere with aligntment/cohesion etc."})
     separationWeight = 1.0;
 
+    @Saved(Number,{comment:"Distance to the target that we can terminate our movement attempt. If too small then can cause jiggling issues"})
+    acceptableMovementDistance = 2;
+
     IsStopped = true;
     /** This can be set to false if we want our agent to use some other custom behaviour */
     AutoMoveToTarget = true;
@@ -69,6 +73,32 @@ export class NavigationAgent extends Component {
             pathOptimizationRange:this.pathOptimizationRange,
             separationWeight:this.separationWeight
         }
+    }
+
+    RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData, ecosystem:GameEcosystem) {
+        if(navLayer === undefined) {
+            return;
+        }
+        const newParams = this.getAgentParams();
+        if(DeepEquals(newParams,this.priorBuildParams)) {
+            return;
+        }
+        if(navLayer.navLayerCrowd === undefined) {
+            return;
+        }
+        const transform = agentEnt.GetComponent(EntTransform);
+        if(transform === undefined) {
+            return;
+        }
+        if(this.transformNode === undefined) {
+            this.transformNode = new TransformNode(`NavAgentTransform_${agentEnt.EntityId}`,ecosystem.scene);
+            this.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,this.transformNode);
+            this.priorBuildParams = newParams;
+            this.navLayer = navLayer;
+            EntVector3.Copy(transform.Position,EntVector3.VectorToEnt(this.transformNode.position));
+        } else {
+            navLayer.navLayerCrowd.updateAgentParameters(this.agentIndex,newParams);
+        }            
     }
 
     IsSetup() : boolean {
@@ -111,6 +141,9 @@ export class NavigationAgent extends Component {
         if(this.agentIndex === undefined) {
             return false;
         }   
+        if(this.TargetLocation === undefined) {
+            return false;
+        }
         if(this.navLayer.NavigationLayerName !== this.targetNavigationLayer) {
             console.error("Agent has incorrect layer!");
             return false;
@@ -156,6 +189,14 @@ export class NavAgentTransformSystem extends GameSystem {
 
             const entTransform = e.GetComponent(EntTransform);
             entTransform.copyFromMesh(navAgent.transformNode);
+
+            const distToTarget = EntVector3.Length(EntVector3.Subtract(entTransform.Position,navAgent.TargetLocation));
+            if(distToTarget < navAgent.acceptableMovementDistance) {
+                navAgent.IsStopped = true;
+                navAgent.TargetLocation = undefined;
+                navAgent.navLayer.navLayerCrowd.agentGoto(navAgent.agentIndex, navAgent.transformNode.position);
+                navAgent.navLayer.navLayerCrowd.agentTeleport(navAgent.agentIndex, navAgent.transformNode.position);
+            }
         })
     }
 
