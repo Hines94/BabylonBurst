@@ -68,7 +68,7 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
     }
     if(notify.comp instanceof NavigationAgent) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
-        RebuildAgent(navLayer,notify.ent,ecosystem);
+        notify.comp.RebuildAgent(navLayer,notify.ent,ecosystem);
         notify.comp.AgentAutoMove(navLayer);   
     }
 }
