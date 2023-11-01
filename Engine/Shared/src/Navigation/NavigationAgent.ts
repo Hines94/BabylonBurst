@@ -190,6 +190,9 @@ export class NavAgentTransformSystem extends GameSystem {
             const entTransform = e.GetComponent(EntTransform);
             entTransform.copyFromMesh(navAgent.transformNode);
 
+            if(navAgent.IsStopped || navAgent.TargetLocation === undefined) {
+                return;
+            }
             const distToTarget = EntVector3.Length(EntVector3.Subtract(entTransform.Position,navAgent.TargetLocation));
             if(distToTarget < navAgent.acceptableMovementDistance) {
                 navAgent.IsStopped = true;
