@@ -8,6 +8,7 @@ import { ContentBrowserModelHTML } from "./Specifics/ContentBrowserModelHTML";
 import { ContentBrowserPrefabHTML } from "./Specifics/ContentBrowserPrefabHTML";
 import { ContentBrowserUnknownHTML } from "./Specifics/ContentBrowserUnknownHTML";
 import { ContentBrowserIconedItemHTML } from "HTML/ContentBrowser/Specifics/ContentBrowserIconedItemHTML";
+import { ContentBrowserUIHTML } from "./Specifics/ContentBrowserUIHTML";
 
 export function GetContentItemHTMLSpecific(
     item: ContentItem,
@@ -33,6 +34,9 @@ export function GetContentItemHTMLSpecific(
     }
     if (item.category === ContentItemType.Material) {
         return new ContentBrowserMaterialHTML(ourContentHolder,item);
+    }
+    if (item.category === ContentItemType.UI) {
+        return new ContentBrowserUIHTML(ourContentHolder,item);
     }
     console.error("Cant find content browser item type for category: " + ContentItemType[item.category]);
     return null;

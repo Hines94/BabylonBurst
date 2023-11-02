@@ -35,6 +35,8 @@ export async function LoadHTMLUITemplate(
     //Create temp container to hold instance
     const tempContainer = owningElement.ownerDocument.createElement("div");
     tempContainer.innerHTML = template;
+    //Add to our game UI overlay
+    owningElement.appendChild(tempContainer);
 
     const scripts = tempContainer.getElementsByTagName("script");
     for (let i = 0; i < scripts.length; i++) {
@@ -42,8 +44,5 @@ export async function LoadHTMLUITemplate(
         script.textContent = scripts[i].textContent;
         owningElement.ownerDocument.body.appendChild(script);
     }
-
-    //Add to our game UI overlay
-    owningElement.appendChild(tempContainer);
     return tempContainer;
 }

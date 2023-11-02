@@ -88,6 +88,22 @@ export function DeepEquals(obj1, obj2) {
     return true;
 }
 
+export function BlobToString(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = function() {
+            resolve(reader.result);
+        };
+
+        reader.onerror = function() {
+            resolve(undefined)
+        };
+
+        reader.readAsText(blob);
+    });
+}
+
 export async function CopyToClipboard(text: string) {
     try {
         await navigator.clipboard.writeText(text);

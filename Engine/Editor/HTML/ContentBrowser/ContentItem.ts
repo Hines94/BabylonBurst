@@ -3,19 +3,19 @@ import { AssetBundle } from "./AssetBundle";
 import { AssetFolder } from "./AssetFolder";
 import { GetFileExtension } from "@engine/Utils/StringUtils"
 import { AsyncDataType, ZippedEntry } from "@engine/AsyncAssets/Utils/ZipUtils";
+import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 
 
 /** Type of content for our editor (or player build) content browser */
 export enum ContentItemType {
     Unknown,
-    PLACEHOLDER,
-    PLACEHOLDER2,
     Prefab,
     Image,
     Datasheet,
     Audio,
     Model,
-    Material
+    Material,
+    UI
 }
 
 function toContentItemType<T extends string>(str: T): ContentItemType | null {
@@ -106,6 +106,12 @@ export class ContentItem extends VisualItem {
         }
         //Try load data
         return await this.parent.GetDataForItem(this.GetSaveName(),AsyncDataType.blob,false);
+    }
+
+    async LoadDataAsBuffer() {
+        const loader = new AsyncArrayBufferLoader(this.parent.getItemLocation(), this.GetSaveName());
+        await loader.getWaitForFullyLoadPromise();
+        this.data = loader.rawData;
     }
 
     /** Fallback default if no extension set! */

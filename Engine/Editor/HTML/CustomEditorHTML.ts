@@ -118,9 +118,18 @@ export class CustomEditorHTML extends BaseTickableObject {
                     MaterialShaderType: "PBRMaterialShader",
                 });
 
+                const newUI = new ContentItem(undefined,undefined);
+                newUI.name = "New UI";
+                newUI.category = ContentItemType.UI;
+                newUI.data = encode(            
+                `<div> 
+                    <h1>Hello World</h1> 
+                </div>`);
+
                 return [
                     newPrefab,
-                    newMaterial
+                    newMaterial,
+                    newUI
                 ];
             },
             onContentChange: () => {
