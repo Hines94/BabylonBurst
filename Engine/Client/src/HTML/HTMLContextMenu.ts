@@ -1,5 +1,6 @@
 export interface ContextMenuItem {
     name: string;
+    fontSize?:string;
     callback: () => void;
 }
 

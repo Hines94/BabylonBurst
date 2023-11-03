@@ -2,10 +2,11 @@ import { Texture } from "@babylonjs/core";
 import { AsyncAssetLoader } from "./Framework/AsyncAssetLoader.js";
 import { BackgroundCacher } from "./Framework/BackgroundCacher.js";
 import { AsyncDataType } from "./Utils/ZipUtils.js";
+import { CreateBlobInNewWindow } from "../Utils/HTMLUtils.js";
 
 /** An easy way to load in premade assets from AWS into a easy to use Image */
 export class AsyncImageDescription extends BackgroundCacher {
-    loadingImage: AsyncImageLoader = null;
+    loadingImage: AsyncImageLoader;
     ourPath: string;
     ourFileName: string;
     hasAlpha = true;
@@ -18,8 +19,13 @@ export class AsyncImageDescription extends BackgroundCacher {
     }
 
     async WaitForImageToLoad() {
-        if (this.loadingImage === null) {
-            this.loadingImage = new AsyncImageLoader(this.ourPath, this.ourFileName);
+        if (this.loadingImage === undefined) {
+            const previous = AsyncAssetLoader.GetPreviouslyLoadedAsset(this.ourPath,this.ourFileName);
+            if(previous && previous instanceof AsyncImageLoader) {
+                this.loadingImage = previous;
+            } else {
+                this.loadingImage = new AsyncImageLoader(this.ourPath, this.ourFileName);
+            }
         }
 
         if (this.loadingImage.AssetFullyLoaded === false) {
@@ -29,7 +35,7 @@ export class AsyncImageDescription extends BackgroundCacher {
 
     async GetImageAsBase64(): Promise<string> {
         await this.WaitForImageToLoad();
-        return this.loadingImage.stringDataBase64;
+        return await this.loadingImage.GetStringData();
     }
 
     async GetImageAsTexture(): Promise<Texture> {
@@ -37,6 +43,12 @@ export class AsyncImageDescription extends BackgroundCacher {
         const ret = this.loadingImage.GetTextureData();
         ret.hasAlpha = this.hasAlpha;
         return ret;
+    }
+
+    /** Given a Div element - setup the background image with this */
+    async SetupDivAsImage(element:HTMLDivElement) {
+        await this.WaitForImageToLoad();
+        element.style.backgroundImage = `url("${this.loadingImage.blobURL}")`;
     }
 
     async GetBackgroundCacheTask(): Promise<string> {
@@ -47,23 +59,37 @@ export class AsyncImageDescription extends BackgroundCacher {
 }
 
 class AsyncImageLoader extends AsyncAssetLoader {
-    stringDataBase64: string = null;
-    private textureData: Texture = null;
+    private stringDataBase64: string;
+    private textureData: Texture;
+    blobResponse:Blob;
+    blobURL:string;
 
     GetDataLoadType(): AsyncDataType {
         return AsyncDataType.blob;
     }
 
     async onAsyncDataLoaded(cachedResponse: any): Promise<null> {
-        //@ts-ignore - TODO: This will not work in node!
-        var reader = new FileReader();
-        reader.readAsDataURL(cachedResponse);
-        this.stringDataBase64 = await this.getBlobLoadedPromise(reader);
+        this.blobResponse = cachedResponse;
+        this.blobURL = URL.createObjectURL(this.blobResponse);
         return null;
     }
 
+    async GetStringData() {
+        if(this.blobResponse === undefined) {
+            await this.getWaitForFullyLoadPromise();
+        }
+
+        if(this.stringDataBase64 === undefined){
+            var reader = new FileReader();
+            reader.readAsDataURL(this.blobResponse);
+            this.stringDataBase64 = await this.getBlobLoadedPromise(reader);
+        }
+
+        return this.stringDataBase64; 
+    }
+
     GetTextureData() {
-        if (this.textureData === null) {
+        if (this.textureData === undefined) {
             this.textureData = new Texture(this.stringDataBase64);
         }
         return this.textureData;

@@ -101,6 +101,7 @@
             document.body.appendChild(scr);
 
             FetchInjectAdditionalHTML("/Toast-Notification");
+            FetchInjectAdditionalHTML("Context-Menu");
         });
 
     const previewElement = document.getElementById("HTMLDisplay");
@@ -139,7 +140,7 @@
     document.getElementById("seperatePreview").addEventListener('click',seperatePreview);
     function seperatePreview() {
         previewWindow = window.open("", "HTMLPreview_"+Date.now(), `width=${previewElement.style.width},height=${previewElement.style.width}`);
-        newWindow.addEventListener('beforeunload', function() {
+        document.defaultView.addEventListener('beforeunload', function() {
             if(previewWindow){
                 previewWindow.close();
             }

@@ -29,6 +29,82 @@ export function GenerateInnerOuterPanelWithMinimizer(doc:Document):innerOuterPan
     return {innerPanel:innerPanel,outerPanel:outerPanel,button:closer};
 }
 
+/** Make an element sit on the cursor position */
+export function SetupElementToCursor(event,item:HTMLElement) {
+    item.style.position = "absolute";
+    item.style.zIndex="1000";
+
+    // Get the click coordinates
+    var clickX = event.clientX;
+    var clickY = event.clientY;
+
+    // Get the dimensions of the window
+    var windowWidth = window.innerWidth;
+    var windowHeight = window.innerHeight;
+
+    // Get the dimensions of the context menu
+    var contextMenuWidth = item.offsetWidth;
+    var contextMenuHeight = item.offsetHeight;
+
+    // Determine where to display the context menu
+    if (clickX > windowWidth / 2) {
+        // On the right half of the screen, make it go left
+        item.style.left = clickX - contextMenuWidth + "px";
+    } else {
+        // On the left half of the screen
+        item.style.left = clickX + "px";
+    }
+
+    if (clickY > windowHeight / 2) {
+        // On the bottom half of the screen, make it go upwards
+        item.style.top = clickY - contextMenuHeight + "px";
+    } else {
+        // On the top half of the screen
+        item.style.top = clickY + "px";
+    }
+}
+
+/** Given a blob in our window create one in another */
+export async function CreateBlobInNewWindow(newWindow, blobURL, blob) {
+    try {
+        console.log("Attempting to create new blob in new window");
+
+        // Check if the function doesn't exist in the new window and inject it if necessary
+        if (typeof newWindow.createBlobInNewWindow !== 'function') {
+            const script = newWindow.document.createElement('script');
+            script.textContent = `
+                window.createBlobInNewWindow = function (rawData, blobType) {
+                    console.log('Creating blob within new window context');
+                    const newBlob = new Blob([rawData], { type: blobType });
+                    return URL.createObjectURL(newBlob);
+                };
+            `;
+            newWindow.document.head.appendChild(script);
+            await new Promise(resolve => setTimeout(resolve, 100)); // Wait for the script to be evaluated
+        }
+
+        const rawData = await blob.arrayBuffer();
+        const newBlobURL = newWindow.createBlobInNewWindow(rawData, blob.type);
+
+        if (!newBlobURL) {
+            throw new Error('Failed to create blob URL in new window.');
+        }
+
+        console.log("New blob URL created in new window:", newBlobURL);
+        
+        // Store and return the new blob URL for future reference
+        if (!newWindow.CONVERTEDBLOBS) {
+            newWindow.CONVERTEDBLOBS = {};
+        }
+        newWindow.CONVERTEDBLOBS[blobURL] = newBlobURL;
+        
+        return newBlobURL;
+    } catch (error) {
+        console.error("Error creating blob in new window:", error);
+        return undefined;
+    }
+}
+
 export function isAttachedToDOM(element:HTMLElement) {
     if(element.ownerDocument === undefined || element.ownerDocument === null) {
         return false;

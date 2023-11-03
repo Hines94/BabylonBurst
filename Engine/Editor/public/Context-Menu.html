@@ -11,6 +11,7 @@
     .context-menu-item {
         padding: 8px 12px;
         cursor: pointer;
+        font-size: small;
     }
 
     .context-menu-item:hover {
@@ -42,6 +43,9 @@
             item.className = "context-menu-item";
             item.textContent = items[i].name;
             item.addEventListener("click", items[i].callback);
+            if(items[i].fontsize) {
+                item.style.fontSize = items[i].fontsize;
+            }
             contextMenu.appendChild(item);
         }
 

@@ -74,6 +74,10 @@ export abstract class AsyncAssetLoader {
 
     abstract GetDataLoadType(): AsyncDataType;
 
+    static GetPreviouslyLoadedAsset(assetPath: string, fileName: string) {
+        return GetPreviouslyLoadedAWSAsset(assetPath,fileName);
+    }
+
     constructor(assetPath: string, fileName: string, startLoad = true, ignoreCache = false) {
         this.ignoreCache = ignoreCache;
         this.requestedAssetPath = GetZipPath(assetPath);

@@ -38,7 +38,7 @@ export function SetInputValueFromDatalist(dropdownSelector:HTMLInputElement, ite
 }
 
 /** Easy way of automatically setting up dropdown to select a file */
-export function SetupContentInputWithDatalist(contentType:ContentItemType,dropdownSelector:HTMLInputElement, onChange:(val:ContentItem)=>void){
+export function SetupContentInputWithDatalist(contentType:ContentItemType,dropdownSelector:HTMLInputElement, onChange:(val:ContentItem)=>void, message="Changed data item to"){
     const datalistName = "___DATALIST___" + contentType + "___ITEMS___";
     if(dropdownSelector.ownerDocument.getElementById(datalistName)) {
         dropdownSelector.ownerDocument.getElementById(datalistName).remove();
@@ -59,10 +59,10 @@ export function SetupContentInputWithDatalist(contentType:ContentItemType,dropdo
     dropdownSelector.addEventListener("change",()=>{
         const option = Array.from(datalist.querySelectorAll('option')).find(opt => opt.value === dropdownSelector.value);
         if (option) {
-            ShowToastNotification("Changed data item to " + option.value,3000,dropdownSelector.ownerDocument);
+            ShowToastNotification(message+" "+ option.value,3000,dropdownSelector.ownerDocument);
             onChange((option as any).dataItem);
         } else {
-            ShowToastNotification("Changed data item to UNDEFINED",3000,dropdownSelector.ownerDocument);
+            ShowToastNotification(message+" UNDEFINED",3000,dropdownSelector.ownerDocument);
             onChange(undefined);
         }
     })
