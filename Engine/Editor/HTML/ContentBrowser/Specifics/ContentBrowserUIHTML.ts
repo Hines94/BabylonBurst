@@ -11,7 +11,8 @@ export class ContentBrowserUIHTML extends ContentBrowserSpecificItem {
     }
 
     async openUIEditor() {
-        await this.ourItem.LoadDataAsBuffer();
+        //Get most recent version
+        await this.ourItem.LoadDataAsBuffer(true);
         var data = await decode(this.ourItem.data);
         if(data === undefined || typeof data !== "string") {
             data = 
@@ -22,6 +23,9 @@ export class ContentBrowserUIHTML extends ContentBrowserSpecificItem {
         OpenUIEditor(this.ourItem.name,data as string,async (newHTML:string)=>{
             this.ourItem.data = encode(newHTML);
             const result = await this.ourItem.SaveItemOut();
+            if(!result) {
+                alert("Error saving UI!");
+            }
         });
     }
 

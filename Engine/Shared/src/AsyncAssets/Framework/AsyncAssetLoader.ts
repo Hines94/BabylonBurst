@@ -103,7 +103,7 @@ export abstract class AsyncAssetLoader {
         //If first then cache in case we want to perform a get unique
         const priorLoad = GetPreviouslyLoadedAWSAsset(this.requestedAssetPath, this.desiredFileName);
         //Can use data from existing asset?
-        if (priorLoad !== null) {
+        if (priorLoad !== null && !this.ignoreCache) {
             await priorLoad.getWaitForFullyLoadPromise();
             this.loadedAsyncData = priorLoad.loadedAsyncData;
             await this.PerformSpecificSetup(this.loadedAsyncData);

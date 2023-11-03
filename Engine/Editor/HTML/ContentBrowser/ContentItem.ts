@@ -108,8 +108,8 @@ export class ContentItem extends VisualItem {
         return await this.parent.GetDataForItem(this.GetSaveName(),AsyncDataType.blob,false);
     }
 
-    async LoadDataAsBuffer() {
-        const loader = new AsyncArrayBufferLoader(this.parent.getItemLocation(), this.GetSaveName());
+    async LoadDataAsBuffer(bIgnoreCache = false) {
+        const loader = new AsyncArrayBufferLoader(this.parent.getItemLocation(), this.GetSaveName(),true,bIgnoreCache);
         await loader.getWaitForFullyLoadPromise();
         this.data = loader.rawData;
     }
