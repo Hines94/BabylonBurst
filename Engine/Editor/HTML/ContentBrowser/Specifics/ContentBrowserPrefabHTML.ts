@@ -41,10 +41,7 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
     }
 
     protected async loadContent() {
-        if (this.ourItem.data) {
-            return;
-        }
-        const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.GetSaveName());
+        const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.GetSaveName(),true);
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;
     }
