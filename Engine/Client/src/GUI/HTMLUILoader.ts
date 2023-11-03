@@ -1,6 +1,6 @@
 import { AsyncImageDescription } from "@engine/AsyncAssets";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { AsyncArrayBufferLoader, AsyncMsgpackLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { decode } from "@msgpack/msgpack";
 
 /** Load UI from saved S3 object into a html element */
@@ -10,15 +10,14 @@ export async function LoadUIContent(
     ecosystem: GameEcosystem,
     owningDiv: HTMLElement = undefined
 ) {
-    const loader = new AsyncArrayBufferLoader(awsPath, filename);
+    const loader = AsyncMsgpackLoader.GetMsgpackLoader(awsPath, filename);
     await loader.getWaitForFullyLoadPromise();
-    const data = decode(loader.rawData);
     var div = owningDiv;
     if (div === undefined) {
         div = ecosystem.doc.createElement("div");
         ecosystem.doc.getElementById("GameUI").appendChild(div);
     }
-    div.innerHTML = data as string;
+    div.innerHTML = loader.msgpackData as string;
     SetupLoadedHTMLUI(div);
 }
 
@@ -48,10 +47,9 @@ export async function SetupLoadedHTMLUI(element: HTMLElement) {
             const path = div.getAttribute("data-uipath");
             const filename = div.getAttribute("data-uifilename");
 
-            const loader = new AsyncArrayBufferLoader(path, filename);
+            const loader = AsyncMsgpackLoader.GetMsgpackLoader(path, filename);
             await loader.getWaitForFullyLoadPromise();
-            const data = decode(loader.rawData);
-            div.innerHTML = data as string;
+            div.innerHTML = loader.msgpackData as string;
             //Recursive load
             await setupElementUI(div as HTMLElement);
         }

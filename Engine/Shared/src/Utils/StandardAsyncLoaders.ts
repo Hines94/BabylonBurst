@@ -1,3 +1,4 @@
+import { decode } from "@msgpack/msgpack";
 import { AsyncAssetLoader, AsyncDataType } from "../AsyncAssets";
 
 
@@ -44,4 +45,25 @@ export class AsyncArrayBufferLoader extends AsyncAssetLoader {
         this.rawData = cachedResponse;
         return null;
     }
+}
+
+export class AsyncMsgpackLoader extends AsyncAssetLoader {
+    msgpackData:any;
+
+    static GetMsgpackLoader(awsPath:string,filename:string) : AsyncMsgpackLoader{
+        const exist = AsyncAssetLoader.GetPreviouslyLoadedAsset(awsPath,filename);
+        if(exist) {
+            return exist as AsyncMsgpackLoader;
+        }
+        return new AsyncMsgpackLoader(awsPath,filename);
+    }
+
+    GetDataLoadType(): AsyncDataType {
+        return AsyncDataType.arrayBuffer;
+    }
+    onAsyncDataLoaded(cachedResponse: any): Promise<null> {
+        this.msgpackData = decode(cachedResponse);
+        return null;
+    }
+
 }
