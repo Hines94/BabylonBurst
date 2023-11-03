@@ -1,7 +1,24 @@
 import { AsyncImageDescription } from "@engine/AsyncAssets";
+import { GameEcosystem } from "@engine/GameEcosystem";
 import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { decode } from "@msgpack/msgpack";
 
+/** Load UI from saved S3 object into a html element */
+export async function LoadUIContent(awsPath:string, filename:string, ecosystem:GameEcosystem, owningDiv:HTMLElement = undefined) {
+    const loader = new AsyncArrayBufferLoader(awsPath, filename);
+    await loader.getWaitForFullyLoadPromise();
+    const data = decode(loader.rawData);
+    var div = owningDiv;
+    if(div === undefined) {
+        div = ecosystem.doc.createElement("div");
+        ecosystem.doc.getElementById("GameUI").appendChild(div);
+    }
+    div.innerHTML = data as string;
+    SetupLoadedHTMLUI(div);
+}
+
+
+/** Given an element which has loaded the text content from UI - load this element */
 export async function SetupLoadedHTMLUI(element: HTMLElement) {
     //Load other UI
     await setupElementUI(element);
