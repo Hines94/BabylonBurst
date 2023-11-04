@@ -5,6 +5,7 @@ MAGENTA='\033[0;35m'
 RESET='\033[0m'
 
 base_path="$(cd "$(dirname "$0")" && pwd)"
+PORT=5173
 
 arg_exists() {
     target_arg="$1"
@@ -31,9 +32,8 @@ echo -e ${MAGENTA}Building Server${RESET}
 echo "TODO: start up local server once fixed"
 
 #--- Start client ---
-mkdir ${base_path}/Engine/tmp
-PIDFILE="${base_path}/Engine/tmp/editor_launch_info.pid"
-CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs.log"
+mkdir -p ${base_path}/Engine/tmp
+CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs$(date '+%Y-%m-%d_%H-%M-%S').log"
 
 # Function to check if a process with the given PID is running
 is_process_running() {
@@ -42,16 +42,16 @@ is_process_running() {
     return $?
 }
 
-# Check if the old process is running and kill it
-if [ -f $PIDFILE ]; then
-    OLD_PID=$(cat $PIDFILE)
-    if is_process_running $OLD_PID; then
-        echo "Stopping old vite process with PID $OLD_PID..."
-        kill $OLD_PID
-        # Wait for the process to terminate
-        wait $OLD_PID 2>/dev/null
+# KIll old process using our port
+PID=$(lsof -ti tcp:${PORT})
+if [ -n "$PID" ]; then
+    COMMAND_NAME=$(ps -p ${PID} -o args=)
+    if [[ "${COMMAND_NAME}" == *"${base_path}"* ]]; then
+        echo -e "Port ${PORT} is in use by ${COMMAND_NAME}. Assuming this is the old Engine. Stopping process."
+        kill -15 "$PID" && echo "Process stopped successfully."
+    else
+        echo -e ${RED}"Port ${PORT} is in use by ${COMMAND_NAME}. Please free this port up before running the engine."${RESET}
     fi
-    rm -f $PIDFILE
 fi
 
 # Start client process in the background
@@ -63,16 +63,14 @@ else
     if arg_exists "-edit" "$@"; then
         cd ${base_path}/Engine/Editor
         nohup npm run start:game > ${CLIENTLOGS} 2>&1 &
+        echo "Running editor version"
     #Regular version of game
     else
         nohup npm run start:dev > ${CLIENTLOGS} 2>&1 &
     fi
     cd ${base_path}
 
-    echo -e ${GREEN=}"Client running on ${MAGENTA}http://localhost:5173/.${GREEN} Logs are in Engine/tmp."${RESET}
-
-    # Save the PID of the new process
-    echo $! > $PIDFILE
+    echo -e ${GREEN}"Client running on ${MAGENTA}http://localhost:5173/.${GREEN} Logs are in Engine/tmp."${RESET}
 fi
 
 #--- Start Server ---
