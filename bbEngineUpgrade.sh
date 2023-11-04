@@ -24,7 +24,7 @@ echo "Temporary directory for clone: $TEMP_DIR"
 
 # Clone the remote repository to the temporary directory
 echo "Cloning engine's GitHub repository to temporary directory..."
-git clone https://github.com/Hines94/BabylonBoost.git "$TEMP_DIR"
+git clone https://github.com/Hines94/BabylonBoost.git "$TEMP_DIR" --depth 1
 
 # Copy all files and directories, excluding the specified ones, to the script's directory
 echo "Copying contents, excluding specified files, to the script's directory..."
