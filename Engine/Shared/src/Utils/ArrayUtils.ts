@@ -1,6 +1,10 @@
 
-
 export function ArraysContainEqualItems<T>(arr1: T[], arr2: T[]): boolean {
+
+    if(arr1 === undefined || arr2 === undefined) {
+        return false;
+    }
+
     if (arr1.length !== arr2.length) return false;
 
     // Sort arrays to compare elements
