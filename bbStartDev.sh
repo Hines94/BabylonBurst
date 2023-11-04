@@ -33,7 +33,7 @@ echo "TODO: start up local server once fixed"
 
 #--- Start client ---
 mkdir -p ${base_path}/Engine/tmp
-CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs$(date '+%Y-%m-%d_%H-%M-%S').log"
+CLIENTLOGS="${base_path}/Engine/tmp/viteClientLogs.log"
 
 # Function to check if a process with the given PID is running
 is_process_running() {

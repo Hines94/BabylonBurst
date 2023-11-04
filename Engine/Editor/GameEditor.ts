@@ -18,6 +18,7 @@ export class GameEditor extends BabylonBurstClient {
     }
 
     override async setupScene(): Promise<void> {
+        console.log("Loading in Play-Editor mode")
         await super.setupScene();
         //Create higherarchy HTML that we can use to check various things
         const editorHigherarchy=new PlayHigherarchyHTML();
