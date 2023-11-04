@@ -27,7 +27,7 @@
         "emitDecoratorMetadata": true,
     },
     "include": [
-        "./Engine/Clientsrc/**/*", 
+        "./Engine/Client/src/**/*", 
         "./Engine/Shared/src/**/*", 
         "./Source/**/*"
     ]
