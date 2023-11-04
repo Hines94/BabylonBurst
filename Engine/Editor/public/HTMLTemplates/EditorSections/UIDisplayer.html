@@ -30,7 +30,6 @@
             display: inline-block;
         }
         #DatapanelRight {
-            display: flex;
             gap:10px;
             align-items: center;
             padding-right: 25px;
@@ -49,14 +48,6 @@
             padding: 10px;
             overflow: auto;
         }
-        #HTMLDisplay {
-            flex-grow: 1;
-            height: 100%;
-            overflow: auto;
-            background-color: #2a2a2a;
-            padding: 5px;
-            position: relative;
-        }
     </style>
     <link rel="stylesheet" href="/GeneralStyles.css" />
 </head>
@@ -66,8 +57,6 @@
     <div id="DatapanelHeadBar">
         <h2 id="UIName">Some UI</h2>
         <div>
-            <button id="minimizeEditor">Minimize Editor</button>
-            <button id="minimizePreview">Minimize Preview</button>
             <select id="resolutionDropdown">
                 <option value="1920x1080">1920x1080</option>
                 <option value="1280x720">1280x720</option>
@@ -82,12 +71,15 @@
         </div>
     </div>
 
-    <div class="centerUIPanel">
+    <div class="centerUIPanel" id="centerUIPanel">
         <div id="HTMLCoding">
-
         </div>
-        <div id="HTMLDisplay">
+        <div id="DisplayHolder" style="height: 100%;background-color: black;padding: 1px; width: 70%;position: relative;">
+            <div id="DisplayScaler" style="background-color: #191919;position: absolute;left:1px;top:1px;border:1px solid hsla(0, 0%, 59%, 0.5)">
+                <div id="HTMLDisplay" style="all:revert !important;position: relative;">
             
+                </div>
+            </div>
         </div>
     </div>
 
@@ -105,7 +97,12 @@
             FetchInjectAdditionalHTML("Context-Menu");
         });
 
+    const centerPanel = document.getElementById("centerUIPanel");
+    const editor = document.getElementById("HTMLCoding");
     const previewElement = document.getElementById("HTMLDisplay");
+    const previewElementHolder = document.getElementById("DisplayHolder");
+    const previewElementScaler = document.getElementById("DisplayScaler");
+
     document.getElementById('resolutionDropdown').addEventListener('change', function(e) {
         changeResolution(e.target.value);
     });
@@ -113,44 +110,72 @@
         const [width, height] = resolution.split('x');
 
         // Set the width and height based on the selected resolution
-        previewElement.style.width = `${width}px`;
-        previewElement.style.height = `${height}px`;
+        previewElementScaler.style.width = `${width}px`;
+        previewElementScaler.style.height = `${height}px`;
+        EnsureResolutionSizing();
     }
+
+    function EnsureResolutionSizing() {
+        console.log("RESIZE")
+        const parent = previewElementScaler.parentElement;
+  
+        // Get the bounding dimensions of the parent element
+        const parentWidth = parent.clientWidth;
+        const parentHeight = parent.clientHeight;
+        
+        // Calculate the scale ratios
+        const scaleX = parentWidth / previewElementScaler.offsetWidth;
+        const scaleY = parentHeight / previewElementScaler.offsetHeight;
+        
+        // Determine the smallest scale ratio to ensure the panel fits within the parent
+        const scale = Math.min(scaleX*0.99, scaleY*0.99);
+        
+        // Apply the scale transformation to the panel
+        previewElementScaler.style.transform = `scale(${scale})`;
+        // Adjust the origin of transformation if necessary
+        previewElementScaler.style.transformOrigin = 'top left';
+    }
+
+    window.addEventListener("resize",()=>{EnsureResolutionSizing();});
+
     changeResolution("1980x1020");
-
-    const editor = document.getElementById("HTMLCoding");
-    document.getElementById("minimizeEditor").addEventListener('click',minimizeEditor);
-    function minimizeEditor() {
-        if(editor.style.display === "none") {
-            editor.style.display = "block";
-        } else {
-            editor.style.display = "none";
-        }
-    }
-
-    document.getElementById("minimizePreview").addEventListener('click',minimizePreview);
-    function minimizePreview() {
-        if(previewElement.style.display === "none") {
-            previewElement.style.display = "block";
-        } else {
-            previewElement.style.display = "none";
-        }
-    }
 
     var previewWindow;
     document.getElementById("seperatePreview").addEventListener('click',seperatePreview);
     function seperatePreview() {
-        previewWindow = window.open("", "HTMLPreview_"+Date.now(), `width=${previewElement.style.width},height=${previewElement.style.width}`);
-        document.defaultView.addEventListener('beforeunload', function() {
-            if(previewWindow){
-                previewWindow.close();
+        if(previewWindow === undefined) {
+            previewWindow = window.open("", "HTMLPreview_"+Date.now(), `toolbar=no,scrollbars=no,resizable=yes`);
+            document.defaultView.addEventListener('beforeunload', function() {
+                if(previewWindow){
+                    previewWindow.close();
+                }
+            });
+            if (!previewWindow) {
+                alert("Unable to open preview window. Please check your popup settings.");
+                return;
             }
-        });
-        if (!previewWindow) {
-            alert("Unable to open preview window. Please check your popup settings.");
-            return;
+            previewElementHolder.style.width = "100%";
+            editor.style.width = "100%";
+            previewWindow.document.body.style.maxHeight = "100vh";
+            previewWindow.document.body.style.maxWidth = "100vw";
+            previewWindow.document.body.style.backgroundColor = "black";
+            previewWindow.document.body.style.padding = "1px";
+            previewWindow.document.body.style.overflow="hidden";
+            previewWindow.document.body.appendChild(previewElementHolder);
+            previewWindow.addEventListener("resize",()=>{EnsureResolutionSizing();});
+            EnsureResolutionSizing();
+            previewWindow.addEventListener('beforeunload', function() {
+                if(previewWindow){
+                    seperatePreview();
+                }
+            });
+        } else {
+            centerPanel.appendChild(previewElementHolder);
+            previewElementHolder.style.width = "70%";
+            editor.style.width = "30%";
+            previewWindow.close();
+            previewWindow = undefined;
         }
-        editor.style.width = "100%";
-        previewWindow.document.body.appendChild(previewElement);
+    
     }
 </script>
