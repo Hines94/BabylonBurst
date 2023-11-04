@@ -49,7 +49,11 @@ export function SetupAllEditorDebugOptions(ecosystem: GameEcosystem, options:Par
             }
         },
         (ecosystem:GameEcosystem)=>{
-            Higherarchy.classList.add("hidden");
+            if((Higherarchy as any).OwningHigherarchElement) {
+                (Higherarchy as any).OwningHigherarchElement.HideHigherarchy();
+            } else {
+                Higherarchy.classList.add("hidden");
+            }
         },debugOptions.bDefaultHigherarchy)
 
         const higherarchCallback = ()=>{

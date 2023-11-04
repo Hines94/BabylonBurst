@@ -40,7 +40,7 @@ export class AsyncImageDescription extends BackgroundCacher {
 
     async GetImageAsTexture(): Promise<Texture> {
         await this.WaitForImageToLoad();
-        const ret = this.loadingImage.GetTextureData();
+        const ret = await this.loadingImage.GetTextureData();
         ret.hasAlpha = this.hasAlpha;
         return ret;
     }
@@ -88,7 +88,8 @@ class AsyncImageLoader extends AsyncAssetLoader {
         return this.stringDataBase64; 
     }
 
-    GetTextureData() {
+    async GetTextureData() {
+        await this.GetStringData();
         if (this.textureData === undefined) {
             this.textureData = new Texture(this.stringDataBase64);
         }
