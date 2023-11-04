@@ -40,17 +40,31 @@ export function SetupAllEditorDebugOptions(ecosystem: GameEcosystem, options:Par
     const Higherarchy =  ecosystem.doc.getElementById("Higherarchy") as HTMLElement;
     if(debugOptions.bHigherarchyOption) {
         //Provide option for hide/show
-        GenerateTopMenuToggle(ecosystem,"Entity Higherarchy", "Debug","",debugOptionPriority,
-        (ecosystem:GameEcosystem)=>{
-            Higherarchy.classList.remove("hidden");
-        },
+        const higherarchyRefresh = GenerateTopMenuToggle(ecosystem,"Entity Higherarchy", "Debug","",debugOptionPriority,
         (ecosystem:GameEcosystem)=>{
             if((Higherarchy as any).OwningHigherarchElement) {
                 (Higherarchy as any).OwningHigherarchElement.ShowHigherarchy();
             } else {
                 Higherarchy.classList.remove("hidden");
             }
+        },
+        (ecosystem:GameEcosystem)=>{
+            Higherarchy.classList.add("hidden");
         },debugOptions.bDefaultHigherarchy)
+
+        const higherarchCallback = ()=>{
+            const visible = !Higherarchy.classList.contains("hidden");
+            if(visible !== ecosystem.dynamicProperties[higherarchyRefresh.propName]) {
+                ecosystem.dynamicProperties[higherarchyRefresh.propName] = visible;
+                higherarchyRefresh.refreshCallback();
+            }
+        };
+        const observer = new MutationObserver(higherarchCallback);
+        observer.observe(Higherarchy, {
+            attributes: true, // listen for attribute changes
+            attributeFilter: ['class'] // only listen to class changes
+        });
+
     } else {
         //Just hide
         if((Higherarchy as any).OwningHigherarchElement) {
@@ -63,13 +77,26 @@ export function SetupAllEditorDebugOptions(ecosystem: GameEcosystem, options:Par
     const Inspector =  ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
     if(debugOptions.bInspectorOption) {
         //Provide option for hide/show
-        GenerateTopMenuToggle(ecosystem,"Entity Inspector", "Debug","",debugOptionPriority,
+        const inspectorRefresh = GenerateTopMenuToggle(ecosystem,"Entity Inspector", "Debug","",debugOptionPriority,
         (ecosystem:GameEcosystem)=>{
             Inspector.classList.remove("hidden");
         },
         (ecosystem:GameEcosystem)=>{
             Inspector.classList.add("hidden");
         },debugOptions.bDefaultInspector)
+
+        const inspectCallback = ()=>{
+            const visible = !Inspector.classList.contains("hidden");
+            if(visible !== ecosystem.dynamicProperties[inspectorRefresh.propName]) {
+                ecosystem.dynamicProperties[inspectorRefresh.propName] = visible;
+                inspectorRefresh.refreshCallback();
+            }
+        };
+        const observer = new MutationObserver(inspectCallback);
+        observer.observe(Inspector, {
+            attributes: true, // listen for attribute changes
+            attributeFilter: ['class'] // only listen to class changes
+        });
     } else {
         //Just hide
         Inspector.classList.add("hidden");

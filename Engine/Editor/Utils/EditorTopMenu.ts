@@ -173,6 +173,14 @@ export function GenerateTopMenuToggle(ecosystem:GameEcosystem,name:string, categ
     } else {
         ddOption.innerText = name;
     }
+
+    //Return callback to refresh easily
+    return {
+        refreshCallback:()=>{
+            RefreshEcosystemDropdownProp(ecosystem,name,category,onCallback,offCallback);
+        },
+        propName:propName
+    }
 }
 
 function RefreshEcosystemDropdownProp(ecosystem:GameEcosystem,name:string, category:string,onCallback:(system:GameEcosystem)=>void, offCallback:(system:GameEcosystem)=>void) {
