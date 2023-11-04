@@ -51,6 +51,7 @@ if [ -n "$PID" ]; then
         kill -15 "$PID" && echo "Process stopped successfully."
     else
         echo -e ${RED}"Port ${PORT} is in use by ${COMMAND_NAME}. Please free this port up before running the engine."${RESET}
+        exit 1
     fi
 fi
 

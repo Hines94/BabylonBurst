@@ -9,6 +9,7 @@ import { IsIntArrayType, isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
 import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
 import { Observable } from "@babylonjs/core";
+import { ProcessUISpecifierComp } from "./CustomUISpecifier";
 
 
 export type editorPropertyCallback = (container:HTMLElement, propType:savedProperty, parentData:any, changeCallback:(any)=>void,ecosystem:GameEcosystem, requireRefresh:Observable<void>)=>boolean;
@@ -22,6 +23,7 @@ RegisterCustomEditorPropertyGenerator(ProcessInstancedRenderComp);
 RegisterCustomEditorPropertyGenerator(ProcessModelSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessMaterialSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessPrefabSpecifierComp);
+RegisterCustomEditorPropertyGenerator(ProcessUISpecifierComp);
 
 type ArrayElementSpecifier = {
     ele:HTMLButtonElement;
