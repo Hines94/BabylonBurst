@@ -5,6 +5,7 @@ import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ShowNotificationWindow } from "@BabylonBurstClient/HTML/HTMLNotificationWindow";
 import { AssetBundle } from "../AssetBundle";
 import { SetupBundleInputWithDatalist } from "../../../Utils/ContentTypeTrackers";
+import { CopyToClipboard } from "@engine/Utils/HTMLUtils";
 
 
 export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedItemHTML {
@@ -47,6 +48,17 @@ export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedIte
             (inspector.querySelector("#ItemSize") as HTMLElement).innerText = "Size: " + (this.ourItem.size/1000000).toFixed(2) + "mb";
         }
         this.SetIcon(ContentItemType[this.ourItem.category],inspector.querySelector("#ItemImage"));
+
+        const fullPath = inspector.ownerDocument.createElement("p");
+        fullPath.innerText = this.ourItem.GetSaveName();
+        inspector.appendChild(fullPath);
+
+        const copyButton = inspector.ownerDocument.createElement("button");
+        copyButton.innerText = "Copy Filename";
+        copyButton.addEventListener("click",()=>{
+            CopyToClipboard(this.ourItem.GetSaveName());
+        })
+        inspector.appendChild(copyButton);
     }
 
     override setupOurSelectable(): void {

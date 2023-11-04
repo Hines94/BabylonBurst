@@ -7,6 +7,7 @@ import { ContentItem } from "../ContentItem";
 import {ShowNotificationWindow} from "@BabylonBurstClient/HTML/HTMLNotificationWindow"
 import { SetupFolderInputWithDatalist } from "../../../Utils/ContentTypeTrackers";
 import { AssetFolder } from "../AssetFolder";
+import { CopyToClipboard } from "@engine/Utils/HTMLUtils";
 
 
 export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
@@ -152,6 +153,17 @@ export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
         const inspector = this.ourContentHolder.ecosystem.doc.getElementById("InspectorPanel") as HTMLElement;
         (inspector.querySelector("#ItemType") as HTMLElement).innerText = "Asset Bundle";
         (inspector.querySelector("#ItemSize") as HTMLElement).innerText = "Size: " + (this.ourItem.size/1000000).toFixed(2) + "mb";
+
+        const fullPath = inspector.ownerDocument.createElement("p");
+        fullPath.innerText = this.ourItem.getItemLocation();
+        inspector.appendChild(fullPath);
+
+        const copyButton = inspector.ownerDocument.createElement("button");
+        copyButton.innerText = "Copy Bundle Path";
+        copyButton.addEventListener("click",()=>{
+            CopyToClipboard(this.ourItem.getItemLocation());
+        })
+        inspector.appendChild(copyButton);
     }
     performPrimaryMethod(): void {
 
