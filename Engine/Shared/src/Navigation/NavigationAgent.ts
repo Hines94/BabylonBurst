@@ -98,6 +98,7 @@ export class NavigationAgent extends Component {
             EntVector3.Copy(transform.Position,EntVector3.VectorToEnt(this.transformNode.position));
         } else {
             navLayer.navLayerCrowd.updateAgentParameters(this.agentIndex,newParams);
+            this.priorBuildParams = newParams;
         }            
     }
 
