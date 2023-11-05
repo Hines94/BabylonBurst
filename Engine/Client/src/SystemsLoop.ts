@@ -15,14 +15,6 @@ import { GetSystemOfType, RunGameSystems } from "@engine/GameLoop/GameSystemLoop
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
 import { RegisterDefaultCoreSystems } from "@engine/GameLoop/GameSystemPriorities";
 
-/** Game specific systems like building only for main game */
-export function UpdateGameSpecificSystems(gameClient: GameEcosystem) {
-    if (serverConnection) {
-        serverConnection.ProcessQueuedServerMessages(gameClient);
-    }
-    //Update game specific code
-    UpdateTickClient(gameClient);
-}
 
 function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     if (GetSystemOfType(InstancedMeshRenderSystem)) {
@@ -54,6 +46,10 @@ export function UpdateSystemsLoop(ecosystem: GameEcosystem, specificSystems: (ec
 
     //Our main systems updater
     RunGameSystems(ecosystem);
+
+    if (serverConnection) {
+        serverConnection.ProcessQueuedServerMessages(ecosystem);
+    }
 
     //Our client tick
     UpdateTickClient(ecosystem);

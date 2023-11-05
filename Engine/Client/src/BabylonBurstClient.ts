@@ -1,4 +1,3 @@
-import { UpdateGameSpecificSystems as UpdateGameplaySpecificSystems } from "./SystemsLoop";
 import { FramerateCounter } from "./GUI/Generic/FramerateCounter";
 import { RunnableGameEcosystem } from "./RunnableGameEcosystem";
 import { GameEcosystem } from "@engine/GameEcosystem";
@@ -26,7 +25,4 @@ export class BabylonBurstClient extends RunnableGameEcosystem {
         this.counter = new FramerateCounter();
     }
 
-    protected override updateWindowSpecificSystems(ecosystem: GameEcosystem) {
-        UpdateGameplaySpecificSystems(ecosystem);
-    }
 }
