@@ -153,16 +153,16 @@ export class WindowInputValues {
     ARROWLEFTKey = new ButtonInput([ARRLEFTKEY]);
     ARROWRIGHTKey = new ButtonInput([ARRRIGHTKEY]);
     //Numbers
-    ZEROkey = new ButtonInput([ZEROKEY]);
-    ONEkey = new ButtonInput([ONEKEY]);
-    TWOkey = new ButtonInput([TWOKEY]);
-    THREEkey = new ButtonInput([THREEKEY]);
-    FOURkey = new ButtonInput([FOURKEY]);
-    FIVEkey = new ButtonInput([FIVEKEY]);
-    SIXkey = new ButtonInput([SIXKEY]);
-    SEVENkey = new ButtonInput([SEVENKEY]);
-    EIGHTkey = new ButtonInput([EIGHTKEY]);
-    NINEkey = new ButtonInput([NINEKEY]);
+    ZEROKey = new ButtonInput([ZEROKEY]);
+    ONEKey = new ButtonInput([ONEKEY]);
+    TWOKey = new ButtonInput([TWOKEY]);
+    THREEKey = new ButtonInput([THREEKEY]);
+    FOURKey = new ButtonInput([FOURKEY]);
+    FIVEKey = new ButtonInput([FIVEKEY]);
+    SIXKey = new ButtonInput([SIXKEY]);
+    SEVENKey = new ButtonInput([SEVENKEY]);
+    EIGHTKey = new ButtonInput([EIGHTKEY]);
+    NINEKey = new ButtonInput([NINEKEY]);
     TILDEKey = new ButtonInput([TILDEKEY, TILDEKEYALT]);
 
     //General Keys
@@ -172,54 +172,57 @@ export class WindowInputValues {
     PKey = new ButtonInput([PKEY]);
     FKey = new ButtonInput([FKEY]);
     IKey = new ButtonInput([IKEY]);
-    Tkey = new ButtonInput([TKEY]);
-    Gkey = new ButtonInput([GKEY]);
-    Hkey = new ButtonInput([HKEY]);
-    Vkey = new ButtonInput([VKEY]);
-    Bkey = new ButtonInput([BKEY]);
-    Ekey = new ButtonInput([EKEY]);
-    Rkey = new ButtonInput([RKEY]);
-    Fkey = new ButtonInput([FKEY]);
+    TKey = new ButtonInput([TKEY]);
+    GKey = new ButtonInput([GKEY]);
+    HKey = new ButtonInput([HKEY]);
+    VKey = new ButtonInput([VKEY]);
+    BKey = new ButtonInput([BKEY]);
+    EKey = new ButtonInput([EKEY]);
+    RKey = new ButtonInput([RKEY]);
 
-    /** Given a number ty to get the correct key */
-    GetNumberKey(index:Number) : ButtonInput {
+    /** Given a number ty to get the correct Key */
+    GetNumberKey(index: Number): ButtonInput {
         if (index === 0) {
-            return this.ZEROkey;
+            return this.ZEROKey;
         } else if (index === 1) {
-            return this.ONEkey;
+            return this.ONEKey;
         } else if (index === 2) {
-            return this.TWOkey;
+            return this.TWOKey;
         } else if (index === 3) {
-            return this.THREEkey;
+            return this.THREEKey;
         } else if (index === 4) {
-            return this.FOURkey;
+            return this.FOURKey;
         } else if (index === 5) {
-            return this.FIVEkey;
+            return this.FIVEKey;
         } else if (index === 6) {
-            return this.SIXkey;
+            return this.SIXKey;
         } else if (index === 7) {
-            return this.SEVENkey;
+            return this.SEVENKey;
         } else if (index === 8) {
-            return this.EIGHTkey;
+            return this.EIGHTKey;
         } else if (index === 9) {
-            return this.NINEkey;
+            return this.NINEKey;
         }
         return undefined;
     }
 
     /** Given a string input (Eg F) try to get the correct key */
-    GetKey(stringKey:string):ButtonInput {
+    GetKey(stringKey: string): ButtonInput {
         const upperKey = stringKey.toUpperCase();
         var input = this.checkKeyExists(upperKey);
-        if(input) { return input; }
-        var input = this.checkKeyExists(upperKey+"Key");
-        if(input) { return input; }
+        if (input) {
+            return input;
+        }
+        input = this.checkKeyExists(upperKey + "Key");
+        if (input) {
+            return input;
+        }
 
         return undefined;
     }
 
-    private checkKeyExists(checkKey:string) {
-        if(checkKey in this) {
+    private checkKeyExists(checkKey: string) {
+        if (checkKey in this) {
             var key = checkKey as keyof WindowInputValues;
             return this[key] as ButtonInput;
         }
