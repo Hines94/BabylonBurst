@@ -78,7 +78,9 @@ function setupRightClickEditor(editor:HTMLDivElement, view:EditorView) {
                     SetupContentInputWithDatalist(ContentItemType.UI,input,(val:ContentItem) =>{
                         //TODO: Dissalow own item
                         if(val !== undefined) {
-                            insertDiv(view,`<div style="width:500px;height:500px;background-color:green;" data-uipath="${val.parent.getItemLocation()}" data-uifilename="${val.GetSaveName()}"></div>`);
+                            insertDiv(view,
+                            `<div style="width:500px;height:500px;background-color:green;" data-uipath="${val.parent.getItemLocation()}" data-uifilename="${val.GetSaveName()}">
+                            </div>`);
                         }
                         input.remove();
                     }, "Added Other UI: ")

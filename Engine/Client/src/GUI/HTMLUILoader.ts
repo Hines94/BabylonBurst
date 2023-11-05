@@ -42,6 +42,18 @@ export async function SetupLoadedHTMLUI(element: HTMLElement) {
 
     //Setup an element's UI - recursive loading
     async function setupElementUI(ele: HTMLElement) {
+        //Link element only once in doc (Eg styles?)
+        const linkOnceEle = ele.querySelector('div[data-linkOnce]');
+        if(linkOnceEle && linkOnceEle.getAttribute("data-linkOnce") === "true") {
+            const existing = ele.ownerDocument.querySelectorAll('div[data-linkOnce]');
+            for(var e = 0;e <existing.length;e++) {
+                if(existing[e] !== ele) {
+                    ele.remove();
+                    return;
+                }
+            }
+        }
+
         const UIElements = ele.querySelectorAll("div[data-uipath]");
         for (var i = 0; i < UIElements.length; i++) {
             const div = UIElements[i];

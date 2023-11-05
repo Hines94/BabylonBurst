@@ -16,9 +16,10 @@ export class ContentBrowserUIHTML extends ContentBrowserSpecificItem {
         var data = await decode(this.ourItem.data);
         if(data === undefined || typeof data !== "string") {
             data = 
-            `<div> 
-                <h1>Hello World</h1> 
-            </div>`;
+`<div data-linkOnce="true">Use this to link only once in our HTML (eg pure styles)</div>
+<div> 
+  <h1>Hello World</h1> 
+</div>`;
         }
         OpenUIEditor(this.ourItem.name,data as string,async (newHTML:string)=>{
             this.ourItem.data = encode(newHTML);
