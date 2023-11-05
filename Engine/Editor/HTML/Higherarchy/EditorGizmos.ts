@@ -179,13 +179,13 @@ export class EditorGizmos {
             return;
         }
 
-        if (this.owner.InputValues.Ekey.wasJustActivated()) {
+        if (this.owner.InputValues.EKey.wasJustActivated()) {
             this.SetPositionGizmoEnabled();
         }
-        if (this.owner.InputValues.Rkey.wasJustActivated()) {
+        if (this.owner.InputValues.RKey.wasJustActivated()) {
             this.SetRotationGizmoEnabled();
         }
-        if (this.owner.InputValues.Gkey.wasJustActivated()) {
+        if (this.owner.InputValues.GKey.wasJustActivated()) {
             this.SetScaleGizmoEnabled();
         }
 
