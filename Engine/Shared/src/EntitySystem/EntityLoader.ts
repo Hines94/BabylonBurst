@@ -59,6 +59,9 @@ export class EntityTemplate {
 
     /** Given a component - load the data we have into that component */
     LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component) {
+        if(mapping === undefined || mapping === null) {
+            mapping = {};
+        }
         const compIndex = GetTypingsCompIndex(compName,this.typings);
         const compData = this.entityData[ent][compIndex];
         if(!compData){
