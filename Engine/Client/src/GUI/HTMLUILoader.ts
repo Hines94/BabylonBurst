@@ -22,8 +22,8 @@ export async function LoadUIContent(
     const loader = AsyncMsgpackLoader.GetMsgpackLoader(awsPath, filename);
     await loader.getWaitForFullyLoadPromise();
     div.innerHTML = loader.msgpackData as string;
-    div.setAttribute("data-uipath",awsPath);
-    div.setAttribute("data-uifilename",filename);
+    div.setAttribute("data-uipath", awsPath);
+    div.setAttribute("data-uifilename", filename);
     SetupLoadedHTMLUI(div);
     return div;
 }
@@ -32,10 +32,10 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
     if ((element.ownerDocument as any).___allBBStyleScripts___ === undefined) {
         (element.ownerDocument as any).___allBBStyleScripts___ = {};
     }
-    
+
     //Force reload all styles? (eg editor when they are changing)
-    if(bForceReloadStyleFunctions) {
-        for(var i = 0; i < (element.ownerDocument as any).___allBBStyleScripts___.length;i++) {
+    if (bForceReloadStyleFunctions) {
+        for (var i = 0; i < (element.ownerDocument as any).___allBBStyleScripts___.length; i++) {
             (element.ownerDocument as any).___allBBStyleScripts___[i].remove();
         }
         (element.ownerDocument as any).___allBBStyleScripts___ = {};
@@ -59,7 +59,7 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
     async function setupElementUI(ele: HTMLElement) {
         const eleName = ele.getAttribute("data-uipath") + "_" + ele.getAttribute("data-uifilename");
         if (allStyleScripts[eleName] !== undefined) {
-            //Already loaded - remove all non inlined styles
+            //Already loaded - remove all non inlined styles/scripts
             const styleAndScriptElements = ele.querySelectorAll(
                 "style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])"
             );
@@ -67,7 +67,7 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
                 styleAndScriptElements[e].remove();
             }
         } else {
-            //First one - remove all styles
+            //First one - move all styles/scripts
             allStyleScripts[eleName] = ele.ownerDocument.createElement("div");
             const styleAndScriptElements = ele.querySelectorAll(
                 "style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])"
@@ -75,6 +75,7 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
             for (var e = 0; e < styleAndScriptElements.length; e++) {
                 allStyleScripts[eleName].appendChild(styleAndScriptElements[e]);
             }
+            ele.ownerDocument.body.appendChild(allStyleScripts[eleName]);
         }
 
         const UIElements = ele.querySelectorAll("div[data-uipath]");
