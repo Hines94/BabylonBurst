@@ -1,7 +1,6 @@
 import { AsyncImageDescription } from "@engine/AsyncAssets";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { AsyncArrayBufferLoader, AsyncMsgpackLoader } from "@engine/Utils/StandardAsyncLoaders";
-import { decode } from "@msgpack/msgpack";
+import { AsyncMsgpackLoader } from "@engine/Utils/StandardAsyncLoaders";
 
 /** Load UI from saved S3 object into a html element */
 export async function LoadUIContent(
@@ -27,20 +26,26 @@ export async function LoadUIContent(
     SetupLoadedHTMLUI(div);
     return div;
 }
+
+const styleScriptsName = "___allBBStyleScripts___";
+
 /** Given an element which has loaded the text content from UI - load this element */
 export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleFunctions = false) {
-    if ((element.ownerDocument as any).___allBBStyleScripts___ === undefined) {
-        (element.ownerDocument as any).___allBBStyleScripts___ = {};
+    const anyDoc = element.ownerDocument as any;
+    if (anyDoc[styleScriptsName] === undefined) {
+        anyDoc[styleScriptsName] = {};
     }
 
     //Force reload all styles? (eg editor when they are changing)
     if (bForceReloadStyleFunctions) {
-        for (var i = 0; i < (element.ownerDocument as any).___allBBStyleScripts___.length; i++) {
-            (element.ownerDocument as any).___allBBStyleScripts___[i].remove();
+        const names = Object.keys(anyDoc[styleScriptsName]);
+        for (var i = 0; i < names.length; i++) {
+            const objName = names[i];
+            anyDoc[styleScriptsName][objName].remove();
         }
-        (element.ownerDocument as any).___allBBStyleScripts___ = {};
+        anyDoc[styleScriptsName] = {};
     }
-    const allStyleScripts = (element.ownerDocument as any).___allBBStyleScripts___;
+    const allStyleScripts = anyDoc[styleScriptsName];
 
     //Load other UI
     await setupElementUI(element);
