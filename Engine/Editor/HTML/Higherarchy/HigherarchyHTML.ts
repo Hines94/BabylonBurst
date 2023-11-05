@@ -59,9 +59,7 @@ export abstract class HigherarchyHTML {
 
     HideHigherarchy() {
         this.higherarchPanel.classList.add("hidden");
-        if(this.ecosystem.dynamicProperties["EditorGizmos"]) {
-            this.ecosystem.dynamicProperties["EditorGizmos"].HideGizmos();
-        }
+        this.setupInspectorForEntity(undefined);
     }
 
     ShowHigherarchy() {

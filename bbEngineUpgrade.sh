@@ -8,14 +8,26 @@ RESET='\033[0m'
 
 # Ensure the script stops if any command fails
 set -e
-
 # Get the directory of the script
 SCRIPT_DIR="$(dirname "$0")"
+# Helper for checking args
+arg_exists() {
+    target_arg="$1"
+    shift
+    for arg in "$@"; do
+        if [ "$arg" = "$target_arg" ]; then
+            return 0  # True in shell terms, meaning the argument exists
+        fi
+    done
+    return 1  # False in shell terms, meaning the argument does not exist
+}
 
 # Step 1: Check for clean state
-if [[ -n $(git -C "$SCRIPT_DIR" status -s) ]]; then
-  echo -e ${RED}"Your project has uncommitted changes. Please commit or stash them before proceeding."${RESET}
-  exit 1
+if ! arg_exists "-force" "$@"; then
+  if [[ -n $(git -C "$SCRIPT_DIR" status -s) ]]; then
+    echo -e ${RED}"Your project has uncommitted changes. Please use -force (not recommended) or commit or stash them before proceeding."${RESET}
+    exit 1
+  fi
 fi
 
 # Create a temporary directory for the clone
