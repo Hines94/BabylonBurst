@@ -34,7 +34,7 @@ export class EditorCamera {
         }
         //Rotation
         this.lookingComp.UpdateLook();
-        if(ecosystem.InputValues.Vkey.wasJustActivated()){
+        if(ecosystem.InputValues.VKey.wasJustActivated()){
             this.lookingComp.TogglePointerLockMode();
         }
         

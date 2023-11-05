@@ -24,5 +24,4 @@ export class BabylonBurstClient extends RunnableGameEcosystem {
         await super.setupScene();
         this.counter = new FramerateCounter();
     }
-
 }

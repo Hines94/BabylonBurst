@@ -15,7 +15,6 @@ import { GetSystemOfType, RunGameSystems } from "@engine/GameLoop/GameSystemLoop
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
 import { RegisterDefaultCoreSystems } from "@engine/GameLoop/GameSystemPriorities";
 
-
 function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     if (GetSystemOfType(InstancedMeshRenderSystem)) {
         return;
