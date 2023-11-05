@@ -27,6 +27,7 @@ body {
     border-radius: 10px;
     overflow-x: hidden;
     overflow-y: auto;
+    z-index: 1000;
 }
 
 .hidden {
