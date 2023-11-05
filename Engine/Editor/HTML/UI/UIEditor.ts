@@ -12,13 +12,13 @@ import { SetupElementToCursor } from "@engine/Utils/HTMLUtils";
 import {SetupLoadedHTMLUI} from "@BabylonBurstClient/GUI/HTMLUILoader"
 
 
-export async function OpenUIEditor(uiName:string, existingHTML:string,saveCallback:(newHTML:string)=>void) {
-    const Displayer = OpenNewWindow(uiName, "EditorSections/UIDisplayer", "UI " + uiName);
+export async function OpenUIEditor(item:ContentItem, existingHTML:string,saveCallback:(newHTML:string)=>void) {
+    const Displayer = OpenNewWindow(item.name, "EditorSections/UIDisplayer", "UI " + item.name);
     if (!Displayer) {
         return;
     }
     const displayerElement = await Displayer.loadingElement;
-    displayerElement.querySelector("#UIName").innerHTML = uiName;
+    displayerElement.querySelector("#UIName").innerHTML = item.name;
     const previewElement = displayerElement.querySelector('#HTMLDisplay') as HTMLDivElement;
     const editorElement = displayerElement.querySelector(`#HTMLCoding`) as HTMLDivElement;
 
@@ -33,8 +33,8 @@ export async function OpenUIEditor(uiName:string, existingHTML:string,saveCallba
     });
 
     const newHTML = state.doc.toString();
-    RebuildUI(newHTML, previewElement)
-    checkRebuildUI(view, previewElement, displayerElement, newHTML);
+    RebuildUI(newHTML,item, previewElement)
+    checkRebuildUI(view, item, previewElement, displayerElement, newHTML);
 
     //Save out callback
     displayerElement.querySelector("#UISave").addEventListener("click",()=>{
@@ -90,23 +90,25 @@ function setupRightClickEditor(editor:HTMLDivElement, view:EditorView) {
     })
 }
 
-function checkRebuildUI(view:EditorView, previewElement:HTMLDivElement, parentElement:HTMLDivElement, priorState:string) {
+function checkRebuildUI(view:EditorView, item:ContentItem, previewElement:HTMLDivElement, parentElement:HTMLDivElement, priorState:string) {
     const newHtml = view.state.doc.toString();
     if(newHtml !== priorState) {
         const savB = parentElement.querySelector("#UISave") as HTMLButtonElement;
         savB.style.color = "red";
         savB.innerText = "Unsaved Changes";
-        RebuildUI(newHtml,previewElement);
+        RebuildUI(newHtml,item,previewElement);
     }
     setTimeout(function(){
-        checkRebuildUI(view, previewElement,parentElement,newHtml)
+        checkRebuildUI(view, item, previewElement,parentElement,newHtml)
     },1000);
 }
 
-async function RebuildUI(newHtml:string, previewElement:HTMLDivElement) {
+async function RebuildUI(newHtml:string, item:ContentItem, previewElement:HTMLDivElement) {
     previewElement.innerHTML = newHtml;
+    previewElement.setAttribute("data-uipath",item.parent.getItemLocation());
+    previewElement.setAttribute("data-uifilename",item.GetSaveName());
     //Parse out images etc to load them in
-    SetupLoadedHTMLUI(previewElement);
+    SetupLoadedHTMLUI(previewElement,true);
 }
 
 function insertDiv(view:EditorView,divContent = "<div></div>" ) {

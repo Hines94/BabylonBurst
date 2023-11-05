@@ -21,7 +21,7 @@ export class ContentBrowserUIHTML extends ContentBrowserSpecificItem {
   <h1>Hello World</h1> 
 </div>`;
         }
-        OpenUIEditor(this.ourItem.name,data as string,async (newHTML:string)=>{
+        OpenUIEditor(this.ourItem,data as string,async (newHTML:string)=>{
             this.ourItem.data = encode(newHTML);
             const result = await this.ourItem.SaveItemOut();
             if(!result) {

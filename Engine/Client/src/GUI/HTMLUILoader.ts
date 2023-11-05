@@ -22,12 +22,22 @@ export async function LoadUIContent(
     const loader = AsyncMsgpackLoader.GetMsgpackLoader(awsPath, filename);
     await loader.getWaitForFullyLoadPromise();
     div.innerHTML = loader.msgpackData as string;
+    div.setAttribute("data-uipath",awsPath);
+    div.setAttribute("data-uifilename",filename);
     SetupLoadedHTMLUI(div);
     return div;
 }
 /** Given an element which has loaded the text content from UI - load this element */
-export async function SetupLoadedHTMLUI(element: HTMLElement) {
+export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleFunctions = false) {
     if ((element.ownerDocument as any).___allBBStyleScripts___ === undefined) {
+        (element.ownerDocument as any).___allBBStyleScripts___ = {};
+    }
+    
+    //Force reload all styles? (eg editor when they are changing)
+    if(bForceReloadStyleFunctions) {
+        for(var i = 0; i < (element.ownerDocument as any).___allBBStyleScripts___.length;i++) {
+            (element.ownerDocument as any).___allBBStyleScripts___[i].remove();
+        }
         (element.ownerDocument as any).___allBBStyleScripts___ = {};
     }
     const allStyleScripts = (element.ownerDocument as any).___allBBStyleScripts___;
