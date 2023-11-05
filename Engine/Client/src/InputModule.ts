@@ -138,38 +138,40 @@ export class WindowInputValues {
     mouseYPosition = 0;
     roll = 0;
 
-    shift = new ButtonInput([LEFTSHIFT]);
     primaryClick = new ButtonInput([]);
     secondaryClick = new ButtonInput([]);
     middleClick = new ButtonInput([]);
+
     //CAREFUL: Holding this whilst clicking etc can lead to big problems with browser keys
-    leftControl = new ButtonInput([LEFTCONTROL]);
-    leftAlt = new ButtonInput([ALTKEY]);
-    panKey = new ButtonInput([CAPSKEY]);
+    LEFTCONTROLKey = new ButtonInput([LEFTCONTROL]);
+    LEFTSHIFTKey = new ButtonInput([LEFTSHIFT]);
+    LEFTALTKey = new ButtonInput([ALTKEY]);
+    CAPSKey = new ButtonInput([CAPSKEY]);
     //Arrows
-    arrowUp = new ButtonInput([ARRUPKEY]);
-    arrowDown = new ButtonInput([ARRDOWNKEY]);
-    arrowLeft = new ButtonInput([ARRLEFTKEY]);
-    arrowRight = new ButtonInput([ARRRIGHTKEY]);
+    ARROWUPKey = new ButtonInput([ARRUPKEY]);
+    ARROWDOWNKey = new ButtonInput([ARRDOWNKEY]);
+    ARROWLEFTKey = new ButtonInput([ARRLEFTKEY]);
+    ARROWRIGHTKey = new ButtonInput([ARRRIGHTKEY]);
     //Numbers
-    oneHotkey = new ButtonInput([ONEKEY]);
-    twoHotkey = new ButtonInput([TWOKEY]);
-    threeHotkey = new ButtonInput([THREEKEY]);
-    fourHotkey = new ButtonInput([FOURKEY]);
-    fiveHotkey = new ButtonInput([FIVEKEY]);
-    sixHotkey = new ButtonInput([SIXKEY]);
-    sevenHotkey = new ButtonInput([SEVENKEY]);
-    eightHotkey = new ButtonInput([EIGHTKEY]);
-    nineHotkey = new ButtonInput([NINEKEY]);
-    tilde = new ButtonInput([TILDEKEY, TILDEKEYALT]);
-    iKey = new ButtonInput([IKEY]);
-    switchXAxis = new ButtonInput([XKEY]);
-    switchYAxis = new ButtonInput([YKEY]);
-    switchZAxis = new ButtonInput([ZKEY]);
-    pKey = new ButtonInput([PKEY]);
-    fKey = new ButtonInput([FKEY]);
+    ZEROkey = new ButtonInput([ZEROKEY]);
+    ONEkey = new ButtonInput([ONEKEY]);
+    TWOkey = new ButtonInput([TWOKEY]);
+    THREEkey = new ButtonInput([THREEKEY]);
+    FOURkey = new ButtonInput([FOURKEY]);
+    FIVEkey = new ButtonInput([FIVEKEY]);
+    SIXkey = new ButtonInput([SIXKEY]);
+    SEVENkey = new ButtonInput([SEVENKEY]);
+    EIGHTkey = new ButtonInput([EIGHTKEY]);
+    NINEkey = new ButtonInput([NINEKEY]);
+    TILDEKey = new ButtonInput([TILDEKEY, TILDEKEYALT]);
 
     //General Keys
+    XKey = new ButtonInput([XKEY]);
+    YKey = new ButtonInput([YKEY]);
+    ZKey = new ButtonInput([ZKEY]);
+    PKey = new ButtonInput([PKEY]);
+    FKey = new ButtonInput([FKEY]);
+    IKey = new ButtonInput([IKEY]);
     Tkey = new ButtonInput([TKEY]);
     Gkey = new ButtonInput([GKEY]);
     Hkey = new ButtonInput([HKEY]);
@@ -178,6 +180,51 @@ export class WindowInputValues {
     Ekey = new ButtonInput([EKEY]);
     Rkey = new ButtonInput([RKEY]);
     Fkey = new ButtonInput([FKEY]);
+
+    /** Given a number ty to get the correct key */
+    GetNumberKey(index:Number) : ButtonInput {
+        if (index === 0) {
+            return this.ZEROkey;
+        } else if (index === 1) {
+            return this.ONEkey;
+        } else if (index === 2) {
+            return this.TWOkey;
+        } else if (index === 3) {
+            return this.THREEkey;
+        } else if (index === 4) {
+            return this.FOURkey;
+        } else if (index === 5) {
+            return this.FIVEkey;
+        } else if (index === 6) {
+            return this.SIXkey;
+        } else if (index === 7) {
+            return this.SEVENkey;
+        } else if (index === 8) {
+            return this.EIGHTkey;
+        } else if (index === 9) {
+            return this.NINEkey;
+        }
+        return undefined;
+    }
+
+    /** Given a string input (Eg F) try to get the correct key */
+    GetKey(stringKey:string):ButtonInput {
+        const upperKey = stringKey.toUpperCase();
+        var input = this.checkKeyExists(upperKey);
+        if(input) { return input; }
+        var input = this.checkKeyExists(upperKey+"Key");
+        if(input) { return input; }
+
+        return undefined;
+    }
+
+    private checkKeyExists(checkKey:string) {
+        if(checkKey in this) {
+            var key = checkKey as keyof WindowInputValues;
+            return this[key] as ButtonInput;
+        }
+        return undefined;
+    }
 }
 
 export function SetupInputsModule(ecosystem: GameEcosystem) {
@@ -257,30 +304,6 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
             dsm.getDeviceSource(DeviceType.Mouse).getInput(RIGHTMOUSE),
         ]);
     }
-}
-
-export function GetNumberedButtonIndex(index: number, ecosystem: GameEcosystem): ButtonInput {
-    if (index === 0) {
-    } else if (index === 1) {
-        return ecosystem.InputValues.oneHotkey;
-    } else if (index === 2) {
-        return ecosystem.InputValues.twoHotkey;
-    } else if (index === 3) {
-        return ecosystem.InputValues.threeHotkey;
-    } else if (index === 4) {
-        return ecosystem.InputValues.fourHotkey;
-    } else if (index === 5) {
-        return ecosystem.InputValues.fiveHotkey;
-    } else if (index === 6) {
-        return ecosystem.InputValues.sixHotkey;
-    } else if (index === 7) {
-        return ecosystem.InputValues.sevenHotkey;
-    } else if (index === 8) {
-        return ecosystem.InputValues.eightHotkey;
-    } else if (index === 9) {
-        return ecosystem.InputValues.nineHotkey;
-    }
-    return null;
 }
 
 export function UpdateInputValuesEndFrame(ecosystem: GameEcosystem) {

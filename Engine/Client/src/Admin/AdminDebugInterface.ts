@@ -1,7 +1,7 @@
 import { InspectableType, TransformNode } from "@babylonjs/core";
 import { DebugMode, environmentVaraibleTracker } from "../../../Shared/src/Utils/EnvironmentVariableTracker";
-import { GameEcosystem } from "../GameEcosystem";
 import { AsyncAssetManager } from "@engine/AsyncAssets";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 /** A Debug interface based on a node. Simply press ` to open inspector then navigate to "ADMINDEBUGOBJECT" to access the useful methods */
 export class AdminDebugInterface extends TransformNode {
@@ -56,7 +56,7 @@ export class AdminDebugInterface extends TransformNode {
         if (this.debugLayerSetup === false) {
             return;
         }
-        if (ecosystem.InputValues.tilde.wasJustActivated()) {
+        if (ecosystem.InputValues.TILDEKey.wasJustActivated()) {
             if (ecosystem.scene.debugLayer.isVisible()) {
                 ecosystem.scene.debugLayer.hide();
             } else {

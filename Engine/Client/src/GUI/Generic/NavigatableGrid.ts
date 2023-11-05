@@ -1,7 +1,7 @@
 import { Button, Grid } from "@babylonjs/gui";
 import { NavigatableGridItemIcon } from "./NavigatableGridItemIcon";
 import { Clamp } from "../../../../Shared/src/Utils/MathUtils";
-import { GameEcosystem } from "../../GameEcosystem";
+import { GameEcosystem } from "@engine/GameEcosystem";
 
 export class NavigatableGrid {
     itemGrid: Grid;
@@ -136,12 +136,12 @@ export class NavigatableGrid {
     ): { horiz: number; vert: number } {
         const ret = { horiz: 0, vert: 0 };
         //Up one
-        if (ecosystem.InputValues.arrowUp.wasJustActivated()) {
+        if (ecosystem.InputValues.ARROWUPKey.wasJustActivated()) {
             ret.vert = 1;
             this.MoveUpOne(bAutoWrapVert);
         }
         //Down one
-        if (ecosystem.InputValues.arrowDown.wasJustActivated() && ret.vert === 0) {
+        if (ecosystem.InputValues.ARROWDOWNKey.wasJustActivated() && ret.vert === 0) {
             ret.vert = -1;
             if (this.getNumRows() > 1) {
                 const prior = this.getRowColForItem(this.lastSelectIndex);
@@ -162,14 +162,14 @@ export class NavigatableGrid {
             }
         }
         //Left one
-        if (ecosystem.InputValues.arrowLeft.wasJustActivated()) {
+        if (ecosystem.InputValues.ARROWLEFTKey.wasJustActivated()) {
             ret.horiz -= 1;
             if (bAutoMove) {
                 this.MoveLeftOne(bAutoWrapCol);
             }
         }
         //Right one
-        if (ecosystem.InputValues.arrowRight.wasJustActivated() && ret.horiz === 0) {
+        if (ecosystem.InputValues.ARROWRIGHTKey.wasJustActivated() && ret.horiz === 0) {
             ret.horiz += 1;
             if (bAutoMove) {
                 this.MoveRightOne(bAutoWrapCol);

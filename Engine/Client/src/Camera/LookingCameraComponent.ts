@@ -37,7 +37,7 @@ export class LookingCameraComponent {
     UpdateLook() {
         const lockActive = IsPointerLockActive();
         var active = lockActive || this.ecosystem.InputValues.middleClick.isActive;
-        var panning = this.ecosystem.InputValues.panKey.isActive;
+        var panning = this.ecosystem.InputValues.CAPSKey.isActive;
         if (this.manualPanOverride !== undefined) {
             active = this.manualPanOverride;
             panning = this.manualPanOverride;

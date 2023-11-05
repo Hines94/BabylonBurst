@@ -39,7 +39,7 @@ export class EditorCamera {
         }
         
         //Movement
-        this.movementComp.movementBoostActive = ecosystem.InputValues.shift.isActive;
+        this.movementComp.movementBoostActive = ecosystem.InputValues.LEFTSHIFTKey.isActive;
         this.movementComp.UpdateFlyingCameraComponent(ecosystem.InputValues.forward,ecosystem.InputValues.side,ecosystem.InputValues.up);
         this.sphereMesh.position = this.playerCam.GetCameraRoot().position;
         this.sphereMesh.rotation = this.lookingComp.currentRotation;
