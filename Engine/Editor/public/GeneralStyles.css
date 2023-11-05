@@ -140,7 +140,7 @@ button:hover {
     background-color: #f9f9f9; /* default background color for dropdown, you can adjust */
     min-width: 180px;
     box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2); /* shadow for the dropdown for a lifted appearance */
-    z-index: 1;
+    z-index: 1001;
     list-style-type: none; /* remove bullet points from the list */
     padding: 0; /* remove padding around the list */
 }
