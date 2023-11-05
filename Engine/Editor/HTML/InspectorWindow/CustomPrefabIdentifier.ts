@@ -21,17 +21,19 @@ export function ProcessPrefabSpecifierComp(container:HTMLElement, propType:saved
     newInput.style.width = "100%";
     container.appendChild(newInput);
     SetupContentInputWithDatalist(ContentItemType.Prefab,newInput,async (val:ContentItem) =>{
-        var value = "";
         if(val !== undefined) {
             var data = await val.GetData();
             if(data instanceof Blob) {
                 data = await data.arrayBuffer();
             }
-            value = (await decode(data) as any).prefabID;
+            const newData = new PrefabSpecifier();
+            newData.prefabUUID = (await decode(data) as any).prefabID;
+            changeCallback(newData);
+        } else {
+            const newData = new PrefabSpecifier();
+            newData.prefabUUID = "";
+            changeCallback(newData);
         }
-        const newData = new PrefabSpecifier();
-        newData.prefabUUID = value;
-        changeCallback(newData);
     })
 
     RefreshToData();

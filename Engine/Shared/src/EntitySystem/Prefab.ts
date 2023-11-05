@@ -8,6 +8,7 @@ import { RegisteredType, Saved } from "./TypeRegister";
 
 @RegisteredType(PrefabSpecifier)
 export class PrefabSpecifier {
+    @Saved(String)
     prefabUUID:string = "";
 }
 
