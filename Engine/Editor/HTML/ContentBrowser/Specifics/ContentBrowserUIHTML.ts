@@ -16,7 +16,7 @@ export class ContentBrowserUIHTML extends ContentBrowserSpecificItem {
         var data = await decode(this.ourItem.data);
         if(data === undefined || typeof data !== "string") {
             data = 
-`<div data-linkOnce="true">Use this to link only once in our HTML (eg pure styles)</div>
+`<style data-inlineMe="false">//If you need to linline a style or script set data-inlineMe="true" </style>
 <div> 
   <h1>Hello World</h1> 
 </div>`;

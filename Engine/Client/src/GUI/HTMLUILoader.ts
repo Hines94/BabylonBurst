@@ -27,6 +27,11 @@ export async function LoadUIContent(
 }
 /** Given an element which has loaded the text content from UI - load this element */
 export async function SetupLoadedHTMLUI(element: HTMLElement) {
+    if((element.ownerDocument as any).___allBBStyleScripts___ === undefined) {
+        (element.ownerDocument as any).___allBBStyleScripts___ = {};
+    }
+    const allStyleScripts = (element.ownerDocument as any).___allBBStyleScripts___;
+
     //Load other UI
     await setupElementUI(element);
 
@@ -42,15 +47,20 @@ export async function SetupLoadedHTMLUI(element: HTMLElement) {
 
     //Setup an element's UI - recursive loading
     async function setupElementUI(ele: HTMLElement) {
-        //Link element only once in doc (Eg styles?)
-        const linkOnceEle = ele.querySelector('div[data-linkOnce]');
-        if(linkOnceEle && linkOnceEle.getAttribute("data-linkOnce") === "true") {
-            const existing = ele.ownerDocument.querySelectorAll('div[data-linkOnce]');
-            for(var e = 0;e <existing.length;e++) {
-                if(existing[e] !== ele) {
-                    ele.remove();
-                    return;
-                }
+
+        const eleName = ele.getAttribute("data-uipath") + "_" + ele.getAttribute("data-uifilename");
+        if(allStyleScripts[eleName] !== undefined) {
+            //Already loaded - remove all non inlined styles
+            const styleAndScriptElements = ele.querySelectorAll("style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])");
+            for(var e = 0; e < styleAndScriptElements.length;e++) {
+                styleAndScriptElements[e].remove();
+            }
+        } else {
+            //First one - remove all styles
+            allStyleScripts[eleName] = ele.ownerDocument.createElement("div");
+            const styleAndScriptElements = ele.querySelectorAll("style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])");
+            for(var e = 0; e < styleAndScriptElements.length;e++) {
+                allStyleScripts[eleName].appendChild(styleAndScriptElements[e]);
             }
         }
 
