@@ -2,7 +2,7 @@ import { AsyncStaticMeshInstanceRunner } from "@engine/AsyncAssets";
 import { uiLayerMask } from "../Utils/LayerMasks";
 import { Color3, StandardMaterial } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { GameSystem } from "@engine/GameLoop/GameSystem";
+import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 import { ColliderRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
 
 const showVisualsProp = "___Collider___";
@@ -23,6 +23,7 @@ export function hideColliderVisualSystem(ecosystem: GameEcosystem) {
 
 export class ColliderVisualSystem extends GameSystem {
     SystemOrdering = ColliderRenderSystemPriority;
+    systemRunType = GameSystemRunType.EditorOnly;
 
     SetupGameSystem(ecosystem: GameEcosystem) {}
 

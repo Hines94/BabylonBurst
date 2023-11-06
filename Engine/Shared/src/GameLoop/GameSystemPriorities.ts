@@ -1,4 +1,5 @@
 import { NavAgentTransformSystem } from "../Navigation/NavigationAgent";
+import { NavigationBuildSystem } from "../Navigation/NavigationBuildSystem";
 import { GetSystemOfType } from "./GameSystemLoop";
 
 export const ConnectionProcessingPriority = 100;
@@ -14,4 +15,5 @@ export function RegisterDefaultCoreSystems() {
         return;
     }
     new NavAgentTransformSystem();
+    new NavigationBuildSystem();
 }

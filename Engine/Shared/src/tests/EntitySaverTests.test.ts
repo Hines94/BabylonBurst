@@ -26,6 +26,12 @@ class nestedData {
     nestedEntity:EntityData;
 }
 
+@RegisteredType(nestedDataSubtype)
+class nestedDataSubtype extends nestedData {
+    @Saved(String)
+    subtypeData = "";
+}
+
 @RegisteredType(TestSaveComp3)
 class TestSaveComp3 extends Component {
     @Saved(String)
@@ -83,3 +89,28 @@ test("EntitySystemSaveAllEntities", () => {
     expect(entSystem.GetEntityData(2).GetComponent(TestSaveComp3).data).toBe("SAVED_DATA");
 
 });
+
+
+test("EntitySystemSubtypeSaving", () => {
+    entSystem.ResetSystem();
+
+    const entOne = entSystem.AddEntity();
+    const newTest3 = new TestSaveComp3();
+    entSystem.AddSetComponentToEntity(entOne,newTest3);
+
+    //We can actually set subtypes here
+    const entTwo = entSystem.AddEntity();
+    const twoNewTest3 = new TestSaveComp3();
+    const subtype = new nestedDataSubtype();
+    subtype.subtypeData = "Changed";
+    subtype.nestedEntity = entOne;
+    twoNewTest3.nestData = subtype;
+    entSystem.AddSetComponentToEntity(entTwo,twoNewTest3);
+
+    const save = EntitySaver.GetMsgpackForAllEntities(entSystem); 
+    const reloadTemplate = EntityLoader.GetEntityTemplateFromMsgpack(save);
+    EntityLoader.LoadTemplateIntoNewEntities(reloadTemplate,entSystem);
+
+    expect(entSystem.GetEntityData(4).GetComponent(TestSaveComp3).nestData.nestedEntity).toBe(entSystem.GetEntityData(3))
+    expect((entSystem.GetEntityData(4).GetComponent(TestSaveComp3).nestData as nestedDataSubtype).subtypeData).toBe("Changed")
+})

@@ -3,6 +3,9 @@ import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStatic
 import { AsyncStaticMeshDefinition } from "./AsyncStaticMeshDefinition.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 
+
+//TODO: This needs to be fixed!
+
 /*
  * This is an extension of the static mesh classes and allows us to easily access specific skeletal mesh functionality.
  */

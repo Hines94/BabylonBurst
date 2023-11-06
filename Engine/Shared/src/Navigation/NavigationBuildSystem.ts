@@ -12,6 +12,7 @@ import { GetRandomColor4, getRandomColor3 } from "../Utils/MeshUtils";
 import { NavigationAgent } from "./NavigationAgent";
 import { DeepEquals } from "../Utils/HTMLUtils";
 import { AsyncSimpleImageMaterial } from "../Materials/AsyncSimpleImageMaterial";
+import { GameSystem } from "../GameLoop/GameSystem";
 
 var recast:any;
 
@@ -26,16 +27,24 @@ enum rebuildType {
     Force,
 }
 
-/** Setup navigation systems to automatically rebuild themselves on change if opted into this */
-export function setupAutoNavBuildSystem(ecosystem:GameEcosystem) {
-    if(ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"]) {
-        return;
+export class NavigationBuildSystem extends GameSystem {
+    SystemOrdering = 1;
+    
+    SetupGameSystem(ecosystem: GameEcosystem) {
+        this.bSystemEnabled = false;
+        if(ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"]) {
+            return;
+        }
+        ecosystem.entitySystem.onComponentChangedEv.add((notify)=>{
+            checkRebuildNavSystem(ecosystem,notify);
+        });
+        RebuildAllNavmeshLayers(ecosystem, rebuildType.OnlyIfData);
+        ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"] = true;
     }
-    ecosystem.entitySystem.onComponentChangedEv.add((notify)=>{
-        checkRebuildNavSystem(ecosystem,notify);
-    });
-    RebuildAllNavmeshLayers(ecosystem, rebuildType.OnlyIfData);
-    ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"] = true;
+    RunSystem(ecosystem: GameEcosystem) {
+        //Should never be called
+    }
+
 }
 
 /** Full rebuild of all navigation layers */

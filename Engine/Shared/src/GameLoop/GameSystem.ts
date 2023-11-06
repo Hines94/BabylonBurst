@@ -1,6 +1,12 @@
 import { GameEcosystem } from "../GameEcosystem";
 import { RegisterGameSystem } from "./GameSystemLoop";
 
+export enum GameSystemRunType {
+    GameOnly,
+    EditorOnly,
+    GameAndEditor
+}
+
 
 export abstract class GameSystem {
     /** Lower called first and higher called later  */
@@ -11,6 +17,8 @@ export abstract class GameSystem {
     bSystemEnabled = true;
     /** Set rate limit > 0 to limit a system from running too often */
     RateLimit = -1;
+    /** Should this system run in editor or game? */
+    systemRunType = GameSystemRunType.GameOnly;
 
     private runEcosystems:{[id:string]:boolean} = {};
 
@@ -37,6 +45,14 @@ export abstract class GameSystem {
         if(!this.bSystemEnabled) {
             return;
         }
+
+        if(!ecosystem.isEditor && this.systemRunType === GameSystemRunType.EditorOnly) {
+            return;
+        }
+        if(!ecosystem.isGame && this.systemRunType === GameSystemRunType.GameOnly) {
+            return;
+        }
+
         //First time running the system for this ecosystem?
         if(this.runEcosystems[ecosystem.uuid] === undefined) {
             this.SetupGameSystem(ecosystem);

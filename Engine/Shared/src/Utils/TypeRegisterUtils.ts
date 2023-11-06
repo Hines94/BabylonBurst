@@ -13,6 +13,21 @@ export function GetAllComponentClassTypes(): storedRegisteredType[] {
     return ret;
 }
 
+export function GetParentClassesOfInstance(child: any) {
+    let proto = Object.getPrototypeOf(child);
+    const ancestors = [];
+  
+    // Loop through the prototype chain
+    while (proto && proto !== Object.prototype) {
+      // Push the constructor of every prototype found
+      ancestors.push(proto.constructor);
+      proto = Object.getPrototypeOf(proto);
+    }
+  
+    return ancestors;
+  }
+  
+
 export function isTypeAClass(type: any): boolean {
     const builtInConstructors = [
         'Number', 'String', 'Boolean', 'Array', 'Object', 'Function', //... any other built-ins you want to exclude

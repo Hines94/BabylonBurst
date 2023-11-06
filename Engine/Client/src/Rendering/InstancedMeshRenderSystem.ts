@@ -9,7 +9,7 @@ import { HiddenEntity, InstancedRender } from "@engine/Rendering/InstancedRender
 import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
-import { GameSystem } from "@engine/GameLoop/GameSystem";
+import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 import { InstancedRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
 import { MaterialSpecifier } from "@engine/Rendering/MaterialSpecifier";
 
@@ -46,6 +46,7 @@ function GetLayerMask(val: InstancedRender): number {
 
 export class InstancedMeshRenderSystem extends GameSystem {
     SystemOrdering = InstancedRenderSystemPriority;
+    systemRunType = GameSystemRunType.GameAndEditor;
 
     SetupGameSystem(ecosystem: GameEcosystem) {}
 

@@ -163,7 +163,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
     } else if (propType.type === Boolean) {
 
         const callback = (input:HTMLInputElement)=>{
-            if(input.valueAsNumber === 1) {
+            if(input.checked) {
                 changeCallback(true);
             } else {
                 changeCallback(false);
@@ -173,6 +173,7 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
         input.type = "checkbox";
         input.style.width = "25px";
         input.style.height = "25px";
+        input.checked = parentData[propType.name] === true;
 
 //Nested objects
     } else if(isTypeAClass(propType.type)) {

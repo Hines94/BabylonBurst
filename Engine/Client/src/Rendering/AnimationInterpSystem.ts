@@ -1,7 +1,8 @@
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { GameSystem } from "@engine/GameLoop/GameSystem";
+import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 
 export class AnimationInterpSystem extends GameSystem {
+    systemRunType = GameSystemRunType.GameAndEditor;
     SystemOrdering = 0;
     RateLimit = 3;
 

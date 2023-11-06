@@ -2,7 +2,7 @@ import { LinesMesh, MeshBuilder, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "../GameEcosystem";
 import { NavigationAgent } from "./NavigationAgent";
 import { NavigationLayer } from "./NavigationLayer";
-import { GameSystem } from "../GameLoop/GameSystem";
+import { GameSystem, GameSystemRunType } from "../GameLoop/GameSystem";
 import { NavAgentVisualisationSystemPriority } from "../GameLoop/GameSystemPriorities";
 
 export const ShowAgentViz = "___SHOWNAVAGENTVIZ___";
@@ -10,6 +10,7 @@ var lineSystem:LinesMesh;
 
 export class NavAgentVisualisationSystem extends GameSystem {
     SystemOrdering = NavAgentVisualisationSystemPriority;
+    systemRunType = GameSystemRunType.EditorOnly;
 
     SetupGameSystem(ecosystem: GameEcosystem) {
         

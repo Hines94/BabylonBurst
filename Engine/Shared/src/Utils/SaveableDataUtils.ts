@@ -1,8 +1,9 @@
+import { Component } from "../EntitySystem/Component";
 import { EntityData, EntityLoadMapping } from "../EntitySystem/EntityData";
 import { Prefab } from "../EntitySystem/Prefab";
 import { PrefabManager } from "../EntitySystem/PrefabManager";
-import { FindSavedProperty, registeredTypes, savedProperty } from "../EntitySystem/TypeRegister";
-import { IsIntArrayInstance } from "./TypeRegisterUtils";
+import { FindSavedProperty, registeredTypes, savedProperty, storedRegisteredType } from "../EntitySystem/TypeRegister";
+import { GetParentClassesOfInstance, IsIntArrayInstance } from "./TypeRegisterUtils";
 
 export type SavedCompTyping = {
     compName:string;
@@ -10,6 +11,8 @@ export type SavedCompTyping = {
 }
 
 export type EntitySavedTypings = SavedCompTyping[];
+
+const customTypeId = "_T_";
 
 
 export function GetTypingsCompIndex(comp:string,typings:EntitySavedTypings, bCreateNew = true):number {
@@ -41,7 +44,7 @@ export function GetTypingsParamIndex(comp:string,param:string,typings:EntitySave
         typings[compIndex].compParams.push(param);
         return typings[compIndex].compParams.length-1;
     }
-    console.log("Could not find param index for " + param + " in " + comp)
+    console.warn("Could not find param index for " + param + " in " + comp)
     return undefined;
 }
 
@@ -80,25 +83,47 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
         return propIdentifier.type.GetSaveableData(entity,property);
     //Nested object?
     } else if(typeof property === "object" && !IsIntArrayInstance(property)) {
-        const propType = property.constructor.name;
-        if(registeredTypes[propType] === undefined) {
-            console.warn(`Property ${propIdentifier.name} is not a registered type (${propType}) and will not load properly. Please use @RegisteredComponent!`);
+
+        //Check is valid type to be saved
+        const propertyTypeName = property.constructor.name;
+        const registeredType = registeredTypes[propertyTypeName];
+        if(registeredType === undefined) {
+            console.warn(`Property ${propIdentifier.name} is not a registered type (${propertyTypeName}) and will not load properly. Please use @RegisteredComponent!`);
             return property;
         }
 
-        const prefabComp = entity.GetComponent(Prefab);
-        //Get default component to check against
-        var defaultComp = new (registeredTypes[propType].type as any)();
-        //Get default from prefab?
-        if(prefabComp !== undefined && prefabComp.parent !== undefined) {
-            const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
-            if(attemptPrefab) {
-                const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId,propType,undefined,entity.owningSystem.GetAllEntities());
-                if(defaultPrefab) {
-                    defaultComp = defaultPrefab;
+        //Get default comp to compare against
+        var defaultComp = undefined;
+        if(bIgnoreDefaults) {
+            defaultComp = new (registeredType.type as any)();
+            const prefabComp = entity.GetComponent(Prefab);
+            //Get default from prefab?
+            if(prefabComp !== undefined && prefabComp.parent !== undefined) {
+                const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
+                if(attemptPrefab) {
+                    const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId,propertyTypeName,undefined,entity.owningSystem.GetAllEntities());
+                    if(defaultPrefab) {
+                        defaultComp = defaultPrefab;
+                    }
                 }
+            } else {
+                
             }
         }
+
+        //If this is subtype we must get the parents items too!
+        const parentTypes:storedRegisteredType[] = []; 
+        GetParentClassesOfInstance(property).forEach((v)=>{
+            if(v.name === Component.name) {
+                return;
+            }
+            const parentStored = registeredTypes[v.name];
+            if(parentStored === undefined){
+                console.warn(`Type: ${v.name} not @RegisteredType. ${propertyTypeName} will not save correctly!`);
+                return;
+            }
+            parentTypes.push(parentStored);
+        })
 
         var ret = {};
         const keys = Object.keys(property);
@@ -107,15 +132,29 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
             if(key === "___proxyCallbackSymbol___") {
                 continue;
             }
-            const nestPropIdentifier = FindSavedProperty(propType,key);
+
+            //Try get property identifier from saved types
+            var nestPropIdentifier:savedProperty = undefined;
+            for(var p = parentTypes.length-1; p >= 0;p--) { //Backwards from more specific to less
+                if(nestPropIdentifier !== undefined) {
+                    continue;
+                }
+                nestPropIdentifier = FindSavedProperty(parentTypes[p].type.name,key);
+            }
+
             if(nestPropIdentifier !== undefined) {
                 //Ignore defaults
                 if(bIgnoreDefaults && defaultComp[key] === property[key]) {
                     continue;
                 }
-                const typeIndex = GetTypingsParamIndex(propType,key,typings);
+                const typeIndex = GetTypingsParamIndex(propertyTypeName,key,typings);
                 ret[typeIndex] = GetCustomSaveData(nestPropIdentifier,entity,property[key],bIgnoreDefaults,typings);
             }
+        }
+
+        //Type is not the same as parent? (Could be a subclass etc)
+        if(propIdentifier !== undefined && propIdentifier.type !== registeredType.type) {
+            ret[customTypeId] = propertyTypeName;
         }
         return ret;
     }
@@ -125,7 +164,18 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
 }
 
 export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, property: any,compName:string,paramName:string, typings:EntitySavedTypings) : any {
-    const propIdentifier = FindSavedProperty(compName,paramName);
+    //Try get the appropriate type to load in
+    var loadSpecification:savedProperty | storedRegisteredType | undefined = undefined;
+    if(property[customTypeId] !== undefined){ 
+        //Custom? (Eg subtype)
+        loadSpecification = registeredTypes[property[customTypeId]];
+    } else {
+        loadSpecification = FindSavedProperty(compName,paramName);
+    }
+
+    //Try to get the type to load this var as from our spec
+    var loadType = loadSpecification !== undefined ? loadSpecification.type : undefined;
+
     //Array case?
     if(Array.isArray(property)) {
         const ret:any[] = [];
@@ -135,21 +185,36 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
         return ret;
     }
     //Custom serializable?
-    if (propIdentifier && propIdentifier.type["LoadSaveableData"]) {
-        return propIdentifier.type.LoadSaveableData(entity,property,entMap);
+    if (loadType && loadType["LoadSaveableData"]) {
+        return loadType.LoadSaveableData(entity,property,entMap);
     } 
     //Nested object?
-    if(propIdentifier && typeof property === "object" && !IsIntArrayInstance(property)) {
-        const propType = propIdentifier.type;
-        const newProp = new propType();
+    if(loadType && typeof property === "object" && !IsIntArrayInstance(property)) {
+        const newProp = new loadType();
+        var parentTypes = GetParentClassesOfInstance(newProp);
         const keys = Object.keys(property);
+        
         for(var k = 0; k < keys.length;k++) {
+            //Get basic info on parameter to load in
             const paramIndex = parseInt(keys[k]);
-            const keyName = GetTypingsParamName(propType.name,paramIndex,typings);
+            const keyName = GetTypingsParamName(loadType.name,paramIndex,typings);
             if(keyName === undefined) {
                 continue;
             }
-            newProp[keyName] = LoadCustomSaveData(entity,entMap,property[paramIndex],propIdentifier.type.name,keyName,typings);
+
+            //If in parent type then we may actually require "Parent" type name to get saved property
+            var componentLoadFromType = loadType.name;
+            for(var p = parentTypes.length-1; p >= 0;p--) {
+                const parentTypeName = parentTypes[p].name;
+                var foundProp = FindSavedProperty(parentTypeName,keyName);
+                if(foundProp) {
+                    componentLoadFromType = parentTypeName;
+                    break;
+                }
+            }
+
+            //Load in this property into the object
+            newProp[keyName] = LoadCustomSaveData(entity,entMap,property[paramIndex],componentLoadFromType,keyName,typings);
         }
         return newProp;
     }

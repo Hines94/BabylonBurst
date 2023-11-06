@@ -1,10 +1,11 @@
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { GameSystem } from "@engine/GameLoop/GameSystem";
+import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 import { LightingGameSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
 import { DirectionalLightComp } from "@engine/Rendering/DirectionalLight";
 
 export class LightingGameSystem extends GameSystem {
     SystemOrdering = LightingGameSystemPriority;
+    systemRunType = GameSystemRunType.GameAndEditor;
 
     SetupGameSystem(ecosystem: GameEcosystem) {}
 

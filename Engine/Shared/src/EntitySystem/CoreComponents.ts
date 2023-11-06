@@ -443,7 +443,7 @@ export class EntVector4 {
     }
 }
 
-@RegisteredType(EntTransform)
+@RegisteredType(EntTransform,{comment:"Allows manipulation and movement of the entity in 3d space"})
 export class EntTransform extends Component {
     @TrackedVariable()
     @Saved(EntVector3)
