@@ -154,6 +154,9 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
 
         //Type is not the same as parent? (Could be a subclass etc)
         if(propIdentifier !== undefined && propIdentifier.type !== registeredType.type) {
+            if(property instanceof propIdentifier.type === false) {
+                console.warn(`Saved property ${propIdentifier.name} is of type ${propertyTypeName} which is not a valid as a subtype of ${propIdentifier.type.name}. May not load correctly!`)
+            }
             ret[customTypeId] = propertyTypeName;
         }
         return ret;
