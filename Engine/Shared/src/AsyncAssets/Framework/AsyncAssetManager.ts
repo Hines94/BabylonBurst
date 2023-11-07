@@ -1,12 +1,16 @@
 import { Observable } from "@babylonjs/core";
-import { CacheWorkerResult, CacheWorkerSetup } from "./CacheWorkerTypes";
-import path from "path";
+import { CacheWorkerDirective, CacheWorkerResult, CacheWorkerSetup, WebWorkerSetupMessage, WebWorkerStorageFail, WebWorkerStorageSuccess, ZipWorkerReturn } from "./CacheWorkerTypes";
 import { IBackendStorageInterface, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 import { AsyncZipPuller } from "./AsyncZipPuller";
-import { AsyncAssetLoader } from "..";
+import { AsyncAssetLoader, AsyncDataType } from "..";
+
+import workerConstructor from './CacheWorkerConstructor';
+import { WaitForObservable } from "../Utils/BabylonUtils";
 
 //https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-s3/index.html
 //https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB
+
+export const asyncAssetLogIdentifier = "BBAsyncAssets: ";
 
 var globalAssetManager: AsyncAssetManager;
 
@@ -21,6 +25,7 @@ export class AsyncAssetManager {
     awaitingLoadProm: Promise<null> = null;
     init = false;
     printDebugStatements = false;
+    fileLastUpdateTimes:{[filePath:string]:Date} = {};
 
     constructor(backendStorage: IBackendStorageInterface, frontendStorage: IFrontendStorageInterface) {
         if (globalAssetManager) {
@@ -31,13 +36,53 @@ export class AsyncAssetManager {
         this.frontendCache = frontendStorage;
     }
 
-    async GetItemAtLocation(location:string): Promise<Uint8Array> {
-        const cachedData = await this.frontendCache.Get(location);
-        if(cachedData !== undefined) {
-            return cachedData;
+    /** Attempts to use frontend cache first */
+    async GetItemAtLocation(location:string, bIgnoreCache = false): Promise<Uint8Array> {
+        //Try get from frontend cache
+        if(!bIgnoreCache && this.fileLastUpdateTimes[location] !== undefined) {
+            const cachedData = await this.frontendCache.Get(location);
+            if(cachedData !== undefined && cachedData.metadata.timestamp > this.fileLastUpdateTimes[location]) {
+                return cachedData.data;
+            }
         }
-        return await this.backendStorage.GetItemAtLocation(location);
-    }   
+
+        const startLoadTime = this.printDebugStatements? performance.now() : undefined;
+        //Can use a web worker to pull data?
+        if (this.webWorker !== undefined) {
+            if (this.printDebugStatements) {
+                console.log(`${asyncAssetLogIdentifier} Passing request to web worker: ${location}`);
+            }
+            const directive: CacheWorkerDirective = {
+                cacheLoadPath: location,
+            };
+            this.webWorker.postMessage(directive);
+            await WaitForObservable(this.onWebWorkerCompleteCaching,(result)=>{return result.path === location},100000);
+        //Else just process ourselves
+        } else {
+            const zipBytes = await this.backendStorage.GetItemAtLocation(location);
+            if(zipBytes !== undefined && zipBytes !== null) {
+                await this.frontendCache.Put({data:zipBytes,metadata:{timestamp:new Date()}}, location);
+            }
+        }
+
+        //Cache should be nice and updated
+        const loadedData = await this.frontendCache.Get(location);
+        if(!loadedData) {
+            return undefined;
+        }
+
+        if (this.printDebugStatements && loadedData) {
+            const loadTime = (performance.now() - startLoadTime) / 1000;
+            console.log(`${asyncAssetLogIdentifier}Time to load asset from Backend: ${location}  ${loadTime}s`);
+        }
+        return loadedData.data;
+    }  
+
+    /** Will delete in both front and backend */
+    async DeleteItem(location:string) {
+        await this.frontendCache.Delete(location);
+        return await this.backendStorage.DeleteItemAtLocation(location);
+    }
 
     static GetAssetManager(): AsyncAssetManager {
         return globalAssetManager;
@@ -69,6 +114,10 @@ export class AsyncAssetManager {
             //Setup backend
             await this.backendStorage.InitializeBackend();
 
+            await this.LoadWebWorker();
+
+            this.fileLastUpdateTimes = await this.backendStorage.GetAllBackendLastSaveTimes();
+
             //Setup frontend cache
             await this.frontendCache.InitializeFrontendCache();
 
@@ -76,6 +125,8 @@ export class AsyncAssetManager {
             this.onRefreshComplete.notifyObservers(null);
             this.awaitingLoadProm = null;
             this.init = true;
+
+            console.log(`Async asset manager finished loading. Using web worker: ${this.webWorker !== undefined}`);
         }
 
         return null;
@@ -93,11 +144,15 @@ export class AsyncAssetManager {
         return false;
     }
 
+
+    // ----------------------- WEB WORKER ----------------------------------------
     webWorker: Worker;
     webWorkerStarted = false;
     onWebWorkerStarted = new Observable();
     /** Returns the path which was successful */
     onWebWorkerCompleteCaching = new Observable<CacheWorkerResult>();
+    /** Returns when an unzipping has been completed */
+    onWebWorkerCompleteUnzip = new Observable<ZipWorkerReturn>();
 
     GetWebWorkerLoadedPromise() {
         var loader = this;
@@ -112,7 +167,7 @@ export class AsyncAssetManager {
         });
     }
 
-    async GetWebWorker() {
+    async LoadWebWorker() {
         if (this.webWorker !== undefined) {
             return this.webWorker;
         }
@@ -120,9 +175,11 @@ export class AsyncAssetManager {
         const frontend = this.frontendCache.GetWebWorkerSetup();
         const backend = this.backendStorage.GetWebWorkerSetup();
         if (frontend !== undefined && backend !== undefined) {
-            if (this.printDebugStatements) console.log("STARTING WEB WORKER");
-            const workerPath = path.resolve(__dirname, "./CacheWorker.js");
-            this.webWorker = new Worker(workerPath, { type: "module" });
+            if (this.printDebugStatements) {
+                console.log(`${asyncAssetLogIdentifier} Building asset management web worker`);
+            }
+
+            this.webWorker = workerConstructor();
             const setup: CacheWorkerSetup = {
                 setup: true,
                 backend: backend,
@@ -131,24 +188,7 @@ export class AsyncAssetManager {
             this.webWorker.postMessage(setup);
             const manager = this;
             this.webWorker.onmessage = function (e) {
-                if (e.data === "WEB WORKER SETUP COMPLETE") {
-                    manager.webWorkerStarted = true;
-                    manager.onWebWorkerStarted.notifyObservers(undefined);
-                } else if (e.data.includes("STORAGESUCCESS__")) {
-                    const res = e.data.split("__", 2);
-                    manager.onWebWorkerCompleteCaching.notifyObservers({
-                        path: res[1],
-                        success: true,
-                    });
-                } else if (e.data.includes("STORAGEFAIL__")) {
-                    const res = e.data.split("__", 2);
-                    console.log("Failure for storage at path: " + res[1]);
-                    manager.onWebWorkerCompleteCaching.notifyObservers({
-                        path: res[1],
-                        success: false,
-                    });
-                }
-                if (manager.printDebugStatements) console.log("WEB WORKER MESSAGE: " + e.data);
+                manager.processWebWorkerMessage(e);
             };
         }
         //Wait for setup complete
@@ -158,10 +198,48 @@ export class AsyncAssetManager {
         return this.webWorker;
     }
 
+    processWebWorkerMessage(message:MessageEvent<any>) {
+        const typeMessage = typeof(message.data);
+        if(typeMessage === "string") {
+            if (message.data === WebWorkerSetupMessage) {
+                this.webWorkerStarted = true;
+                this.onWebWorkerStarted.notifyObservers(undefined);
+            }else if (message.data.includes(WebWorkerStorageSuccess)) {
+                const res = message.data.split(":__", 2);
+                this.onWebWorkerCompleteCaching.notifyObservers({
+                    path: res[1],
+                    success: true,
+                });
+            } else if (message.data.includes(WebWorkerStorageFail)) {
+                const res = message.data.split(":__", 2);
+                console.error(`${asyncAssetLogIdentifier} Failure for storage at path: res[1]`);
+                this.onWebWorkerCompleteCaching.notifyObservers({
+                    path: res[1],
+                    success: false,
+                });
+            }
+
+            if (this.printDebugStatements) console.log(`${asyncAssetLogIdentifier} Recived web worker message: ${message.data}`);
+
+        } else if (typeMessage === "object") {
+            if(typeof message.data === "object" && message.data.zipDirective !== undefined) {
+                //Blob data needs to be unloaded from arraybuffer!
+                const zipFinish = message.data as ZipWorkerReturn;
+                if(zipFinish.zipDirective.loadType === AsyncDataType.blob) {
+                    zipFinish.data = new Blob([zipFinish.data],{type:zipFinish.blobType});
+                }
+                
+                this.onWebWorkerCompleteUnzip.notifyObservers(zipFinish);
+                if (this.printDebugStatements) console.log(`${asyncAssetLogIdentifier} Web worker zip load finished: ${zipFinish.zipDirective.zipLoadPath}`);
+            } 
+        }
+    }
+
+    // ----------------------- WEB WORKER END ----------------------------------------
+
     /** Remove frontend cache (loaded asset) and backend cache (bytes) */
     async ResetAnyCaching(location: string, fileName: string) {
-        AsyncZipPuller.RemoveCacheAtLocation(location);
         AsyncAssetLoader.RemovePriorCaching(location, fileName);
-        this.frontendCache.RemoveCacheAtLocation(location);
+        this.frontendCache.Delete(location);
     }
 }

@@ -2,7 +2,7 @@ import { VisualItem } from "./VisualItem";
 import { AssetFolder } from "./AssetFolder";
 import { ContentItem, ContentItemType } from "./ContentItem";
 import { RefreshObjectTypeTracking } from "../../Utils/ContentTypeTrackers";
-import { AsyncAWSBackend, AsyncZipPuller } from "@engine/AsyncAssets";
+import { AsyncAWSBackend, AsyncAssetManager, AsyncZipPuller } from "@engine/AsyncAssets";
 import { FileZipData } from "@engine/AsyncAssets/Framework/StorageInterfaceTypes";
 import { AsyncDataType, GetAllZippedFileDatas } from "@engine/AsyncAssets/Utils/ZipUtils";
 
@@ -28,11 +28,10 @@ export class AssetBundle extends VisualItem {
 
     async SaveItemOut(): Promise<boolean> {
         //Get all data for this item
-        const backend = (this.storedBackend as AsyncAWSBackend);
 
         //Changed from Predownload?
         if(this.bSavedAsPredownload !== this.isPredownloadAsset()) {
-            backend.deleteObject(this.getPredownloadOpposite());
+            AsyncAssetManager.GetAssetManager().DeleteItem(this.getPredownloadOpposite());
         }
         
         //Get all items ready for saving
@@ -47,7 +46,7 @@ export class AssetBundle extends VisualItem {
         }
 
         //Perform save
-        const result = await backend.StoreZipAtLocation(dataItems,this.getItemLocation());
+        const result = await (this.storedBackend as AsyncAWSBackend).StoreZipAtLocation(dataItems,this.getItemLocation());
         if(result) {
             RefreshObjectTypeTracking();
         }
@@ -57,9 +56,9 @@ export class AssetBundle extends VisualItem {
         return result;
     }
     async DeleteItem(): Promise<boolean> {
-        var result = await (this.storedBackend as AsyncAWSBackend).deleteObject(this.getItemLocation());
+        var result = await AsyncAssetManager.GetAssetManager().DeleteItem(this.getItemLocation());
         if(result === false) {
-            result = await (this.storedBackend as AsyncAWSBackend).deleteObject(this.getPredownloadOpposite());
+            result = await AsyncAssetManager.GetAssetManager().DeleteItem(this.getPredownloadOpposite());
         }
         RefreshObjectTypeTracking();
         return result;
@@ -102,15 +101,15 @@ export class AssetBundle extends VisualItem {
         var ourData = null;
         try {
             if(this.bSavedAsPredownload) {
-                ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
+                ourData =  await AsyncAssetManager.GetAssetManager().GetItemAtLocation(this.getPredownloadOpposite());
             } else {
-                ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
+                ourData =await AsyncAssetManager.GetAssetManager().GetItemAtLocation(this.getItemLocation());
             }
         } catch {
             if(this.bSavedAsPredownload) {
-                ourData =await this.storedBackend.GetItemAtLocation(this.getItemLocation());
+                ourData =await AsyncAssetManager.GetAssetManager().GetItemAtLocation(this.getItemLocation());
             } else {
-                ourData =  await this.storedBackend.GetItemAtLocation(this.getPredownloadOpposite());
+                ourData =  await AsyncAssetManager.GetAssetManager().GetItemAtLocation(this.getPredownloadOpposite());
             }
         }
         const contained = await GetAllZippedFileDatas(ourData);

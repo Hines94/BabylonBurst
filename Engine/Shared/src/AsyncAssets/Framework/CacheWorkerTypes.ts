@@ -8,6 +8,12 @@ import {
     IFrontendStorageInterface,
 } from "./StorageInterfaceTypes";
 
+export const WebWorkerSetupMessage = "Web worker setup complete";
+export const WebWorkerStorageSuccess = "Storage complete:__"; //:__ required to split out data path
+export const WebWorkerStorageFail = "Storage fail:__"; //:__ required to split out data path
+export const WebWorkerZipSuccess = "Zip load complete:__";
+export const WebWorkerZipFail = "Zip load fail:__";
+
 export type CacheWorkerResult = {
     success: boolean;
     path: string;
@@ -20,8 +26,19 @@ export type CacheWorkerSetup = {
 };
 
 export type CacheWorkerDirective = {
-    path: string;
+    cacheLoadPath: string;
 };
+export type ZipWorkerDirective = {
+    zipLoadPath: string;
+    loadType: AsyncDataType;
+    desiredFile:string;
+};
+
+export type ZipWorkerReturn = {
+    zipDirective:ZipWorkerDirective;
+    blobType?:string;
+    data:any;
+}
 
 export function GetBackendSetup(data: BackendSetup): IBackendStorageInterface {
     var ret = undefined;

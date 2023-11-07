@@ -4,6 +4,7 @@ import { RunnableGameEcosystem } from "@BabylonBurstClient/RunnableGameEcosystem
 import { EditorCamera } from "./Utils/EditorCamera";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
 
 export type BuildableDescript = {
     CodeName: string;
@@ -40,6 +41,7 @@ export class BabylonBurstEditor extends RunnableGameEcosystem {
     constructor(canvas: HTMLCanvasElement, options: editorOptions) {
         super(canvas);
         this.options = options;
+        //environmentVaraibleTracker.SetOverrideVariable("USE_MEMORY_FRONTEND","true");
     }
 
     protected override setupExtras(): void {

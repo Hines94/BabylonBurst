@@ -11,8 +11,10 @@ export interface IBackendStorageInterface {
     GetItemAtLocation(location: string): Promise<Uint8Array>;
     GetWebWorkerSetup(): BackendSetup;
     StoreZipAtLocation(data: FileZipData[], location: string): Promise<boolean>;
+    DeleteItemAtLocation(path:string): Promise<boolean>;
     StoreDataAtLocation(data: string, location: string, extension: string): Promise<boolean>;
     GetAllBackendItems(): Promise<string[]>;
+    GetAllBackendLastSaveTimes():Promise<{[filename:string]:Date}>;
 }
 
 /** Can be sent across web workers to setup identical backend */
@@ -21,15 +23,23 @@ export abstract class BackendSetup {
     abstract setupBackend(): IBackendStorageInterface;
 }
 
+/** This should be created/returned as we will require metadata about the result */
+export interface CacheEntry {
+    data: any;
+    metadata: {
+      timestamp: Date;
+    };
+  }
+
 /** Generic frontend storage for caching data retrieved from backend */
 export interface IFrontendStorageInterface {
     InitializeFrontendCache(): Promise<boolean>;
-    Put(data: any, path: string): Promise<boolean>;
-    Get(path: string): Promise<any>;
+    Put(data: CacheEntry, path: string): Promise<boolean>;
+    Get(path: string): Promise<CacheEntry>;
+    Delete(path:string): Promise<boolean>;
     WipeDatabase(): Promise<boolean>;
     /** If this !== undefined then we can use a web worker to load asset in background */
     GetWebWorkerSetup(): FrontendSetup;
-    RemoveCacheAtLocation(loc: string): Promise<void>;
 }
 
 /** Can be sent across web workers to setup identical frontend */

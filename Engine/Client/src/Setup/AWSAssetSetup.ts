@@ -24,14 +24,14 @@ export async function setupAsyncManager() {
 
     //Setup scene async manager
     var frontend: any = new AsyncInMemoryFrontend();
-    if (environmentVaraibleTracker.GetVariable("USE_MEMORY_FRONTEND") !== "TRUE") {
-        frontend = new AsyncIndexDBFrontend();
+    if (environmentVaraibleTracker.GetVariable("USE_MEMORY_FRONTEND") !== "true") {
+        frontend = new AsyncIndexDBFrontend(environmentVaraibleTracker.GetGameName());
     }
     console.log("BUCKET: " + environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"));
     const assetManager = new AsyncAssetManager(
         new AsyncAWSBackend(environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"), creds),
         frontend
     );
-    assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light;
+    assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Heavy;
     await assetManager.loadManager();
 }

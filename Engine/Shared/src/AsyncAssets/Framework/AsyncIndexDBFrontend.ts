@@ -1,16 +1,19 @@
+import { environmentVaraibleTracker } from "../../Utils/EnvironmentVariableTracker";
 import { GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils";
-import { FrontendSetup, IFrontendStorageInterface } from "./StorageInterfaceTypes";
+import { asyncAssetLogIdentifier } from "./AsyncAssetManager";
+import { CacheEntry, FrontendSetup, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 
 //TODO move this into global accessable in case we want to access from another system
 var localDatabase: IDBDatabase = null;
 var cacheOpeningPromise: Promise<IDBDatabase> = null;
 const RequestCacheName = "CachedRequests";
-const mechIndexDB = "mechCrawlerCachedAssets";
+ //TODO: This is hacky-instead pass in to setup?
 
 export class IndexDBSetup extends FrontendSetup {
+    storageName:string;
     type: string = "IndexDB";
     setupFrontend(): IFrontendStorageInterface {
-        return new AsyncIndexDBFrontend();
+        return new AsyncIndexDBFrontend(this.storageName);
     }
 }
 
@@ -18,25 +21,33 @@ export class IndexDBSetup extends FrontendSetup {
 export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
     frontendCache: IDBObjectStore = null;
 
-    async RemoveCacheAtLocation(loc: string): Promise<void> {
+    indexDBName = `_CachedAssets`;
+    storageName = "CHANGESTORAGENAME";
+
+    constructor(storageName:string) {
+        this.storageName = storageName;
+        this.indexDBName = `${storageName}_CachedAssets`;
+    }
+
+    async Delete(loc: string): Promise<boolean> {
         await this.OpenWriteTransaction();
         const fullPath = GetZipPath(loc);
-        this.frontendCache.delete(fullPath);
+        return this.frontendCache.delete(fullPath) === undefined;
     }
 
     async WipeDatabase(): Promise<boolean> {
         localDatabase.close();
-        const delreq = indexedDB.deleteDatabase(mechIndexDB);
+        const delreq = indexedDB.deleteDatabase(this.indexDBName);
         return await new Promise((resolve, reject) => {
             delreq.onsuccess = function () {
                 resolve(true);
             };
             delreq.onerror = function () {
-                console.log(delreq.error);
+                console.error(`${asyncAssetLogIdentifier} IndexDB delete Error: ${delreq.error}`);
                 reject(false);
             };
             delreq.onblocked = function () {
-                console.log("Can't delete indexDB: blocked!");
+                console.log(`${asyncAssetLogIdentifier} Can't delete indexDB: blocked!`);
                 reject(false);
             };
         });
@@ -69,22 +80,26 @@ export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
         });
     }
 
-    async Put(data: any, path: string): Promise<boolean> {
-        this.OpenWriteTransaction();
-        const request = this.frontendCache.put(data, path);
-        await this.AwaitCurrentTransaction();
-        return request.result === path;
-    }
+    Put(data: CacheEntry, path: string): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            this.OpenWriteTransaction();
+            const request = this.frontendCache.put(data, path);
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(request.error);
+        });
+      }
 
-    async Get(path: string): Promise<any> {
-        this.OpenReadTransaction();
-        var cached = this.frontendCache.get(path);
-        await this.AwaitCurrentTransaction();
-        return cached.result;
-    }
+      Get(path: string): Promise<CacheEntry> {
+        return new Promise((resolve, reject) => {
+            this.OpenReadTransaction();
+            const request = this.frontendCache.get(path);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+      }
 
     openIndexDB(): Promise<IDBDatabase> {
-        var request = indexedDB.open(mechIndexDB, 1);
+        var request = indexedDB.open(this.indexDBName, 1);
         var loader = this;
         return new Promise((resolve, reject) => {
             //Success! We opened the database!
@@ -96,18 +111,18 @@ export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
                         .objectStore(RequestCacheName);
                     resolve(request.result);
                 } else {
-                    console.error("TODO implement database versioning. We need a store name that is not present!!");
+                    console.error(`${asyncAssetLogIdentifier} implement database versioning. We need a store name that is not present!!`);
                 }
             };
 
             //Can't even open the database. Incognito?
             request.onerror = function (event: any) {
-                console.error("Error with setting up Mech Crawler cache database: " + event.target.errorCode);
+                console.error(`${asyncAssetLogIdentifier}Error with setting up IndexDb cache database: ${event.target.errorCode}`);
                 reject(null);
             };
 
             request.onblocked = function (event: any) {
-                console.error("Mech cache blocked");
+                console.error(`${asyncAssetLogIdentifier} IndexDb cache blocked`);
                 reject(null);
             };
 
@@ -123,7 +138,7 @@ export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
 
             setTimeout(function () {
                 if (request.readyState !== "done") {
-                    console.error("Mech IndexDB did not load in 2 seconds.");
+                    console.error(`${asyncAssetLogIdentifier} IndexDB did not load in 2 seconds.`);
                     reject(null);
                 }
             }, 2000);
@@ -141,6 +156,8 @@ export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
     }
 
     GetWebWorkerSetup(): FrontendSetup {
-        return new IndexDBSetup();
+       const setup = new IndexDBSetup();
+       setup.storageName = this.storageName;
+       return setup;
     }
 }

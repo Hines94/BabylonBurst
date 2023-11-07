@@ -20,7 +20,16 @@ export function GetStringAsDebugMode(string: string): DebugMode {
  * Easy interface to check if certain variables are included in env or account
  */
 export class EnvVariableTracker {
+
+    overrideVariables:{[id:string]:string} = {};
+
     GetVariable(varName: string): string {
+
+        //Override?
+        if(this.overrideVariables[varName]) {
+            return this.overrideVariables[varName];
+        }
+
         //Check Vite
         const viteName = "VITE_" + varName;
         var value = undefined;
@@ -28,13 +37,20 @@ export class EnvVariableTracker {
 
         if (value !== undefined) {
             return value;
-        } else {
-            //Nothing here!
-            //console.error("NO VITE VALUE");
         }
         //TODO Check account etc
 
         return undefined;
+    }
+
+    GetGameName():string {
+        const potentialName=this.GetVariable("GAME_NAME");
+        return potentialName ? potentialName : "SET GAME NAME";
+    }
+
+    /** Set a override variable */
+    SetOverrideVariable(varName:string, value:string) {
+        this.overrideVariables[varName] = value;
     }
 
     debugOverride: DebugMode = undefined;

@@ -35,6 +35,7 @@ export class AdminDebugInterface extends TransformNode {
                 label: "Wipe Async Cache",
                 propertyName: "wipeIndexDB",
                 callback: () => {
+                    console.log("Wiping database");
                     AsyncAssetManager.GetAssetManager().frontendCache.WipeDatabase();
                 },
                 type: InspectableType.Button,

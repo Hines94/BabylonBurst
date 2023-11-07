@@ -11,6 +11,7 @@ import { fromCognitoIdentityPool } from "@aws-sdk/credential-providers";
 import JSZip from "jszip";
 import { BackendSetup, FileZipData, IBackendStorageInterface } from "./StorageInterfaceTypes";
 import { GetZipPath } from "../Utils/ZipUtils";
+import { asyncAssetLogIdentifier } from "./AsyncAssetManager";
 
 async function createZip(data: FileZipData[]) {
     const zip = new JSZip();
@@ -28,16 +29,16 @@ async function createZip(data: FileZipData[]) {
 export class AWSSetupParams extends BackendSetup {
     type: string = "AWS";
     credentials: any;
-    region: string;
+    bucketName: string;
 
     constructor(region: string, credentials: any) {
         super();
-        this.region = region;
+        this.bucketName = region;
         this.credentials = credentials;
     }
 
     setupBackend(): IBackendStorageInterface {
-        return new AsyncAWSBackend(this.region, this.credentials);
+        return new AsyncAWSBackend(this.bucketName, this.credentials);
     }
 }
 
@@ -60,13 +61,21 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         }
     }
 
+    async GetAllBackendLastSaveTimes(): Promise<{ [filename: string]: Date; }> {
+        const ret = {};
+        const response = await this.s3.send(this.getListCommand());
+        if(!response.Contents) {
+            return ret;
+        }
+        response.Contents.forEach(f => {
+            ret[f.Key] = f.LastModified;
+        });
+        return ret;
+    }
+
     async GetAllBackendItems(): Promise<string[]> {
-        const input = {
-            Bucket: this.bucketName,
-        };
-        const listCommand = new ListObjectsV2Command(input);
         try {
-            const response = await this.s3.send(listCommand);
+            const response = await this.s3.send(this.getListCommand());
             const ret: string[] = [];
             if(!response.Contents) {
                 return ret;
@@ -81,6 +90,14 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         }
     }
 
+    private getListCommand() {
+        const input = {
+            Bucket: this.bucketName,
+        };
+        const listCommand = new ListObjectsV2Command(input);
+        return listCommand;
+    }
+
     async StoreDataAtLocation(data: string, location: string, extension: string): Promise<boolean> {
         const uploadParams = {
             Bucket: this.bucketName,
@@ -89,10 +106,10 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         };
         try {
             const response = await this.s3.send(new PutObjectCommand(uploadParams));
-            console.log(`File uploaded successfully: ${location}`);
+            console.log(`${asyncAssetLogIdentifier} File uploaded successfully: ${location}`);
             return true;
         } catch (error: any) {
-            console.error(`Error uploading file: ${error.message}`);
+            console.error(`${asyncAssetLogIdentifier} Error uploading file: ${error.message}`);
             return false;
         }
     }
@@ -108,10 +125,10 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         };
         try {
             const response = await this.s3.send(new PutObjectCommand(uploadParams));
-            console.log(`File uploaded successfully. ETag: ${response.ETag}`);
+            console.log(`${asyncAssetLogIdentifier} File uploaded successfully. ETag: ${response.ETag}`);
             return true;
         } catch (error: any) {
-            console.error(`Error uploading file: ${error.message}`);
+            console.error(`${asyncAssetLogIdentifier} Error uploading file: ${error.message}`);
             return false;
         }
     }
@@ -144,7 +161,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
             try {
                 storage.s3.send(request, (err: any, data: any) => {
                     if (err !== null) {
-                        console.warn("Warning: Failed to fetch async data asset: " + location); // Log a warning.
+                        console.warn(`${asyncAssetLogIdentifier} Warning: Failed to fetch async data asset: ${location}`);
                         reject(null);
                     } else {
                         if (data.$metadata.httpStatusCode !== 200) {
@@ -154,13 +171,13 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
                             .transformToByteArray()
                             .then((result: any) => resolve(result))
                             .catch((error: any) => {
-                                console.warn("Warning: Failed to transform data.");
+                                console.warn(`${asyncAssetLogIdentifier} Warning: Failed to transform data`);
                                 reject(null);
                             });
                     }
                 });
             } catch (err) {
-                console.warn("Warning: Error while sending s3 request for " + location);
+                console.warn(`${asyncAssetLogIdentifier} Warning: Error while sending s3 request for ${location}`);
                 reject(null);
             }
         });
@@ -196,7 +213,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
         });
     }
 
-    async deleteObject(objectPath: string): Promise<boolean> {
+    async DeleteItemAtLocation(objectPath: string): Promise<boolean> {
         var storage = this;
         try {
             // Construct the HeadObjectCommand
@@ -215,14 +232,14 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
             });
 
             await storage.s3.send(deleteCommand);
-            console.log(`Item deleted: ${objectPath}`);
+            console.log(`${asyncAssetLogIdentifier} Item deleted: ${objectPath}`);
             return true;
         } catch (error: any) {
             if (error.name === "NotFound") {
-                console.warn(`Object does not exist: ${objectPath}`);
+                console.warn(`${asyncAssetLogIdentifier} Object does not exist: ${objectPath}`);
                 return false; // Or reject, based on your use case
             } else {
-                console.warn(`Error: ${error} ${objectPath}`);
+                console.warn(`${asyncAssetLogIdentifier} Error: ${error} ${objectPath}`);
                 return false;
             }
         }

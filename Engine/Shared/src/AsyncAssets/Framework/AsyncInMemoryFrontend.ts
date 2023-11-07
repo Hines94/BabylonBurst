@@ -1,9 +1,9 @@
 import { GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils";
-import { FrontendSetup, IFrontendStorageInterface } from "./StorageInterfaceTypes";
+import { CacheEntry, FrontendSetup, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 
 /** An easy in-memory way of storing requests downloaded from backend (AWS) */
 export class AsyncInMemoryFrontend implements IFrontendStorageInterface {
-    storedRequests: { [id: string]: any } = {};
+    storedRequests: { [id: string]: CacheEntry } = {};
 
     GetWebWorkerSetup(): FrontendSetup {
         return undefined;
@@ -14,17 +14,22 @@ export class AsyncInMemoryFrontend implements IFrontendStorageInterface {
         return true;
     }
 
-    async Put(data: any, path: string): Promise<boolean> {
+    async Put(data: CacheEntry, path: string): Promise<boolean> {
         this.storedRequests[path] = data;
         return true;
     }
 
-    async Get(path: string): Promise<any> {
+    async Get(path: string): Promise<CacheEntry> {
         return this.storedRequests[path];
     }
 
     async WipeDatabase(): Promise<boolean> {
         this.storedRequests = {};
+        return true;
+    }
+
+    async Delete(path: string): Promise<boolean> {
+        this.storedRequests[path] = undefined;
         return true;
     }
 

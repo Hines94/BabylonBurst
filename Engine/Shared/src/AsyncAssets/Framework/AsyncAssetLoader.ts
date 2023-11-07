@@ -1,6 +1,6 @@
 import { Observable } from "@babylonjs/core";
 import { AsyncDataType, GetAssetFullPath, GetZipPath } from "../Utils/ZipUtils.js";
-import { AsyncAssetManager } from "./AsyncAssetManager.js";
+import { AsyncAssetManager, asyncAssetLogIdentifier } from "./AsyncAssetManager.js";
 import { AsyncZipPuller } from "./AsyncZipPuller.js";
 
 /*
@@ -92,10 +92,11 @@ export abstract class AsyncAssetLoader {
             await this.getWaitForFullyLoadPromise();
             return;
         }
+
         this.AssetStartedLoading = true;
         const manager = AsyncAssetManager.GetAssetManager();
         if (manager.printDebugStatements) {
-            console.log("Requested asset at path: " + this.requestedAssetPath);
+            console.log(`${asyncAssetLogIdentifier} Requested asset at path: ${this.requestedAssetPath}`);
         }
 
         const ourAssetPath = this.GetAssetFullPath();
@@ -107,7 +108,7 @@ export abstract class AsyncAssetLoader {
             await priorLoad.getWaitForFullyLoadPromise();
             this.loadedAsyncData = priorLoad.loadedAsyncData;
             await this.PerformSpecificSetup(this.loadedAsyncData);
-            console.log("found existing asset data for: " + this.requestedAssetPath);
+            console.log(`${asyncAssetLogIdentifier} found existing asset data for: ${this.requestedAssetPath}`);
             return;
         } else {
             loadedAssets[ourAssetPath] = this;
@@ -127,7 +128,7 @@ export abstract class AsyncAssetLoader {
 
         if (manager.printDebugStatements) {
             const loadTime = (performance.now() - this.startLoadTime) / 1000;
-            console.log("Asset loaded: " + this.requestedAssetPath + " load time: " + loadTime + "s");
+            console.log(`${asyncAssetLogIdentifier} Asset loaded: ${this.requestedAssetPath} load time: ${loadTime}s`);
         }
 
         DecrementCurrentlyLoadingAssets(ourAssetPath, manager);
@@ -182,7 +183,7 @@ function IncrementCurrentlyLoadingAssets(ourAssetPath: string, manager: AsyncAss
     if (currentlyLoadingAssets[ourAssetPath] === undefined) {
         currentlyLoadingAssets[ourAssetPath] = 0;
         onCurrentlyLoadingAssetsChange.notifyObservers(ourAssetPath);
-        if (manager.printDebugStatements) console.log("Asset: " + ourAssetPath + " Started Loading");
+        if (manager.printDebugStatements) console.log(`${asyncAssetLogIdentifier} Asset: ${ourAssetPath} Started Loading`);
     }
     currentlyLoadingAssets[ourAssetPath] += 1;
 }
@@ -194,6 +195,6 @@ function DecrementCurrentlyLoadingAssets(ourAssetPath: string, manager: AsyncAss
     if (currentlyLoadingAssets[ourAssetPath] === 0) {
         delete currentlyLoadingAssets[ourAssetPath];
         onCurrentlyLoadingAssetsChange.notifyObservers(ourAssetPath);
-        if (manager.printDebugStatements) console.log("ASSET: " + ourAssetPath + " FINISHED LOADING");
+        if (manager.printDebugStatements) console.log(`${asyncAssetLogIdentifier} ASSET: ${ourAssetPath} Finished Loading`);
     }
 }
