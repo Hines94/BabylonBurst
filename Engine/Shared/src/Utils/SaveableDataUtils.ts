@@ -97,7 +97,7 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
         //Get default comp to compare against
         var defaultComp = undefined;
         if(bIgnoreDefaults) {
-            defaultComp = GetDefaultComponent(registeredType, entity);
+            defaultComp = GetDefaultComponent(registeredType.type, entity);
         }
 
         //If this is subtype we must get the parents items too!
@@ -162,14 +162,14 @@ function TwoPropertiesAreIdentical(propA:any,propB:any) {
         }); 
 }
 
-function GetDefaultComponent(registeredType: storedRegisteredType, entity: EntityData) {
-    var defaultComp = new (registeredType.type as any)();
+function GetDefaultComponent(registeredType: any, entity: EntityData) {
+    var defaultComp = new (registeredType)();
     const prefabComp = entity.GetComponent(Prefab);
     //Get default from prefab?
     if (prefabComp !== undefined && prefabComp.parent !== undefined) {
         const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
         if (attemptPrefab) {
-            const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId, registeredType.type.name, undefined, entity.owningSystem.GetAllEntities());
+            const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId, registeredType.name, undefined, entity.owningSystem.GetAllEntities());
             if (defaultPrefab) {
                 defaultComp = defaultPrefab;
             }
