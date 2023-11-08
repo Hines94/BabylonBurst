@@ -166,7 +166,6 @@ export function DeepEquals(obj1, obj2, excludeKeysCallback:(keys:string[])=>stri
     // If any key is missing in the second object or its value is different from the first, return false
     for (let key of keys1) {
         if (!keys2.includes(key) || !DeepEquals(obj1[key], obj2[key])) {
-            console.log(key);
             return false;
         }
     }
