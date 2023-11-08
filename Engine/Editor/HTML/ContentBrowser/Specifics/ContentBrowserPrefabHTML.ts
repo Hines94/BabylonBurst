@@ -41,7 +41,6 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem  {
     }
 
     protected async loadContent() {
-        console.log("Started loading!")
         const loader = new AsyncArrayBufferLoader(this.ourItem.parent.getItemLocation(), this.ourItem.GetSaveName());
         await loader.getWaitForFullyLoadPromise();
         this.ourItem.data = loader.rawData;

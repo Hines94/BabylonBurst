@@ -112,6 +112,10 @@ export class EntVector3{
         return Math.abs(vecA.X) + Math.abs(vecA.Y) + Math.abs(vecA.Z);
     }
 
+    static Length2D(vecA: EntVector3) {
+        return Math.abs(vecA.X) + Math.abs(vecA.Z);
+    }
+
     static Dot(vec1: EntVector3, vec2: EntVector3) {
         return vec1.X * vec2.X + vec1.Y * vec2.Y + vec1.Z * vec2.Z;
     }

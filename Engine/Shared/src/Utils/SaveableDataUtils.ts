@@ -2,7 +2,9 @@ import { Component } from "../EntitySystem/Component";
 import { EntityData, EntityLoadMapping } from "../EntitySystem/EntityData";
 import { Prefab } from "../EntitySystem/Prefab";
 import { PrefabManager } from "../EntitySystem/PrefabManager";
+import { proxyCallbackSymbol } from "../EntitySystem/TrackedVariable";
 import { FindSavedProperty, registeredTypes, savedProperty, storedRegisteredType } from "../EntitySystem/TypeRegister";
+import { DeepEquals } from "./HTMLUtils";
 import { GetParentClassesOfInstance, IsIntArrayInstance } from "./TypeRegisterUtils";
 
 export type SavedCompTyping = {
@@ -95,20 +97,7 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
         //Get default comp to compare against
         var defaultComp = undefined;
         if(bIgnoreDefaults) {
-            defaultComp = new (registeredType.type as any)();
-            const prefabComp = entity.GetComponent(Prefab);
-            //Get default from prefab?
-            if(prefabComp !== undefined && prefabComp.parent !== undefined) {
-                const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
-                if(attemptPrefab) {
-                    const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId,propertyTypeName,undefined,entity.owningSystem.GetAllEntities());
-                    if(defaultPrefab) {
-                        defaultComp = defaultPrefab;
-                    }
-                }
-            } else {
-                
-            }
+            defaultComp = GetDefaultComponent(registeredType, entity);
         }
 
         //If this is subtype we must get the parents items too!
@@ -144,7 +133,7 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
 
             if(nestPropIdentifier !== undefined) {
                 //Ignore defaults
-                if(bIgnoreDefaults && defaultComp[key] === property[key]) {
+                if(bIgnoreDefaults && TwoPropertiesAreIdentical(defaultComp[key],property[key])) {
                     continue;
                 }
                 const typeIndex = GetTypingsParamIndex(propertyTypeName,key,typings);
@@ -166,7 +155,30 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
     
 }
 
-export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, property: any,compName:string,paramName:string, typings:EntitySavedTypings) : any {
+function TwoPropertiesAreIdentical(propA:any,propB:any) {
+    return propA === propB || 
+        DeepEquals(propA,propB,(k)=>{
+            return k.filter(key=>{return key !== proxyCallbackSymbol; })
+        }); 
+}
+
+function GetDefaultComponent(registeredType: storedRegisteredType, entity: EntityData) {
+    var defaultComp = new (registeredType.type as any)();
+    const prefabComp = entity.GetComponent(Prefab);
+    //Get default from prefab?
+    if (prefabComp !== undefined && prefabComp.parent !== undefined) {
+        const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
+        if (attemptPrefab) {
+            const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId, registeredType.type.name, undefined, entity.owningSystem.GetAllEntities());
+            if (defaultPrefab) {
+                defaultComp = defaultPrefab;
+            }
+        }
+    }
+    return defaultComp;
+}
+
+export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, property: any,compName:string,paramName:string, typings:EntitySavedTypings, bPreserveNonDefaults) : any {
     //Try get the appropriate type to load in
     var loadSpecification:savedProperty | storedRegisteredType | undefined = undefined;
     if(property[customTypeId] !== undefined){ 
@@ -183,7 +195,7 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
     if(Array.isArray(property)) {
         const ret:any[] = [];
         for(var i = 0; i < property.length;i++) {
-            ret.push(LoadCustomSaveData(entity,entMap,property[i],compName,paramName,typings));
+            ret.push(LoadCustomSaveData(entity,entMap,property[i],compName,paramName,typings,bPreserveNonDefaults));
         }
         return ret;
     }
@@ -196,6 +208,11 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
         const newProp = new loadType();
         var parentTypes = GetParentClassesOfInstance(newProp);
         const keys = Object.keys(property);
+
+        var defaultComp = undefined;
+        if(bPreserveNonDefaults) {
+            defaultComp = GetDefaultComponent(loadType,entity);
+        }
         
         for(var k = 0; k < keys.length;k++) {
             //Get basic info on parameter to load in
@@ -215,9 +232,12 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
                     break;
                 }
             }
-
             //Load in this property into the object
-            newProp[keyName] = LoadCustomSaveData(entity,entMap,property[paramIndex],componentLoadFromType,keyName,typings);
+            const loadedData = LoadCustomSaveData(entity,entMap,property[paramIndex],componentLoadFromType,keyName,typings,bPreserveNonDefaults);
+            if(!bPreserveNonDefaults || !TwoPropertiesAreIdentical(defaultComp[keyName],loadedData)) {
+                newProp[keyName] = loadedData;
+            }
+
         }
         return newProp;
     }

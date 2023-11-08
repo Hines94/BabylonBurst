@@ -54,7 +54,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
 
         this.ecosystem.entitySystem.ResetSystem();
         PrefabManager.LoadPrefabFromIdToExisting(prefabData.prefabID,this.ecosystem.entitySystem);
-        console.log("------------ Loading Prefab Data ------------");
+        console.log(`------------ Loading Prefab ${prefab.name} Data ------------`);
         console.log(PrefabManager.GetPrefabTemplateById(prefabData.prefabID))
         console.log(higherarchy.ecosystem.entitySystem.GetEntitiesWithData([],[]).GetEntitiesArray());
         console.log("------------ End Loading Prefab Data ------------");
@@ -74,7 +74,7 @@ export class PrefabHigherarchyHTML extends HigherarchyHTML {
                     prefabData: EntitySaver.GetMsgpackForAllEntities(higherarchy.ecosystem.entitySystem,true),
                 };
 
-                console.log("------------ Saving Prefab Data ------------");
+                console.log(`------------ Saving Prefab ${prefab.name} Data ------------`);
                 console.log(decode(saveData.prefabData));
                 prefab.data = encode(saveData);
                 console.log("------------- End Prefab Data -------------");

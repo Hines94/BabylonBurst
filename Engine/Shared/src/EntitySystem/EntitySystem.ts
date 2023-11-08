@@ -231,6 +231,9 @@ export class EntitySystem {
     AddEntityAtAnyEmptySlot() : EntityData {
         for(var i = 1; i < this.SpawnedEntities+10;i++) {
             if(this.getEntData(i) === undefined) {
+                if(i > this.SpawnedEntities) {
+                    this.SpawnedEntities=i;
+                }
                 return this.CreateEntity(i);
             }
         }

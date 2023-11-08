@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { EntityData } from './EntityData';
 import { GetDescriptorHideVarName } from './TypeRegister';
 
-const proxyCallbackSymbol ='___proxyCallbackSymbol___';
+export const proxyCallbackSymbol ='___proxyCallbackSymbol___';
 
 /** Setup all items inside to be able to recieve proxy calls */
 export function DeepSetupCallback(comp: any,callback:()=>void) {

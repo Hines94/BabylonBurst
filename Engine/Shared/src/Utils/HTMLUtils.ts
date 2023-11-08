@@ -112,7 +112,7 @@ export function isAttachedToDOM(element:HTMLElement) {
     return element.ownerDocument.body.contains(element);
 }
 
-export function DeepEquals(obj1, obj2) {
+export function DeepEquals(obj1, obj2, excludeKeysCallback:(keys:string[])=>string[] = undefined) {
     // If both are the same instance, return true
     if (obj1 === obj2) return true;
 
@@ -150,15 +150,25 @@ export function DeepEquals(obj1, obj2) {
     }
 
     // Get the keys of both objects
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
+    var keys1 = Object.keys(obj1);
+    var keys2 = Object.keys(obj2);
+
+    if(excludeKeysCallback) {
+        keys1 = excludeKeysCallback(keys1);
+        keys2 = excludeKeysCallback(keys2);
+    }
 
     // If they don't have the same number of keys, they are not equal
-    if (keys1.length !== keys2.length) return false;
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
 
     // If any key is missing in the second object or its value is different from the first, return false
     for (let key of keys1) {
-        if (!keys2.includes(key) || !DeepEquals(obj1[key], obj2[key])) return false;
+        if (!keys2.includes(key) || !DeepEquals(obj1[key], obj2[key])) {
+            console.log(key);
+            return false;
+        }
     }
 
     return true;

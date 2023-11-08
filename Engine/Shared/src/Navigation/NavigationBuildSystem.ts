@@ -13,6 +13,7 @@ import { NavigationAgent } from "./NavigationAgent";
 import { DeepEquals } from "../Utils/HTMLUtils";
 import { AsyncSimpleImageMaterial } from "../Materials/AsyncSimpleImageMaterial";
 import { GameSystem } from "../GameLoop/GameSystem";
+import { NavigationBoxObsticle } from "./NavigationObsticles";
 
 var recast:any;
 
@@ -78,7 +79,17 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
     if(notify.comp instanceof NavigationAgent) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
         notify.comp.RebuildAgent(navLayer,notify.ent,ecosystem);
-        notify.comp.AgentAutoMove(navLayer);   
+        notify.comp.AgentAutoMove();   
+    }
+    if(notify.comp instanceof NavigationBoxObsticle) {
+        const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
+        notify.comp.RebuildObsticle(notify.ent,navLayer);
+    }
+    if(notify.comp instanceof EntTransform) {
+        const boxOb = notify.ent.GetComponent(NavigationBoxObsticle);
+        if(boxOb !== undefined) {
+            boxOb.RebuildObsticle(notify.ent,undefined);
+        }
     }
 }
 
@@ -182,7 +193,16 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
             continue;
         }
         agentComp.RebuildAgent(navLayer,allAgents[a],ecosystem);
-        agentComp.AgentAutoMove(navLayer);
+        agentComp.AgentAutoMove();
     }
     
+    //Rebuild all Obsticles
+    const allObsticles = ecosystem.entitySystem.GetEntitiesWithData([NavigationBoxObsticle],[]);
+    allObsticles.iterateEntities(e=>{
+        const obComp = allAgents[a].GetComponent(NavigationBoxObsticle);
+        if(obComp.targetNavigationLayer !== navLayer.NavigationLayerName) {
+            return;
+        }
+        obComp.RebuildObsticle(e,navLayer);
+    })
 }

@@ -34,12 +34,16 @@ export class NavigationAgent extends Component {
     maxAcceleration = 4.0;
 
     @TrackedVariable()
+    @Saved(Number,{comment:"Power of braking vs accel (eg 2 and 4 max accel would be 8 max decel)"})
+    stopAccelMulti = 2;
+
+    @TrackedVariable()
     @Saved(Number,{comment:"Maximum speed of the agent (m/s)"})
     maxSpeed = 1.0;
 
     @TrackedVariable()
     @Saved(Number,{comment:"How far ahead the agent looks to detect potential collisions"})
-    collisionQueryRange = 0.5;
+    collisionQueryRange = 20;
 
     @TrackedVariable()
     @Saved(Number,{comment:"How far ahead to optimize. A longer range may result in more direct routes but may also increase the computational cost."})
@@ -47,7 +51,7 @@ export class NavigationAgent extends Component {
 
     @TrackedVariable()
     @Saved(Number,{comment:"Higher weight means the agent will prioritize keeping distance from others but might interfere with aligntment/cohesion etc."})
-    separationWeight = 1.0;
+    separationWeight = 0.05;
 
     @Saved(Number,{comment:"Distance to the target that we can terminate our movement attempt. If too small then can cause jiggling issues"})
     acceptableMovementDistance = 2;
@@ -64,40 +68,51 @@ export class NavigationAgent extends Component {
     navLayer:NavigationLayer;
 
     getAgentParams():IAgentParameters {
-        return {
+        const ret = {
             radius:this.radius,
             height:this.height,
             maxAcceleration:this.maxAcceleration,
             maxSpeed:this.maxSpeed,
-            collisionQueryRange:this.collisionQueryRange,
+            collisionQueryRange:20,
             pathOptimizationRange:this.pathOptimizationRange,
-            separationWeight:this.separationWeight
+            separationWeight:0.05
         }
+        //If stopped then we don't want to move anymore
+        if(this.IsStopped) {
+            ret.maxSpeed = 0;
+            ret.maxAcceleration = this.maxAcceleration*this.stopAccelMulti;
+        }
+        return ret;
     }
 
     RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData, ecosystem:GameEcosystem) {
-        if(navLayer === undefined) {
-            return;
-        }
         const newParams = this.getAgentParams();
         if(DeepEquals(newParams,this.priorBuildParams)) {
             return;
         }
-        if(navLayer.navLayerCrowd === undefined) {
-            return;
-        }
-        const transform = agentEnt.GetComponent(EntTransform);
-        if(transform === undefined) {
-            return;
-        }
+
+        //Requires setup?
         if(this.transformNode === undefined) {
+            if(ecosystem === undefined || agentEnt === undefined || navLayer === undefined) {
+                return;
+            }
+            if(navLayer.navLayerCrowd === undefined) {
+                return;
+            }
+            const transform = agentEnt.GetComponent(EntTransform);
+            if(transform === undefined) {
+                return;
+            }
             this.transformNode = new TransformNode(`NavAgentTransform_${agentEnt.EntityId}`,ecosystem.scene);
             this.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,this.transformNode);
             this.priorBuildParams = newParams;
             this.navLayer = navLayer;
             EntVector3.Copy(transform.Position,EntVector3.VectorToEnt(this.transformNode.position));
         } else {
-            navLayer.navLayerCrowd.updateAgentParameters(this.agentIndex,newParams);
+            if(this.navLayer === undefined || this.agentIndex === undefined) {
+                return;
+            }
+            this.navLayer.navLayerCrowd.updateAgentParameters(this.agentIndex,newParams);
             this.priorBuildParams = newParams;
         }            
     }
@@ -128,14 +143,14 @@ export class NavigationAgent extends Component {
     }
 
     /** Called from Nav build system when detected that agent movement changed */
-    AgentAutoMove(navLayer:NavigationLayer) {
+    AgentAutoMove() {
         if(this.AutoMoveToTarget === false) {
             return;
         }
-        this.MoveToCurrentTarget(navLayer);
+        this.MoveToCurrentTarget();
     }
 
-    RequiresMoveTowardsTarget(navLayer:NavigationLayer) {
+    RequiresMoveTowardsTarget() {
         if(this.navLayer === undefined) {
             return false;
         }
@@ -156,17 +171,22 @@ export class NavigationAgent extends Component {
     }
 
     /** Call this to directly move to next target */
-    MoveToCurrentTarget(navLayer:NavigationLayer) {
-        if(!this.RequiresMoveTowardsTarget(navLayer)) {
+    MoveToCurrentTarget() {
+        if(!this.navLayer) {
+            return;
+        }
+        if(!this.RequiresMoveTowardsTarget()) {
             return;
         }
     
         if(EntVector3.Zero(this.TargetLocation)) {
             this.IsStopped = true;
         } else {
-            const closestPos = navLayer.navLayerPlugin.getClosestPoint(EntVector3.GetVector3(this.TargetLocation));
-            navLayer.navLayerCrowd.agentGoto(this.agentIndex,closestPos);
+            const closestPos = this.navLayer.navLayerPlugin.getClosestPoint(EntVector3.GetVector3(this.TargetLocation));
+            this.navLayer.navLayerCrowd.agentGoto(this.agentIndex,closestPos);
             this.IsStopped = false;
+            //Can be rebuilt if previously built as store params
+            this.RebuildAgent(undefined,undefined,undefined);
         }
         this.priorMoveTarget = EntVector3.clone(this.TargetLocation);
     }
@@ -194,12 +214,16 @@ export class NavAgentTransformSystem extends GameSystem {
             if(navAgent.IsStopped || navAgent.TargetLocation === undefined) {
                 return;
             }
-            const distToTarget = EntVector3.Length(EntVector3.Subtract(entTransform.Position,navAgent.TargetLocation));
-            if(distToTarget < navAgent.acceptableMovementDistance) {
+            const distToTarget = EntVector3.Length2D(EntVector3.Subtract(entTransform.Position,navAgent.TargetLocation));
+            const ourVeloc = navAgent.navLayer.navLayerCrowd.getAgentVelocity(navAgent.agentIndex);
+            const velocSq = Math.pow(ourVeloc.x + ourVeloc.z,2);
+            //Stop dist = veloc^2/2a
+            const decelDistance = velocSq/(navAgent.maxAcceleration*navAgent.stopAccelMulti);
+
+            if(distToTarget < (decelDistance + navAgent.radius)) {
                 navAgent.IsStopped = true;
                 navAgent.TargetLocation = undefined;
-                navAgent.navLayer.navLayerCrowd.agentGoto(navAgent.agentIndex, navAgent.transformNode.position);
-                navAgent.navLayer.navLayerCrowd.agentTeleport(navAgent.agentIndex, navAgent.transformNode.position);
+                navAgent.RebuildAgent(navAgent.navLayer,e,ecosystem);
             }
         })
     }

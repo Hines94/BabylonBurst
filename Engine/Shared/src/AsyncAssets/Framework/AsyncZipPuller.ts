@@ -105,7 +105,7 @@ export class AsyncZipPuller {
                 desiredFile:fileName
             }
             manager.webWorker.postMessage(request);
-            const result = await WaitForObservable(manager.onWebWorkerCompleteUnzip,(res)=>{return res.zipDirective.zipLoadPath === path;},100000);
+            const result = await WaitForObservable(manager.onWebWorkerCompleteUnzip,(res)=>{return res.zipDirective.zipLoadPath === path && res.zipDirective.desiredFile === fileName;},100000);
             return result.data;
         } else {
             var preloadedData = data === undefined ? await AsyncZipPuller.GetCachedFile(path) : data;

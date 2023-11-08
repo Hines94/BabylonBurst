@@ -122,7 +122,7 @@ export class PrefabInstance extends Component {
             }
         }
 
-        const mappings = EntityLoader.LoadTemplateIntoSpecifiedEntities(template, ent.owningSystem,map);
+        const mappings = EntityLoader.LoadTemplateIntoSpecifiedEntities(template, ent.owningSystem,map,true);
         //Setup so we know which ents we have
         const origEnts = Object.keys(mappings);
         for(var e = 0; e < origEnts.length;e++) {

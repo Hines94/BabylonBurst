@@ -58,7 +58,7 @@ export class EntityTemplate {
     }
 
     /** Given a component - load the data we have into that component */
-    LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component) {
+    LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component,bPreserveNonDefaults = false) {
         if(mapping === undefined || mapping === null) {
             mapping = {};
         }
@@ -71,7 +71,7 @@ export class EntityTemplate {
         for(var i = 0; i < params.length;i++) {
             const paramIndex = parseInt(params[i]);
             const paramName = this.typings[compIndex].compParams[paramIndex];
-            comp[paramName] = LoadCustomSaveData(mapping[ent],mapping,compData[paramIndex],compName,paramName,this.typings);
+            comp[paramName] = LoadCustomSaveData(mapping[ent],mapping,compData[paramIndex],compName,paramName,this.typings,bPreserveNonDefaults);
         }
     }
 
@@ -124,7 +124,7 @@ export class EntityLoader {
         return entMappings;
     }
 
-    static LoadTemplateIntoSpecifiedEntities(template:EntityTemplate,system:EntitySystem, entMappings:EntityLoadMapping):EntityLoadMapping {
+    static LoadTemplateIntoSpecifiedEntities(template:EntityTemplate,system:EntitySystem, entMappings:EntityLoadMapping, bPreserveNonDefaults = false):EntityLoadMapping {
         if(!isValidTemplate(template)) {
             return;
         }
@@ -146,7 +146,7 @@ export class EntityLoader {
                 }
                 const existingComp = entMappings[e].GetComponentByName(compName);
                 if(existingComp !== undefined) {
-                    template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp);
+                    template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp, bPreserveNonDefaults);
                 } else {
                     const compData = template.GetEntityComponent(originalEntId,compType.type as any,entMappings[e],entMappings);
                     if(compData !== undefined) {
