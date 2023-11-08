@@ -155,37 +155,14 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
     
 }
 
-function TwoPropertiesAreIdentical(propA:any,propB:any) {
-    return propA === propB || 
-        DeepEquals(propA,propB,(k)=>{
-            return k.filter(key=>{return key !== proxyCallbackSymbol; })
-        }); 
-}
-
-function GetDefaultComponent(registeredType: any, entity: EntityData) {
-    var defaultComp = new (registeredType)();
-    const prefabComp = entity.GetComponent(Prefab);
-    //Get default from prefab?
-    if (prefabComp !== undefined && prefabComp.parent !== undefined) {
-        const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
-        if (attemptPrefab) {
-            const defaultPrefab = attemptPrefab.GetEntityComponentByName(entity.EntityId, registeredType.name, undefined, entity.owningSystem.GetAllEntities());
-            if (defaultPrefab) {
-                defaultComp = defaultPrefab;
-            }
-        }
-    }
-    return defaultComp;
-}
-
-export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, property: any,compName:string,paramName:string, typings:EntitySavedTypings, bPreserveNonDefaults) : any {
+export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, property: any,parentTypeName:string,paramName:string, typings:EntitySavedTypings) : any {
     //Try get the appropriate type to load in
     var loadSpecification:savedProperty | storedRegisteredType | undefined = undefined;
     if(property[customTypeId] !== undefined){ 
         //Custom? (Eg subtype)
         loadSpecification = registeredTypes[property[customTypeId]];
     } else {
-        loadSpecification = FindSavedProperty(compName,paramName);
+        loadSpecification = FindSavedProperty(parentTypeName,paramName);
     }
 
     //Try to get the type to load this var as from our spec
@@ -195,7 +172,7 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
     if(Array.isArray(property)) {
         const ret:any[] = [];
         for(var i = 0; i < property.length;i++) {
-            ret.push(LoadCustomSaveData(entity,entMap,property[i],compName,paramName,typings,bPreserveNonDefaults));
+            ret.push(LoadCustomSaveData(entity,entMap,property[i],parentTypeName,paramName,typings));
         }
         return ret;
     }
@@ -208,11 +185,6 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
         const newProp = new loadType();
         var parentTypes = GetParentClassesOfInstance(newProp);
         const keys = Object.keys(property);
-
-        var defaultComp = undefined;
-        if(bPreserveNonDefaults) {
-            defaultComp = GetDefaultComponent(loadType,entity);
-        }
         
         for(var k = 0; k < keys.length;k++) {
             //Get basic info on parameter to load in
@@ -233,10 +205,9 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
                 }
             }
             //Load in this property into the object
-            const loadedData = LoadCustomSaveData(entity,entMap,property[paramIndex],componentLoadFromType,keyName,typings,bPreserveNonDefaults);
-            if(!bPreserveNonDefaults || !TwoPropertiesAreIdentical(defaultComp[keyName],loadedData)) {
-                newProp[keyName] = loadedData;
-            }
+            const loadedData = LoadCustomSaveData(entity,entMap,property[paramIndex],componentLoadFromType,keyName,typings);
+            newProp[keyName] = loadedData;
+
 
         }
         return newProp;
@@ -244,4 +215,27 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
 
     //Regular
     return property;
+}
+
+export function TwoPropertiesAreIdentical(propA:any,propB:any) {
+    return propA === propB || 
+        DeepEquals(propA,propB,(k)=>{
+            return k.filter(key=>{return key !== proxyCallbackSymbol; })
+        }); 
+}
+
+export function GetDefaultComponent(registeredType: any, entity: EntityData) {
+    var defaultComp = new (registeredType)();
+    const prefabComp = entity.GetComponent(Prefab);
+    //Get default from prefab?
+    if (prefabComp !== undefined && prefabComp.parent !== undefined) {
+        const attemptPrefab = PrefabManager.GetPrefabTemplateById(prefabComp.PrefabIdentifier);
+        if (attemptPrefab) {
+            const defaultPrefab = attemptPrefab.GetEntityComponentByName(prefabComp.EntityIndex, registeredType.name, undefined, entity.owningSystem.GetAllEntities());
+            if (defaultPrefab) {
+                defaultComp = defaultPrefab;
+            }
+        }
+    }
+    return defaultComp;
 }
