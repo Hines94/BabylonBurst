@@ -109,10 +109,26 @@ class ExampleComponent extends Component {
     //REQUIRED: For arrays make sure you init to [] (TODO: Remove the need for this?)
     @Saved(EntityData,{})
     testArray:EntityData[] = [];
+
+    testMethod();
 }
 
 ecosystem.AddSetComponentToEntity(someEntity,new ExampleComponent());
 ecosystem.GetEntitiesWithData([ExampleComponent],[]);
+
+//Child classes also work
+@RegisteredType(ChildComponent)
+class ChildComponent extends ExampleComponent {
+    testMethod() {
+        //We can override methods etc
+    }
+}
+
+//Our child components will also be included if we do a query
+ecosystem.GetEntitiesWithData([ExampleContent],[]); 
+
+//But not the other way around!
+ecosystem.GetEntitiesWithData([ChildComponent],[]); // Includes ChildComponent but not ExampleComponent!
 
 ```
 
@@ -140,6 +156,28 @@ defaultInstanceRenderer.RunSystem = (ecosystem:GameEcosystem) {
 }
 
 ```
+
+### BaseTickableObjects
+A base tickable object is designed to easily hook into the end of the systems loop. This is useful for creating UI objects that might want to be easily updated every frame.
+```ts
+
+//Easily create a tickable like this - could hold html to update etc
+class Tickable extends BaseTickableObject {
+    performTick(ecosystem: GameEcosystem): void {
+        throw new Error("Method not implemented.");
+    }
+
+}
+
+//Create instance of the tickable
+const tickInstance = new Tickable();
+//Dispose to stop ticking once done
+tickInstance.dispose();
+
+```
+
+
+
 ### Client Specific
 ```ts
 // UpdateTick function REQUIRED in Source/ClientMain.ts and Source/ServerMain.ts
