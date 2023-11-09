@@ -6,6 +6,7 @@ import { EntityData } from "./EntityData"
 import { EntityQuery } from "./EntityQuery";
 import { registeredTypes } from "./TypeRegister";
 import { DeepSetupCallback } from "./TrackedVariable";
+import { GetParentClassesOfInstance } from "../Utils/TypeRegisterUtils";
 
 export type ComponentNotify = {
     ent:EntityData;
@@ -254,7 +255,15 @@ export class EntitySystem {
     private FindMakeBucket(comps:Component[]):EntityBucket {
         const compNames:string[] = [];
         comps.forEach(c=>{
-            compNames.push(Component.GetComponentName(c));
+            //Get parent classes - we want to be able to get components from parents
+            const parentClasses = GetParentClassesOfInstance(c);
+            for(var p = 0; p < parentClasses.length;p++) {
+                const compType = parentClasses[p];
+                if(compType === Component) {
+                    continue;
+                }
+                compNames.push(compType.name);
+            }
         })
         for(var b = 0; b < this.EntityBuckets.length;b++) {
             if(ArraysContainEqualItems(this.EntityBuckets[b].SetComponents,compNames)) {

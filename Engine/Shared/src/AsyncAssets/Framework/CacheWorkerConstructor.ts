@@ -1,4 +1,4 @@
-let workerConstructor;
+export var workerConstructor;
 
 if(workerConstructor === undefined) {
   if (typeof window !== 'undefined') {
@@ -14,6 +14,3 @@ if(workerConstructor === undefined) {
     // workerConstructor = () => new Worker(workerPath, { eval: false });
   }
 }
-
-
-export default workerConstructor;

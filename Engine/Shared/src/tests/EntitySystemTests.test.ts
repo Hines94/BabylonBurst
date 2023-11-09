@@ -15,6 +15,11 @@ class TestEntComp extends Component {
 
 }
 
+@RegisteredType(TestEntCompChild)
+class TestEntCompChild extends TestEntComp {
+
+}
+
 @RegisteredType(TestEntComp2)
 class TestEntComp2 extends Component {
     @TrackedVariable()
@@ -31,6 +36,7 @@ class TestEntComp2 extends Component {
         changeCalled = true;
     }
 }
+
 
 test("EntitySystemAddEntity", () => {
     const newEnt = entSystem.AddEntity();
@@ -74,8 +80,6 @@ test("EntitySystemFindEntities", () => {
     expect(entSystem.GetEntitiesWithData([TestEntComp2],[]).GetNumEntities()).toBe(2);
 });
 
-
-
 test("EntitySystemRequiredComponents", () => {
     const newEnt = entSystem.AddEntity();
     entSystem.AddSetComponentToEntity(newEnt,new InstancedRender());
@@ -95,6 +99,12 @@ test("EntitySystemRemoveComponent", () => {
 test("EntitySystemResetSystem", () => {
     entSystem.ResetSystem();
     expect(entSystem.GetEntitiesWithData([],[]).GetNumEntities()).toBe(0);
+})
+
+test("EntitySystemGetParentedClasses",() => {
+    entSystem.AddEntity();
+    entSystem.AddSetComponentToEntity(1,new TestEntCompChild());
+    expect(entSystem.GetEntitiesWithData([TestEntComp],[]).GetEntitiesArray().length).toBe(1);
 })
 
 test("EntitySystemEventsFired", () => {

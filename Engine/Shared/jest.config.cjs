@@ -4,7 +4,8 @@ module.exports = {
     moduleNameMapper: {
         "^(\\.{1,2}/.*)\\.js$": "$1",
         "@babylonjs/core": require.resolve("@babylonjs/core"),
-        '.*/EnvVariableGatherer$': '<rootDir>/src/tests/jestMocks.ts'
+        '.*/EnvVariableGatherer$': '<rootDir>/src/tests/jestMocks.ts',
+        '.*/CacheWorkerConstructor$': '<rootDir>/src/tests/jestMocks.ts'
     },
     transform: {
         "\\.[jt]sx?$": ["ts-jest", { 

@@ -4,7 +4,7 @@ import { IBackendStorageInterface, IFrontendStorageInterface } from "./StorageIn
 import { AsyncZipPuller } from "./AsyncZipPuller";
 import { AsyncAssetLoader, AsyncDataType } from "..";
 
-import workerConstructor from './CacheWorkerConstructor';
+import { workerConstructor } from './CacheWorkerConstructor';
 import { WaitForObservable } from "../Utils/BabylonUtils";
 
 //https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-s3/index.html
