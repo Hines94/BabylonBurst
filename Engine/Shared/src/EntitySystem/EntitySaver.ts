@@ -22,10 +22,11 @@ export class EntitySaver {
         query.iterateEntities((ent)=>{
             data[ent.EntityId] = {};
             const prefabComp = ent.GetComponent<Prefab>(Prefab);
-            for(var c = 0; c < ent.Components.length;c++){
+            const compKeys = Object.keys(ent.Components);
+            for(var c = 0; c < compKeys.length;c++){
                 //Get data and check if saved
-                const compObject = ent.Components[c];
-                const compName = Component.GetComponentName(compObject);
+                const compName = compKeys[c];
+                const compObject = ent.Components[compName];
                 if(!savedProperties[compName]){
                     continue;
                 }

@@ -104,9 +104,10 @@ export class PrefabInstance extends Component {
                 const entData = spawnedEnts[i];
                 map[entId] = entData;
                 //Remove any comps that no longer exist
-                for(var c = 0; c < entData.Components.length; c++){
-                    const comp = entData.Components[c];
-                    const compName = comp.constructor.name;
+                const compKeys = Object.keys(entData.Components);
+                for(var c = 0; c < compKeys.length; c++){
+                    const compName = compKeys[c];
+                    const comp = entData.Components[compName];
                     if(!template.DoesEntityHaveComponentByName(entId,compName)) {
                         entData.owningSystem.RemoveComponent(entData,compName);
                     }

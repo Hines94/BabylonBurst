@@ -71,7 +71,7 @@ export class EntitySystem {
             return;
         }
         
-        var component;
+        var component:Component;
         if(typeof comp === "string") {
             component = entData.GetComponentByName(comp);
         } else {
@@ -82,10 +82,8 @@ export class EntitySystem {
             return;
         }
         component.onComponentRemoved(entData);
-        const indexToRemove = entData.Components.indexOf(component);
-        if (indexToRemove !== -1) {
-            entData.Components.splice(indexToRemove, 1);
-        }
+        entData.Components[component.constructor.name] = undefined;
+        delete(entData.Components[component.constructor.name])
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
     }
@@ -98,7 +96,9 @@ export class EntitySystem {
         }
         const entId = this.getEntId(en);
         //Remove all components
-        entData.Components.forEach((comp)=> {
+        const compKeys = Object.keys(entData.Components);
+        compKeys.forEach((ck)=> {
+            const comp = entData.Components[ck];
             comp.onComponentRemoved(entData)
         });
         EntityBucket.RemoveEntityFromAnyBuckets(entData);
@@ -168,7 +168,7 @@ export class EntitySystem {
         DeepSetupCallback(comp,()=>{
             this.SetChangedComponent(en,comp);
         });
-        entData.Components.push(comp);
+        entData.Components[comp.constructor.name] = comp;
         const newBucket = this.FindMakeBucket(entData.Components);
         newBucket.ChangeEntityToThisBucket(entData);
 
@@ -245,37 +245,28 @@ export class EntitySystem {
         const newEnt = new EntityData();
         newEnt.EntityId = entId;
         this.AllEntities[entId] = newEnt;
-        const bucket = this.FindMakeBucket([]);
+        const bucket = this.FindMakeBucket({});
         bucket.ChangeEntityToThisBucket(newEnt);
         this.onEntityCreatedEv.notifyObservers(entId);
         newEnt.owningSystem = this;
         return newEnt;
     }
 
-    private FindMakeBucket(comps:Component[]):EntityBucket {
-        const compNames:string[] = [];
-        comps.forEach(c=>{
-            //Get parent classes - we want to be able to get components from parents
-            const parentClasses = GetParentClassesOfInstance(c);
-            for(var p = 0; p < parentClasses.length;p++) {
-                const compType = parentClasses[p];
-                if(compType === Component) {
-                    continue;
-                }
-                compNames.push(compType.name);
-            }
-        })
+    private FindMakeBucket(comps:{[compName:string]:Component}):EntityBucket {
+        const compNames:string[] = Object.keys(comps);
+        
+        //Existing bucket?
         for(var b = 0; b < this.EntityBuckets.length;b++) {
             if(ArraysContainEqualItems(this.EntityBuckets[b].SetComponents,compNames)) {
                 return this.EntityBuckets[b];
             }
         }
+        
         //New bucket
         const newBucket = new EntityBucket();
-        comps.forEach(c=>{
-            newBucket.SetComponents = compNames;
-        })
+        newBucket.SetComponents = compNames;
         this.EntityBuckets.push(newBucket);
+
         return newBucket;
     }
 

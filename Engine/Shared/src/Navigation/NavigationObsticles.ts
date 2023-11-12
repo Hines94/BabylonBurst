@@ -6,8 +6,9 @@ import { TrackedVariable } from "../EntitySystem/TrackedVariable";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { NavigationLayer } from "./NavigationLayer";
 
-@RegisteredType(NavigationBoxObsticle,{RequiredComponents:[EntTransform], comment:"Will automatically place this box obsticle where our Transform positon is"})
-export class NavigationBoxObsticle extends Component {
+//Parent class with common functions for all shapes
+@RegisteredType(NavigationObsticle)
+export abstract class NavigationObsticle extends Component {
 
     @TrackedVariable()
     @Saved(String)
@@ -16,14 +17,9 @@ export class NavigationBoxObsticle extends Component {
     @TrackedVariable()
     @Saved(Boolean,{comment:"Set to false to disable this obsticle"})
     isEnabled = true;
-    
-    @TrackedVariable()
-    @Saved(EntVector3,{comment:"Total size of the box obsticle"})
-    boxExtents = new EntVector3(1,1,1);
 
     ourObsticle:IObstacle;
     builtLayer:NavigationLayer;
-
 
     RebuildObsticle(entity:EntityData,layer:NavigationLayer) {
         const transform = entity.GetComponent(EntTransform);
@@ -44,11 +40,7 @@ export class NavigationBoxObsticle extends Component {
         } else {
             this.builtLayer = layer;
         }
-
-        const pos = EntVector3.GetVector3(transform.Position);
-        const extents = EntVector3.GetVector3(EntVector3.Multiply(transform.Scale,this.boxExtents));
-        const angle = EntVector4.QuaternionToEuler(transform.Rotation).Y;
-        this.ourObsticle = this.builtLayer.navLayerPlugin.addBoxObstacle(pos,extents,angle);
+        this.ourObsticle = this.buildSpecificObsticle(entity,layer,transform);
     }
 
     ClearObsticle() {
@@ -56,5 +48,24 @@ export class NavigationBoxObsticle extends Component {
             return;
         }
         this.builtLayer.navLayerPlugin.removeObstacle(this.ourObsticle);
+    }
+
+    protected abstract buildSpecificObsticle(entity:EntityData,layer:NavigationLayer, transform:EntTransform):IObstacle;
+}
+
+
+@RegisteredType(NavigationBoxObsticle,{RequiredComponents:[EntTransform], comment:"Will automatically place this box obsticle where our Transform positon is"})
+export class NavigationBoxObsticle extends NavigationObsticle {
+    
+    @TrackedVariable()
+    @Saved(EntVector3,{comment:"Total size of the box obsticle"})
+    boxExtents = new EntVector3(1,1,1);
+
+
+    buildSpecificObsticle(entity:EntityData,layer:NavigationLayer, transform:EntTransform) : IObstacle{
+        const pos = EntVector3.GetVector3(transform.Position);
+        const extents = EntVector3.GetVector3(EntVector3.Multiply(transform.Scale,this.boxExtents));
+        const angle = EntVector4.QuaternionToEuler(transform.Rotation).Y;
+        return this.builtLayer.navLayerPlugin.addBoxObstacle(pos,extents,angle);
     }
 }

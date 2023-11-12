@@ -49,7 +49,7 @@ test("EntitySystemAddComponent", () => {
     const testC = new TestEntComp();
     entSystem.AddSetComponentToEntity(1,testC);
     const entData = entSystem.GetEntityData(1);
-    expect(entData.Components.includes(testC)).toBe(true);
+    expect(entData.Components[testC.constructor.name]).not.toBe(undefined);
     expect(entData.GetComponent(TestEntComp)).toBe(testC);
 });
 
@@ -99,12 +99,6 @@ test("EntitySystemRemoveComponent", () => {
 test("EntitySystemResetSystem", () => {
     entSystem.ResetSystem();
     expect(entSystem.GetEntitiesWithData([],[]).GetNumEntities()).toBe(0);
-})
-
-test("EntitySystemGetParentedClasses",() => {
-    entSystem.AddEntity();
-    entSystem.AddSetComponentToEntity(1,new TestEntCompChild());
-    expect(entSystem.GetEntitiesWithData([TestEntComp],[]).GetEntitiesArray().length).toBe(1);
 })
 
 test("EntitySystemEventsFired", () => {

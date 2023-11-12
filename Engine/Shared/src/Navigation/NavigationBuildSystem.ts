@@ -13,7 +13,7 @@ import { NavigationAgent } from "./NavigationAgent";
 import { DeepEquals } from "../Utils/HTMLUtils";
 import { AsyncSimpleImageMaterial } from "../Materials/AsyncSimpleImageMaterial";
 import { GameSystem } from "../GameLoop/GameSystem";
-import { NavigationBoxObsticle } from "./NavigationObsticles";
+import { NavigationBoxObsticle, NavigationObsticle } from "./NavigationObsticles";
 
 var recast:any;
 
@@ -81,7 +81,7 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
         notify.comp.RebuildAgent(navLayer,notify.ent,ecosystem);
         notify.comp.AgentAutoMove();   
     }
-    if(notify.comp instanceof NavigationBoxObsticle) {
+    if(notify.comp instanceof NavigationObsticle) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
         notify.comp.RebuildObsticle(notify.ent,navLayer);
     }
@@ -90,6 +90,7 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
         if(boxOb !== undefined) {
             boxOb.RebuildObsticle(notify.ent,undefined);
         }
+        //TODO: Add sphere obst
     }
 }
 

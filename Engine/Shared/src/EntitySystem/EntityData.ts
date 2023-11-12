@@ -10,7 +10,7 @@ export type EntityLoadMapping = {
 @RegisteredType(EntityData)
 export class EntityData extends SaveableDataField {
     EntityId:number;
-    Components:Component[] = [];
+    Components:{[compName:string]:Component} = {};
     owningSystem:any;
     IsValid() {
         return this.EntityId !== undefined;
@@ -24,22 +24,12 @@ export class EntityData extends SaveableDataField {
     }
 
     GetComponent<T extends Component>(type: { new(): T }): T | undefined {
-        for (let i = 0; i < this.Components.length; i++) {
-            if (this.Components[i] instanceof type) {
-                return this.Components[i] as T;
-            }
-        }
-        return undefined;
+        return this.Components[type.name] as T;
+
     }
 
     GetComponentByName(name:string) : Component {
-        for(var c=0; c < this.Components.length;c++) {
-            const comp = this.Components[c];
-            if(comp.constructor.name === name) {
-                return comp;
-            }
-        }
-        return undefined;
+        return this.Components[name];
     }
 
     static GetSaveableData(entity: EntityData,property:any):any {
