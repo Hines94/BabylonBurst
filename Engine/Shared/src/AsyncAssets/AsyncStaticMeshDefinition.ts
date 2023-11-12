@@ -2,7 +2,6 @@ import { Mesh, MeshBuilder, Observable, Scene, StandardMaterial } from "@babylon
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { ExtractMaterialFromAny } from "./AsyncMaterial";
 import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh";
-import { BackgroundCacher } from "./Framework/BackgroundCacher";
 import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
 import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
@@ -32,7 +31,7 @@ export function UpdateAllMeshDefinitions() {
  * Should contain information on Materials and submeshes that will be combined to one mesh from our GLTF on AWS.
  * From here we can create either an instance or clone.
  */
-export class AsyncStaticMeshDefinition extends BackgroundCacher {
+export class AsyncStaticMeshDefinition {
     desiredPath: string;
     onMeshReady = new Observable<AsyncStaticMeshDefinition>();
     startedLoadingProcess = false;
@@ -61,7 +60,6 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
      * @param fileName Name of the file that contains our mesh
      */
     constructor(awsPath: string, meshName: string, materials: any[], fileName: string, layerMask = 0x00000001) {
-        super();
         this.fileName = fileName;
         this.desiredPath = awsPath;
         this.meshName = meshName;
@@ -78,13 +76,6 @@ export class AsyncStaticMeshDefinition extends BackgroundCacher {
             this.blankDefinitions[awsPath+meshName+fileName].bNoFailMaterialDiff = true;
         }
         return this.blankDefinitions[awsPath+meshName+fileName];
-    }
-
-    /** Background cache as game is running to reduce asset load times */
-    async GetBackgroundCacheTask(): Promise<string> {
-        //TODO!
-        //await GetSceneLoader(this.desiredPath, this.fileName, undefined).PerformBackgroundCache();
-        return this.desiredPath;
     }
 
     /** Generic method for making sure mesh is loaded from AWS and performing the combine method on seperate elements */

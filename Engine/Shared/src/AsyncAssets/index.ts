@@ -17,7 +17,6 @@ import {
 } from "./Framework/AsyncAssetLoader.js";
 import { SceneAsyncLoader } from "./SceneAsyncLoader.js";
 import "@babylonjs/loaders/glTF";
-import { UpdateBackgroundCache } from "./Framework/BackgroundCacher.js";
 import { AsyncDataType } from "./Utils/ZipUtils.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 import { AsyncStaticMeshInstanceRunner } from "./AsyncStaticMeshInstanceRunner.js";
@@ -26,7 +25,7 @@ export type { IBackendStorageInterface, IFrontendStorageInterface } from "./Fram
 
 function UpdateAsyncSystemOnTick() {
     UpdateAllMeshDefinitions();
-    UpdateBackgroundCache();
+    AsyncAssetManager.GetAssetManager().UpdateAssetCache();
 }
 
 /** Add exports here! */

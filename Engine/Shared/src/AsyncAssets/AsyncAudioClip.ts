@@ -1,6 +1,5 @@
 import { ISoundOptions, Observable, Scene, Sound } from "@babylonjs/core";
 import { AsyncAssetLoader } from "./Framework/AsyncAssetLoader.js";
-import { BackgroundCacher } from "./Framework/BackgroundCacher.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 import { AsyncDataType } from "./Utils/ZipUtils.js";
 
@@ -70,12 +69,11 @@ export class AudioClipInstance {
     }
 }
 
-export class AsyncAudioClipDefinition extends BackgroundCacher {
+export class AsyncAudioClipDefinition {
     awsPath: string = null;
     fileName: string;
 
     constructor(awsPath: string, fileName: string) {
-        super();
         this.awsPath = awsPath;
         this.fileName = fileName;
     }
@@ -87,12 +85,6 @@ export class AsyncAudioClipDefinition extends BackgroundCacher {
         }
 
         return new AudioClipInstance(this.loader, scene, overwriteOptions);
-    }
-
-    async GetBackgroundCacheTask(): Promise<string> {
-        const task = new AudioClipLoader(this.awsPath, this.fileName, true);
-        await task.PerformBackgroundCache();
-        return this.awsPath;
     }
 
     async GetInstanceAndDispose(scene: Scene): Promise<null> {

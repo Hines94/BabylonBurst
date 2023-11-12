@@ -2,7 +2,7 @@ import { Observable } from "@babylonjs/core";
 import { CacheWorkerDirective, CacheWorkerResult, CacheWorkerSetup, WebWorkerSetupMessage, WebWorkerStorageFail, WebWorkerStorageSuccess, ZipWorkerReturn } from "./CacheWorkerTypes";
 import { IBackendStorageInterface, IFrontendStorageInterface } from "./StorageInterfaceTypes";
 import { AsyncZipPuller } from "./AsyncZipPuller";
-import { AsyncAssetLoader, AsyncDataType } from "..";
+import { AsyncAssetLoader, AsyncDataType, GetCurrentlyLoadingAsyncAssets } from "..";
 
 import { workerConstructor } from './CacheWorkerConstructor';
 import { WaitForObservable } from "../Utils/BabylonUtils";
@@ -11,6 +11,12 @@ import { WaitForObservable } from "../Utils/BabylonUtils";
 //https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB
 
 export const asyncAssetLogIdentifier = "BBAsyncAssets: ";
+
+enum cachingStatus {
+    NotRunning,
+    Running,
+    Complete
+}
 
 var globalAssetManager: AsyncAssetManager;
 
@@ -142,6 +148,36 @@ export class AsyncAssetManager {
     getAssetsWaitingToPopulate(): boolean {
         //TODO
         return false;
+    }
+
+    cachingStatus = cachingStatus.NotRunning;
+    lastCacheFile = -1;
+    /** We will download any assets that have not been downloaded thus far */
+    UpdateAssetCache() {
+        if(Object.keys(GetCurrentlyLoadingAsyncAssets()).length > 0) {
+            return;
+        }
+        //Completed caching?
+        if(this.cachingStatus !== cachingStatus.NotRunning) {
+            return;
+        }
+        //Cache next file
+        this.lastCacheFile++;
+        const keys = Object.keys(this.fileLastUpdateTimes);
+        if(this.lastCacheFile >= keys.length) {
+            if (this.printDebugStatements) console.log(`${asyncAssetLogIdentifier} All files cached from backend`)
+            this.cachingStatus = cachingStatus.Complete;
+            return;
+        }
+        const fileToCache = keys[this.lastCacheFile];
+        this.performFileCache(fileToCache);
+    }
+
+    async performFileCache(fileToCache:string) {
+        if (this.printDebugStatements) console.log(`${asyncAssetLogIdentifier} Started caching: ${fileToCache}`);
+        this.cachingStatus = cachingStatus.Running;
+        await this.GetItemAtLocation(fileToCache,false);
+        this.cachingStatus = cachingStatus.NotRunning;
     }
 
 

@@ -1,18 +1,15 @@
 import { Texture } from "@babylonjs/core";
 import { AsyncAssetLoader } from "./Framework/AsyncAssetLoader.js";
-import { BackgroundCacher } from "./Framework/BackgroundCacher.js";
 import { AsyncDataType } from "./Utils/ZipUtils.js";
-import { CreateBlobInNewWindow } from "../Utils/HTMLUtils.js";
 
 /** An easy way to load in premade assets from AWS into a easy to use Image */
-export class AsyncImageDescription extends BackgroundCacher {
+export class AsyncImageDescription {
     loadingImage: AsyncImageLoader;
     ourPath: string;
     ourFileName: string;
     hasAlpha = true;
 
     constructor(path: string, fileName: string, hasAlpha = true) {
-        super();
         this.hasAlpha = hasAlpha;
         this.ourPath = path;
         this.ourFileName = fileName;
@@ -51,11 +48,6 @@ export class AsyncImageDescription extends BackgroundCacher {
         element.style.backgroundImage = `url("${this.loadingImage.blobURL}")`;
     }
 
-    async GetBackgroundCacheTask(): Promise<string> {
-        const task = new AsyncImageLoader(this.ourPath, this.ourFileName, false);
-        await task.PerformBackgroundCache();
-        return this.ourPath;
-    }
 }
 
 class AsyncImageLoader extends AsyncAssetLoader {
