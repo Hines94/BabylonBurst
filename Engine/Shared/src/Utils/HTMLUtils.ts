@@ -30,13 +30,13 @@ export function GenerateInnerOuterPanelWithMinimizer(doc:Document):innerOuterPan
 }
 
 /** Make an element sit on the cursor position */
-export function SetupElementToCursor(event,item:HTMLElement) {
+export function SetupElementToCursor(cursorPos:{x:number,y:number},item:HTMLElement) {
     item.style.position = "absolute";
     item.style.zIndex="1000";
 
     // Get the click coordinates
-    var clickX = event.clientX;
-    var clickY = event.clientY;
+    var clickX = cursorPos.x;
+    var clickY = cursorPos.y;
 
     // Get the dimensions of the window
     var windowWidth = window.innerWidth;

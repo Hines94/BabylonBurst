@@ -57,7 +57,7 @@ function setupRightClickEditor(editor:HTMLDivElement, view:EditorView) {
                 callback:()=>{
                     const input = editor.ownerDocument.createElement("input");
                     editor.ownerDocument.body.appendChild(input);
-                    SetupElementToCursor(e,input);
+                    SetupElementToCursor({x:e.clientX,y:e.clientY},input);
                     //Get all images
                     SetupContentInputWithDatalist(ContentItemType.Image,input,(val:ContentItem) =>{
                         if(val !== undefined) {
@@ -73,7 +73,7 @@ function setupRightClickEditor(editor:HTMLDivElement, view:EditorView) {
                 callback:()=>{
                     const input = editor.ownerDocument.createElement("input");
                     editor.ownerDocument.body.appendChild(input);
-                    SetupElementToCursor(e,input);
+                    SetupElementToCursor({x:e.clientX,y:e.clientY},input);
                     //Get all images
                     SetupContentInputWithDatalist(ContentItemType.UI,input,(val:ContentItem) =>{
                         //TODO: Dissalow own item

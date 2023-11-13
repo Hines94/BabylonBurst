@@ -108,7 +108,9 @@ export abstract class AsyncAssetLoader {
             await priorLoad.getWaitForFullyLoadPromise();
             this.loadedAsyncData = priorLoad.loadedAsyncData;
             await this.PerformSpecificSetup(this.loadedAsyncData);
-            console.log(`${asyncAssetLogIdentifier} found existing asset data for: ${this.requestedAssetPath}`);
+            if (manager.printDebugStatements) {
+                console.log(`${asyncAssetLogIdentifier} found existing asset data for: ${this.requestedAssetPath}`);
+            }
             return;
         } else {
             loadedAssets[ourAssetPath] = this;

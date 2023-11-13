@@ -1,3 +1,4 @@
+import { mouseOverCanvas } from "@BabylonBurstClient/InputModule";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 import { GameEcosystem } from "@engine/GameEcosystem";
 
@@ -18,10 +19,10 @@ export function setHoveredOverGUIOverride(override: boolean) {
 }
 
 export function HoveredOverGUI(ecosystem: GameEcosystem): boolean {
-    return hoveredOverGUIOverride || ecosystem.hoveredOverGUI;
+    return hoveredOverGUIOverride || onAdvancedTextureGUI(ecosystem) || !ecosystem.dynamicProperties[mouseOverCanvas];
 }
 
-function MouseOnGUI(ecosystem: GameEcosystem): boolean {
+function onAdvancedTextureGUI(ecosystem: GameEcosystem): boolean {
     if (!ecosystem.dynamicProperties[dynamicAllAdvancedTextureProperties]) {
         return false;
     }
@@ -43,7 +44,7 @@ export function removeAdvancedTexture(tex: AdvancedDynamicTexture, ecosystem: Ga
 
 export function UpdateDynamicTextureChecks(ecosystem: GameEcosystem) {
     //Check if hovered for clicking etc
-    ecosystem.hoveredOverGUI = MouseOnGUI(ecosystem);
+    ecosystem.hoveredOverGUI = HoveredOverGUI(ecosystem);
     //Check if adv control has focus
     ecosystem.controlHasFocus = false;
     if (!ecosystem.dynamicProperties[dynamicAllAdvancedTextureProperties]) {

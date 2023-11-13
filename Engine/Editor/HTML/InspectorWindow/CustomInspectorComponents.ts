@@ -5,7 +5,7 @@ import { GameEcosystem } from "@engine/GameEcosystem";
 import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@engine/Utils/HTMLUtils";
 import { ProcessInstancedRenderComp } from "./CustomInstancedRendererComponent";
 import { ProcessModelSpecifierComp } from "./CustomModelSpecifier";
-import { IsIntArrayType, isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
+import { IsEnumType, IsIntArrayType, isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
 import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
 import { Observable } from "@babylonjs/core";
@@ -221,6 +221,26 @@ export function GenerateEditorProperty(container:HTMLElement, propType:savedProp
                 existingData[property.name] = val;
             },ecosystem,requireRefresh);
         }
+    } else if(IsEnumType(propType.type)) {
+        //Create a select
+        const select = container.ownerDocument.createElement("select");
+        select.style.marginLeft = "10%";
+        const keys = Object.keys(propType.type);
+        for(var k = 0; k < keys.length;k++) {
+            const keyAsVal = parseInt(propType.type[keys[k]]);
+            if(typeof keys[k] === "string" && isNaN(+keys[k])) {
+                const option = container.ownerDocument.createElement("option");
+                option.value = keyAsVal.toString();
+                option.innerText = keys[k];
+                select.appendChild(option);
+            }
+        }
+        container.appendChild(select);
+        select.value = parentData[propType.name];
+        
+        select.addEventListener('change',(val)=>{
+            parentData[propType.name] = select.value;
+        })
 //Fail 
     } else {
         console.error(`No editor input setup for ${propType.type.name} - prop name ${propType.name}`);

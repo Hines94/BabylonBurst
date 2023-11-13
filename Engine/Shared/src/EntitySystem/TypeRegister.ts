@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { Component } from './Component';
 import { DebugMode, environmentVaraibleTracker } from '../Utils/EnvironmentVariableTracker';
+import { IsEnumType } from '../Utils/TypeRegisterUtils';
 
 /** So we can hide a variable and use a getter/setter instead */
 export function GetDescriptorHideVarName(propertyKey:string) {
@@ -25,7 +26,7 @@ export class SavedPropertyOptions {
 }
 
 /** Define a property as 'saved'. Property type must be primitive or a registered type. */
-export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}) {
+export function Saved(type?: Function | { [key: string]: number | string },options:Partial<SavedPropertyOptions> = {}) {
     return function (target: any, propertyKey: string) {
         const compName = target.constructor.name;
         const propertyType = type;
@@ -33,6 +34,8 @@ export function Saved(type?: Function,options:Partial<SavedPropertyOptions> = {}
 
         if(type === undefined) {
             console.error(`Type not set for  ${propertyKey} in comp ${compName} in  @Saved(TYPE). Please ensure that the typing is correct`);
+        } else if(typeof type !== "function" && !IsEnumType(type)) {
+            console.error(`Type not valid for  ${propertyKey} in comp ${compName} in  @Saved(TYPE). Please ensure that the typing is correct`)
         }
 
         if (!savedProperties[compName]) {
@@ -104,6 +107,19 @@ function checkTyping(type:Function,value:any,keyname:string) {
         (type === String && typeof value !== 'string') ||
         (type === Boolean && typeof value !== 'boolean')) {
         console.error(`Invalid type set for ${keyname}. Expected ${type.name}, but received ${typeof value}.`);
+        return;
+    }
+    
+    if(IsEnumType(type)) {
+        const vals = Object.values(type);
+        if(vals.includes(value)) {
+            return;
+        }
+        const keys = Object.keys(type);
+        if(keys.includes(value)) {
+            return;
+        }
+        console.error(`Invalid type set for ${keyname}. Expected enum, but received ${typeof value}.`);
         return;
     }
 

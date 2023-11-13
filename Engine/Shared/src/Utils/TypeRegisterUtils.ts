@@ -47,3 +47,7 @@ export function IsIntArrayInstance(object:any) {
     return object instanceof Uint8Array || object instanceof Uint16Array || object instanceof  Uint32Array;
 }
 
+export function IsEnumType(value: any): boolean {
+    return value && typeof value === 'object' && 
+           Object.values(value).every(val => typeof val === 'number' || typeof val === 'string');
+}

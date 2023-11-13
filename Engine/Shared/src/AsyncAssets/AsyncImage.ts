@@ -1,6 +1,8 @@
 import { Texture } from "@babylonjs/core";
-import { AsyncAssetLoader } from "./Framework/AsyncAssetLoader.js";
-import { AsyncDataType } from "./Utils/ZipUtils.js";
+import { AsyncAssetLoader } from "./Framework/AsyncAssetLoader";
+import { AsyncDataType } from "./Utils/ZipUtils";
+import { resizeImageBlob } from "./Utils/BlobUtils";
+
 
 /** An easy way to load in premade assets from AWS into a easy to use Image */
 export class AsyncImageDescription {
@@ -48,6 +50,14 @@ export class AsyncImageDescription {
         element.style.backgroundImage = `url("${this.loadingImage.blobURL}")`;
     }
 
+    async SetupAsCursor(doc:Document, size = 64, relOffset = {x:0.5,y:0.5}) {
+        const data = await this.loadingImage.getCursorData(size);
+        const res = `url("${data}")`;
+        const offsetx = relOffset.x * size;
+        const offsety = relOffset.y * size;
+        doc.body.style.cursor= `${res} ${offsetx} ${offsety}, pointer`;
+    }
+
 }
 
 class AsyncImageLoader extends AsyncAssetLoader {
@@ -55,6 +65,8 @@ class AsyncImageLoader extends AsyncAssetLoader {
     private textureData: Texture;
     blobResponse:Blob;
     blobURL:string;
+
+    resizedCursorDatas:{[size:number]:string} = {};
 
     GetDataLoadType(): AsyncDataType {
         return AsyncDataType.blob;
@@ -78,6 +90,25 @@ class AsyncImageLoader extends AsyncAssetLoader {
         }
 
         return this.stringDataBase64; 
+    }
+
+    async getCursorData(size:number = 64) {
+        if (this.resizedCursorDatas[size] !== undefined) {
+            return this.resizedCursorDatas[size];
+        }
+        await this.getWaitForFullyLoadPromise();
+        
+        const image = this;
+        const resizedBlob = await resizeImageBlob(this.blobResponse, 64, 64);
+        return new Promise((resolve, reject) => {
+            var reader = new FileReader();
+            reader.onload = () => {
+                image.resizedCursorDatas[size] = reader.result.toString();
+                resolve(image.resizedCursorDatas[size]);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(resizedBlob);
+        });
     }
 
     async GetTextureData() {

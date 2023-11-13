@@ -5,6 +5,7 @@ import { DeviceSourceManager, DeviceType, PointerInput, Vector2 } from "@babylon
 import { GameEcosystem } from "@engine/GameEcosystem";
 
 const dynamicpropertyDSM = "___DYNAMICSOURCEMANAGER___";
+export const mouseOverCanvas = "___MOUSEOVERECOSYSTEMCANVAS___";
 
 /**
  * An input for a specific keybind. Contains useful methods for checking if we have used or not.
@@ -134,7 +135,9 @@ export class WindowInputValues {
     up = 0;
     mouseXDelta = 0;
     mouseYDelta = 0;
+    /** Note: This has some slight input lag! */
     mouseXPosition = 0;
+    /** Note: This has some slight input lag! */
     mouseYPosition = 0;
     roll = 0;
 
@@ -245,14 +248,19 @@ export function SetupInputsModule(ecosystem: GameEcosystem) {
                         }
                     }
                     if (eventData.inputIndex === PointerInput.Move) {
-                        ecosystem.InputValues.mouseXPosition = eventData.clientX;
-                        ecosystem.InputValues.mouseYPosition = eventData.clientY;
                         RecordMouseChanges(eventData.movementX, eventData.movementY);
                     }
                 });
             }
         }
     );
+    ecosystem.dynamicProperties[mouseOverCanvas] = true;
+    ecosystem.canvas.addEventListener("mouseenter",()=>{
+        ecosystem.dynamicProperties[mouseOverCanvas] = false;
+    })
+    ecosystem.canvas.addEventListener("mouseleave",()=>{
+        ecosystem.dynamicProperties[mouseOverCanvas] = true;
+    })
 }
 
 export function ButtonClickWasLeftMouse(vec2WInfo: any): boolean {
@@ -271,6 +279,9 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
     const dsm = ecosystem.dynamicProperties[dynamicpropertyDSM] as DeviceSourceManager;
 
     UpdateDynamicTextureChecks(ecosystem);
+    const scaling = ecosystem.scene.getEngine().getHardwareScalingLevel();
+    ecosystem.InputValues.mouseXPosition = ecosystem.scene.pointerX / scaling;
+    ecosystem.InputValues.mouseYPosition = ecosystem.scene.pointerY / scaling;
 
     ecosystem.InputValues.forward = 0;
     ecosystem.InputValues.side = 0;

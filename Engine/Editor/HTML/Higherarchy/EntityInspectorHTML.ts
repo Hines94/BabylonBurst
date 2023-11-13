@@ -43,7 +43,9 @@ export class EntityInspectorHTML {
         this.componentsHolderElement = entTemplate.querySelector("#EntityComponents") as HTMLElement;
         this.defaultEntityData = owner.ecosystem.entitySystem.GetEntityData(entityIdentifier);
         const entityData = owner.ecosystem.entitySystem.GetEntityData(this.entityId);
-        entityData.Components.forEach(comp => {
+        const compKeys = Object.keys(entityData.Components);
+        compKeys.forEach(c => {
+            const comp = entityData.Components[c];
             this.addComponentToInspector(comp);
         });
 
