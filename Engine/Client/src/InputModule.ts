@@ -255,12 +255,12 @@ export function SetupInputsModule(ecosystem: GameEcosystem) {
         }
     );
     ecosystem.dynamicProperties[mouseOverCanvas] = true;
-    ecosystem.canvas.addEventListener("mouseenter",()=>{
-        ecosystem.dynamicProperties[mouseOverCanvas] = false;
-    })
-    ecosystem.canvas.addEventListener("mouseleave",()=>{
+    ecosystem.canvas.addEventListener("mouseenter", () => {
         ecosystem.dynamicProperties[mouseOverCanvas] = true;
-    })
+    });
+    ecosystem.canvas.addEventListener("mouseleave", () => {
+        ecosystem.dynamicProperties[mouseOverCanvas] = false;
+    });
 }
 
 export function ButtonClickWasLeftMouse(vec2WInfo: any): boolean {
