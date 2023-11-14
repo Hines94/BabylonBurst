@@ -200,7 +200,7 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     //Rebuild all Obsticles
     const allObsticles = ecosystem.entitySystem.GetEntitiesWithData([NavigationBoxObsticle],[]);
     allObsticles.iterateEntities(e=>{
-        const obComp = allAgents[a].GetComponent(NavigationBoxObsticle);
+        const obComp = e.GetComponent(NavigationBoxObsticle);
         if(obComp.targetNavigationLayer !== navLayer.NavigationLayerName) {
             return;
         }

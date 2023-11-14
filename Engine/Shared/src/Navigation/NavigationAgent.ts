@@ -54,8 +54,10 @@ export class NavigationAgent extends Component {
     separationWeight = 0.05;
 
     @Saved(Number,{comment:"Distance to the target that we can terminate our movement attempt. If too small then can cause jiggling issues"})
-    acceptableMovementDistance = 2;
+    acceptableMovementDistance = 5;
 
+    /** Time this agent has had a near zero velocity whilst in a move order */
+    staticTime = 0;
     IsStopped = true;
     /** This can be set to false if we want our agent to use some other custom behaviour */
     AutoMoveToTarget = true;
@@ -190,6 +192,33 @@ export class NavigationAgent extends Component {
         }
         this.priorMoveTarget = EntVector3.clone(this.TargetLocation);
     }
+
+    IsReadyForStop(ourEnt:EntityData) {
+        if(this.staticTime > 0.5 || this.IsAtAcceptableDistance(ourEnt)) {
+            return true;
+        }
+        return false;
+    }
+
+    IsAtAcceptableDistance(ourEnt:EntityData) {
+        if(!this.IsSetup() || this.TargetLocation === undefined) {
+            return false;
+        }
+
+        const entTransform = ourEnt.GetComponent(EntTransform);
+        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(entTransform.Position,this.TargetLocation));
+        const ourVeloc = this.navLayer.navLayerCrowd.getAgentVelocity(this.agentIndex);
+        const velocSq = Math.pow(ourVeloc.x + ourVeloc.z,2);
+        //Stop dist = veloc^2/2a
+        const decelDistance = velocSq/(this.maxAcceleration*this.stopAccelMulti*2);
+        const absDistance = (this.acceptableMovementDistance + this.radius);
+
+        if(distToTarget < (decelDistance + this.radius) || distToTarget < absDistance) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 /** Updates the transform position to the nav agent */
@@ -214,16 +243,17 @@ export class NavAgentTransformSystem extends GameSystem {
             if(navAgent.IsStopped || navAgent.TargetLocation === undefined) {
                 return;
             }
-            const distToTarget = EntVector3.Length2D(EntVector3.Subtract(entTransform.Position,navAgent.TargetLocation));
-            const ourVeloc = navAgent.navLayer.navLayerCrowd.getAgentVelocity(navAgent.agentIndex);
-            const velocSq = Math.pow(ourVeloc.x + ourVeloc.z,2);
-            //Stop dist = veloc^2/2a
-            const decelDistance = velocSq/(navAgent.maxAcceleration*navAgent.stopAccelMulti);
 
-            if(distToTarget < (decelDistance + navAgent.radius)) {
+            if(navAgent.IsReadyForStop(e)) {
                 navAgent.IsStopped = true;
                 navAgent.TargetLocation = undefined;
                 navAgent.RebuildAgent(navAgent.navLayer,e,ecosystem);
+            } else {
+                if(navAgent.priorBuildParams.maxSpeed > 1 && navAgent.navLayer.navLayerCrowd.getAgentVelocity(navAgent.agentIndex).length() < 1){
+                    navAgent.staticTime += ecosystem.deltaTime;
+                } else {
+                    navAgent.staticTime = 0;
+                }
             }
         })
     }

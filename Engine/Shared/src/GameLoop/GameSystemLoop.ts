@@ -4,10 +4,10 @@ import { GameSystem } from "./GameSystem";
 const registeredSystems:GameSystem[] = [];
 
 /** Easily get the specific system to disable / overwrite logic etc */
-export function GetSystemOfType(sysType:typeof GameSystem) {
+export function GetSystemOfType<T extends GameSystem>(sysType: { new(): T }): T | undefined {
     for(var s = 0; s < registeredSystems.length;s++) {
         if(registeredSystems[s] instanceof sysType && registeredSystems[s].constructor === sysType) {
-            return registeredSystems[s];
+            return registeredSystems[s] as T;
         }
     }
     return undefined;
