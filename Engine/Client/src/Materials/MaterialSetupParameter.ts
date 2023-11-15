@@ -27,10 +27,10 @@ var AsyncRowSetupEditorCallback: (
     tableCell: HTMLTableCellElement,
     values: any,
     paramName: string,
-    param: MaterialSetupParameter
+    param: MaterialSetupParameter,
 ) => void;
 export function SetAsyncTextureSetupEditorCallback(
-    callback: (tableCell: HTMLTableCellElement, values: any, paramName: string, param: MaterialSetupParameter) => void
+    callback: (tableCell: HTMLTableCellElement, values: any, paramName: string, param: MaterialSetupParameter) => void,
 ) {
     AsyncRowSetupEditorCallback = callback;
 }

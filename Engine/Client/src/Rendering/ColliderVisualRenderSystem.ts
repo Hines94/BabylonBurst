@@ -60,7 +60,7 @@ export class ColliderVisualSystem extends GameSystem {
                     collideItem.ColliderMesh.MeshName,
                     [ecosystem.dynamicProperties[colliderMaterial]],
                     collideItem.ColliderMesh.FileName,
-                    uiLayerMask
+                    uiLayerMask,
                 );
             }
             //Set our data for this frame
@@ -69,7 +69,7 @@ export class ColliderVisualSystem extends GameSystem {
             }
             const transform = GetComponent(allInstEntities[entKey], EntTransform);
             thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
-                EntTransform.getAsInstanceArray(transform)
+                EntTransform.getAsInstanceArray(transform),
             );
         });
 

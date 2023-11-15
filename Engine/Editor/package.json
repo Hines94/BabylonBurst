@@ -2,7 +2,6 @@
     "name": "babylonbursteditor",
     "version": "0.1.0",
     "private": true,
-    "main": "src/GameClient/GameClient.ts",
     "type": "module",
     "scripts": {
         "start": "vite --port 5174",

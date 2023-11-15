@@ -18,7 +18,7 @@ export class NavigatableGridItemIcon {
         owner: Button,
         loadIndex: number,
         rowCol: { row: number; col: number },
-        renderRowCol: { row: number; col: number }
+        renderRowCol: { row: number; col: number },
     ) {
         this.loadedButton = owner;
         this.loadedIndex = loadIndex;

@@ -96,11 +96,11 @@ export class PlayerCamera {
     SetAdditionalCamerasEnabled(bEnabled: Boolean) {
         if (bEnabled === true) {
             this.scene.activeCameras = this.scene.activeCameras.concat(
-                this.additionalCameras.filter(c => this.scene.activeCameras.includes(c) === false)
+                this.additionalCameras.filter(c => this.scene.activeCameras.includes(c) === false),
             );
         } else {
             this.scene.activeCameras = this.scene.activeCameras.filter(
-                c => this.additionalCameras.includes(c as UniversalCamera) === false
+                c => this.additionalCameras.includes(c as UniversalCamera) === false,
             );
         }
     }
@@ -161,7 +161,7 @@ export function GetMousePickingRay(ecosystem: GameEcosystem) {
         screenPos.y,
         Matrix.Identity(),
         ecosystem.camera.mainCamera,
-        false
+        false,
     );
     return camRay;
 }

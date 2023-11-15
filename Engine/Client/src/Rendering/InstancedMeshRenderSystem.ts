@@ -36,7 +36,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     RunSystem(ecosystem: GameEcosystem) {
         const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData(
             [InstancedRender, EntTransform],
-            [HiddenEntity]
+            [HiddenEntity],
         );
         var thisFrameTransformData: { [id: string]: number[] } = {};
 
@@ -60,7 +60,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
                     rendItem.ModelData.MeshName,
                     mats,
                     rendItem.ModelData.FileName,
-                    this.GetLayerMask(rendItem, entData)
+                    this.GetLayerMask(rendItem, entData),
                 );
             }
             //Set our data for this frame
@@ -69,7 +69,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
             const transform = entData.GetComponent<EntTransform>(EntTransform);
             thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
-                EntTransform.getAsInstanceArray(transform)
+                EntTransform.getAsInstanceArray(transform),
             );
         });
 

@@ -1,6 +1,6 @@
 export function LoadHTMLTemplateToNewWindow(
     templateName: string,
-    windowName: string
+    windowName: string,
 ): { loadingElement: Promise<HTMLDivElement>; window: Window } {
     const popout = window.open("", windowName, "fullscreen=yes,toolbar=no,menubar=no,location=no");
     popout.document.write("<div id='TemplateBase'></div>");
@@ -15,7 +15,7 @@ export function LoadHTMLTemplateToNewWindow(
 /** Load a UI template from server and use it to generate a new HTML ui for us */
 export async function LoadHTMLUITemplate(
     templateName: string,
-    owningElement: HTMLElement = document.getElementById("GameUI")
+    owningElement: HTMLElement = document.getElementById("GameUI"),
 ): Promise<HTMLDivElement> {
     if (!owningElement) {
         console.error("No owning element for template " + templateName);
@@ -28,7 +28,7 @@ export async function LoadHTMLUITemplate(
     const template = await response.text();
     if (template.includes("___INDEXPAGE___")) {
         console.error(
-            `Fetched index page! Likely problem with template: ${templateName}. Fetch response: ${response.url}`
+            `Fetched index page! Likely problem with template: ${templateName}. Fetch response: ${response.url}`,
         );
         return undefined;
     }

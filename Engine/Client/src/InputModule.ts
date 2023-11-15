@@ -252,7 +252,7 @@ export function SetupInputsModule(ecosystem: GameEcosystem) {
                     }
                 });
             }
-        }
+        },
     );
     ecosystem.dynamicProperties[mouseOverCanvas] = true;
     ecosystem.canvas.addEventListener("mouseenter", () => {
@@ -327,13 +327,13 @@ export function UpdateInputValuesEndFrame(ecosystem: GameEcosystem) {
         ecosystem.InputValues.mouseYDelta,
         frameMouseYChanges,
         ecosystem.deltaTime,
-        0.02
+        0.02,
     );
     ecosystem.InputValues.mouseXDelta = SimpleWeightedAverageSmooth(
         ecosystem.InputValues.mouseXDelta,
         frameMouseXChanges,
         ecosystem.deltaTime,
-        0.02
+        0.02,
     );
     frameMouseXChanges = 0;
     frameMouseYChanges = 0;

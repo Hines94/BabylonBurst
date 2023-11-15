@@ -30,7 +30,7 @@ export async function setupAsyncManager() {
     console.log("BUCKET: " + environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"));
     const assetManager = new AsyncAssetManager(
         new AsyncAWSBackend(environmentVaraibleTracker.GetVariable("AWS_BUCKET_NAME"), creds),
-        frontend
+        frontend,
     );
     assetManager.printDebugStatements = environmentVaraibleTracker.GetDebugMode() >= DebugMode.Heavy;
     await assetManager.loadManager();

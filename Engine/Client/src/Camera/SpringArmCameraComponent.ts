@@ -87,12 +87,12 @@ export class SpringArmCameraComponent {
         const direction = Vector3.Lerp(
             this.springArmDirectionMin,
             this.springArmDirectionMax,
-            this.GetSpringArmAlpha()
+            this.GetSpringArmAlpha(),
         );
         this.playerCam.mainCamera.position = direction.multiplyByFloats(
             this.springArmLength,
             this.springArmLength,
-            this.springArmLength
+            this.springArmLength,
         );
     }
 }

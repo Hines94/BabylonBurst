@@ -5,7 +5,7 @@ export function localToWorldRotation(rotation: Vector3, translationNode: Transfo
     let worldRotation = Quaternion.FromEulerAngles(
         translationNode.rotation.x,
         translationNode.rotation.y,
-        translationNode.rotation.z
+        translationNode.rotation.z,
     );
     let localRotation = Quaternion.FromEulerAngles(rotation.x, rotation.y, rotation.z);
     let newRotation = worldRotation.multiply(localRotation);
@@ -24,7 +24,7 @@ export function GetRandomPositionInRadiusRange(
     position: Vector3,
     minRadius: number,
     maxRadius: number,
-    maxAngle = Math.PI * 2
+    maxAngle = Math.PI * 2,
 ): Vector3 {
     let angle = Math.random() * maxAngle;
     let distance = lerp(minRadius, maxRadius, Math.random());
@@ -41,7 +41,7 @@ export function RayPlaneIntersection(
     rayOrigin: Vector3,
     rayDirection: Vector3,
     planePoint: Vector3,
-    planeNormal: Vector3
+    planeNormal: Vector3,
 ): Vector3 | null {
     const denominator = Vector3.Dot(planeNormal, rayDirection);
 

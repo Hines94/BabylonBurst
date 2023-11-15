@@ -22,7 +22,7 @@ export class GridEdgeOverlay {
                 for (var d = 0; d < size * 2; d++) {
                     const z = d * gridSize - size * gridSize;
                     instances.push(
-                        new InstancedMeshTransform(new Vector3(x, y, z), new Vector3(), new Vector3(1, 1, 1))
+                        new InstancedMeshTransform(new Vector3(x, y, z), new Vector3(), new Vector3(1, 1, 1)),
                     );
                 }
             }

@@ -53,7 +53,7 @@ export class GridFloorOverlay {
         this.floorTile = MeshBuilder.CreateBox(
             "floorTile",
             { size: this.gridTileSize * (1 - this.tileMargin), depth: 0.001 },
-            scene
+            scene,
         );
         this.floorTile.layerMask = this.layer;
 
@@ -83,7 +83,7 @@ export class GridFloorOverlay {
             this.gridWidthX,
             this.gridWidthY,
             this.currentBooleans,
-            this.gridTileSize
+            this.gridTileSize,
         );
         this.BuildFromTransforms(transforms);
     }

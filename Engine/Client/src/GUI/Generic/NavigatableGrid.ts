@@ -92,7 +92,7 @@ export class NavigatableGrid {
                 this.itemHolders[this.getIndexForItemHolder(rendRowCol.row, rendRowCol.col)],
                 i,
                 rowGrid,
-                rendRowCol
+                rendRowCol,
             );
         }
         this.lastRowWidth = iconNumber % this.lastBuildWidth;
@@ -132,7 +132,7 @@ export class NavigatableGrid {
         bAutoMove: boolean,
         bAutoWrapCol: boolean,
         bAutoWrapVert: boolean,
-        ecosystem: GameEcosystem
+        ecosystem: GameEcosystem,
     ): { horiz: number; vert: number } {
         const ret = { horiz: 0, vert: 0 };
         //Up one
@@ -148,13 +148,16 @@ export class NavigatableGrid {
                 const priorRender = this.getRenderRowColForItem(this.lastSelectIndex);
                 if (prior.row === 0) {
                     this.DrawSelected(
-                        this.getClosestIndex(this.bInvertVerticalRendering ? 0 : this.getNumRows() - 1, priorRender.col)
+                        this.getClosestIndex(
+                            this.bInvertVerticalRendering ? 0 : this.getNumRows() - 1,
+                            priorRender.col,
+                        ),
                     );
                 } else {
                     const nextRow = Clamp(
                         this.bInvertVerticalRendering ? priorRender.row + 1 : priorRender.row - 1,
                         0,
-                        this.getNumRows()
+                        this.getNumRows(),
                     );
                     const closest = this.getClosestIndex(nextRow, priorRender.col);
                     this.DrawSelected(closest);
@@ -191,7 +194,7 @@ export class NavigatableGrid {
                 const nextRow = Clamp(
                     this.bInvertVerticalRendering ? priorRender.row - 1 : priorRender.row + 1,
                     0,
-                    this.getNumRows()
+                    this.getNumRows(),
                 );
                 const closest = this.getClosestIndex(nextRow, priorRender.col);
                 this.DrawSelected(closest);

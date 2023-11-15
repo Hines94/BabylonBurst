@@ -7,7 +7,7 @@ export async function LoadUIContent(
     awsPath: string,
     filename: string,
     ecosystem: GameEcosystem,
-    owningDiv: HTMLElement = undefined
+    owningDiv: HTMLElement = undefined,
 ) {
     var div = owningDiv;
     if (div === undefined) {
@@ -66,7 +66,7 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
         if (allStyleScripts[eleName] !== undefined) {
             //Already loaded - remove all non inlined styles/scripts
             const styleAndScriptElements = ele.querySelectorAll(
-                "style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])"
+                "style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])",
             );
             for (var e = 0; e < styleAndScriptElements.length; e++) {
                 styleAndScriptElements[e].remove();
@@ -75,7 +75,7 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
             //First one - move all styles/scripts
             allStyleScripts[eleName] = ele.ownerDocument.createElement("div");
             const styleAndScriptElements = ele.querySelectorAll(
-                "style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])"
+                "style:not([data-inlineMe='true']), script:not([data-inlineMe='true'])",
             );
             for (var e = 0; e < styleAndScriptElements.length; e++) {
                 allStyleScripts[eleName].appendChild(styleAndScriptElements[e]);

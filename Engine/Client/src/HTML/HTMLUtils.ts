@@ -33,7 +33,7 @@ export function WaitForEvent(eventName: string, doc: Document) {
             event => {
                 resolve(event);
             },
-            { once: true }
+            { once: true },
         );
     });
 }
@@ -61,7 +61,7 @@ export function MakeDroppableTextElement(element: HTMLInputElement, getData: () 
 export function MakeDroppableGenericElement(
     element: HTMLElement,
     callback: (DraggedElement: EventTarget) => void,
-    dragoverCheck: (DraggedElement: EventTarget) => boolean
+    dragoverCheck: (DraggedElement: EventTarget) => boolean,
 ) {
     element.addEventListener("dragover", function (event: DragEvent) {
         if (DraggedElement !== undefined && DraggedElement !== null && dragoverCheck(DraggedElement)) {
