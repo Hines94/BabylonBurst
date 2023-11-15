@@ -11,7 +11,7 @@ export class LightingGameSystem extends GameSystem {
     SetupGameSystem(ecosystem: GameEcosystem) {}
 
     RunSystem(ecosystem: GameEcosystem) {
-        const directLights = ecosystem.entitySystem.GetEntitiesWithData([DirectionalLightComp,LightingRebuildTag], []);
+        const directLights = ecosystem.entitySystem.GetEntitiesWithData([DirectionalLightComp, LightingRebuildTag], []);
         directLights.iterateEntities(e => {
             const dirLight = e.GetComponent<DirectionalLightComp>(DirectionalLightComp);
             dirLight.rebuildLight(e, ecosystem);

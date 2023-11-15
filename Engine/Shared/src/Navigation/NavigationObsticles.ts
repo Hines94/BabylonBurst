@@ -64,7 +64,6 @@ export class NavigationBoxObsticle extends NavigationObsticle {
         const pos = EntVector3.GetVector3(transform.Position);
         const extents = EntVector3.GetVector3(EntVector3.Multiply(transform.Scale,this.boxExtents));
         const angle = EntVector4.QuaternionToEuler(transform.Rotation).Y;
-        this.builtLayer = layer;
         return this.builtLayer.navLayerPlugin.addBoxObstacle(pos,extents,angle);
     }
 }

@@ -13,7 +13,6 @@ import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 import { InstancedRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
 import { MaterialSpecifier } from "@engine/Rendering/MaterialSpecifier";
 
-
 export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     if (!ecosystem.dynamicProperties.LoadedRunners) {
         return;
@@ -28,7 +27,6 @@ export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     });
 }
 
-
 export class InstancedMeshRenderSystem extends GameSystem {
     SystemOrdering = InstancedRenderSystemPriority;
     systemRunType = GameSystemRunType.GameAndEditor;
@@ -38,7 +36,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     RunSystem(ecosystem: GameEcosystem) {
         const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData(
             [InstancedRender, EntTransform],
-            [HiddenEntity],
+            [HiddenEntity]
         );
         var thisFrameTransformData: { [id: string]: number[] } = {};
 
@@ -49,7 +47,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
         //Perform setup for data
         allInstEntities.iterateEntities((entData: EntityData) => {
             const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
-            const runnerID = this.GetRunnerID(rendItem,entData);
+            const runnerID = this.GetRunnerID(rendItem, entData);
             //Create render runner if not exists
             if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
                 const mats = this.GetMaterials(rendItem, entData, ecosystem);
@@ -62,7 +60,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
                     rendItem.ModelData.MeshName,
                     mats,
                     rendItem.ModelData.FileName,
-                    this.GetLayerMask(rendItem, entData),
+                    this.GetLayerMask(rendItem, entData)
                 );
             }
             //Set our data for this frame
@@ -71,7 +69,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
             const transform = entData.GetComponent<EntTransform>(EntTransform);
             thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
-                EntTransform.getAsInstanceArray(transform),
+                EntTransform.getAsInstanceArray(transform)
             );
         });
 
@@ -85,7 +83,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     /** Get layermask to render with for a instanced render */
-    GetLayerMask(val: InstancedRender, entData:EntityData): number {
+    GetLayerMask(val: InstancedRender, entData: EntityData): number {
         if (val.LayerMask === 0) {
             return defaultLayerMask;
         }
@@ -93,7 +91,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     /** Gets a unique ID for this combination of materials */
-    GetRunnerID(rend: InstancedRender, ent:EntityData): string {
+    GetRunnerID(rend: InstancedRender, ent: EntityData): string {
         var ret: string = rend.ModelData.FilePath + "_" + rend.ModelData.MeshName + "_" + 0 + "_";
         ret += rend.LayerMask;
         ret += "_MATS_";
@@ -104,7 +102,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     /** Get the materials for a particular instanced render type */
-    GetMaterials(instancedRend:InstancedRender, ent:EntityData, ecosystem: GameEcosystem): Material[] {
+    GetMaterials(instancedRend: InstancedRender, ent: EntityData, ecosystem: GameEcosystem): Material[] {
         const ret: Material[] = [];
         for (var m = 0; m < instancedRend.MaterialData.length; m++) {
             const spec = instancedRend.MaterialData[m];
@@ -134,7 +132,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 console.warn("Null fallback for material: " + spec.FilePath + " " + spec.FileName);
                 continue;
             }
-    
+
             //No shader found?
             const shader = GetMaterialDescription(data.MaterialShaderType);
             if (!shader) {
@@ -142,12 +140,11 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 ret.push(null);
                 continue;
             }
-    
+
             //Full success
             const mat = shader.LoadMaterial(data, ecosystem.scene);
             ret.push(mat);
         }
         return ret;
     }
-    
 }

@@ -37,4 +37,3 @@ cp ${base_path}/Engine/Tools/GitHooks/pre-commit ${base_path}/.git/hooks/pre-com
 chmod +x ${base_path}/.git/hooks/pre-commit
 
 print_cyan "--- Babylon Burst setup complete! ---\n"
-read -r -p "Press any key to continue..." key

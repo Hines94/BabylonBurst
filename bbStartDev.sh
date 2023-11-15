@@ -62,6 +62,8 @@ else
     cd Engine/Client
     #Editor version of game?
     if arg_exists "-edit" "$@"; then
+        cp ${base_path}/.env ${base_path}/Engine/Editor/.env
+        sed -i 's/^/VITE_/' ${base_path}/Engine/Editor/.env
         cd ${base_path}/Engine/Editor
         nohup npm run start:game > ${CLIENTLOGS} 2>&1 &
         echo "Running editor version"

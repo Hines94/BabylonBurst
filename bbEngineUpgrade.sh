@@ -22,7 +22,7 @@ arg_exists() {
     return 1  # False in shell terms, meaning the argument does not exist
 }
 
-# Step 1: Check for clean state
+# Check for clean state
 if ! arg_exists "-force" "$@"; then
   if [[ -n $(git -C "$SCRIPT_DIR" status -s) ]]; then
     echo -e ${RED}"Your project has uncommitted changes. Please use -force (not recommended) or commit or stash them before proceeding."${RESET}
@@ -33,6 +33,16 @@ fi
 # Create a temporary directory for the clone
 TEMP_DIR=$(mktemp -d -t engine_upgrade_XXXXXX)
 echo "Temporary directory for clone: $TEMP_DIR"
+
+# Remove engine folder
+if ! arg_exists "-quick" "$@"; then
+  ENGINE_DIR="$SCRIPT_DIR/Engine"
+  if [ -d "$ENGINE_DIR" ]; then
+      echo "Removing existing Engine folder..."
+      rm -rf "$ENGINE_DIR"
+  fi
+fi
+
 
 # Clone the remote repository to the temporary directory
 echo "Cloning engine's GitHub repository to temporary directory..."
@@ -51,6 +61,11 @@ rsync -av --progress "$TEMP_DIR/" "$SCRIPT_DIR/" \
 
 # Clean up by removing the temporary directory
 rm -rf "$TEMP_DIR"
+
+# Re install any folders etc
+if ! arg_exists "-quick" "$@"; then
+  bash $SCRIPT_DIR/bbEngineSetup.sh
+fi
 
 # Complete!
 echo -e ${MAGENTA}"Upgrade complete! Your directory has been updated, excluding the specified files and the 'Source' folder."${RESET}
