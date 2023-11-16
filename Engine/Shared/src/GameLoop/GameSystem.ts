@@ -7,6 +7,14 @@ export enum GameSystemRunType {
     GameAndEditor
 }
 
+export enum NetworkedSystemRunType {
+    /** A special case for sytems specifically targeted at singleplayer and not multiplayer */
+    SinglePlayerOnly,
+    ClientOnly,
+    ServerOnly,
+    ClientServer,
+}
+
 
 export abstract class GameSystem {
     /** Lower called first and higher called later  */
@@ -19,6 +27,8 @@ export abstract class GameSystem {
     RateLimit = -1;
     /** Should this system run in editor or game? */
     systemRunType = GameSystemRunType.GameOnly;
+    /** Set this to only run in specific circumstances */
+    systemNetworkType = NetworkedSystemRunType.ClientServer;
 
     private runEcosystems:{[id:string]:boolean} = {};
 

@@ -1,10 +1,7 @@
-import { Color4, Observable, Vector3 } from "@babylonjs/core";
+import { RunnableClientEcosystem } from "@BabylonBurstClient/RunnableClientEcosystem";
 import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
-import { RunnableGameEcosystem } from "@BabylonBurstClient/RunnableGameEcosystem";
 import { EditorCamera } from "./Utils/EditorCamera";
-import { EntityData } from "@engine/EntitySystem/EntityData";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
 
 export type BuildableDescript = {
     CodeName: string;
@@ -22,10 +19,10 @@ type editorOptions = {
 };
 
 //This is the editor for generating/saving/loading different buildable types for our AI and players to use
-export class BabylonBurstEditor extends RunnableGameEcosystem {
+export class BabylonBurstEditor extends RunnableClientEcosystem {
     options: editorOptions;
-    isGame = false;
 
+    isGame = false;
     isEditor = true;
 
     DisplayErrorIfEditor = (message: string) => {

@@ -3,6 +3,11 @@ import { SceneSetupSettings } from "../../Client/src/Environment/SceneSetupSetti
 import { WindowInputValues } from "../../Client/src/InputModule";
 import { EntitySystem } from "./EntitySystem/EntitySystem";
 
+export enum EcosystemType {
+    Client,
+    Server
+}
+
 /** Contains key parts to run a game ecosystem (render etc) */
 export interface GameEcosystem {
     //---GENERAL---
@@ -25,6 +30,7 @@ export interface GameEcosystem {
     scene: Scene;
 
     //---ERRORCALLBACKS---
+    ecosystemNetworkType:EcosystemType;
     isGame:boolean;
     isEditor:boolean;
     /** Used for displaying important errors in Editor */

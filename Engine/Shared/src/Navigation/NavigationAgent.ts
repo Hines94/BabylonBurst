@@ -9,6 +9,7 @@ import { NavigationLayer } from "./NavigationLayer";
 import { GameSystem } from "../GameLoop/GameSystem";
 import { NavAgentTransformUpdatePriority } from "../GameLoop/GameSystemPriorities";
 import { DeepEquals } from "../Utils/HTMLUtils";
+import { EntitySystem } from "../EntitySystem/EntitySystem";
 
 
 @RegisteredType(NavigationAgent,{RequiredComponents:[EntTransform],comment:`An agent that will be able to move around a navmesh`})
@@ -218,6 +219,24 @@ export class NavigationAgent extends Component {
         } else {
             return false;
         }
+    }
+
+    static IsAgentAtLocation(loc:EntVector3,entSystem:EntitySystem, checkRadius = 0) {
+        const allAgents = entSystem.GetEntitiesWithData([NavigationAgent,EntTransform],[]).GetEntitiesArray();
+        for(var a = 0; a < allAgents.length;a++) {
+            const e = allAgents[a];
+            const transformComp = e.GetComponent(EntTransform);
+            const agentComp = e.GetComponent(NavigationAgent);
+            if(!agentComp.IsSetup()) {
+                return;
+            }
+            const CheckDistance = agentComp.radius + checkRadius;
+            const distanceToPoint = EntVector3.Length2D(EntVector3.Subtract(transformComp.Position,loc));
+            if(CheckDistance < distanceToPoint) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -142,4 +142,23 @@ export class NavigationLayer extends Component {
             }
         })
     }
+
+    GetPointInRadius(center:Vector3, maxRadius:number, minRadius = 0) {
+        if(this.navLayerPlugin === undefined) {
+            return undefined;
+        }
+        
+        if(minRadius === 0) {
+            return this.navLayerPlugin.getRandomPointAround(center,maxRadius);
+        }
+
+        const angle = Math.random() * Math.PI * 2;
+        const radius = minRadius + Math.random() * (maxRadius - minRadius);
+
+        const x = center.x + radius * Math.cos(angle);
+        const z = center.z + radius * Math.sin(angle);
+        const y = center.y;
+
+        return this.navLayerPlugin.getClosestPoint(new Vector3(x,y,z));
+    }
 }

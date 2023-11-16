@@ -1,9 +1,8 @@
 import { FramerateCounter } from "./GUI/Generic/FramerateCounter";
-import { RunnableGameEcosystem } from "./RunnableGameEcosystem";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { RunnableClientEcosystem } from "./RunnableClientEcosystem";
 
 /** Game specific ecosystem client. Has main scene for rendering main game. */
-export class BabylonBurstClient extends RunnableGameEcosystem {
+export class BabylonBurstClient extends RunnableClientEcosystem {
     //Maximum bounds of the world
     worldRadius = 50;
     worldHeight = 20;

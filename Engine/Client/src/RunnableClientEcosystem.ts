@@ -7,14 +7,14 @@ import { v4 as uuidv4 } from "uuid";
 import { UpdateSystemsLoop } from "./SystemsLoop";
 import { PlayerCamera } from "./Camera/PlayerCamera";
 import { GetGameSettings } from "./Settings";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { EcosystemType, GameEcosystem } from "@engine/GameEcosystem";
 import { EntitySystem } from "@engine/EntitySystem/EntitySystem";
 import { setupAsyncManager } from "@BabylonBurstClient/Setup/AWSAssetSetup";
 import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
 
 /** Custom game launch - eg editor or client side performance checks */
-export class RunnableGameEcosystem implements GameEcosystem {
+export class RunnableClientEcosystem implements GameEcosystem {
     //Maximum bounds of the world
     worldRadius = 50;
     worldHeight = 20;
@@ -37,6 +37,7 @@ export class RunnableGameEcosystem implements GameEcosystem {
     onUpdate = new Observable<GameEcosystem>();
     controlHasFocus: boolean;
     hoveredOverGUI: boolean;
+    ecosystemNetworkType = EcosystemType.Client;
 
     isGame = true;
     isEditor = false;

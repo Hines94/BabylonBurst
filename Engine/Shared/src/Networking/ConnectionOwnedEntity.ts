@@ -4,13 +4,13 @@ import { EntitySystem } from "../EntitySystem/EntitySystem";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 
-/** For situations where we are playing offline */
-export const LocalConnectionOwnerId = "LocalConnection";
-
 const connectionEntities:{[id:string]:{[entId:string]:EntityData}} = {};
 
 @RegisteredType(ConnectionOwnedEntity,{comment:"This entity is owned by a connection (player)"})
 export class ConnectionOwnedEntity extends Component {
+
+    static LocalConnectionOwnerId = "LocalConnection";
+
     @TrackedVariable()
     @Saved(String, {comment:"Connection Id of the owner for this entity"})
     connectionOwner = "";
@@ -44,31 +44,29 @@ export class ConnectionOwnedEntity extends Component {
         connectionEntities[this.connectionOwner][entData.EntityId] = entData;
     }
 
-    AddLocalConnectionOwner(entity:EntityData) {
-        if(entity.GetComponent(ConnectionOwnedEntity) === undefined) {
-            (entity.owningSystem as EntitySystem).AddSetComponentToEntity(entity,new ConnectionOwnedEntity());
+    /** Is an entity owned by our local connection (or offline) */
+    static IsEntityOwnedLocally(entData:EntityData) {
+        const ownC = entData.GetComponent(ConnectionOwnedEntity);
+        if(ownC === undefined) {
+            return false;
         }
-        const ownerCon = entity.GetComponent(ConnectionOwnedEntity);
-        ownerCon.connectionOwner = LocalConnectionOwnerId;
-        ownerCon.ResetConnectionOwner(entity);
+        return ownC.connectionOwner === ConnectionOwnedEntity.LocalConnectionOwnerId;
+        //TODO: If we have a connection use that to check too!
     }
-}
-
-/** Is an entity owned  */
-export function IsEntityOwnedLocally(entData:EntityData) {
-    const ownC = entData.GetComponent(ConnectionOwnedEntity);
-    if(ownC === undefined) {
-        return false;
+    
+    /** All entities owned by this client (offline or connectionid) */
+    static GetAllLocallyOwnedEntities() : {[entId:string]:EntityData} {
+        //TODO: If we have a connection use that to check too!
+        return connectionEntities[ConnectionOwnedEntity.LocalConnectionOwnerId];
     }
-    return ownC.connectionOwner === LocalConnectionOwnerId;
-    //TODO: If we have a connection use that to check too!
-}
 
-export function GetAllLocallyOwnedEntities() : {[entId:string]:EntityData} {
-    //TODO: If we have a connection use that to check too!
-    return connectionEntities[LocalConnectionOwnerId];
-}
+    /** All entities owned by a certain connection */
+    static GetAllOwnedEntites(connectionId:string) : {[entId:string]:EntityData} {
+        return connectionEntities[connectionId];
+    }
 
-export function GetAllOwnedEntites(connectionId:string) : {[entId:string]:EntityData} {
-    return connectionEntities[connectionId];
+    /** All known to this entity system */
+    static GetAllConnectionIds():string[] {
+        return Object.keys(connectionEntities);
+    }
 }

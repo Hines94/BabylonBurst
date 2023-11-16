@@ -1,10 +1,6 @@
 import { Vector3 } from "@babylonjs/core";
-import { EntVector3, EntVector4 } from "../EntitySystem/CoreComponents";
 import { serverConnection } from "../Networking/ServerConnection";
-
-// export function IsLocallyControlled(ownComp: OwnedComponent) {
-//     return serverConnection.GetLocalConnectID() === ownComp.OwningPlayer;
-// }
+import { EntVector4 } from "@engine/EntitySystem/CoreComponents";
 
 export enum AxisType {
     ForwardAxis,
@@ -65,4 +61,12 @@ function quaternionToMatrix(quaternion: EntVector4): number[][] {
         [2 * (xy + wz), 1 - 2 * (xx + zz), 2 * (yz - wx)],
         [2 * (xz - wy), 2 * (yz + wx), 1 - 2 * (xx + yy)],
     ];
+}
+
+export function GetLocalPlayerId(): string {
+    if (serverConnection === undefined) {
+        return "Local";
+    }
+    console.log("TODO:");
+    return undefined;
 }
