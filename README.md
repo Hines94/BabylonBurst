@@ -9,7 +9,7 @@ The overall goal is to take all of the "heavy lifting" away so that the develope
 - TODO: Automatic performance tracking
 - TODO: Automatic networking
 
-> Please see https://hines94.github.io/BabylonBurst for detailed docs.
+> Please see https://hines94.github.io/BabylonBurst for detailed docs and https://forum.babylonjs.com/t/43444 for more info.
 
 NOTE: The engine  has recently gone through some large changes with all C++/WASM removed and replaced with typescript due to client performance issues. Networking and server is has been removed, but will be re-added at a later date (to similar functionality as previous).
 
