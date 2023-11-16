@@ -19,13 +19,13 @@ NOTE: The engine  has recently gone through some large changes with all C++/WASM
     - see .env.sample
 
 ## Start Editor:
-run StartEditor.sh
+- run bash StartEditor.sh
 
 ## Start Development:
-On vscode:
-run debug mode to debug server (F5)
-No vscode:
-run bash StartDev.sh
+- On vscode:
+    - run debug mode to debug server (F5)
+- No vscode:
+    - run bash StartDev.sh
 
 ## Working With Examples:
 Simply copy the Source folder into your Source folder and re-run
