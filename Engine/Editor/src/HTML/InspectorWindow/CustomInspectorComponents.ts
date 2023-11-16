@@ -239,7 +239,9 @@ export function GenerateEditorProperty(
             comment.innerText = propType.options.comment;
             nestedWrapper.outerPanel.insertBefore(comment, nestedWrapper.innerPanel);
             nestedWrapper.outerPanel.insertBefore(title, comment);
-            generatedComment.remove();
+            if (generatedComment) {
+                generatedComment.remove();
+            }
         } else {
             nestedWrapper.outerPanel.insertBefore(title, nestedWrapper.innerPanel);
         }
