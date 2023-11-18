@@ -87,7 +87,7 @@ export class BooleanSetupParameter extends MaterialSetupParameter {
 
 export class ColorSetupParameter extends MaterialSetupParameter {
     async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
-        var col = new Color3(1, 1, 1);
+        var col = new Color3(0, 0, 0);
         if (loadedData[paramName] !== undefined) {
             col = Color3.FromHexString(loadedData[paramName]);
         }
