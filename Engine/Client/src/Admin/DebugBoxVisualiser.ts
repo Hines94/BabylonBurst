@@ -1,5 +1,4 @@
-import { Mesh, MeshBuilder } from "@babylonjs/core";
-import { GetSimpleImageMaterial } from "../Materials/SimpleImageMaterial";
+import { Mesh, MeshBuilder, StandardMaterial } from "@babylonjs/core";
 import { InstancedMeshTransform, SetTransformArray } from "@engine/AsyncAssets";
 
 export class DebugBoxSpecification {
@@ -23,7 +22,7 @@ export class DebugBoxVisualiser {
     UpdateDebugItems(deltaTime: number) {
         if (this.debugMesh === undefined) {
             this.debugMesh = MeshBuilder.CreateBox("Debug Box");
-            this.debugMesh.material = GetSimpleImageMaterial(this.debugMesh.getScene());
+            this.debugMesh.material = new StandardMaterial("DebugBoxMat", this.debugMesh.getScene());
         }
         this.debugMesh.isVisible = this.debugItems.length > 0;
         if (this.debugMesh.isVisible === false) {

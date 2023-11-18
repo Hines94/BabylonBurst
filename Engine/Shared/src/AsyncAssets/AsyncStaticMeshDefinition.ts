@@ -5,10 +5,9 @@ import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStatic
 import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
 import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
-import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
+import { GetAsyncSceneIdentifier, GetBadMeshMaterial } from "./Utils/SceneUtils";
 import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
-import { GetBadMeshMaterial } from "../Materials/AsyncSimpleImageMaterial";
 
 var UpdateRequireSMDefinitions: AsyncStaticMeshDefinition[] = [];
 

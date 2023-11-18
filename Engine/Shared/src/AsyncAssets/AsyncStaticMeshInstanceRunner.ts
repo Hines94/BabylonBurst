@@ -28,11 +28,9 @@ export class AsyncStaticMeshInstanceRunner extends AsyncStaticMeshDefinition {
             return;
         }
 
-        //Note: 16 floats per matrix!
-        const numMeshes = values.length / 16;
         //Require add more instances?
-        if (numMeshes > this.currentInstanceNum) {
-            this.currentInstanceNum = GetMeshInstanceNum(numMeshes);
+        if (values.length > this.currentInstanceNum) {
+            this.currentInstanceNum = GetMeshInstanceNum(values.length);
         }
 
         var instanceLocations: InstancedMeshTransform[] = GetInstanceLocations(values,this.currentInstanceNum);

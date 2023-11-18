@@ -1,4 +1,4 @@
-import { Scene } from "@babylonjs/core";
+import { DynamicTexture, Material, Scene, StandardMaterial } from "@babylonjs/core";
 
 /** The metadata should be set for our scene with id as a priority! */
 export function GetAsyncSceneIdentifier(scene: Scene) {
@@ -29,4 +29,34 @@ function generateUUID() {
         }
         return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });
+}
+
+var badMeshMats: { [sceneId: string]: Material } = {};
+export function GetBadMeshMaterial(scene: Scene): Material {
+    if (badMeshMats[GetAsyncSceneIdentifier(scene)]) {
+        return badMeshMats[GetAsyncSceneIdentifier(scene)];
+    }
+
+    var textureResolution = 512;
+    var dynamicTexture = new DynamicTexture("BadMatTexture", textureResolution, scene, true);
+    var textureContext = dynamicTexture.getContext();
+
+    var fontSize = 48;
+    textureContext.font = fontSize + "px Arial";
+    textureContext.fillStyle = "white";
+    textureContext.fillRect(0, 0, textureResolution, textureResolution);
+    textureContext.fillStyle = "red";
+    var texts = ["BAD MESH", "ERROR", "CHECK LOG"];
+    for (var i = 0; i < texts.length; i++) {
+        var y = (textureResolution / (texts.length + 1)) * (i + 1);
+        textureContext.fillText(texts[i], textureResolution / 2, y);
+    }
+
+    dynamicTexture.update();
+
+    const mat = new StandardMaterial("BadMeshMat",scene);
+    mat.emissiveTexture = dynamicTexture;
+    badMeshMats[GetAsyncSceneIdentifier(scene)] = mat;
+
+    return mat;
 }

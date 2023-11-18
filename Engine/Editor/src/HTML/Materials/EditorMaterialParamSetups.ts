@@ -1,5 +1,7 @@
 import {
     AsyncTextureSetupParameter,
+    BooleanSetupParameter,
+    ColorSetupParameter,
     MaterialSetupParameter,
     ScalarSetupParameter,
     SetAsyncTextureSetupEditorCallback,
@@ -25,6 +27,10 @@ function setupMaterialParameterType(
         setupAsyncTexture(tableCell, values, paramName, param);
     } else if (param instanceof ScalarSetupParameter) {
         setupScalar(tableCell, values, paramName, param);
+    } else if (param instanceof BooleanSetupParameter) {
+        setupBoolean(tableCell, values, paramName, param);
+    } else if (param instanceof ColorSetupParameter) {
+        setupColor(tableCell, values, paramName, param);
     }
 }
 
@@ -83,4 +89,34 @@ function setupScalar(tableCell: HTMLTableCellElement, values: any, paramName: st
         values[paramName] = scalarInput.value;
     });
     values[paramName] = scalarInput.value;
+}
+
+function setupBoolean(tableCell: HTMLTableCellElement, values: any, paramName: string, param: ScalarSetupParameter) {
+    const scalarInput = tableCell.ownerDocument.createElement("input");
+    scalarInput.type = "checkbox";
+    if (values[paramName]) {
+        scalarInput.checked = values[paramName];
+    } else {
+        scalarInput.checked = false;
+    }
+    tableCell.appendChild(scalarInput);
+    scalarInput.addEventListener("change", () => {
+        values[paramName] = scalarInput.checked;
+    });
+    values[paramName] = scalarInput.checked;
+}
+
+function setupColor(tableCell: HTMLTableCellElement, values: any, paramName: string, param: ScalarSetupParameter) {
+    const colorInput = tableCell.ownerDocument.createElement("input");
+    colorInput.title = "Use Hex colors (eg #343541)";
+    if (values[paramName]) {
+        colorInput.value = values[paramName];
+    } else {
+        colorInput.value = "#ffffff";
+    }
+    tableCell.appendChild(colorInput);
+    colorInput.addEventListener("change", () => {
+        values[paramName] = colorInput.value;
+    });
+    values[paramName] = colorInput.value;
 }

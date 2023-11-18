@@ -11,7 +11,6 @@ import Recast from "recast-detour";
 import { GetRandomColor4, getRandomColor3 } from "../Utils/MeshUtils";
 import { NavigationAgent } from "./NavigationAgent";
 import { DeepEquals } from "../../../Client/src/Utils/HTMLUtils";
-import { AsyncSimpleImageMaterial } from "../Materials/AsyncSimpleImageMaterial";
 import { GameSystem } from "../GameLoop/GameSystem";
 import { NavigationBoxObsticle, NavigationObsticle } from "./NavigationObsticles";
 
@@ -173,8 +172,10 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     }
     navLayer.debugMesh = navLayer.navLayerPlugin.createDebugNavMesh(ecosystem.scene);
     if(ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] === undefined) {
-        const color = GetRandomColor4(0.1);
-        var matdebug = new AsyncSimpleImageMaterial({color:color}).GetMaterial(ecosystem.scene);
+        const color = getRandomColor3();
+        var matdebug = new StandardMaterial("NavDebugMat",ecosystem.scene);
+        matdebug.emissiveColor = color;
+        matdebug.alpha = 0.1;
         ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] = matdebug;
     }
     navLayer.debugMesh.material = ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName];

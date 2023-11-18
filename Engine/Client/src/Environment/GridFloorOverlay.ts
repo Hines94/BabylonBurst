@@ -9,8 +9,6 @@ import {
     TransformNode,
     Color4,
 } from "@babylonjs/core";
-import { GetSimpleImageMaterial } from "../Materials/SimpleImageMaterial";
-import { SetSimpleMaterialColor } from "../../../Shared/src/Materials/AsyncSimpleImageMaterial";
 import { DisposeOfObject } from "../Utils/SceneUtils";
 import { defaultLayerMask } from "../Utils/LayerMasks";
 import { SnapGridUtil } from "../Utils/SnapGridUtil";
@@ -57,8 +55,10 @@ export class GridFloorOverlay {
         );
         this.floorTile.layerMask = this.layer;
 
-        this.floorTile.material = GetSimpleImageMaterial(scene).clone("GridFloorMat");
-        SetSimpleMaterialColor(this.floorTile.material, this.gridColor);
+        const mat = new StandardMaterial("FlooringMat", scene);
+        this.floorTile.material = mat;
+        mat.emissiveColor = new Color3(this.gridColor.r, this.gridColor.g, this.gridColor.b);
+        mat.alpha = this.gridColor.a;
 
         this.regularBuild();
         this.moveableNode = new TransformNode("GridMoveable");

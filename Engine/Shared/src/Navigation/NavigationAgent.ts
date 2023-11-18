@@ -8,8 +8,8 @@ import { EntityData } from "../EntitySystem/EntityData";
 import { NavigationLayer } from "./NavigationLayer";
 import { GameSystem } from "../GameLoop/GameSystem";
 import { NavAgentTransformUpdatePriority } from "../GameLoop/GameSystemPriorities";
-import { DeepEquals } from "../Utils/HTMLUtils";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
+import { DeepEquals } from "../Utils/ObjectUtils";
 
 
 @RegisteredType(NavigationAgent,{RequiredComponents:[EntTransform],comment:`An agent that will be able to move around a navmesh`})

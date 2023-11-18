@@ -4,12 +4,13 @@ import { HigherarchyHTML } from "./HigherarchyHTML";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Component } from "@engine/EntitySystem/Component";
 import { GetAllSavedProperties, registeredTypes } from "@engine/EntitySystem/TypeRegister";
-import { DeepEquals, GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
+import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
 import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils";
 import { DeepCopier, Observable, Observer } from "@babylonjs/core";
 import { GetCustomSaveData } from "@engine/Utils/SaveableDataUtils";
 import { ComponentNotify } from "@engine/EntitySystem/EntitySystem";
+import { DeepEquals } from "@engine/Utils/ObjectUtils";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {

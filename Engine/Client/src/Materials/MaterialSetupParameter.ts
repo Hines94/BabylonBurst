@@ -1,4 +1,4 @@
-import { Material } from "@babylonjs/core";
+import { Color3, Material } from "@babylonjs/core";
 import { AsyncImageDescription } from "@engine/AsyncAssets";
 
 /** Generic parameter to set in our Material (eg image/float etc) */
@@ -15,7 +15,10 @@ export abstract class MaterialSetupParameter {
             mat[paramName] = param;
             return true;
         }
-        //TODO: If node material??
+        const block = mat.getBlockByName(paramName);
+        if (block) {
+            block.value = param;
+        }
 
         console.warn("Could not set param for mat: " + paramName);
         return false;
@@ -65,9 +68,39 @@ export class AsyncTextureSetupParameter extends MaterialSetupParameter {
     }
 }
 
+export class BooleanSetupParameter extends MaterialSetupParameter {
+    async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
+        this.TrySetMatParameter(mat, paramName, loadedData[paramName]);
+    }
+
+    //TODO: This is within the client code but Editor specific?
+    SetupEditorInputValue(tableCell: HTMLTableCellElement, values: any, paramName: string): void {
+        if (AsyncRowSetupEditorCallback) {
+            AsyncRowSetupEditorCallback(tableCell, values, paramName, this);
+        }
+    }
+}
+
+export class ColorSetupParameter extends MaterialSetupParameter {
+    async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
+        var col = new Color3(1, 1, 1);
+        if (loadedData[paramName] !== undefined) {
+            col = Color3.FromHexString(loadedData[paramName]);
+        }
+        this.TrySetMatParameter(mat, paramName, col);
+    }
+
+    //TODO: This is within the client code but Editor specific?
+    SetupEditorInputValue(tableCell: HTMLTableCellElement, values: any, paramName: string): void {
+        if (AsyncRowSetupEditorCallback) {
+            AsyncRowSetupEditorCallback(tableCell, values, paramName, this);
+        }
+    }
+}
+
 export class ScalarSetupParameter extends MaterialSetupParameter {
     async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
-        this.TrySetMatParameter(mat, paramName, loadedData);
+        this.TrySetMatParameter(mat, paramName, loadedData[paramName]);
     }
 
     //TODO: This is within the client code but Editor specific?
