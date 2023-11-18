@@ -45,7 +45,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
         //Perform setup for data
         allInstEntities.iterateEntities((entData: EntityData) => {
             const rendItem = this.GetInstancedRender(entData);
-            const runnerID = this.GetRunnerID(rendItem);
+            const runnerID = this.GetRunnerID(rendItem, this.GetScene(ecosystem));
             //Create render runner if not exists
             if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
                 const mats = this.GetMaterials(rendItem, entData, ecosystem);
@@ -87,13 +87,14 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     /** Gets a unique ID for this combination of materials */
-    GetRunnerID(rend: InstancedRender): string {
+    GetRunnerID(rend: InstancedRender, scene: Scene): string {
         var ret: string = rend.ModelData.FilePath + "_" + rend.ModelData.MeshName + "_" + 0 + "_";
         ret += rend.LayerMask;
         ret += "_MATS_";
         for (var m = 0; m < rend.MaterialData.length; m++) {
             ret += "_" + rend.MaterialData[m].FileName + "_" + rend.MaterialData[m].FilePath;
         }
+        ret += GetAsyncSceneIdentifier(scene);
         return ret;
     }
 

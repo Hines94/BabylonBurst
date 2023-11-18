@@ -24,7 +24,7 @@ export function ExtractMaterialFromAny(possible: any, scene: Scene): Material {
     }
     if (possible instanceof Material) {
         if(possible.getScene() !== scene) {
-            console.warn("Material for async definition was specified for a different scene!");
+            console.warn("Material was specified for a different scene!");
             return null;
         }
         return possible;
