@@ -1,6 +1,6 @@
 import { defaultLayerMask } from "../Utils/LayerMasks";
-import { AsyncStaticMeshInstanceRunner } from "@engine/AsyncAssets";
-import { Material } from "@babylonjs/core";
+import { AsyncStaticMeshInstanceRunner, GetAsyncSceneIdentifier, InstancedMeshTransform } from "@engine/AsyncAssets";
+import { Material, Scene } from "@babylonjs/core";
 import { GetPreviouslyLoadedAWSAsset } from "@engine/AsyncAssets/Framework/AsyncAssetLoader";
 import { decode } from "@msgpack/msgpack";
 import { GetMaterialDescription } from "@BabylonBurstClient/Materials/EngineMaterialDescriptions";
@@ -34,7 +34,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     SetupGameSystem(ecosystem: GameEcosystem) {}
 
     RunSystem(ecosystem: GameEcosystem) {
-        var thisFrameTransformData: { [id: string]: number[] } = {};
+        var thisFrameTransformData: { [id: string]: InstancedMeshTransform[] } = {};
 
         const allInstEntities = this.GetRenderEntities(ecosystem);
 
@@ -44,8 +44,8 @@ export class InstancedMeshRenderSystem extends GameSystem {
 
         //Perform setup for data
         allInstEntities.iterateEntities((entData: EntityData) => {
-            const rendItem = entData.GetComponent<InstancedRender>(InstancedRender);
-            const runnerID = this.GetRunnerID(rendItem, entData);
+            const rendItem = this.GetInstancedRender(entData);
+            const runnerID = this.GetRunnerID(rendItem);
             //Create render runner if not exists
             if (ecosystem.dynamicProperties.LoadedRunners[runnerID] === undefined) {
                 const mats = this.GetMaterials(rendItem, entData, ecosystem);
@@ -66,17 +66,15 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 thisFrameTransformData[runnerID] = [];
             }
             const transform = entData.GetComponent<EntTransform>(EntTransform);
-            thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
-                EntTransform.getAsInstanceArray(transform),
-            );
+            thisFrameTransformData[runnerID].push(EntTransform.getAsInstanceTransform(transform));
         });
 
         //Run instances
         const keys = Object.keys(ecosystem.dynamicProperties.LoadedRunners);
         keys.forEach(key => {
             const data = thisFrameTransformData[key];
-            const floatData = data === undefined ? new Float32Array() : new Float32Array(data);
-            ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(this.GetScene(ecosystem), floatData);
+            const transformData = data === undefined ? [] : data;
+            ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(this.GetScene(ecosystem), transformData);
         });
     }
 
@@ -89,7 +87,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     /** Gets a unique ID for this combination of materials */
-    GetRunnerID(rend: InstancedRender, ent: EntityData): string {
+    GetRunnerID(rend: InstancedRender): string {
         var ret: string = rend.ModelData.FilePath + "_" + rend.ModelData.MeshName + "_" + 0 + "_";
         ret += rend.LayerMask;
         ret += "_MATS_";

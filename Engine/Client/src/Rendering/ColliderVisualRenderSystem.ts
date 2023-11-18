@@ -1,9 +1,10 @@
-import { AsyncStaticMeshInstanceRunner } from "@engine/AsyncAssets";
+import { AsyncStaticMeshInstanceRunner, InstancedMeshTransform } from "@engine/AsyncAssets";
 import { uiLayerMask } from "../Utils/LayerMasks";
 import { Color3, StandardMaterial } from "@babylonjs/core";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 import { ColliderRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
+import { EntTransform } from "@engine/EntitySystem/CoreComponents";
 
 const showVisualsProp = "___Collider___";
 const colliderMaterial = "___COLLIDERMATERIAL___";
@@ -34,7 +35,7 @@ export class ColliderVisualSystem extends GameSystem {
         }
 
         const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData([PhysicsCollider, EntTransform], []);
-        var thisFrameTransformData: { [id: string]: number[] } = {};
+        var thisFrameTransformData: { [id: string]: InstancedMeshTransform[] } = {};
 
         if (!ecosystem.dynamicProperties[loadedVisuals]) {
             ecosystem.dynamicProperties[loadedVisuals] = {};
@@ -67,10 +68,8 @@ export class ColliderVisualSystem extends GameSystem {
             if (thisFrameTransformData[runnerID] === undefined) {
                 thisFrameTransformData[runnerID] = [];
             }
-            const transform = GetComponent(allInstEntities[entKey], EntTransform);
-            thisFrameTransformData[runnerID] = thisFrameTransformData[runnerID].concat(
-                EntTransform.getAsInstanceArray(transform),
-            );
+            const transform = entData.GetComponent<EntTransform>(EntTransform);
+            thisFrameTransformData[runnerID] = EntTransform.getAsInstanceTransform(transform);
         });
 
         //Run instances

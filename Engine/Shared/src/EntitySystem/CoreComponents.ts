@@ -3,6 +3,7 @@ import { Clamp } from "../Utils/MathUtils";
 import { RegisteredType, Saved } from "./TypeRegister";
 import { Component } from "./Component";
 import { TrackedVariable } from "./TrackedVariable";
+import { InstancedMeshTransform } from "../AsyncAssets";
 
 @RegisteredType(EntVector3)
 export class EntVector3{
@@ -472,6 +473,11 @@ export class EntTransform extends Component {
         mat.asArray().forEach(v => {
             ret.push(v);
         });
+        return ret;
+    }
+
+    static getAsInstanceTransform(val:EntTransform) : InstancedMeshTransform {
+        const ret = new InstancedMeshTransform(EntVector3.GetVector3(val.Position),EntVector3.GetVector3(EntVector4.QuaternionToEuler(val.Rotation)),EntVector3.GetVector3(val.Scale));
         return ret;
     }
 

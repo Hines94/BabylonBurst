@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Component } from './Component';
 import { DebugMode, environmentVaraibleTracker } from '../Utils/EnvironmentVariableTracker';
-import { IsEnumType } from '../Utils/TypeRegisterUtils';
+import { GetParentClassesOfInstance, IsEnumType } from '../Utils/TypeRegisterUtils';
 
 /** So we can hide a variable and use a getter/setter instead */
 export function GetDescriptorHideVarName(propertyKey:string) {
@@ -14,15 +14,76 @@ export type savedProperty = {
     options:SavedPropertyOptions;
 }
 
-export const FindSavedProperty = (compName: string, propName: string) => 
-    savedProperties[compName]?.find(prop => prop.name === propName);
+export const FindSavedProperty = (compName: string, propName: string) => {
+    const mainClassFind = savedProperties[compName]?.find(prop => prop.name === propName);
+    if(mainClassFind !== undefined){
+        return mainClassFind;
+    }
 
-export const savedProperties:{[compName:string]:savedProperty[]} = {};
+    const parentTypes = GetParentCompsForRegisteredType(compName);
+    for(var p = 0; p < parentTypes.length;p++) {
+        if(parentTypes[p] === undefined || parentTypes[p].type === undefined) {
+            continue;
+        }
+        const parentFound = savedProperties[parentTypes[p].type.name]?.find(prop => prop.name === propName);
+        if(parentFound !== undefined) {
+            return parentFound;
+        }
+    }
+    
+    return undefined;
+}
+
+export function GetAllSavedProperties(compName:string) {
+    var ret:savedProperty[] = [];
+    if(savedProperties[compName]) {
+        ret = ret.concat(savedProperties[compName]);
+    }
+    const parentTypes = GetParentCompsForRegisteredType(compName);
+    for(var p =0; p < parentTypes.length;p++) {
+        if(parentTypes[p] === undefined || parentTypes[p].type === undefined) {
+            continue;
+        }
+        if(parentTypes[p].type.name === compName) {
+            continue;
+        }
+        if(savedProperties[parentTypes[p].type.name]) {
+            ret = ret.concat(savedProperties[parentTypes[p].type.name]);
+        }
+    }
+    return ret;
+}
+
+const savedProperties:{[compName:string]:savedProperty[]} = {};
 
 export class SavedPropertyOptions {
     isNetworked = true;
     editorViewOnly = false;
     comment = "";
+}
+
+
+const parentedTypes:{[compName:string]:storedRegisteredType[]} = {};
+/** Includes actual class itself */
+export function GetParentCompsForRegisteredType(compName:string) : storedRegisteredType[] {
+    const regType = registeredTypes[compName];
+    if(regType === undefined) {
+        return [];
+    }
+    if(parentedTypes[compName]) {
+        return parentedTypes[compName];
+    }
+    //@ts-ignore
+    const instance = new registeredTypes[compName].type();
+    parentedTypes[compName] = [registeredTypes[compName]];
+    const parentTypes = GetParentClassesOfInstance(instance);
+    for(var t = 0; t < parentTypes.length;t++) {
+        const regType = registeredTypes[parentTypes[t].name];
+        if(!parentedTypes[compName].includes(regType)) {
+            parentedTypes[compName].push(regType);
+        }
+    }
+    return parentedTypes[compName];
 }
 
 /** Define a property as 'saved'. Property type must be primitive or a registered type. */

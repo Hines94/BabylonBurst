@@ -171,7 +171,12 @@ export class EditorGizmos {
     oldTransformData: EntTransform;
 
     UpdateEditorGizos() {
-        if (this.entityOwner === undefined || this.entityOwner === null || !this.entityOwner.IsValid()) {
+        if (
+            this.entityOwner === undefined ||
+            this.entityOwner === null ||
+            !this.entityOwner.IsValid() ||
+            this.entityOwner.GetComponent(EntTransform) === undefined
+        ) {
             this.bHidden = true;
         }
 

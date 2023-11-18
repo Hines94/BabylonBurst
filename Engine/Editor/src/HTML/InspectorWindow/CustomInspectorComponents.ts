@@ -1,6 +1,6 @@
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { EntityData } from "@engine/EntitySystem/EntityData";
-import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { GetAllSavedProperties, registeredTypes, savedProperty } from "@engine/EntitySystem/TypeRegister";
 import { GameEcosystem } from "@engine/GameEcosystem";
 import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { ProcessInstancedRenderComp } from "./CustomInstancedRendererComponent";
@@ -65,7 +65,7 @@ export function GenerateEditorProperty(
         generatedComment = container.ownerDocument.createElement("p");
         generatedComment.id = "GeneratedComment";
         generatedComment.innerText = propType.options.comment;
-        generatedComment.classList.add("Comment");
+        generatedComment.classList.add("comment");
         container.appendChild(generatedComment);
     }
 
@@ -236,7 +236,7 @@ export function GenerateEditorProperty(
         const comment = propType.options.comment || subType.options.comment;
         if (comment) {
             const comment = container.ownerDocument.createElement("p");
-            comment.classList.add("Comment");
+            comment.classList.add("comment");
             comment.innerText = propType.options.comment;
             nestedWrapper.outerPanel.insertBefore(comment, nestedWrapper.innerPanel);
             nestedWrapper.outerPanel.insertBefore(title, comment);
@@ -250,7 +250,7 @@ export function GenerateEditorProperty(
         nestedWrapper.innerPanel.classList.add("hidden");
 
         container.appendChild(nestedWrapper.outerPanel);
-        const compSavedProps = savedProperties[subType.type.name];
+        const compSavedProps = GetAllSavedProperties(subType.type.name);
         for (var c = 0; c < compSavedProps.length; c++) {
             const property = compSavedProps[c];
             GenerateEditorProperty(

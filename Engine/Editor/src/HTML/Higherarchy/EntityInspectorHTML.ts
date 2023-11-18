@@ -3,7 +3,7 @@ import { CloneTemplate } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { HigherarchyHTML } from "./HigherarchyHTML";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Component } from "@engine/EntitySystem/Component";
-import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { GetAllSavedProperties, registeredTypes } from "@engine/EntitySystem/TypeRegister";
 import { DeepEquals, GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
 import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils";
@@ -136,7 +136,7 @@ export class EntityInspectorHTML {
 
         if (compType.options.comment) {
             const comment = higherarch.componentsHolderElement.ownerDocument.createElement("p");
-            comment.classList.add("Comment");
+            comment.classList.add("comment");
             comment.textContent = compType.options.comment;
             componentWrapper.outerPanel.insertBefore(comment, componentWrapper.innerPanel);
             componentWrapper.outerPanel.insertBefore(title, comment);
@@ -164,7 +164,7 @@ export class EntityInspectorHTML {
 
         const requireRefreshEvent = new Observable<void>();
 
-        const compSavedProps = savedProperties[compName];
+        const compSavedProps = GetAllSavedProperties(compName);
         for (var c = 0; c < compSavedProps.length; c++) {
             const property = compSavedProps[c];
             GenerateEditorProperty(

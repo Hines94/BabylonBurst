@@ -2,6 +2,7 @@ import { Mesh, Scene } from "@babylonjs/core";
 import { StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 import { AsyncStaticMeshDefinition, GetMeshInstanceNum } from "./AsyncStaticMeshDefinition";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
+import { GetInstanceLocations, InstancedMeshTransform, SetTransformArray } from "./Utils/InstanceMeshUtils";
 
 /**
  * Similar to a static mesh definition but is purpose built to run instance meshes with entity systems
@@ -12,10 +13,18 @@ export class AsyncStaticMeshInstanceRunner extends AsyncStaticMeshDefinition {
     override instanceChange(details: StaticMeshInstanceDetails): void {}
 
     /** Change all transforms for this specific mesh */
-    RunTransformSystem(scene: Scene, values: Float32Array) {
+    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[]) {
         const finalMesh = this.GetFinalMesh(scene);
         if (finalMesh === undefined) {
+            if(values.length === 0) {
+                return;
+            }
             this.loadInMesh(scene);
+            return;
+        }
+
+        if(values.length === 0) {
+            finalMesh.isVisible = false;
             return;
         }
 
@@ -26,8 +35,10 @@ export class AsyncStaticMeshInstanceRunner extends AsyncStaticMeshDefinition {
             this.currentInstanceNum = GetMeshInstanceNum(numMeshes);
         }
 
+        var instanceLocations: InstancedMeshTransform[] = GetInstanceLocations(values,this.currentInstanceNum);
+
         //update all transforms
-        finalMesh.thinInstanceSetBuffer("matrix", values);
+        SetTransformArray(instanceLocations,finalMesh);
         finalMesh.isVisible = values.length > 0;
     }
 

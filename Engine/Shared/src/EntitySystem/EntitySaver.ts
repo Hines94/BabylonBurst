@@ -2,10 +2,7 @@ import { encode } from "@msgpack/msgpack";
 import { EntityQuery } from "./EntityQuery";
 import { EntitySystem } from "./EntitySystem";
 import { Prefab } from "./Prefab";
-import { PrefabManager } from "./PrefabManager";
-import { SaveableDataField } from "./SaveableDataField";
-import { Component } from "./Component";
-import { FindSavedProperty, registeredTypes, savedProperties } from "./TypeRegister";
+import { GetAllSavedProperties } from "./TypeRegister";
 import { EntitySavedTypings, GetCustomSaveData, GetTypingsCompIndex } from "../Utils/SaveableDataUtils";
 
 export class EntitySaver {
@@ -27,9 +24,6 @@ export class EntitySaver {
                 //Get data and check if saved
                 const compName = compKeys[c];
                 const compObject = ent.Components[compName];
-                if(!savedProperties[compName]){
-                    continue;
-                }
 
                 if(!typings[compName]) {
                     typings[compName] = [];

@@ -34,7 +34,7 @@ export function UpdateAllMeshDefinitions() {
 export class AsyncStaticMeshDefinition {
     desiredPath: string;
     onMeshReady = new Observable<AsyncStaticMeshDefinition>();
-    startedLoadingProcess = false;
+    startedLoadingProcess:{[sceneId:string]:boolean} = {};
     /** Set to true if we want to accept different number of materials input vs actual mesh */
     bNoFailMaterialDiff = false;
 
@@ -86,17 +86,18 @@ export class AsyncStaticMeshDefinition {
         if (!this.meshName || this.meshName == "") {
             return;
         }
+        const sceneId = GetAsyncSceneIdentifier(scene);
         //Already loaded?
-        if (this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] !== undefined) {
+        if (this.finalCombinedMeshes[sceneId] !== undefined) {
             return;
         }
         //In process of loading?
-        else if (this.startedLoadingProcess === true) {
+        else if (this.startedLoadingProcess[sceneId] === true) {
             await this.waitForMeshReadyEvent();
             return;
         }
         //Else not called before!
-        this.startedLoadingProcess = true;
+        this.startedLoadingProcess[sceneId] = true;
 
         //Start materials loading so they get a headstart - Note this assumes they will not change between now and setting them later
         var matInstances = [];
@@ -131,8 +132,8 @@ export class AsyncStaticMeshDefinition {
                 console.warn(warnMessage);
             }
 
-            if (foundMeshElements.length > this.materials.length) {
-                for (var m = this.materials.length; m < foundMeshElements.length; m++) {
+            if (foundMeshElements.length > matInstances.length) {
+                for (var m = matInstances.length; m < foundMeshElements.length; m++) {
                     matInstances[m]=backupMat;
                 }
             } else {
@@ -148,10 +149,6 @@ export class AsyncStaticMeshDefinition {
                     foundMeshElements[i].material.dispose();
                 }
                 foundMeshElements[i].material = matInstances[i];
-            }
-            //Else fill in the blank in our materials
-            else {
-                this.materials[i] = foundMeshElements[i].material;
             }
         }
 
@@ -180,7 +177,6 @@ export class AsyncStaticMeshDefinition {
             this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] === undefined
         ) {
             console.error("Mesh did not combine properly for: " + this.meshName);
-            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox");
             this.setReplacementErrorBox(scene);
             this.onMeshReady.notifyObservers(this);
             return;
@@ -212,7 +208,7 @@ export class AsyncStaticMeshDefinition {
     /** If something went wrong just show a simple box */
     setReplacementErrorBox(scene: Scene) {
         if (environmentVaraibleTracker.GetDebugMode() >= DebugMode.Light) {
-            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox");
+            this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = MeshBuilder.CreateBox("ReplacementErrorBox",{},scene);
             this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)].material = GetBadMeshMaterial(scene);
         }
         this.onMeshReady.notifyObservers(this);
@@ -397,6 +393,9 @@ export class AsyncStaticMeshDefinition {
 
 /** Handy to generate a couple extra rather than needing more! */
 export function GetMeshInstanceNum(currentLength: number) {
+    if(currentLength <= 0) {
+        return 1;
+    }
     if (currentLength < 5) {
         return 5;
     }

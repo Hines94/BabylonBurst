@@ -40,6 +40,23 @@ export class InstancedMeshTransform {
     }
 }
 
+/** Will hide any meshes that do not fit within our instance number */
+export function GetInstanceLocations(values: InstancedMeshTransform[], instanceNumber:number) {
+    var instanceLocations: InstancedMeshTransform[] = [];
+    const hiddenTransform = new InstancedMeshTransform();
+    hiddenTransform.location.y = 10000;
+    for (var i = 0; i < instanceNumber; i++) {
+        //set indexes on all instances
+        if (values.length > i && values[i] !== undefined) {
+            instanceLocations.push(values[i]);
+        } else {
+            instanceLocations.push(hiddenTransform);
+        }
+    }
+    return instanceLocations;
+}
+
+/** Easy way to update instaced mesh positions */
 export function SetTransformArray(instanceTransforms: InstancedMeshTransform[], mesh: Mesh) {
     var bufferMatrices = new Float32Array(ThinArrayMatrixOffset * instanceTransforms.length);
 
