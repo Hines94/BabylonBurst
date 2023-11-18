@@ -11,7 +11,7 @@ import { EntityData } from "@engine/EntitySystem/EntityData";
 import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
 import { InstancedRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
-import { MaterialSpecifier } from "@engine/Rendering/MaterialSpecifier";
+import { EntityQuery } from "@engine/EntitySystem/EntityQuery";
 
 export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     if (!ecosystem.dynamicProperties.LoadedRunners) {
@@ -34,11 +34,9 @@ export class InstancedMeshRenderSystem extends GameSystem {
     SetupGameSystem(ecosystem: GameEcosystem) {}
 
     RunSystem(ecosystem: GameEcosystem) {
-        const allInstEntities = ecosystem.entitySystem.GetEntitiesWithData(
-            [InstancedRender, EntTransform],
-            [HiddenEntity],
-        );
         var thisFrameTransformData: { [id: string]: number[] } = {};
+
+        const allInstEntities = this.GetRenderEntities(ecosystem);
 
         if (ecosystem.dynamicProperties.LoadedRunners === undefined) {
             ecosystem.dynamicProperties.LoadedRunners = {};
@@ -78,7 +76,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
         keys.forEach(key => {
             const data = thisFrameTransformData[key];
             const floatData = data === undefined ? new Float32Array() : new Float32Array(data);
-            ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(ecosystem.scene, floatData);
+            ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(this.GetScene(ecosystem), floatData);
         });
     }
 
@@ -99,6 +97,21 @@ export class InstancedMeshRenderSystem extends GameSystem {
             ret += "_" + rend.MaterialData[m].FileName + "_" + rend.MaterialData[m].FilePath;
         }
         return ret;
+    }
+
+    /** Useful if we want to render in different scenes (eg a minimap specific scene) */
+    GetScene(ecosystem: GameEcosystem) {
+        return ecosystem.scene;
+    }
+
+    /** Useful if we want to render from child comps etc (eg a minimap specific scene) */
+    GetInstancedRender(entity: EntityData) {
+        return entity.GetComponent(InstancedRender);
+    }
+
+    /** Useful if we want to get specific entities for a specific version of instance render */
+    GetRenderEntities(ecosystem: GameEcosystem): EntityQuery {
+        return ecosystem.entitySystem.GetEntitiesWithData([InstancedRender, EntTransform], [HiddenEntity]);
     }
 
     /** Get the materials for a particular instanced render type */
@@ -142,7 +155,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
 
             //Full success
-            const mat = shader.LoadMaterial(data, ecosystem.scene);
+            const mat = shader.LoadMaterial(data, this.GetScene(ecosystem));
             ret.push(mat);
         }
         return ret;
