@@ -4,7 +4,11 @@ import { WindowInputValues } from "../../Client/src/InputModule";
 import { EntitySystem } from "./EntitySystem/EntitySystem";
 
 export enum EcosystemType {
+    /** Exclusively single player - not networked (offline) */
+    SinglePlayer,
+    /** Playing online and connected as a client */
     Client,
+    /** Playing online and is the server */
     Server
 }
 

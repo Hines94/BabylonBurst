@@ -33,7 +33,7 @@ export class AsyncSimpleImageMaterial extends AsyncMaterial {
 
     async populateTextures(material: NodeMaterial) {
         if (this.image !== undefined) {
-            const DiffTex = await this.image.GetImageAsTexture();
+            const DiffTex = await this.image.GetImageAsTexture(material.getScene());
             SetSimpleMaterialTexture(material, DiffTex);
         }
     }

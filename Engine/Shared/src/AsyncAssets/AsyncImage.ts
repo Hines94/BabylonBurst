@@ -1,4 +1,4 @@
-import { Texture } from "@babylonjs/core";
+import { Scene, Texture } from "@babylonjs/core";
 import { AsyncAssetLoader } from "./Framework/AsyncAssetLoader";
 import { AsyncDataType } from "./Utils/ZipUtils";
 import { resizeImageBlob } from "./Utils/BlobUtils";
@@ -37,9 +37,9 @@ export class AsyncImageDescription {
         return await this.loadingImage.GetStringData();
     }
 
-    async GetImageAsTexture(): Promise<Texture> {
+    async GetImageAsTexture(scene:Scene): Promise<Texture> {
         await this.WaitForImageToLoad();
-        const ret = await this.loadingImage.GetTextureData();
+        const ret = await this.loadingImage.GetTextureData(scene);
         ret.hasAlpha = this.hasAlpha;
         return ret;
     }
@@ -62,7 +62,6 @@ export class AsyncImageDescription {
 
 class AsyncImageLoader extends AsyncAssetLoader {
     private stringDataBase64: string;
-    private textureData: Texture;
     blobResponse:Blob;
     blobURL:string;
 
@@ -111,12 +110,9 @@ class AsyncImageLoader extends AsyncAssetLoader {
         });
     }
 
-    async GetTextureData() {
+    async GetTextureData(scene:Scene) {
         await this.GetStringData();
-        if (this.textureData === undefined) {
-            this.textureData = new Texture(this.stringDataBase64);
-        }
-        return this.textureData;
+        return new Texture(this.stringDataBase64,scene);
     }
 
     getBlobLoadedPromise(reader: any): Promise<string> {

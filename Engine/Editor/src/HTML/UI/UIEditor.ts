@@ -8,7 +8,7 @@ import { autocompletion, startCompletion } from "@codemirror/autocomplete";
 import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { SetupContentInputWithDatalist } from "../../Utils/ContentTypeTrackers";
-import { SetupElementToCursor } from "@engine/Utils/HTMLUtils";
+import { SetupElementToCursor } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { SetupLoadedHTMLUI } from "@BabylonBurstClient/GUI/HTMLUILoader";
 
 export async function OpenUIEditor(item: ContentItem, existingHTML: string, saveCallback: (newHTML: string) => void) {

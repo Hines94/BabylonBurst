@@ -7,7 +7,7 @@ import { ContentItem } from "../ContentItem";
 import { ShowNotificationWindow } from "@BabylonBurstClient/HTML/HTMLNotificationWindow";
 import { SetupFolderInputWithDatalist } from "../../../Utils/ContentTypeTrackers";
 import { AssetFolder } from "../AssetFolder";
-import { CopyToClipboard } from "@engine/Utils/HTMLUtils";
+import { CopyToClipboard } from "@BabylonBurstClient/Utils/HTMLUtils";
 
 export class ContentBrowserAssetBundleHTML extends ContentBrowserVisualHTML {
     declare ourItem: AssetBundle;

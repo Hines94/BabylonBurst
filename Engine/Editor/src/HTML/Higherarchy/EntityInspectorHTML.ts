@@ -4,7 +4,7 @@ import { HigherarchyHTML } from "./HigherarchyHTML";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { Component } from "@engine/EntitySystem/Component";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
-import { DeepEquals, GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@engine/Utils/HTMLUtils";
+import { DeepEquals, GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
 import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils";
 import { DeepCopier, Observable, Observer } from "@babylonjs/core";
@@ -136,6 +136,7 @@ export class EntityInspectorHTML {
 
         if (compType.options.comment) {
             const comment = higherarch.componentsHolderElement.ownerDocument.createElement("p");
+            comment.classList.add("Comment");
             comment.textContent = compType.options.comment;
             componentWrapper.outerPanel.insertBefore(comment, componentWrapper.innerPanel);
             componentWrapper.outerPanel.insertBefore(title, comment);

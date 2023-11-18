@@ -2,7 +2,7 @@ import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { EntityData } from "@engine/EntitySystem/EntityData";
 import { registeredTypes, savedProperties, savedProperty } from "@engine/EntitySystem/TypeRegister";
 import { GameEcosystem } from "@engine/GameEcosystem";
-import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@engine/Utils/HTMLUtils";
+import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { ProcessInstancedRenderComp } from "./CustomInstancedRendererComponent";
 import { ProcessModelSpecifierComp } from "./CustomModelSpecifier";
 import { IsEnumType, IsIntArrayType, isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
@@ -236,6 +236,7 @@ export function GenerateEditorProperty(
         const comment = propType.options.comment || subType.options.comment;
         if (comment) {
             const comment = container.ownerDocument.createElement("p");
+            comment.classList.add("Comment");
             comment.innerText = propType.options.comment;
             nestedWrapper.outerPanel.insertBefore(comment, nestedWrapper.innerPanel);
             nestedWrapper.outerPanel.insertBefore(title, comment);

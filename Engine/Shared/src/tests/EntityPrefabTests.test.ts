@@ -121,11 +121,11 @@ test("PrefabReloadChange",()=>{
 
     //Event should automatically make prefabs reload
     expect(prefInst.SpawnedPrefabEntities.length).toBe(3);
-    expect(prefInst.SpawnedPrefabEntities[0].EntityId).toBe(2);
-    expect(prefInst.SpawnedPrefabEntities[0].GetComponent(PrefabTestComp)).toBe(undefined);
-    expect(prefInst.SpawnedPrefabEntities[1].EntityId).toBe(3);
-    expect(prefInst.SpawnedPrefabEntities[1].GetComponent(PrefabTestComp)).not.toBe(undefined);
-    expect(prefInst.SpawnedPrefabEntities[2]).not.toBe(undefined)
+    expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[0].EntityId).toBe(2);
+    expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[0].GetComponent(PrefabTestComp)).toBe(undefined);
+    expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[1].EntityId).toBe(3);
+    expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[1].GetComponent(PrefabTestComp)).not.toBe(undefined);
+    expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[2]).not.toBe(undefined)
 })
 
 function checkInitialPrefabLoad() {

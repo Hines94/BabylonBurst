@@ -12,6 +12,12 @@ export class PrefabSpecifier {
     prefabUUID:string = "";
 }
 
+@RegisteredType(SpawnedPrefabBundle)
+export class SpawnedPrefabBundle {
+    @Saved(EntityData)
+    spawnedEntities:EntityData[] = [];
+}
+
 export type PrefabPackedType = {
     prefabID:string;
     prefabData:any;
@@ -37,9 +43,13 @@ export class PrefabInstance extends Component {
     /** UUID of the prefab that has been spawned */
     SpawnedPrefabIdentifier:PrefabSpecifier = new PrefabSpecifier();
 
-    @Saved(EntityData, {editorViewOnly:true,comment:`Entities that have been currently spawned from the specified identifier`})
+    @TrackedVariable()
+    @Saved(Number,{comment:"Set this higher to spawn more prefab instances"})
+    NumberInstances = 1;
+
+    @Saved(SpawnedPrefabBundle, {editorViewOnly:true,comment:`Entities that have been currently spawned from the specified identifier`})
     /** Entities that are spawned as part of this prefab instance */
-    SpawnedPrefabEntities:EntityData[] = [];
+    SpawnedPrefabEntities:SpawnedPrefabBundle[] = [];
 
     reloadObserver:any;
 
@@ -57,15 +67,29 @@ export class PrefabInstance extends Component {
         if(this.reloadObserver !== undefined) {
             PrefabManager.onPrefabAdded.remove(this.reloadObserver);
         }
-        for(var i = 0; i < this.SpawnedPrefabEntities.length;i++) {
-            (entData.owningSystem as EntitySystem).RemoveEntity(this.SpawnedPrefabEntities[i]);
-        }
+        this.clearSpawnedEntities();
     }
 
     onComponentChanged(entData: EntityData): void {
-        console.log("Prefab instance changed - reloading")
         const prefabInst = entData.GetComponent<PrefabInstance>(PrefabInstance);
         prefabInst.refreshPrefabInstance(entData);
+    }
+
+    /** Get all spawned entities that were created by this prefab instance */
+    GetAllSpawnedInstanceEntities():EntityData[] {
+        const ret = [];
+        for(var b = 0; b < this.SpawnedPrefabEntities.length;b++) {
+            const bucket = this.SpawnedPrefabEntities[b];
+            if(bucket === undefined || bucket.spawnedEntities === undefined) {
+                continue;
+            }
+            for(var e = 0; e < bucket.spawnedEntities.length;e++) {
+                if(bucket.spawnedEntities[e] && bucket.spawnedEntities[e].IsValid()){
+                    ret.push(bucket.spawnedEntities[e]);
+                }
+            }
+        }
+        return ret;
     }
 
     refreshPrefabInstance(ent:EntityData) {
@@ -81,66 +105,112 @@ export class PrefabInstance extends Component {
         const prefabComp = ent.GetComponent(Prefab);
         if(prefabComp && prefabComp.PrefabIdentifier === this.SpawnedPrefabIdentifier.prefabUUID) {
             console.error(`Prefab ${prefabComp.PrefabIdentifier} has itself inside prefab instance! Aborting!`);
+            this.clearSpawnedEntities();
             return;
         }
 
 
-        //Create new
+        //Get the template we are attempting to spawn
         const template = PrefabManager.GetPrefabTemplateById(this.SpawnedPrefabIdentifier.prefabUUID);
-        if(template === undefined) { return; }
+        if(template === undefined || this.NumberInstances <= 0) { 
+            this.clearSpawnedEntities();
+            return; 
+        }
 
-        var spawnedEnts:EntityData[] = [];
-        if(this.SpawnedPrefabEntities) {
-            spawnedEnts = [...this.SpawnedPrefabEntities];
-        } 
+        //Get record of old bundles and how they were mapped
+        const existingBundles = [...this.SpawnedPrefabEntities];
         this.SpawnedPrefabEntities = [];
 
-        //Make specified entities
-        const map:EntityLoadMapping = {};
-        const ents = Object.keys(template.entityData);
-        for(var i = 0; i < ents.length;i++){
-            const entId = parseInt(ents[i]);
-            if(i < spawnedEnts.length) {
-                const entData = spawnedEnts[i];
-                map[entId] = entData;
-                //Remove any comps that no longer exist
-                const compKeys = Object.keys(entData.Components);
-                for(var c = 0; c < compKeys.length; c++){
-                    const compName = compKeys[c];
-                    const comp = entData.Components[compName];
-                    if(!template.DoesEntityHaveComponentByName(entId,compName)) {
-                        entData.owningSystem.RemoveComponent(entData,compName);
+        if(this.NumberInstances < existingBundles.length) {
+            for(var b = this.NumberInstances; b < existingBundles.length;b++) {
+                this.DeleteEntityBucket(existingBundles[b]);
+            }
+        }
+
+        //Create the number of instances we want
+        for(var b = 0; b < this.NumberInstances;b++) {
+            const entBundle = b < existingBundles.length?existingBundles[b]:undefined;
+
+            var spawnedEnts:EntityData[] = [];
+            if(entBundle && entBundle.spawnedEntities) {
+                spawnedEnts = [...entBundle.spawnedEntities];
+            } 
+    
+            //Make specified entities
+            const map:EntityLoadMapping = {};
+            const ents = Object.keys(template.entityData);
+            for(var i = 0; i < ents.length;i++){
+                const entId = parseInt(ents[i]);
+                //Aready existing entity?
+                if(i < spawnedEnts.length) {
+                    const entData = spawnedEnts[i];
+                    map[entId] = entData;
+                    //Remove any comps that no longer exist
+                    const compKeys = Object.keys(entData.Components);
+                    for(var c = 0; c < compKeys.length; c++){
+                        const compName = compKeys[c];
+                        const comp = entData.Components[compName];
+                        if(!template.DoesEntityHaveComponentByName(entId,compName)) {
+                            entData.owningSystem.RemoveComponent(entData,compName);
+                        }
                     }
+                //New entity?
+                } else {
+                    map[entId] = ent.owningSystem.AddEntity();
                 }
-            } else {
-                map[entId] = ent.owningSystem.AddEntity();
+            }
+            //Remove ents that no longer exist
+            if(spawnedEnts.length > ents.length) {
+                for(var i = ents.length-1;i < spawnedEnts.length;i++) {
+                    const entData = spawnedEnts[i];
+                    entData.owningSystem.RemoveEntity(entData);
+                }
+            }
+    
+            const mappings = EntityLoader.LoadTemplateIntoSpecifiedEntities(template, ent.owningSystem,map,true);
+            
+            //Setup so we know which ents we have
+            const origEnts = Object.keys(mappings);
+            const newBundle = new SpawnedPrefabBundle();
+            for(var e = 0; e < origEnts.length;e++) {
+                newBundle.spawnedEntities.push(mappings[origEnts[e]]); 
+            }
+            this.SpawnedPrefabEntities.push(newBundle);
+    
+            //Setup parent in prefab comps
+            const loadedEnts = Object.keys(mappings);
+            for(var i = 0; i < loadedEnts.length;i++) {
+                const origEntId = loadedEnts[i];
+                const entData = mappings[origEntId] as EntityData;
+                const prefab = entData.GetComponent<Prefab>(Prefab);
+                if(prefab === undefined) {
+                    console.error(`Prefab instance ent has no prefab comp! ${origEntId}`);
+                } else {
+                    prefab.parent = ent;
+                }
             }
         }
-        if(spawnedEnts.length > ents.length) {
-            for(var i = ents.length-1;i < spawnedEnts.length;i++) {
-                const entData = spawnedEnts[i];
-                entData.owningSystem.RemoveEntity(entData);
-            }
-        }
+    }
 
-        const mappings = EntityLoader.LoadTemplateIntoSpecifiedEntities(template, ent.owningSystem,map,true);
-        //Setup so we know which ents we have
-        const origEnts = Object.keys(mappings);
-        for(var e = 0; e < origEnts.length;e++) {
-            this.SpawnedPrefabEntities.push(mappings[origEnts[e]]); 
+    clearSpawnedEntities() {
+        if(!this.SpawnedPrefabEntities || this.SpawnedPrefabEntities.length === 0) {
+            return;
         }
-        //Remove ents that no longer exist
+        for(var b = 0; b < this.SpawnedPrefabEntities.length;b++) {
+            const bucket = this.SpawnedPrefabEntities[b];
+            this.DeleteEntityBucket(bucket);
+        }
+        this.SpawnedPrefabEntities = [];
+    }
 
-        //Setup parent
-        const loadedEnts = Object.keys(mappings);
-        for(var i = 0; i < loadedEnts.length;i++) {
-            const origEntId = loadedEnts[i];
-            const entData = mappings[origEntId] as EntityData;
-            const prefab = entData.GetComponent<Prefab>(Prefab);
-            if(prefab === undefined) {
-                console.error(`Prefab instance ent has no prefab comp! ${origEntId}`);
-            } else {
-                prefab.parent = ent;
+    private DeleteEntityBucket(bucket: SpawnedPrefabBundle) {
+        if (!bucket || bucket.spawnedEntities.length === 0) {
+            return;
+        }
+        for (var e = 0; e < bucket.spawnedEntities.length; e++) {
+            const ent = bucket.spawnedEntities[e];
+            if (ent && ent.IsValid()) {
+                ent.owningSystem.RemoveEntity(ent);
             }
         }
     }

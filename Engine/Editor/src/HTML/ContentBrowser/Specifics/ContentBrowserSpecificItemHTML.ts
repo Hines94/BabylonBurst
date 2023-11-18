@@ -5,7 +5,7 @@ import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ShowNotificationWindow } from "@BabylonBurstClient/HTML/HTMLNotificationWindow";
 import { AssetBundle } from "../AssetBundle";
 import { SetupBundleInputWithDatalist } from "../../../Utils/ContentTypeTrackers";
-import { CopyToClipboard } from "@engine/Utils/HTMLUtils";
+import { CopyToClipboard } from "@BabylonBurstClient/Utils/HTMLUtils";
 
 export abstract class ContentBrowserSpecificItem extends ContentBrowserIconedItemHTML {
     declare ourItem: ContentItem;

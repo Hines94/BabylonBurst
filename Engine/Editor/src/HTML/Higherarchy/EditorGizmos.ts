@@ -45,7 +45,7 @@ export class EditorGizmos {
     }
 
     onEntitySelected(entData: EntityData) {
-        if (entData === undefined) {
+        if (entData === undefined || entData === null || !entData.IsValid()) {
             this.bHidden = true;
             return;
         }
@@ -171,7 +171,7 @@ export class EditorGizmos {
     oldTransformData: EntTransform;
 
     UpdateEditorGizos() {
-        if (this.entityOwner === undefined) {
+        if (this.entityOwner === undefined || this.entityOwner === null || !this.entityOwner.IsValid()) {
             this.bHidden = true;
         }
 

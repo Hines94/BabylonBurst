@@ -10,7 +10,7 @@ import { ArraysContainEqualItems } from "../Utils/ArrayUtils";
 import Recast from "recast-detour";
 import { GetRandomColor4, getRandomColor3 } from "../Utils/MeshUtils";
 import { NavigationAgent } from "./NavigationAgent";
-import { DeepEquals } from "../Utils/HTMLUtils";
+import { DeepEquals } from "../../../Client/src/Utils/HTMLUtils";
 import { AsyncSimpleImageMaterial } from "../Materials/AsyncSimpleImageMaterial";
 import { GameSystem } from "../GameLoop/GameSystem";
 import { NavigationBoxObsticle, NavigationObsticle } from "./NavigationObsticles";

@@ -44,7 +44,7 @@ export class AsyncTextureSetupParameter extends MaterialSetupParameter {
         }
         //Try Get texture
         const texture = new AsyncImageDescription(textureData.FilePath, textureData.FileName);
-        const loadedTexture = await texture.GetImageAsTexture();
+        const loadedTexture = await texture.GetImageAsTexture(mat.getScene());
         if (!loadedTexture) {
             return;
         }

@@ -2,7 +2,7 @@ import { AsyncImageDescription } from "@engine/AsyncAssets";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { OpenUIEditor } from "../../UI/UIEditor";
-import { BlobToString } from "@engine/Utils/HTMLUtils";
+import { BlobToString } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { decode, encode } from "@msgpack/msgpack";
 
 export class ContentBrowserUIHTML extends ContentBrowserSpecificItem {

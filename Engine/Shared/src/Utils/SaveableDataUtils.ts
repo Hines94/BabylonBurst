@@ -4,7 +4,7 @@ import { Prefab } from "../EntitySystem/Prefab";
 import { PrefabManager } from "../EntitySystem/PrefabManager";
 import { proxyCallbackSymbol } from "../EntitySystem/TrackedVariable";
 import { FindSavedProperty, registeredTypes, savedProperty, storedRegisteredType } from "../EntitySystem/TypeRegister";
-import { DeepEquals } from "./HTMLUtils";
+import { DeepEquals } from "../../../Client/src/Utils/HTMLUtils";
 import { GetParentClassesOfInstance, IsIntArrayInstance } from "./TypeRegisterUtils";
 
 export type SavedCompTyping = {

@@ -2,7 +2,7 @@ import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { decode } from "@msgpack/msgpack";
-import { CopyToClipboard } from "@engine/Utils/HTMLUtils";
+import { CopyToClipboard } from "@BabylonBurstClient/Utils/HTMLUtils";
 
 export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem {
     protected cleanupItem(): void {}
