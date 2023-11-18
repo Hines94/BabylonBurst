@@ -11,6 +11,9 @@ export abstract class MaterialSetupParameter {
 
     /** Generic easy method for trying to set a parameter into a material instance */
     TrySetMatParameter(mat: any, paramName: string, param: any): boolean {
+        if (param === undefined) {
+            return true;
+        }
         if (mat[paramName] !== undefined) {
             mat[paramName] = param;
             return true;
@@ -18,6 +21,7 @@ export abstract class MaterialSetupParameter {
         const block = mat.getBlockByName(paramName);
         if (block) {
             block.value = param;
+            return true;
         }
 
         console.warn("Could not set param for mat: " + paramName);
