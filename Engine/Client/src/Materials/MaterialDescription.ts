@@ -1,6 +1,5 @@
+import { MaterialSetupParameter } from "@BabylonBurstClient/Materials/MaterialSetupParameter";
 import { Material, Scene } from "@babylonjs/core";
-import { SetupDefaultMaterialDescriptions } from "@engine/Materials/EngineMaterialDescriptions";
-import { MaterialSetupParameter } from "@engine/Materials/MaterialSetupParameter";
 
 type PossibleMaterialParams = {
     [propName: string]: MaterialSetupParameter;

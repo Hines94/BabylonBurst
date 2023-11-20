@@ -50,6 +50,7 @@ export class AssetBundle extends VisualItem {
             this.getItemLocation(),
         );
         if (result) {
+            AsyncAssetManager.GetAssetManager().fileLastUpdateTimes[this.getItemLocation()] = new Date();
             RefreshObjectTypeTracking();
         }
 

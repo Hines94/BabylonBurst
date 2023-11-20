@@ -1,6 +1,7 @@
 import { Vector3 } from "@babylonjs/core";
 import { serverConnection } from "../Networking/ServerConnection";
 import { EntVector4 } from "@engine/EntitySystem/CoreComponents";
+import { ConnectionOwnedEntity } from "@engine/Networking/ConnectionOwnedEntity";
 
 export enum AxisType {
     ForwardAxis,
@@ -65,7 +66,7 @@ function quaternionToMatrix(quaternion: EntVector4): number[][] {
 
 export function GetLocalPlayerId(): string {
     if (serverConnection === undefined) {
-        return "Local";
+        return ConnectionOwnedEntity.LocalConnectionOwnerId;
     }
     console.log("TODO:");
     return undefined;

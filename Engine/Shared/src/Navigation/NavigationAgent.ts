@@ -205,7 +205,7 @@ export class NavigationAgent extends Component {
         if(this.navLayer === undefined || !this.IsSetup()) {
             return true;
         }
-        return this.navLayer.navLayerCrowd.getAgentVelocity(this.agentIndex).lengthSquared() > 0.5;
+        return this.navLayer.navLayerCrowd.getAgentVelocity(this.agentIndex).lengthSquared() < 0.5;
     }
 
     IsReadyForStop(ourEnt:EntityData) {
@@ -235,31 +235,55 @@ export class NavigationAgent extends Component {
         }
     }
 
+    IsWithinDistanceToTarget(ourEnt:EntityData,target:EntVector3):boolean{
+        if(!ourEnt || !ourEnt.IsValid()) {
+            return false;
+        }
+        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(ourEnt.GetComponent(EntTransform).Position,target));
+        return distToTarget < (this.acceptableMovementDistance + this.radius);
+    }
+
+    IsWithinDistanceToEntity(ourEnt:EntityData,target:EntityData):boolean{
+        if(!ourEnt || !ourEnt.IsValid()) {
+            return false;
+        }
+        const targetLoc = this.getMoveToEntityLoc(target);
+        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(ourEnt.GetComponent(EntTransform).Position,targetLoc));
+        return distToTarget < (this.acceptableMovementDistance + this.radius);
+    }
+
+
     /** Move to an entity - if nav agent then will move to the edge instead of trying to go to middle */
-    MoveToEntity(entTarget:EntityData) {
+    MoveToEntity(ourEntity:EntityData,entTarget:EntityData) {
         if(!this.navLayer || !this.navLayer.navLayerPlugin) {
             return;
         }
 
+        const targetPos = this.getMoveToEntityLoc(entTarget);
+        if(this.IsWithinDistanceToTarget(ourEntity,targetPos)) {
+            return;
+        }
+
+        this.TargetLocation = targetPos;
+    }
+
+    private getMoveToEntityLoc(entTarget:EntityData) {
 
         if(entTarget.GetComponent(NavigationAgent)) {
             const center = entTarget.GetComponent(EntTransform).Position;
             const combinedRadius = entTarget.GetComponent(NavigationAgent).radius + this.radius;
             const sub = EntVector3.GetVector3(center).subtract(this.transformNode.position);
-            const maxDist = sub.length();
-            if(maxDist < combinedRadius) {
-                return;
-            }
             const awayDist = combinedRadius;
-            this.TargetLocation = EntVector3.Subtract(center,EntVector3.VectorToEnt(sub.normalize().multiplyByFloats(awayDist,awayDist,awayDist)));
+            return EntVector3.Subtract(center,EntVector3.VectorToEnt(sub.normalize().multiplyByFloats(awayDist,awayDist,awayDist)));
         
-        
+    
         } else if(entTarget.GetComponent(EntTransform)) {
-            this.TargetLocation = entTarget.GetComponent(EntTransform).Position;
-        
-        
+            return entTarget.GetComponent(EntTransform).Position;
         }
+
+        
         //TODO: Nav obsticle?
+        return undefined;
     }
 
     /** Within a tolerance do we overlap a location? */

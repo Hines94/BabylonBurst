@@ -87,11 +87,10 @@ export class BooleanSetupParameter extends MaterialSetupParameter {
 
 export class ColorSetupParameter extends MaterialSetupParameter {
     async SetParameterIntoMaterial(mat: Material, paramName: string, loadedData: any): Promise<void> {
-        var col = new Color3(0, 0, 0);
         if (loadedData[paramName] !== undefined) {
-            col = Color3.FromHexString(loadedData[paramName]);
+            const col = Color3.FromHexString(loadedData[paramName]);
+            this.TrySetMatParameter(mat, paramName, col);
         }
-        this.TrySetMatParameter(mat, paramName, col);
     }
 
     //TODO: This is within the client code but Editor specific?

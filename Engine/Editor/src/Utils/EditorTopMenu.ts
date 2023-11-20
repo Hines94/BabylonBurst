@@ -54,6 +54,10 @@ export class EditorTopMenu {
     constructor(ecosystem: GameEcosystem, name: string, priority: number) {
         this.ecosystem = ecosystem;
         this.topBar = ecosystem.doc.getElementById("editorHeaderPanel");
+        if (ecosystem.isGame) {
+            const rect = this.topBar.getBoundingClientRect();
+            this.ecosystem.doc.getElementById("GameUI").style.top = `${rect.height}px`;
+        }
         this.name = name;
         this.priority = priority;
         this.setupEditorMenu();
