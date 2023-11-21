@@ -235,21 +235,21 @@ export class NavigationAgent extends Component {
         }
     }
 
-    IsWithinDistanceToTarget(ourEnt:EntityData,target:EntVector3):boolean{
+    IsWithinDistanceToTarget(ourEnt:EntityData,target:EntVector3,marginMulti = 1):boolean{
         if(!ourEnt || !ourEnt.IsValid()) {
             return false;
         }
         const distToTarget = EntVector3.Length2D(EntVector3.Subtract(ourEnt.GetComponent(EntTransform).Position,target));
-        return distToTarget < (this.acceptableMovementDistance + this.radius);
+        return distToTarget < (this.acceptableMovementDistance + this.radius) * marginMulti;
     }
 
-    IsWithinDistanceToEntity(ourEnt:EntityData,target:EntityData):boolean{
+    IsWithinDistanceToEntity(ourEnt:EntityData,target:EntityData,marginMulti = 1):boolean{
         if(!ourEnt || !ourEnt.IsValid()) {
             return false;
         }
-        const targetLoc = this.getMoveToEntityLoc(target);
+        const targetLoc = this.GetMoveToEntityLoc(target);
         const distToTarget = EntVector3.Length2D(EntVector3.Subtract(ourEnt.GetComponent(EntTransform).Position,targetLoc));
-        return distToTarget < (this.acceptableMovementDistance + this.radius);
+        return distToTarget < (this.acceptableMovementDistance + this.radius) * marginMulti;
     }
 
 
@@ -259,7 +259,7 @@ export class NavigationAgent extends Component {
             return;
         }
 
-        const targetPos = this.getMoveToEntityLoc(entTarget);
+        const targetPos = this.GetMoveToEntityLoc(entTarget);
         if(this.IsWithinDistanceToTarget(ourEntity,targetPos)) {
             return;
         }
@@ -267,7 +267,7 @@ export class NavigationAgent extends Component {
         this.TargetLocation = targetPos;
     }
 
-    private getMoveToEntityLoc(entTarget:EntityData) {
+    GetMoveToEntityLoc(entTarget:EntityData) {
 
         if(entTarget.GetComponent(NavigationAgent)) {
             const center = entTarget.GetComponent(EntTransform).Position;

@@ -1,8 +1,9 @@
 import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
-import { decode } from "@msgpack/msgpack";
+import { decode, encode } from "@msgpack/msgpack";
 import { CopyToClipboard } from "@BabylonBurstClient/Utils/HTMLUtils";
+import { v4 as uuidv4 } from "uuid";
 
 export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem {
     protected cleanupItem(): void {}
@@ -23,8 +24,15 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem {
             },
             {
                 name: "Clone",
-                callback: () => {
-                    alert("Not implemented yet");
+                callback: async () => {
+                    const newItem = await this.ourItem.Clone();
+                    const loader = new AsyncArrayBufferLoader(newItem.parent.getItemLocation(), newItem.GetSaveName());
+                    await loader.getWaitForFullyLoadPromise();
+                    const itemData = decode(loader.rawData) as any;
+                    itemData.prefabID = uuidv4();
+                    newItem.data = encode(itemData);
+                    await newItem.SaveItemOut();
+                    this.ourContentHolder.rebuildStoredItems();
                 },
             },
         ]);

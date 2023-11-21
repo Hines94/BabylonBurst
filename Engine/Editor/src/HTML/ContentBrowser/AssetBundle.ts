@@ -39,7 +39,7 @@ export class AssetBundle extends VisualItem {
             const dat = this.storedItems[d];
             const data: FileZipData = { name: dat.GetSaveName(), data: await dat.GetData() };
             if (data.data === undefined || data.data === null) {
-                console.warn("Trying to save with undefined data!");
+                console.warn(`Trying to save ${dat.name} with undefined data!`);
             }
             dataItems.push(data);
         }
@@ -50,9 +50,10 @@ export class AssetBundle extends VisualItem {
             this.getItemLocation(),
         );
         if (result) {
-            AsyncAssetManager.GetAssetManager().fileLastUpdateTimes[this.getItemLocation()] = new Date();
             RefreshObjectTypeTracking();
         }
+
+        AsyncAssetManager.GetAssetManager().fileLastUpdateTimes[this.getItemLocation()] = new Date();
 
         this.bSavedAsPredownload = this.isPredownloadAsset();
 
@@ -131,7 +132,6 @@ export class AssetBundle extends VisualItem {
     }
 
     async GetDataForItem(itemSaveName: string, type: AsyncDataType, bIgnoreCache: boolean) {
-        console.log("LOC: " + itemSaveName);
         const result = await AsyncZipPuller.LoadFileData(this.getItemLocation(), itemSaveName, type, bIgnoreCache);
         if (result !== null) {
             return result;

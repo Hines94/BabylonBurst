@@ -68,7 +68,13 @@ export class PrefabManager {
 
     static SetupPrefabFromRaw(bundlePath:string,fileName:string,data: ArrayLike<number> | BufferSource) {
         const Manager = this.GetPrefabManager();
-        const loadData = decode(data) as PrefabPackedType;
+        var loadData:PrefabPackedType;
+        try {
+            loadData = decode(data) as PrefabPackedType;
+        } catch {
+            console.error(`Error unpacking prefab data: ${bundlePath} - ${fileName}`);
+            return;
+        }
         if(loadData.prefabID === undefined) {
             console.error("Invalid prefab type!");
         }

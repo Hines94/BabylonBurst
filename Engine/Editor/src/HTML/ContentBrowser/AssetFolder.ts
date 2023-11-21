@@ -40,7 +40,7 @@ export class AssetFolder extends VisualItem {
 
     GetFullFolderPath(): string {
         //Top level folder?
-        if (this.name === undefined) {
+        if (this.name === undefined || this.name === "ASSETS_ROOT") {
             return "";
         }
         var ret = this.name + "/";

@@ -120,6 +120,24 @@ export class ContentItem extends VisualItem {
         this.data = loader.rawData;
     }
 
+    async Clone(): Promise<ContentItem> {
+        const newItem = new ContentItem(undefined, this.parent);
+        newItem.name = this.name + "_clone";
+        newItem.extension = this.extension;
+        newItem.category = this.category;
+        newItem.size = this.size;
+        newItem.data = await this.GetData();
+        newItem.parent = this.parent;
+        this.parent.storedItems.push(newItem);
+        if (await newItem.SaveItemOut()) {
+            //Reset data in case we cloned an object etc
+            newItem.data = undefined;
+            return newItem;
+        }
+        console.error("Error cloning item!");
+        return undefined;
+    }
+
     /** Fallback default if no extension set! */
     GetExtension(): string {
         return ContentItemType[this.category];
