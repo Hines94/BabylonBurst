@@ -50,10 +50,10 @@ export class AssetBundle extends VisualItem {
             this.getItemLocation(),
         );
         if (result) {
-            RefreshObjectTypeTracking();
+            AsyncAssetManager.GetAssetManager().fileLastUpdateTimes[this.getItemLocation()] = new Date();
+            await AsyncAssetManager.GetAssetManager().frontendCache.Delete(this.getItemLocation());
+            await RefreshObjectTypeTracking();
         }
-
-        AsyncAssetManager.GetAssetManager().fileLastUpdateTimes[this.getItemLocation()] = new Date();
 
         this.bSavedAsPredownload = this.isPredownloadAsset();
 

@@ -50,7 +50,12 @@ export function ProcessPrefabSpecifierComp(
     function RefreshToData() {
         const existingData = parentData[propType.name];
         if (existingData.prefabUUID !== undefined) {
-            newInput.value = PrefabManager.GetPrefabBundleNameFromId(existingData.prefabUUID);
+            const prefab = PrefabManager.GetPrefabBundleNameFromId(existingData.prefabUUID);
+            if (prefab) {
+                newInput.value = prefab;
+            } else {
+                newInput.value = "";
+            }
         } else {
             newInput.value = "";
         }

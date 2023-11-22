@@ -4,6 +4,9 @@ import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { decode, encode } from "@msgpack/msgpack";
 import { CopyToClipboard } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { v4 as uuidv4 } from "uuid";
+import { Prefab, PrefabPackedType } from "@engine/EntitySystem/Prefab";
+import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
+import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
 
 export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem {
     protected cleanupItem(): void {}
@@ -28,10 +31,35 @@ export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem {
                     const newItem = await this.ourItem.Clone();
                     const loader = new AsyncArrayBufferLoader(newItem.parent.getItemLocation(), newItem.GetSaveName());
                     await loader.getWaitForFullyLoadPromise();
-                    const itemData = decode(loader.rawData) as any;
+                    const itemData = decode(loader.rawData) as PrefabPackedType;
+                    const priorUUID = itemData.prefabID;
                     itemData.prefabID = uuidv4();
+
+                    this.ourContentHolder.ecosystem.entitySystem.ResetSystem();
+                    PrefabManager.LoadPrefabFromIdToExisting(priorUUID, this.ourContentHolder.ecosystem.entitySystem);
+                    //Change all prefabs to correct id
+                    const prefabComps = this.ourContentHolder.ecosystem.entitySystem.GetEntitiesWithData([Prefab], []);
+                    prefabComps.iterateEntities(e => {
+                        const pc = e.GetComponent(Prefab);
+                        if (pc.PrefabIdentifier === priorUUID) {
+                            pc.PrefabIdentifier = itemData.prefabID;
+                        }
+                    });
+                    const newEntData = EntitySaver.GetMsgpackForAllEntities(
+                        this.ourContentHolder.ecosystem.entitySystem,
+                        true,
+                    );
+                    itemData.prefabData = newEntData;
+                    this.ourContentHolder.ecosystem.entitySystem.ResetSystem();
+
                     newItem.data = encode(itemData);
                     await newItem.SaveItemOut();
+                    PrefabManager.SetupPrefabFromRaw(
+                        newItem.parent.getItemLocation(),
+                        newItem.GetSaveName(),
+                        newItem.data,
+                    );
+                    newItem.data = undefined;
                     this.ourContentHolder.rebuildStoredItems();
                 },
             },

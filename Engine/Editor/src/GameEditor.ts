@@ -1,6 +1,8 @@
 import { BabylonBurstClient } from "@BabylonBurstClient/BabylonBurstClient";
 import { PlayHigherarchyHTML } from "./HTML/Higherarchy/PlayHigherarchyHTML";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { RefreshObjectTypeTracking } from "src/Utils/ContentTypeTrackers";
+import { RefreshAllModelPaths } from "src/Utils/EditorModelSpecifier";
 
 /** Special version of the game client that allows entity inspection, editor visualistaions etc */
 export class GameEditor extends BabylonBurstClient {
@@ -22,5 +24,7 @@ export class GameEditor extends BabylonBurstClient {
         //Create higherarchy HTML that we can use to check various things
         const editorHigherarchy = new PlayHigherarchyHTML();
         editorHigherarchy.SetupPlayHigherarchy(this);
+        await RefreshObjectTypeTracking();
+        RefreshAllModelPaths();
     }
 }
