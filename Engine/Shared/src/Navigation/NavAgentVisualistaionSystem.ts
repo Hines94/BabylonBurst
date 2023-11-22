@@ -49,6 +49,6 @@ export class NavAgentVisualisationSystem extends GameSystem {
             }
             return;
         }
-        lineSystem = MeshBuilder.CreateLineSystem("NavAgentLines",{lines:desiredLines,instance:lineSystem,updatable:true});
+        lineSystem = MeshBuilder.CreateLineSystem("NavAgentLines",{lines:desiredLines,instance:lineSystem,updatable:true},ecosystem.scene);
     }
 }

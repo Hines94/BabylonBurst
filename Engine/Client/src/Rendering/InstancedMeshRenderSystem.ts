@@ -31,7 +31,11 @@ export class InstancedMeshRenderSystem extends GameSystem {
     SystemOrdering = InstancedRenderSystemPriority;
     systemRunType = GameSystemRunType.GameAndEditor;
 
-    SetupGameSystem(ecosystem: GameEcosystem) {}
+    SetupGameSystem(ecosystem: GameEcosystem) {
+        if (ecosystem.dynamicProperties[InstancedMeshRenderSystem.priorLoadedMaterialsArray] === undefined) {
+            ecosystem.dynamicProperties[InstancedMeshRenderSystem.priorLoadedMaterialsArray] = [];
+        }
+    }
 
     RunSystem(ecosystem: GameEcosystem) {
         var thisFrameTransformData: { [id: string]: InstancedMeshTransform[] } = {};
@@ -69,9 +73,13 @@ export class InstancedMeshRenderSystem extends GameSystem {
             thisFrameTransformData[runnerID].push(EntTransform.getAsInstanceTransform(transform));
         });
 
+        const rendVariant = this.constructor.name;
         //Run instances
         const keys = Object.keys(ecosystem.dynamicProperties.LoadedRunners);
         keys.forEach(key => {
+            if (!key.endsWith(rendVariant)) {
+                return;
+            }
             const data = thisFrameTransformData[key];
             const transformData = data === undefined ? [] : data;
             ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(this.GetScene(ecosystem), transformData);
@@ -94,7 +102,8 @@ export class InstancedMeshRenderSystem extends GameSystem {
         for (var m = 0; m < rend.MaterialData.length; m++) {
             ret += "_" + rend.MaterialData[m].FileName + "_" + rend.MaterialData[m].FilePath;
         }
-        ret += GetAsyncSceneIdentifier(scene);
+        ret += "_" + GetAsyncSceneIdentifier(scene);
+        ret += "_" + this.constructor.name;
         return ret;
     }
 
@@ -113,9 +122,13 @@ export class InstancedMeshRenderSystem extends GameSystem {
         return ecosystem.entitySystem.GetEntitiesWithData([InstancedRender, EntTransform], [HiddenEntity]);
     }
 
+    static priorLoadedMaterialsArray = "___INSTANCERENDERPRIORLOADEDMATS___";
+
     /** Get the materials for a particular instanced render type */
     GetMaterials(instancedRend: InstancedRender, ent: EntityData, ecosystem: GameEcosystem): Material[] {
         const ret: Material[] = [];
+        const sceneID = GetAsyncSceneIdentifier(this.GetScene(ecosystem));
+
         for (var m = 0; m < instancedRend.MaterialData.length; m++) {
             const spec = instancedRend.MaterialData[m];
             if (spec.FilePath === undefined || spec.FileName === undefined) {
@@ -123,6 +136,14 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 ret.push(null);
                 continue;
             }
+
+            const matId = spec.FilePath + "_" + spec.FileName + "_" + sceneID;
+            //Already loaded?
+            if (ecosystem.dynamicProperties[InstancedMeshRenderSystem.priorLoadedMaterialsArray][matId]) {
+                ret.push(ecosystem.dynamicProperties[InstancedMeshRenderSystem.priorLoadedMaterialsArray][matId]);
+                continue;
+            }
+
             //Load material identifier from async
             var matLoader = GetPreviouslyLoadedAWSAsset(spec.FilePath, spec.FileName) as AsyncArrayBufferLoader;
             if (!matLoader) {
@@ -156,6 +177,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
             //Full success
             const mat = shader.LoadMaterial(data, this.GetScene(ecosystem));
             ret.push(mat);
+            ecosystem.dynamicProperties[InstancedMeshRenderSystem.priorLoadedMaterialsArray][matId] = mat;
         }
         return ret;
     }

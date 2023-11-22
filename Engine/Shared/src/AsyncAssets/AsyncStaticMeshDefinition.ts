@@ -144,9 +144,6 @@ export class AsyncStaticMeshDefinition {
         for (var i = 0; i < matInstances.length; i++) {
             //If material was not overriden then set it so
             if (matInstances[i] !== null) {
-                if (foundMeshElements[i].material !== null && foundMeshElements[i].material !== undefined) {
-                    foundMeshElements[i].material.dispose();
-                }
                 foundMeshElements[i].material = matInstances[i];
             }
         }
@@ -162,7 +159,7 @@ export class AsyncStaticMeshDefinition {
         } else {
             this.finalCombinedMeshes[GetAsyncSceneIdentifier(scene)] = await Mesh.MergeMeshesAsync(
                 foundMeshElements,
-                true,
+                false,
                 false,
                 undefined,
                 false,

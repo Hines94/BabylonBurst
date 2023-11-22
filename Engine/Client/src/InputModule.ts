@@ -136,9 +136,13 @@ export class WindowInputValues {
     mouseXDelta = 0;
     mouseYDelta = 0;
     /** Note: This has some slight input lag! */
-    mouseXPosition = 0;
+    mouseScaledXPosition = 0;
     /** Note: This has some slight input lag! */
-    mouseYPosition = 0;
+    mouseScaledYPosition = 0;
+    /** Note: This has some slight input lag! */
+    mouseUnscaledXPosition = 0;
+    /** Note: This has some slight input lag! */
+    mouseUnscaledYPosition = 0;
     roll = 0;
 
     primaryClick = new ButtonInput([]);
@@ -280,8 +284,10 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
 
     UpdateDynamicTextureChecks(ecosystem);
     const scaling = ecosystem.scene.getEngine().getHardwareScalingLevel();
-    ecosystem.InputValues.mouseXPosition = ecosystem.scene.pointerX / scaling;
-    ecosystem.InputValues.mouseYPosition = ecosystem.scene.pointerY / scaling;
+    ecosystem.InputValues.mouseUnscaledXPosition = ecosystem.scene.pointerX;
+    ecosystem.InputValues.mouseUnscaledYPosition = ecosystem.scene.pointerY;
+    ecosystem.InputValues.mouseScaledXPosition = ecosystem.scene.pointerX / scaling;
+    ecosystem.InputValues.mouseScaledYPosition = ecosystem.scene.pointerY / scaling;
 
     ecosystem.InputValues.forward = 0;
     ecosystem.InputValues.side = 0;

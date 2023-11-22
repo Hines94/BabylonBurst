@@ -21,7 +21,9 @@ export class EntityQuery {
 
     GetEntitiesArray(): EntityData[] {
         const ret:EntityData[] = [];
-        this.iterateEntities(e=>{ret.push(e)});
+        this.iterateEntities(e=>{
+            ret.push(e);
+        })
         return ret;
     }
     
