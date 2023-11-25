@@ -21,6 +21,7 @@
         "paths": {
             "@BabylonBurstClient/*": ["./Engine/Client/src/*"],
             "@BabylonBurstCore/*": ["./Engine/Shared/src/*"],
+            "@BabylonBurstEditor/*": ["./Engine/Editor/src/*"],
             "@userCode/*": ["./Source/*"]
         },
         "experimentalDecorators": true,
@@ -29,6 +30,7 @@
     "include": [
         "./Engine/Client/src/**/*", 
         "./Engine/Shared/src/**/*", 
+        "./Engine/Editor/src/**/*", 
         "./Source/**/*"
     ]
 }

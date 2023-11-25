@@ -6,6 +6,7 @@
       "paths": {
         "@BabylonBurstClient/*": ["../Client/src/*"],
         "@BabylonBurstCore/*": ["../Shared/src/*"],
+        "@BabylonBurstEditor/*": ["./src/*"],
         "@userCode/*": ["../../Source/*"]
       },
       "experimentalDecorators": true,
