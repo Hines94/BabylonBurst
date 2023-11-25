@@ -1,4 +1,4 @@
-import { savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import {
     GetEditorObjectWithValues,
     SetInputValueFromDatalist,
@@ -6,7 +6,7 @@ import {
 } from "../../Utils/ContentTypeTrackers";
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { UISpecifier } from "@BabylonBurstClient/GUI/UISpecifier";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Observable } from "@babylonjs/core";
 
 export function ProcessUISpecifierComp(

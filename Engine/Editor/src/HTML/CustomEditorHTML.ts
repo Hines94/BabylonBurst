@@ -10,8 +10,8 @@ import { Scene } from "@babylonjs/core";
 import { encode } from "@msgpack/msgpack";
 import { v4 as uuidv4 } from "uuid";
 import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
-import { AsyncAWSBackend, AsyncAssetManager } from "@engine/AsyncAssets";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstCore/AsyncAssets";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { SetupAllTopBarOptions } from "./HTMLUtils/TopBarSetup";
 
 //This assumes only one editor per time - pretty reasonable

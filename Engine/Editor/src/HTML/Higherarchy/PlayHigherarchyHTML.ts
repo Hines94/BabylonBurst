@@ -1,5 +1,5 @@
 import { HigherarchyHTML } from "./HigherarchyHTML";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { SetupAllTopBarOptions } from "../HTMLUtils/TopBarSetup";
 
 declare function FetchInjectAdditionalHTML(arg: string): Promise<any>;

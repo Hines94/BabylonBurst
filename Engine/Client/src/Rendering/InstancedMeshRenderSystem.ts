@@ -1,17 +1,21 @@
 import { defaultLayerMask } from "../Utils/LayerMasks";
-import { AsyncStaticMeshInstanceRunner, GetAsyncSceneIdentifier, InstancedMeshTransform } from "@engine/AsyncAssets";
+import {
+    AsyncStaticMeshInstanceRunner,
+    GetAsyncSceneIdentifier,
+    InstancedMeshTransform,
+} from "@BabylonBurstCore/AsyncAssets";
 import { Material, Scene } from "@babylonjs/core";
-import { GetPreviouslyLoadedAWSAsset } from "@engine/AsyncAssets/Framework/AsyncAssetLoader";
+import { GetPreviouslyLoadedAWSAsset } from "@BabylonBurstCore/AsyncAssets/Framework/AsyncAssetLoader";
 import { decode } from "@msgpack/msgpack";
 import { GetMaterialDescription } from "@BabylonBurstClient/Materials/EngineMaterialDescriptions";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { HiddenEntity, InstancedRender } from "@engine/Rendering/InstancedRender";
-import { EntTransform } from "@engine/EntitySystem/CoreComponents";
-import { EntityData } from "@engine/EntitySystem/EntityData";
-import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
-import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
-import { InstancedRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
-import { EntityQuery } from "@engine/EntitySystem/EntityQuery";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { HiddenEntity, InstancedRender } from "@BabylonBurstCore/Rendering/InstancedRender";
+import { EntTransform } from "@BabylonBurstCore/EntitySystem/CoreComponents";
+import { EntityData } from "@BabylonBurstCore/EntitySystem/EntityData";
+import { AsyncArrayBufferLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoaders";
+import { GameSystem, GameSystemRunType } from "@BabylonBurstCore/GameLoop/GameSystem";
+import { InstancedRenderSystemPriority } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
+import { EntityQuery } from "@BabylonBurstCore/EntitySystem/EntityQuery";
 
 export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     if (!ecosystem.dynamicProperties.LoadedRunners) {

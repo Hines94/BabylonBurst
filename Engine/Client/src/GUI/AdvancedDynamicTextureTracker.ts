@@ -1,6 +1,6 @@
 import { mouseOverCanvas } from "@BabylonBurstClient/InputModule";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
 //Is the mouse hovered over GUI?
 var hoveredOverGUIOverride = false;

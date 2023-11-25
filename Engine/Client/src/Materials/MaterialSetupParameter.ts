@@ -1,5 +1,5 @@
 import { Color3, Material } from "@babylonjs/core";
-import { AsyncImageDescription } from "@engine/AsyncAssets";
+import { AsyncImageDescription } from "@BabylonBurstCore/AsyncAssets";
 
 /** Generic parameter to set in our Material (eg image/float etc) */
 export abstract class MaterialSetupParameter {

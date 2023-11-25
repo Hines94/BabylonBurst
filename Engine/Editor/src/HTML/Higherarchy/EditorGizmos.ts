@@ -1,7 +1,7 @@
 import { AbstractMesh, GizmoManager, Observable } from "@babylonjs/core";
-import { EntTransform } from "@engine/EntitySystem/CoreComponents";
-import { EntityData } from "@engine/EntitySystem/EntityData";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { EntTransform } from "@BabylonBurstCore/EntitySystem/CoreComponents";
+import { EntityData } from "@BabylonBurstCore/EntitySystem/EntityData";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { AddElementToEditorTopMenu, gizmosPriority } from "../../Utils/EditorTopMenu";
 import { HigherarchyHTML } from "./HigherarchyHTML";

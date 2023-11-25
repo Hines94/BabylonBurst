@@ -1,6 +1,6 @@
-import { AsyncImageDescription } from "@engine/AsyncAssets";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { AsyncMsgpackLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { AsyncImageDescription } from "@BabylonBurstCore/AsyncAssets";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { AsyncMsgpackLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoaders";
 
 /** Load UI from saved S3 object into a html element */
 export async function LoadUIContent(

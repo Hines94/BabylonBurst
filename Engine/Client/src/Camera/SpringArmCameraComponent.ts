@@ -1,7 +1,7 @@
 import { TransformNode, Vector3 } from "@babylonjs/core";
-import { PlayerCamera } from "@engine/Camera/PlayerCamera";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { Clamp, Clamp01, lerp } from "@engine/Utils/MathUtils";
+import { PlayerCamera } from "@BabylonBurstCore/Camera/PlayerCamera";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { Clamp, Clamp01, lerp } from "@BabylonBurstCore/Utils/MathUtils";
 
 /** Generic spring arm comp. Should be applicable in a wide range of senarios (3rd person, RTS etc). root->spring arm->cameras.*/
 export class SpringArmCameraComponent {

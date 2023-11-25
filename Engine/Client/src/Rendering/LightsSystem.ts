@@ -1,8 +1,8 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
-import { LightingGameSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
-import { DirectionalLightComp } from "@engine/Rendering/LightingComponents";
-import { LightingRebuildTag } from "@engine/Rendering/LightingComponents";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { GameSystem, GameSystemRunType } from "@BabylonBurstCore/GameLoop/GameSystem";
+import { LightingGameSystemPriority } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
+import { DirectionalLightComp } from "@BabylonBurstCore/Rendering/LightingComponents";
+import { LightingRebuildTag } from "@BabylonBurstCore/Rendering/LightingComponents";
 
 export class LightingGameSystem extends GameSystem {
     SystemOrdering = LightingGameSystemPriority;

@@ -1,7 +1,7 @@
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentItem } from "../ContentItem";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
-import { AsyncAudioClipDefinition } from "@engine/AsyncAssets";
+import { AsyncAudioClipDefinition } from "@BabylonBurstCore/AsyncAssets";
 
 export class ContentBrowserAudioClipHTML extends ContentBrowserSpecificItem {
     cleanupItem(): void {

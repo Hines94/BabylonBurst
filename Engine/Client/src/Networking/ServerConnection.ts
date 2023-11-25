@@ -1,7 +1,7 @@
-import { GameSystem } from "@engine/GameLoop/GameSystem";
+import { GameSystem } from "@BabylonBurstCore/GameLoop/GameSystem";
 import { DisposeOfObject, WaitForTime } from "../Utils/SceneUtils";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { ConnectionProcessingPriority } from "@engine/GameLoop/GameSystemPriorities";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { ConnectionProcessingPriority } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
 
 export var serverConnection: ServerConnection;
 

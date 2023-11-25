@@ -1,12 +1,12 @@
-import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { AsyncArrayBufferLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoaders";
 import { PrefabHigherarchyHTML } from "../../Higherarchy/PrefabHigherarchyHTML";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { decode, encode } from "@msgpack/msgpack";
 import { CopyToClipboard } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { v4 as uuidv4 } from "uuid";
-import { Prefab, PrefabPackedType } from "@engine/EntitySystem/Prefab";
-import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
-import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
+import { Prefab, PrefabPackedType } from "@BabylonBurstCore/EntitySystem/Prefab";
+import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
+import { EntitySaver } from "@BabylonBurstCore/EntitySystem/EntitySaver";
 
 export class ContentBrowserPrefabHTML extends ContentBrowserSpecificItem {
     protected cleanupItem(): void {}

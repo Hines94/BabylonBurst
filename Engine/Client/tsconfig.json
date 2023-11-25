@@ -18,7 +18,7 @@
         "baseUrl": "./", 
         "paths": {
             "@BabylonBurstClient/*": ["src/*"],
-            "@engine/*": ["../Shared/src/*"],
+            "@BabylonBurstCore/*": ["../Shared/src/*"],
             "@userCode/*": ["../../Source/*"]
         },
         "experimentalDecorators": true,

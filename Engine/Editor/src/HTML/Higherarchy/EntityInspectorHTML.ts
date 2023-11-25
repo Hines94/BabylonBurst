@@ -1,16 +1,16 @@
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { CloneTemplate } from "@BabylonBurstClient/HTML/HTMLUtils";
 import { HigherarchyHTML } from "./HigherarchyHTML";
-import { EntityData } from "@engine/EntitySystem/EntityData";
-import { Component } from "@engine/EntitySystem/Component";
-import { GetAllSavedProperties, registeredTypes } from "@engine/EntitySystem/TypeRegister";
+import { EntityData } from "@BabylonBurstCore/EntitySystem/EntityData";
+import { Component } from "@BabylonBurstCore/EntitySystem/Component";
+import { GetAllSavedProperties, registeredTypes } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { GenerateEditorProperty } from "../InspectorWindow/CustomInspectorComponents";
-import { GetAllComponentClassTypes } from "@engine/Utils/TypeRegisterUtils";
+import { GetAllComponentClassTypes } from "@BabylonBurstCore/Utils/TypeRegisterUtils";
 import { DeepCopier, Observable, Observer } from "@babylonjs/core";
-import { GetCustomSaveData } from "@engine/Utils/SaveableDataUtils";
-import { ComponentNotify } from "@engine/EntitySystem/EntitySystem";
-import { DeepEquals } from "@engine/Utils/ObjectUtils";
+import { GetCustomSaveData } from "@BabylonBurstCore/Utils/SaveableDataUtils";
+import { ComponentNotify } from "@BabylonBurstCore/EntitySystem/EntitySystem";
+import { DeepEquals } from "@BabylonBurstCore/Utils/ObjectUtils";
 
 /** Responsible for showing entity components in inspector window */
 export class EntityInspectorHTML {

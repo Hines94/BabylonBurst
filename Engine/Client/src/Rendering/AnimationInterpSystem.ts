@@ -1,5 +1,5 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { GameSystem, GameSystemRunType } from "@BabylonBurstCore/GameLoop/GameSystem";
 
 export class AnimationInterpSystem extends GameSystem {
     systemRunType = GameSystemRunType.GameAndEditor;

@@ -7,11 +7,11 @@ import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentStorageBackend } from "../ContentBrowser/ContentBrowserHTML";
 import { AddOptionToEditorTopMenu } from "../../Utils/EditorTopMenu";
 import { decode, encode } from "@msgpack/msgpack";
-import { EntitySaver } from "@engine/EntitySystem/EntitySaver";
-import { Prefab, PrefabPackedType } from "@engine/EntitySystem/Prefab";
-import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
+import { EntitySaver } from "@BabylonBurstCore/EntitySystem/EntitySaver";
+import { Prefab, PrefabPackedType } from "@BabylonBurstCore/EntitySystem/Prefab";
+import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 import { SetupAllTopBarOptions } from "../HTMLUtils/TopBarSetup";
-import { EntNamingComponent } from "@engine/EntitySystem/CoreComponents";
+import { EntNamingComponent } from "@BabylonBurstCore/EntitySystem/CoreComponents";
 
 /** Used for specifically loading prefabs into a seperate window */
 export class PrefabHigherarchyHTML extends HigherarchyHTML {

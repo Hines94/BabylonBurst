@@ -1,14 +1,14 @@
-import { savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import {
     GetEditorObjectWithValues,
     SetInputValueFromDatalist,
     SetupContentInputWithDatalist,
 } from "../../Utils/ContentTypeTrackers";
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
-import { Component } from "@engine/EntitySystem/Component";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { Component } from "@BabylonBurstCore/EntitySystem/Component";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Observable } from "@babylonjs/core";
-import { MaterialSpecifier } from "@engine/Rendering/MaterialSpecifier";
+import { MaterialSpecifier } from "@BabylonBurstCore/Rendering/MaterialSpecifier";
 
 export function ProcessMaterialSpecifierComp(
     container: HTMLElement,

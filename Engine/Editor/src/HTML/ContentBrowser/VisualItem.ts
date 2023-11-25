@@ -1,4 +1,4 @@
-import { IBackendStorageInterface } from "@engine/AsyncAssets";
+import { IBackendStorageInterface } from "@BabylonBurstCore/AsyncAssets";
 
 /**Could be a folder, bundle or content item*/
 export abstract class VisualItem {

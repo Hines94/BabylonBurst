@@ -1,5 +1,5 @@
 import { Mesh, MeshBuilder, StandardMaterial } from "@babylonjs/core";
-import { InstancedMeshTransform, SetTransformArray } from "@engine/AsyncAssets";
+import { InstancedMeshTransform, SetTransformArray } from "@BabylonBurstCore/AsyncAssets";
 
 export class DebugBoxSpecification {
     transform: InstancedMeshTransform;

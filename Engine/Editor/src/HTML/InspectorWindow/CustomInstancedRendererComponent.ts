@@ -1,8 +1,8 @@
-import { savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { FindModelForParams, ModelPaths } from "../../Utils/EditorModelSpecifier";
-import { Component } from "@engine/EntitySystem/Component";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { InstancedRender } from "@engine/Rendering/InstancedRender";
+import { Component } from "@BabylonBurstCore/EntitySystem/Component";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { InstancedRender } from "@BabylonBurstCore/Rendering/InstancedRender";
 import { Observable } from "@babylonjs/core";
 
 export function ProcessInstancedRenderComp(

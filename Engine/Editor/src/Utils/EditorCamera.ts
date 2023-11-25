@@ -2,8 +2,8 @@ import { Mesh, MeshBuilder, Vector3 } from "@babylonjs/core";
 import { LookingCameraComponent } from "@BabylonBurstClient/Camera/LookingCameraComponent";
 import { PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
 import { FlyingCameraComponent } from "@BabylonBurstClient/Camera/FlyingCameraComponent";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { AngleToRad } from "@engine/Utils/MathUtils";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { AngleToRad } from "@BabylonBurstCore/Utils/MathUtils";
 
 /** Simply takes the player camera and runs a simple movement  */
 export class EditorCamera {

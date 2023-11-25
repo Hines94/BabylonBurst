@@ -1,11 +1,11 @@
-import { savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { SetupContentInputWithDatalist } from "../../Utils/ContentTypeTrackers";
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { decode } from "@msgpack/msgpack";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { PrefabSpecifier } from "@engine/EntitySystem/Prefab";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { PrefabSpecifier } from "@BabylonBurstCore/EntitySystem/Prefab";
 import { Observable } from "@babylonjs/core";
-import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
+import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 
 /** Warns if material numbers not correct */
 export function ProcessPrefabSpecifierComp(

@@ -1,9 +1,9 @@
-import { savedProperty } from "@engine/EntitySystem/TypeRegister";
+import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { IsValidModelSpecifier, ModelPaths, onModelPathsChangeObserver } from "../../Utils/EditorModelSpecifier";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Observable } from "@babylonjs/core";
-import { ModelSpecifier } from "@engine/Rendering/ModelSpecifier";
+import { ModelSpecifier } from "@BabylonBurstCore/Rendering/ModelSpecifier";
 
 export function ProcessModelSpecifierComp(
     container: HTMLElement,

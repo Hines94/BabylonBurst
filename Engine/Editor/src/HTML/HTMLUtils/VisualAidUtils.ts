@@ -2,11 +2,11 @@ import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/Collider
 import { GenerateTopMenuToggle, viewItemPriority } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 import { Color4, HemisphericLight, Vector3 } from "@babylonjs/core";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverlay";
-import { AngleToRad } from "@engine/Utils/MathUtils";
-import { NavigationLayer } from "@engine/Navigation/NavigationLayer";
-import { ShowAgentViz } from "@engine/Navigation/NavAgentVisualistaionSystem";
+import { AngleToRad } from "@BabylonBurstCore/Utils/MathUtils";
+import { NavigationLayer } from "@BabylonBurstCore/Navigation/NavigationLayer";
+import { ShowAgentViz } from "@BabylonBurstCore/Navigation/NavAgentVisualistaionSystem";
 
 export class EditorVisOptions {
     bShowNavmeshByDefault = true;

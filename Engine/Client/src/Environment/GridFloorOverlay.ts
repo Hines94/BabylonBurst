@@ -12,7 +12,7 @@ import {
 import { DisposeOfObject } from "../Utils/SceneUtils";
 import { defaultLayerMask } from "../Utils/LayerMasks";
 import { SnapGridUtil } from "../Utils/SnapGridUtil";
-import { InstancedMeshTransform, SetTransformArray } from "@engine/AsyncAssets";
+import { InstancedMeshTransform, SetTransformArray } from "@BabylonBurstCore/AsyncAssets";
 
 export enum GridType {
     squareGrid,

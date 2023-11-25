@@ -1,6 +1,11 @@
-import { AsyncAWSBackend, AsyncAssetManager, AsyncInMemoryFrontend, AsyncIndexDBFrontend } from "@engine/AsyncAssets";
-import { GetAllZippedFileDatas } from "@engine/AsyncAssets/Utils/ZipUtils";
-import { DebugMode, environmentVaraibleTracker } from "@engine/Utils/EnvironmentVariableTracker";
+import {
+    AsyncAWSBackend,
+    AsyncAssetManager,
+    AsyncInMemoryFrontend,
+    AsyncIndexDBFrontend,
+} from "@BabylonBurstCore/AsyncAssets";
+import { GetAllZippedFileDatas } from "@BabylonBurstCore/AsyncAssets/Utils/ZipUtils";
+import { DebugMode, environmentVaraibleTracker } from "@BabylonBurstCore/Utils/EnvironmentVariableTracker";
 
 //Since manager is global we just check if setup
 export async function setupAsyncManager() {

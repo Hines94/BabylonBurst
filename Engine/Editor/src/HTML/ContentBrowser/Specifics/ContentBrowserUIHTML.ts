@@ -1,4 +1,4 @@
-import { AsyncImageDescription } from "@engine/AsyncAssets";
+import { AsyncImageDescription } from "@BabylonBurstCore/AsyncAssets";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { OpenUIEditor } from "../../UI/UIEditor";

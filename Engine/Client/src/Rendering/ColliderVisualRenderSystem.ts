@@ -1,10 +1,10 @@
-import { AsyncStaticMeshInstanceRunner, InstancedMeshTransform } from "@engine/AsyncAssets";
+import { AsyncStaticMeshInstanceRunner, InstancedMeshTransform } from "@BabylonBurstCore/AsyncAssets";
 import { uiLayerMask } from "../Utils/LayerMasks";
 import { Color3, StandardMaterial } from "@babylonjs/core";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { GameSystem, GameSystemRunType } from "@engine/GameLoop/GameSystem";
-import { ColliderRenderSystemPriority } from "@engine/GameLoop/GameSystemPriorities";
-import { EntTransform } from "@engine/EntitySystem/CoreComponents";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { GameSystem, GameSystemRunType } from "@BabylonBurstCore/GameLoop/GameSystem";
+import { ColliderRenderSystemPriority } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
+import { EntTransform } from "@BabylonBurstCore/EntitySystem/CoreComponents";
 
 const showVisualsProp = "___Collider___";
 const colliderMaterial = "___COLLIDERMATERIAL___";

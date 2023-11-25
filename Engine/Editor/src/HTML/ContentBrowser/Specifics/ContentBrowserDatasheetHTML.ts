@@ -2,7 +2,7 @@ import { ConvertDataBackToCSV } from "@BabylonBurstClient/Utils/DataToCSV";
 import { OpenDatasheet, SetupDatasheet as SetupDatasheet } from "../../Datasheets/DatasheetEditor";
 import { ContentItem } from "../ContentItem";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
-import { AsyncStringLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { AsyncStringLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoaders";
 
 export class ContentBrowserDatasheetHTML extends ContentBrowserSpecificItem {
     declare ourItem: ContentItem;

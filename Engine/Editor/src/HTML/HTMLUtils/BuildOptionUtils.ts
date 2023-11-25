@@ -1,6 +1,6 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { GenerateTopMenuButton, buildMenuPriority } from "../../Utils/EditorTopMenu";
-import { RebuildAllNavmeshLayers } from "@engine/Navigation/NavigationBuildSystem";
+import { RebuildAllNavmeshLayers } from "@BabylonBurstCore/Navigation/NavigationBuildSystem";
 
 export class EditorBuildOptions {
     /** Option to rebuild all navmeshes with click */

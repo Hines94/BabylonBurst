@@ -14,7 +14,7 @@ export default {
     resolve: {
         alias: {
             '@BabylonBurstClient': path.resolve(__dirname, 'src'),
-            '@engine': path.resolve(__dirname, '../Shared/src'),
+            '@BabylonBurstCore': path.resolve(__dirname, '../Shared/src'),
             '@userCode': path.resolve(__dirname, '../../Source'),
         }
     },

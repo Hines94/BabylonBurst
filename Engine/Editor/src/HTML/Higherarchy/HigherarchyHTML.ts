@@ -3,13 +3,13 @@ import { RemoveClassFromAllItems, WaitForEvent } from "@BabylonBurstClient/HTML/
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { EntityInspectorHTML } from "./EntityInspectorHTML";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { EntityData } from "@engine/EntitySystem/EntityData";
-import { Prefab } from "@engine/EntitySystem/Prefab";
-import { storedRegisteredType } from "@engine/EntitySystem/TypeRegister";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { EntityData } from "@BabylonBurstCore/EntitySystem/EntityData";
+import { Prefab } from "@BabylonBurstCore/EntitySystem/Prefab";
+import { storedRegisteredType } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { SetupEditorGizmos } from "./EditorGizmos";
-import { ComponentNotify } from "@engine/EntitySystem/EntitySystem";
-import { EntNamingComponent } from "@engine/EntitySystem/CoreComponents";
+import { ComponentNotify } from "@BabylonBurstCore/EntitySystem/EntitySystem";
+import { EntNamingComponent } from "@BabylonBurstCore/EntitySystem/CoreComponents";
 import { Observable } from "@babylonjs/core";
 
 /** Can display entities in a higherarchy with clickable options (delete/add etc). Also hooks into inspector. */

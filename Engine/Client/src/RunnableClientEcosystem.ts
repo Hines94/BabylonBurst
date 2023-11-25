@@ -7,10 +7,10 @@ import { v4 as uuidv4 } from "uuid";
 import { UpdateSystemsLoop } from "./SystemsLoop";
 import { PlayerCamera } from "./Camera/PlayerCamera";
 import { GetGameSettings } from "./Settings";
-import { EcosystemType, GameEcosystem } from "@engine/GameEcosystem";
-import { EntitySystem } from "@engine/EntitySystem/EntitySystem";
+import { EcosystemType, GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { EntitySystem } from "@BabylonBurstCore/EntitySystem/EntitySystem";
 import { setupAsyncManager } from "@BabylonBurstClient/Setup/AWSAssetSetup";
-import { PrefabManager } from "@engine/EntitySystem/PrefabManager";
+import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
 
 /** Custom game launch - eg editor or client side performance checks */

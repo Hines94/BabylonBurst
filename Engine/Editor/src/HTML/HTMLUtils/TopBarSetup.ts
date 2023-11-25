@@ -1,4 +1,4 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { EditorBuildOptions, SetupAllEditorBuildOptions } from "./BuildOptionUtils";
 import { EditorVisOptions, SetupAllEditorVisualisations } from "./VisualAidUtils";
 import { EditorDebugOptions, SetupAllEditorDebugOptions } from "./DebugOptionUtils";

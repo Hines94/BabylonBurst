@@ -2,7 +2,7 @@ import { decode } from "@msgpack/msgpack";
 import { OpenMaterial } from "../../Materials/MaterialEditor";
 import { ContentBrowserSpecificItem } from "./ContentBrowserSpecificItemHTML";
 import { ContextMenuItem } from "@BabylonBurstClient/HTML/HTMLContextMenu";
-import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { AsyncArrayBufferLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoaders";
 
 export class ContentBrowserMaterialHTML extends ContentBrowserSpecificItem {
     getContextMenuItems(): ContextMenuItem[] {

@@ -14,8 +14,8 @@ import { VisualItem } from "./VisualItem";
 import { AssetFolder } from "./AssetFolder";
 import { ContentBrowserAssetBundleHTML } from "./Specifics/ContentBrowserAssetBundleHTML";
 import { RefreshFolderTracking } from "../../Utils/ContentTypeTrackers";
-import { GameEcosystem } from "@engine/GameEcosystem";
-import { GetFileExtension } from "@engine/Utils/StringUtils";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { GetFileExtension } from "@BabylonBurstCore/Utils/StringUtils";
 
 /** This connects our content browser to the storage mechanism. Eg player blueprints or Editor S3.  */
 export interface ContentStorageBackend {

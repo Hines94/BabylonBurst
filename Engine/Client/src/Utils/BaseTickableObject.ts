@@ -1,4 +1,4 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { v4 as uuidv4 } from "uuid";
 
 const allTickables: { [id: string]: BaseTickableObject } = {};

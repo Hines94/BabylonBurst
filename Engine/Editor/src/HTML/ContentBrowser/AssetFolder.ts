@@ -2,7 +2,7 @@ import { VisualItem } from "./VisualItem";
 import { AssetBundle } from "./AssetBundle";
 import { ContentItem } from "src/HTML/ContentBrowser/ContentItem";
 import { RefreshObjectTypeTracking } from "../../Utils/ContentTypeTrackers";
-import { IBackendStorageInterface } from "@engine/AsyncAssets";
+import { IBackendStorageInterface } from "@BabylonBurstCore/AsyncAssets";
 
 //A folder level that stores a number of items
 export class AssetFolder extends VisualItem {

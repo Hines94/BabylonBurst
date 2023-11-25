@@ -2,8 +2,8 @@ import { ContentItem, ContentItemType } from "../HTML/ContentBrowser/ContentItem
 import { Observable, Scene } from "@babylonjs/core";
 import { GetAllEditorObjectsOfType, editorObjectCategoriesChange } from "./ContentTypeTrackers";
 import { mainEditorScene } from "../HTML/CustomEditorHTML";
-import { SceneAsyncLoader } from "@engine/AsyncAssets";
-import { ModelSpecifier } from "@engine/Rendering/InstancedRender";
+import { SceneAsyncLoader } from "@BabylonBurstCore/AsyncAssets";
+import { ModelSpecifier } from "@BabylonBurstCore/Rendering/InstancedRender";
 
 export type ModelInformation = {
     specifier: ModelSpecifier;

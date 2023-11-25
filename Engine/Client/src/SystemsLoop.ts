@@ -6,14 +6,14 @@ import { ServerConnectionProcesserSystem, serverConnection } from "./Networking/
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { ColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateTickClient } from "@userCode/ClientMain";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { LightingGameSystem } from "./Rendering/LightsSystem";
-import { UpdateAsyncSystemOnTick } from "@engine/AsyncAssets";
-import { NavigationAgent } from "@engine/Navigation/NavigationAgent";
-import { NavAgentVisualisationSystem } from "@engine/Navigation/NavAgentVisualistaionSystem";
-import { GetSystemOfType, RunGameSystems } from "@engine/GameLoop/GameSystemLoop";
+import { UpdateAsyncSystemOnTick } from "@BabylonBurstCore/AsyncAssets";
+import { NavigationAgent } from "@BabylonBurstCore/Navigation/NavigationAgent";
+import { NavAgentVisualisationSystem } from "@BabylonBurstCore/Navigation/NavAgentVisualistaionSystem";
+import { GetSystemOfType, RunGameSystems } from "@BabylonBurstCore/GameLoop/GameSystemLoop";
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
-import { RegisterDefaultCoreSystems } from "@engine/GameLoop/GameSystemPriorities";
+import { RegisterDefaultCoreSystems } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
 
 function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     if (GetSystemOfType(InstancedMeshRenderSystem)) {

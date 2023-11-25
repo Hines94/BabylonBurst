@@ -1,8 +1,8 @@
 import { PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
 import { EnterPointerLock, ExitPointerLock, IsPointerLockActive } from "@BabylonBurstClient/Utils/SceneUtils";
 import { Vector3 } from "@babylonjs/core";
-import { EntVector4 } from "@engine/EntitySystem/CoreComponents";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { EntVector4 } from "@BabylonBurstCore/EntitySystem/CoreComponents";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
 export class LookingCameraComponent {
     viewRotationSpeed = 100;

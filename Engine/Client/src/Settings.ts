@@ -1,4 +1,4 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { premadeUltraSetting } from "./Utils/PremadeSettings";
 
 export enum DownloadRegion {

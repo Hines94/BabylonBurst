@@ -1,4 +1,4 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { GenerateTopMenuToggle, debugOptionPriority } from "../../Utils/EditorTopMenu";
 import { FramerateCounter } from "@BabylonBurstClient/GUI/Generic/FramerateCounter";
 

@@ -1,3 +1,3 @@
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
 export function UpdateTickClient(ecosystem: GameEcosystem) {}

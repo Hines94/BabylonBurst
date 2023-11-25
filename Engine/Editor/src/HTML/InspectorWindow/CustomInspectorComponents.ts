@@ -1,11 +1,11 @@
 import { ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { EntityData } from "@engine/EntitySystem/EntityData";
-import { GetAllSavedProperties, registeredTypes, savedProperty } from "@engine/EntitySystem/TypeRegister";
-import { GameEcosystem } from "@engine/GameEcosystem";
+import { EntityData } from "@BabylonBurstCore/EntitySystem/EntityData";
+import { GetAllSavedProperties, registeredTypes, savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { GenerateInnerOuterPanelWithMinimizer, isAttachedToDOM } from "@BabylonBurstClient/Utils/HTMLUtils";
 import { ProcessInstancedRenderComp } from "./CustomInstancedRendererComponent";
 import { ProcessModelSpecifierComp } from "./CustomModelSpecifier";
-import { IsEnumType, IsIntArrayType, isTypeAClass } from "@engine/Utils/TypeRegisterUtils";
+import { IsEnumType, IsIntArrayType, isTypeAClass } from "@BabylonBurstCore/Utils/TypeRegisterUtils";
 import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
 import { Observable } from "@babylonjs/core";

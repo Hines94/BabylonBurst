@@ -1,9 +1,9 @@
 import { VisualItem } from "./VisualItem";
 import { AssetBundle } from "./AssetBundle";
 import { AssetFolder } from "./AssetFolder";
-import { GetFileExtension } from "@engine/Utils/StringUtils";
-import { AsyncDataType, ZippedEntry } from "@engine/AsyncAssets/Utils/ZipUtils";
-import { AsyncArrayBufferLoader } from "@engine/Utils/StandardAsyncLoaders";
+import { GetFileExtension } from "@BabylonBurstCore/Utils/StringUtils";
+import { AsyncDataType, ZippedEntry } from "@BabylonBurstCore/AsyncAssets/Utils/ZipUtils";
+import { AsyncArrayBufferLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoaders";
 
 /** Type of content for our editor (or player build) content browser */
 export enum ContentItemType {

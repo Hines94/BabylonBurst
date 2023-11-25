@@ -1,8 +1,8 @@
 import { BabylonBurstClient } from "@BabylonBurstClient/BabylonBurstClient";
 import { PlayHigherarchyHTML } from "./HTML/Higherarchy/PlayHigherarchyHTML";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
-import { RefreshObjectTypeTracking } from "src/Utils/ContentTypeTrackers";
-import { RefreshAllModelPaths } from "src/Utils/EditorModelSpecifier";
+import { RefreshObjectTypeTracking } from "./Utils/ContentTypeTrackers";
+import { RefreshAllModelPaths } from "./Utils/EditorModelSpecifier";
 import { UpdateEditorTick } from "@userCode/EditorMain";
 
 /** Special version of the game client that allows entity inspection, editor visualistaions etc */

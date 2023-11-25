@@ -1,5 +1,5 @@
 import { serverConnection } from "../Networking/ServerConnection";
-import { ConnectionOwnedEntity } from "@engine/Networking/ConnectionOwnedEntity";
+import { ConnectionOwnedEntity } from "@BabylonBurstCore/Networking/ConnectionOwnedEntity";
 
 export function GetLocalPlayerId(): string {
     if (serverConnection === undefined) {
