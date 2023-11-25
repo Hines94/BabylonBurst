@@ -104,7 +104,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
         this.sceneSettings = new SceneSetupSettings(this.scene);
         await this.sceneSettings.setupScene();
 
-        this.setupExtras();
+        await this.setupExtras();
 
         //Perform setup on various systems
         SetupInputsModule(this);
@@ -142,7 +142,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
             }
         });
     }
-    protected setupExtras() {}
+    protected async setupExtras(): Promise<void> {}
 
     private updateLoop() {
         UpdateInputValues(this);

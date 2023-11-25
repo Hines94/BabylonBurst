@@ -42,9 +42,9 @@ export class BabylonBurstEditor extends RunnableClientEcosystem {
         //environmentVaraibleTracker.SetOverrideVariable("USE_MEMORY_FRONTEND","true");
     }
 
-    protected override setupExtras(): void {
+    protected override async setupExtras(): Promise<void> {
         //Load in CSV with our buildables on it
-        this.setupEditor();
+        await this.setupEditor();
     }
 
     editorHTML: CustomEditorHTML;
