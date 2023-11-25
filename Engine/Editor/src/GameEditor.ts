@@ -3,6 +3,7 @@ import { PlayHigherarchyHTML } from "./HTML/Higherarchy/PlayHigherarchyHTML";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { RefreshObjectTypeTracking } from "src/Utils/ContentTypeTrackers";
 import { RefreshAllModelPaths } from "src/Utils/EditorModelSpecifier";
+import { UpdateEditorTick } from "@userCode/EditorMain";
 
 /** Special version of the game client that allows entity inspection, editor visualistaions etc */
 export class GameEditor extends BabylonBurstClient {
@@ -17,6 +18,11 @@ export class GameEditor extends BabylonBurstClient {
     DisplayError = (message: string) => {
         ShowToastError(message, this.doc);
     };
+
+    protected override updateEcosystemLoop(): void {
+        super.updateEcosystemLoop();
+        UpdateEditorTick(this);
+    }
 
     override async setupScene(): Promise<void> {
         console.log("Loading in Play-Editor mode");

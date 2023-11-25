@@ -2,6 +2,7 @@ import { RunnableClientEcosystem } from "@BabylonBurstClient/RunnableClientEcosy
 import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
 import { EditorCamera } from "./Utils/EditorCamera";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import { UpdateEditorTick } from "@userCode/EditorMain";
 
 export type BuildableDescript = {
     CodeName: string;
@@ -66,6 +67,7 @@ export class BabylonBurstEditor extends RunnableClientEcosystem {
             this.cam.UpdateCamera(this);
         }
         super.updateEcosystemLoop();
+        UpdateEditorTick(this);
     }
 }
 
