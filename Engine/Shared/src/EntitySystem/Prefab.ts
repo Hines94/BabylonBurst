@@ -58,21 +58,21 @@ export class PrefabInstance extends Component {
         this.SpawnedPrefabIdentifier.prefabUUID = uuid;
     }
 
-    onComponentAdded(entData:EntityData):void {
-        const prefabInst = entData.GetComponent<PrefabInstance>(PrefabInstance);
-        prefabInst.refreshPrefabInstance(entData);
+    onComponentAdded():void {
+        const prefabInst = this.entityOwner.GetComponent<PrefabInstance>(PrefabInstance);
+        prefabInst.refreshPrefabInstance(this.entityOwner);
     }
 
-    onComponentRemoved(entData: EntityData): void {
+    onComponentRemoved(): void {
         if(this.reloadObserver !== undefined) {
             PrefabManager.onPrefabAdded.remove(this.reloadObserver);
         }
         this.clearSpawnedEntities();
     }
 
-    onComponentChanged(entData: EntityData): void {
-        const prefabInst = entData.GetComponent<PrefabInstance>(PrefabInstance);
-        prefabInst.refreshPrefabInstance(entData);
+    onComponentChanged(): void {
+        const prefabInst = this.entityOwner.GetComponent<PrefabInstance>(PrefabInstance);
+        prefabInst.refreshPrefabInstance(this.entityOwner);
     }
 
     /** Get all spawned entities that were created by this prefab instance */

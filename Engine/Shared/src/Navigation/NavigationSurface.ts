@@ -12,6 +12,10 @@ export class NavigationSurface extends Component {
     NavigationLayers = ["default"];
 
     @TrackedVariable()
+    @Saved(Boolean,{comment:"If set true then surface model spec will be ignored"})
+    isSameAsRenderer = false;
+
+    @TrackedVariable()
     @Saved(ModelSpecifier,{comment:"Model that is added to the geometry for the navmesh"})
     SurfaceModel = new ModelSpecifier();
     

@@ -120,7 +120,7 @@ test("PrefabReloadChange",()=>{
     PrefabManager.SetupPrefabFromRaw("test/someFile","somePrefab.Prefab",encode(changedPrefabData));
 
     //Event should automatically make prefabs reload
-    expect(prefInst.SpawnedPrefabEntities.length).toBe(3);
+    expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities.length).toBe(3);
     expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[0].EntityId).toBe(2);
     expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[0].GetComponent(PrefabTestComp)).toBe(undefined);
     expect(prefInst.SpawnedPrefabEntities[0].spawnedEntities[1].EntityId).toBe(3);

@@ -17,13 +17,13 @@ export class ConnectionOwnedEntity extends Component {
 
     private setConnectionOwner = "";
 
-    onComponentChanged(entData: EntityData): void {
-        this.ResetConnectionOwner(entData);
+    onComponentChanged(): void {
+        this.ResetConnectionOwner(this.entityOwner);
     }
 
-    onComponentRemoved(entData: EntityData): void {
+    onComponentRemoved(): void {
         this.connectionOwner = "";
-        this.ResetConnectionOwner(entData);
+        this.ResetConnectionOwner(this.entityOwner);
     }
 
     /** Reset to latest so we can easily find all owned entites */

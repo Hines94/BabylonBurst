@@ -6,7 +6,6 @@ import { EntityData } from "./EntityData"
 import { EntityQuery } from "./EntityQuery";
 import { registeredTypes } from "./TypeRegister";
 import { DeepSetupCallback } from "./TrackedVariable";
-import { GetParentClassesOfInstance } from "../Utils/TypeRegisterUtils";
 
 export type ComponentNotify = {
     ent:EntityData;
@@ -81,7 +80,8 @@ export class EntitySystem {
         if(!component) {
             return;
         }
-        component.onComponentRemoved(entData);
+        component.onComponentRemoved();
+        component.entityOwner = undefined;
         entData.Components[component.constructor.name] = undefined;
         delete(entData.Components[component.constructor.name])
         const newBucket = this.FindMakeBucket(entData.Components);
@@ -99,7 +99,8 @@ export class EntitySystem {
         const compKeys = Object.keys(entData.Components);
         compKeys.forEach((ck)=> {
             const comp = entData.Components[ck];
-            comp.onComponentRemoved(entData)
+            comp.onComponentRemoved();
+            comp.entityOwner = undefined;
         });
         EntityBucket.RemoveEntityFromAnyBuckets(entData);
         delete(this.AllEntities[entData.EntityId]);
@@ -173,7 +174,8 @@ export class EntitySystem {
         newBucket.ChangeEntityToThisBucket(entData);
 
         if(bCallAdded) {
-            comp.onComponentAdded(entData);
+            comp.entityOwner = entData;
+            comp.onComponentAdded();
             this.SetChangedComponent(entData,comp);
             this.onComponentAddedEv.notifyObservers({ent:entData,comp:comp});
         }
@@ -195,7 +197,7 @@ export class EntitySystem {
                 if(component === undefined){
                     continue;
                 }
-                component.onComponentChanged(data);
+                component.onComponentChanged();
                 this.onComponentChangedEv.notifyObservers({ent:data,comp:component});
             }
         }

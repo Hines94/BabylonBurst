@@ -91,11 +91,11 @@ export class NavigationAgent extends Component {
     StopAgent(){
         this.IsStopped = true;
         if(this.IsSetup()) {
-            this.RebuildAgent(undefined,undefined,undefined);
+            this.RebuildAgent(undefined,undefined);
         }
     }
 
-    RebuildAgent(navLayer:NavigationLayer,agentEnt:EntityData, ecosystem:GameEcosystem) {
+    RebuildAgent(navLayer:NavigationLayer,ecosystem:GameEcosystem) {
         const newParams = this.getAgentParams();
         if(DeepEquals(newParams,this.priorBuildParams)) {
             return;
@@ -103,17 +103,17 @@ export class NavigationAgent extends Component {
 
         //Requires setup?
         if(this.transformNode === undefined) {
-            if(ecosystem === undefined || agentEnt === undefined || navLayer === undefined) {
+            if(ecosystem === undefined || !this.IsOwnerValid() || navLayer === undefined) {
                 return;
             }
             if(navLayer.navLayerCrowd === undefined) {
                 return;
             }
-            const transform = agentEnt.GetComponent(EntTransform);
+            const transform = this.entityOwner.GetComponent(EntTransform);
             if(transform === undefined) {
                 return;
             }
-            this.transformNode = new TransformNode(`NavAgentTransform_${agentEnt.EntityId}`,ecosystem.scene);
+            this.transformNode = new TransformNode(`NavAgentTransform_${this.entityOwner.EntityId}`,ecosystem.scene);
             this.agentIndex = navLayer.navLayerCrowd.addAgent(EntVector3.GetVector3(transform.Position),newParams,this.transformNode);
             this.priorBuildParams = newParams;
             this.navLayer = navLayer;
@@ -132,19 +132,19 @@ export class NavigationAgent extends Component {
     }
 
     /** For instant travel. For regular use the desiredLocation vector instead. */
-    TeleportToLocation(desiredLoc:EntVector3,owningEnt:EntityData, bStopCurrentTarget = true) : boolean {
-        if(owningEnt === undefined) {
+    TeleportToLocation(desiredLoc:EntVector3, bStopCurrentTarget = true) : boolean {
+        if(!this.IsOwnerValid()) {
             return false;
         }
         if(!this.IsSetup()) {
             return false;
         }
-        const navLayer = NavigationLayer.GetNavigationLayer(this.targetNavigationLayer,owningEnt.owningSystem);
+        const navLayer = NavigationLayer.GetNavigationLayer(this.targetNavigationLayer,this.entityOwner.owningSystem);
         if(navLayer === undefined) {
             return false;
         }
         navLayer.navLayerCrowd.agentTeleport(this.agentIndex,EntVector3.GetVector3(desiredLoc));
-        EntVector3.Copy(owningEnt.GetComponent(EntTransform).Position,desiredLoc);
+        EntVector3.Copy(this.entityOwner.GetComponent(EntTransform).Position,desiredLoc);
         if(bStopCurrentTarget) {
             this.IsStopped = true;
             this.priorMoveTarget = desiredLoc;
@@ -196,7 +196,7 @@ export class NavigationAgent extends Component {
             this.navLayer.navLayerCrowd.agentGoto(this.agentIndex,closestPos);
             this.IsStopped = false;
             //Can be rebuilt if previously built as store params
-            this.RebuildAgent(undefined,undefined,undefined);
+            this.RebuildAgent(undefined,undefined);
         }
         this.priorMoveTarget = EntVector3.clone(this.TargetLocation);
     }
@@ -208,19 +208,19 @@ export class NavigationAgent extends Component {
         return this.navLayer.navLayerCrowd.getAgentVelocity(this.agentIndex).lengthSquared() < 0.5;
     }
 
-    IsReadyForStop(ourEnt:EntityData) {
-        if(this.staticTime > 0.5 || this.IsAtAcceptableDistance(ourEnt)) {
+    IsReadyForStop() {
+        if(this.staticTime > 0.5 || this.IsAtAcceptableDistance()) {
             return true;
         }
         return false;
     }
 
-    IsAtAcceptableDistance(ourEnt:EntityData) {
+    IsAtAcceptableDistance() {
         if(!this.IsSetup() || this.TargetLocation === undefined) {
             return false;
         }
 
-        const entTransform = ourEnt.GetComponent(EntTransform);
+        const entTransform = this.entityOwner.GetComponent(EntTransform);
         const distToTarget = EntVector3.Length2D(EntVector3.Subtract(entTransform.Position,this.TargetLocation));
         const ourVeloc = this.navLayer.navLayerCrowd.getAgentVelocity(this.agentIndex);
         const velocSq = Math.pow(ourVeloc.x + ourVeloc.z,2);
@@ -235,32 +235,32 @@ export class NavigationAgent extends Component {
         }
     }
 
-    IsWithinDistanceToTarget(ourEnt:EntityData,target:EntVector3,marginMulti = 1):boolean{
-        if(!ourEnt || !ourEnt.IsValid()) {
+    IsWithinDistanceToTarget(target:EntVector3,marginMulti = 1):boolean{
+        if(!this.IsOwnerValid()) {
             return false;
         }
-        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(ourEnt.GetComponent(EntTransform).Position,target));
+        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(this.entityOwner.GetComponent(EntTransform).Position,target));
         return distToTarget < (this.acceptableMovementDistance + this.radius) * marginMulti;
     }
 
-    IsWithinDistanceToEntity(ourEnt:EntityData,target:EntityData,marginMulti = 1):boolean{
-        if(!ourEnt || !ourEnt.IsValid()) {
+    IsWithinDistanceToEntity(target:EntityData,marginMulti = 1):boolean{
+        if(!this.IsOwnerValid()) {
             return false;
         }
         const targetLoc = this.GetMoveToEntityLoc(target);
-        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(ourEnt.GetComponent(EntTransform).Position,targetLoc));
+        const distToTarget = EntVector3.Length2D(EntVector3.Subtract(this.entityOwner.GetComponent(EntTransform).Position,targetLoc));
         return distToTarget < (this.acceptableMovementDistance + this.radius) * marginMulti;
     }
 
 
     /** Move to an entity - if nav agent then will move to the edge instead of trying to go to middle */
-    MoveToEntity(ourEntity:EntityData,entTarget:EntityData) {
+    MoveToEntity(entTarget:EntityData) {
         if(!this.navLayer || !this.navLayer.navLayerPlugin) {
             return;
         }
 
         const targetPos = this.GetMoveToEntityLoc(entTarget);
-        if(this.IsWithinDistanceToTarget(ourEntity,targetPos)) {
+        if(this.IsWithinDistanceToTarget(targetPos)) {
             return;
         }
 
@@ -329,10 +329,10 @@ export class NavAgentTransformSystem extends GameSystem {
                 return;
             }
 
-            if(navAgent.IsReadyForStop(e)) {
+            if(navAgent.IsReadyForStop()) {
                 navAgent.IsStopped = true;
                 navAgent.TargetLocation = undefined;
-                navAgent.RebuildAgent(navAgent.navLayer,e,ecosystem);
+                navAgent.RebuildAgent(navAgent.navLayer,ecosystem);
             } else {
                 if(navAgent.priorBuildParams.maxSpeed > 1 && navAgent.navLayer.navLayerCrowd.getAgentVelocity(navAgent.agentIndex).length() < 1){
                     navAgent.staticTime += ecosystem.deltaTime;

@@ -8,11 +8,11 @@ import { ComponentNotify } from "../EntitySystem/EntitySystem";
 import { EntityData } from "../EntitySystem/EntityData";
 import { ArraysContainEqualItems } from "../Utils/ArrayUtils";
 import Recast from "recast-detour";
-import { GetRandomColor4, getRandomColor3 } from "../Utils/MeshUtils";
+import { getRandomColor3 } from "../Utils/MeshUtils";
 import { NavigationAgent } from "./NavigationAgent";
-import { DeepEquals } from "../../../Client/src/Utils/HTMLUtils";
-import { GameSystem } from "../GameLoop/GameSystem";
+import { GameSystem, GameSystemRunType } from "../GameLoop/GameSystem";
 import { NavigationBoxObsticle, NavigationObsticle } from "./NavigationObsticles";
+import { InstancedRender } from "../Rendering/InstancedRender";
 
 var recast:any;
 
@@ -29,9 +29,9 @@ enum rebuildType {
 
 export class NavigationBuildSystem extends GameSystem {
     SystemOrdering = 1;
+    systemRunType = GameSystemRunType.GameAndEditor;
     
     SetupGameSystem(ecosystem: GameEcosystem) {
-        this.bSystemEnabled = false;
         if(ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"]) {
             return;
         }
@@ -42,7 +42,7 @@ export class NavigationBuildSystem extends GameSystem {
         ecosystem.dynamicProperties["___NAVBUILDSYSTEMSETUP___"] = true;
     }
     RunSystem(ecosystem: GameEcosystem) {
-        //Should never be called
+
     }
 
 }
@@ -77,17 +77,17 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
     }
     if(notify.comp instanceof NavigationAgent) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
-        notify.comp.RebuildAgent(navLayer,notify.ent,ecosystem);
+        notify.comp.RebuildAgent(navLayer,ecosystem);
         notify.comp.AgentAutoMove();   
     }
     if(notify.comp instanceof NavigationObsticle) {
         const navLayer = NavigationLayer.GetNavigationLayer(notify.comp.targetNavigationLayer,ecosystem.entitySystem);
-        notify.comp.RebuildObsticle(notify.ent,navLayer);
+        notify.comp.RebuildObsticle(navLayer);
     }
     if(notify.comp instanceof EntTransform) {
         const boxOb = notify.ent.GetComponent(NavigationBoxObsticle);
         if(boxOb !== undefined) {
-            boxOb.RebuildObsticle(notify.ent,undefined);
+            boxOb.RebuildObsticle(undefined);
         }
         //TODO: Add sphere obst
     }
@@ -95,7 +95,6 @@ async function checkRebuildNavSystem(ecosystem:GameEcosystem,notify:ComponentNot
 
 /** Perform full rebuild on a navigation layer */
 async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEcosystem, buildType: rebuildType) {
-
     if(buildType === rebuildType.OnlyIfData && !navLayer.builtData) {
         console.warn("No existing data to rebuild with for navmesh");
         return;
@@ -111,6 +110,7 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
 
     //Get the navigation surfaces we want to build with
     const builtSurfaces:EntityData[] = [];
+    const builtMeshes:string[] = [];
     const cloneMeshes:Mesh[] = [];
     const navSurfaces:Mesh[] = [];
     const allNavSurfaces = ecosystem.entitySystem.GetEntitiesWithData([NavigationSurface],[]);
@@ -120,10 +120,11 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         if(!surfElement.NavigationLayers.includes(navLayer.NavigationLayerName)) {
             continue;
         }
-        if(surfElement.SurfaceModel === undefined || surfElement.SurfaceModel.isEmptyModelSpecifier()) {
+        const model = surfElement.isSameAsRenderer && navSurfaceVec[i].GetComponent(InstancedRender) ? navSurfaceVec[i].GetComponent(InstancedRender).ModelData : surfElement.SurfaceModel;
+        if( model === undefined || model.isEmptyModelSpecifier()) {
             continue;
         }
-        const asyncMesh = AsyncStaticMeshDefinition.GetStaticMeshDefinitionNoMats(surfElement.SurfaceModel.FilePath,surfElement.SurfaceModel.MeshName,surfElement.SurfaceModel.FileName);
+        const asyncMesh = AsyncStaticMeshDefinition.GetStaticMeshDefinitionNoMats(model.FilePath,model.MeshName,model.FileName);
         await asyncMesh.loadInMesh(ecosystem.scene);
         const finalMesh = asyncMesh.GetFinalMesh(ecosystem.scene);
         if(finalMesh !== undefined && finalMesh !== null) {
@@ -137,13 +138,15 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
                 navSurfaces.push(finalMesh);
             }
             builtSurfaces.push(navSurfaceVec[i]);
+            builtMeshes.push(`${model.FilePath}_${model.FileName}_${model.MeshName}`);
         }
     }
 
     //No rebuild if same for some reason!
-    const equalToLastBuild = ArraysContainEqualItems(navLayer.builtSurfaces ,builtSurfaces);
+    const equalToLastBuild = ArraysContainEqualItems(navLayer.builtSurfaces ,builtSurfaces) && ArraysContainEqualItems(navLayer.builtMeshes, builtMeshes);
     if(buildType === rebuildType.Force || (!equalToLastBuild && buildType === rebuildType.TryWithData)) {
         navLayer.builtSurfaces = builtSurfaces;
+        navLayer.builtMeshes = builtMeshes;
         navLayer.navLayerPlugin.createNavMesh(navSurfaces,navLayer.GetNavmeshParameters()); 
         navLayer.builtData = navLayer.navLayerPlugin.getNavmeshData(); 
         navLayer.navLayerBuilt = true; 
@@ -174,6 +177,7 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
     if(ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] === undefined) {
         const color = getRandomColor3();
         var matdebug = new StandardMaterial("NavDebugMat",ecosystem.scene);
+        matdebug.disableLighting = true;
         matdebug.emissiveColor = color;
         matdebug.alpha = 0.1;
         ecosystem.dynamicProperties["___DEBUGNAVMESHMATERIAL___"+navLayer.NavigationLayerName] = matdebug;
@@ -194,7 +198,7 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         if(agentComp.targetNavigationLayer !== navLayer.NavigationLayerName) {
             continue;
         }
-        agentComp.RebuildAgent(navLayer,allAgents[a],ecosystem);
+        agentComp.RebuildAgent(navLayer,ecosystem);
         agentComp.AgentAutoMove();
     }
     
@@ -205,6 +209,6 @@ async function RebuildNavigationLayer(navLayer:NavigationLayer,ecosystem:GameEco
         if(obComp.targetNavigationLayer !== navLayer.NavigationLayerName) {
             return;
         }
-        obComp.RebuildObsticle(e,navLayer);
+        obComp.RebuildObsticle(navLayer);
     })
 }

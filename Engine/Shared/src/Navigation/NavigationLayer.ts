@@ -80,6 +80,8 @@ export class NavigationLayer extends Component {
 
     @Saved(EntityData,{editorViewOnly:true,comment:"Entities that haved been used previously to store our data against"})
     builtSurfaces:EntityData[] = [];
+    @Saved(String,{editorViewOnly:true,comment:"Mesh types that have been used to build"})
+    builtMeshes:string[] = [];
     @Saved(Uint8Array,{editorViewOnly:true,comment:"Preloaded data that has been previously generated for our navmesh"})
     builtData:Uint8Array;
 

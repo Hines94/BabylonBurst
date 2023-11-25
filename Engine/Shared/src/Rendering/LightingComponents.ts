@@ -25,14 +25,14 @@ export class DirectionalLightComp extends Component {
 
     createdLight: DirectionalLight;
 
-    onComponentRemoved(entData: EntityData): void {
+    onComponentRemoved(): void {
         if (this.createdLight !== undefined) {
             this.createdLight.dispose();
         }
     }
 
-    onComponentChanged(entData: EntityData): void {
-        entData.owningSystem.AddSetComponentToEntity(entData, new LightingRebuildTag());
+    onComponentChanged(): void {
+        this.entityOwner.owningSystem.AddSetComponentToEntity(this.entityOwner, new LightingRebuildTag());
     }
 
     rebuildLight(entity: EntityData, ecosystem: GameEcosystem) {

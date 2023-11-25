@@ -21,8 +21,8 @@ export abstract class NavigationObsticle extends Component {
     ourObsticle:IObstacle;
     builtLayer:NavigationLayer;
 
-    RebuildObsticle(entity:EntityData,layer:NavigationLayer) {
-        const transform = entity.GetComponent(EntTransform);
+    RebuildObsticle(layer:NavigationLayer) {
+        const transform = this.entityOwner.GetComponent(EntTransform);
         if(!transform) {
             this.ClearObsticle();
             return;
@@ -30,7 +30,7 @@ export abstract class NavigationObsticle extends Component {
 
         this.ClearObsticle();
 
-        if(entity === undefined) {
+        if(this.entityOwner === undefined) {
             return;
         }
         if(layer === undefined || layer.navLayerPlugin === undefined) {
@@ -38,7 +38,7 @@ export abstract class NavigationObsticle extends Component {
         } else {
             this.builtLayer = layer;
         }
-        this.ourObsticle = this.buildSpecificObsticle(entity,layer,transform);
+        this.ourObsticle = this.buildSpecificObsticle(this.entityOwner,layer,transform);
     }
 
     ClearObsticle() {

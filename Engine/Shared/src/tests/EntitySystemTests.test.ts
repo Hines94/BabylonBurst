@@ -26,13 +26,13 @@ class TestEntComp2 extends Component {
     @Saved(String)
     someVar = "test";
 
-    override onComponentRemoved(entData: EntityData): void {
+    override onComponentRemoved(): void {
         removeCalled = true;
     }
-    override onComponentAdded(entData: EntityData): void {
+    override onComponentAdded(): void {
         addCalled = true;
     }
-    override onComponentChanged(entData: EntityData): void {
+    override onComponentChanged(): void {
         changeCalled = true;
     }
 }
