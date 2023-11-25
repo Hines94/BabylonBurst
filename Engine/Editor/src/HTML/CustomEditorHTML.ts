@@ -28,7 +28,6 @@ export class CustomEditorHTML extends BaseTickableObject {
         super();
         this.editor = editor;
         mainEditorScene = editor.scene;
-        this.setupHTML();
     }
 
     async setupHTML() {

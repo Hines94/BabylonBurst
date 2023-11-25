@@ -16,6 +16,7 @@ export default defineConfig({
         alias: {
           '@BabylonBurstClient': path.resolve(__dirname, '../Client/src'),
           "@BabylonBurstCore":path.resolve(__dirname, '../Shared/src'),
+          '@BabylonBurstEditor': path.resolve(__dirname, './src'),
           '@userCode': path.resolve(__dirname, '../../Source')
         }
     },

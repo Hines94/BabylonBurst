@@ -51,6 +51,7 @@ export class BabylonBurstEditor extends RunnableClientEcosystem {
     async setupEditor() {
         if (!this.options.noHTML) {
             this.editorHTML = new CustomEditorHTML(this);
+            await this.editorHTML.setupHTML();
         }
     }
 
