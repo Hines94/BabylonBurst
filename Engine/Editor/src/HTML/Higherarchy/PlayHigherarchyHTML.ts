@@ -11,10 +11,16 @@ export class PlayHigherarchyHTML extends HigherarchyHTML {
 
     async SetupPlayHigherarchy(ecosystem: GameEcosystem) {
         this.setEcosystem(ecosystem);
-        await ecosystem.waitLoadedPromise;
 
         //Inject all the editor stuff we need first
         const editorTemp = await FetchInjectAdditionalHTML("/HTMLTemplates/EditorTemplate");
+
+        //This will be called after ecosystem finished
+        this.finaliseSetup(ecosystem);
+    }
+
+    private async finaliseSetup(ecosystem: GameEcosystem) {
+        await ecosystem.waitLoadedPromise;
 
         //Hide the Content browser
         (ecosystem.doc.querySelector("#ContentBrowser") as HTMLElement).style.display = "none";

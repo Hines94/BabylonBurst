@@ -30,7 +30,7 @@ export class GameEditor extends BabylonBurstClient {
         //Create higherarchy HTML that we can use to check various things
         const editorHigherarchy = new PlayHigherarchyHTML();
         await editorHigherarchy.SetupPlayHigherarchy(this);
-        await RefreshObjectTypeTracking();
+        //await RefreshObjectTypeTracking(); TODO: Reintroduce when get time
         RefreshAllModelPaths();
     }
 }

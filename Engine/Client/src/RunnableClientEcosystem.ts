@@ -83,8 +83,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
         canvas.ownerDocument.defaultView.onresize = function () {
             ecosystem.engine.resize();
         };
-        this.setupScene();
-        this.camera = new PlayerCamera(this);
+        await this.setupScene();
         GetGameSettings().OnSceneLoaded(this);
         this.waitLoadResolve(this);
         console.log(`Ecosystem: ${this.uuid} completed setup and starting game loop.`);
@@ -103,6 +102,8 @@ export class RunnableClientEcosystem implements GameEcosystem {
         this.scene = new Scene(this.engine);
         this.sceneSettings = new SceneSetupSettings(this.scene);
         await this.sceneSettings.setupScene();
+
+        this.camera = new PlayerCamera(this);
 
         await this.setupExtras();
 

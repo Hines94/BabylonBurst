@@ -53,14 +53,14 @@ export class BabylonBurstEditor extends RunnableClientEcosystem {
             this.editorHTML = new CustomEditorHTML(this);
             await this.editorHTML.setupHTML();
         }
+        if (!this.options.noCam) {
+            this.cam = new EditorCamera(this);
+        }
     }
 
     cam: EditorCamera;
     override async setupScene(): Promise<void> {
         await super.setupScene();
-        if (!this.options.noCam) {
-            this.cam = new EditorCamera(this);
-        }
     }
 
     protected override updateEcosystemLoop(): void {
