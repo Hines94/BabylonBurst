@@ -13,8 +13,11 @@ export class FramerateCounter {
     constructor(doc = document) {
         // Create the elements
         this.averageFramesElement = doc.createElement("div");
+        this.averageFramesElement.style.pointerEvents = "none";
         this.lowFramesElement = doc.createElement("div");
+        this.lowFramesElement.style.pointerEvents = "none";
         this.lowestFramesElement = doc.createElement("div");
+        this.lowestFramesElement.style.pointerEvents = "none";
 
         // Style the elements
         const baseStyles = {

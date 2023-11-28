@@ -9,13 +9,13 @@ export async function LoadUIContent(
     ecosystem: GameEcosystem,
     owningDiv: HTMLElement = undefined,
 ) {
-    var div = owningDiv;
-    if (div === undefined) {
+    var div: HTMLElement;
+    if (owningDiv === undefined) {
         div = ecosystem.doc.createElement("div");
         ecosystem.doc.getElementById("GameUI").appendChild(div);
     } else {
         var newdiv = ecosystem.doc.createElement("div");
-        div.appendChild(newdiv);
+        owningDiv.appendChild(newdiv);
         div = newdiv;
     }
     const loader = AsyncMsgpackLoader.GetMsgpackLoader(awsPath, filename);
@@ -23,7 +23,12 @@ export async function LoadUIContent(
     div.innerHTML = loader.msgpackData as string;
     div.setAttribute("data-uipath", awsPath);
     div.setAttribute("data-uifilename", filename);
-    SetupLoadedHTMLUI(div);
+    await SetupLoadedHTMLUI(div);
+    if (owningDiv !== undefined) {
+        owningDiv.innerHTML = div.innerHTML;
+        div.remove();
+        div = owningDiv;
+    }
     return div;
 }
 

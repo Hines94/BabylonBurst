@@ -41,12 +41,21 @@
             display: flex;
             background-color: black;
         }
-        #HTMLCoding {
-            width: 30%;
+        #HTMLCodingHolder {
+            position: relative;
             height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        #HTMLCoding {
+            position: absolute;
+            top:0px;
+            bottom:0px;
+            right:0px;
+            left:0px;
             background-color: rgb(20, 20, 20);
             padding: 10px;
-            overflow: auto;
+            overflow: scroll;
         }
     </style>
     <link rel="stylesheet" href="/GeneralStyles.css" />
@@ -72,9 +81,11 @@
     </div>
 
     <div class="centerUIPanel" id="centerUIPanel">
-        <div id="HTMLCoding">
+        <div id="HTMLCodingHolder">
+            <div id="HTMLCoding">
+            </div>
         </div>
-        <div id="DisplayHolder" style="height: 100%;background-color: black;padding: 1px; width: 70%;position: relative;">
+        <div id="DisplayHolder" style="height: 100%;background-color: black;padding: 1px; width: 200%;position: relative;">
             <div id="DisplayScaler" style="background-color: #191919;position: absolute;left:1px;top:1px;border:1px solid hsla(0, 0%, 59%, 0.5)">
                 <div id="HTMLDisplay" style="all:revert !important;position: relative;">
             
@@ -116,7 +127,6 @@
     }
 
     function EnsureResolutionSizing() {
-        console.log("RESIZE")
         const parent = previewElementScaler.parentElement;
   
         // Get the bounding dimensions of the parent element

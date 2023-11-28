@@ -5,7 +5,6 @@ import { DeviceSourceManager, DeviceType, PointerInput, Vector2 } from "@babylon
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
 const dynamicpropertyDSM = "___DYNAMICSOURCEMANAGER___";
-export const mouseOverCanvas = "___MOUSEOVERECOSYSTEMCANVAS___";
 
 /**
  * An input for a specific keybind. Contains useful methods for checking if we have used or not.
@@ -129,6 +128,8 @@ const IKEY = 73;
 
 /** Contains information on all of our relevant keybinds to play the game */
 export class WindowInputValues {
+    mouseOverCanvas = false;
+
     mouseWheel = 0;
     forward = 0;
     side = 0;
@@ -245,25 +246,26 @@ export function SetupInputsModule(ecosystem: GameEcosystem) {
             if (deviceSource.deviceType === DeviceType.Mouse || deviceSource.deviceType === DeviceType.Touch) {
                 deviceSource.onInputChangedObservable.add(eventData => {
                     if (eventData.inputIndex === PointerInput.MouseWheelY) {
-                        if (eventData.wheelDelta > 0) {
-                            ecosystem.InputValues.mouseWheel = 1;
+                        if (eventData.deltaY > 0) {
+                            ecosystem.InputValues.mouseWheel = eventData.deltaY;
                         } else {
                             ecosystem.InputValues.mouseWheel = -1;
                         }
                     }
                     if (eventData.inputIndex === PointerInput.Move) {
+                        ecosystem.InputValues.mouseOverCanvas = true;
                         RecordMouseChanges(eventData.movementX, eventData.movementY);
                     }
                 });
             }
         },
     );
-    ecosystem.dynamicProperties[mouseOverCanvas] = true;
+    ecosystem.InputValues.mouseOverCanvas = ecosystem.scene.pointerX !== 0 && ecosystem.scene.pointerY !== 0;
     ecosystem.canvas.addEventListener("mouseenter", () => {
-        ecosystem.dynamicProperties[mouseOverCanvas] = true;
+        ecosystem.InputValues.mouseOverCanvas = true;
     });
     ecosystem.canvas.addEventListener("mouseleave", () => {
-        ecosystem.dynamicProperties[mouseOverCanvas] = false;
+        ecosystem.InputValues.mouseOverCanvas = false;
     });
 }
 

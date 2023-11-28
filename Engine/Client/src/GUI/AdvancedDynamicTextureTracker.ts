@@ -1,4 +1,3 @@
-import { mouseOverCanvas } from "@BabylonBurstClient/InputModule";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
@@ -19,7 +18,7 @@ export function setHoveredOverGUIOverride(override: boolean) {
 }
 
 export function HoveredOverGUI(ecosystem: GameEcosystem): boolean {
-    return hoveredOverGUIOverride || onAdvancedTextureGUI(ecosystem) || !ecosystem.dynamicProperties[mouseOverCanvas];
+    return hoveredOverGUIOverride || onAdvancedTextureGUI(ecosystem) || !ecosystem.InputValues.mouseOverCanvas;
 }
 
 function onAdvancedTextureGUI(ecosystem: GameEcosystem): boolean {

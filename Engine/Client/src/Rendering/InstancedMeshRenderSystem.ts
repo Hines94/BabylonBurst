@@ -61,12 +61,14 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 if (mats.length === 0 && rendItem.MaterialData.length > 0) {
                     return;
                 }
-                ecosystem.dynamicProperties.LoadedRunners[runnerID] = new AsyncStaticMeshInstanceRunner(
+
+                ecosystem.dynamicProperties.LoadedRunners[runnerID] = this.GetAsyncStaticMeshInstanceRunner(
                     rendItem.ModelData.FilePath,
+                    rendItem.ModelData.FileName,
                     rendItem.ModelData.MeshName,
                     mats,
-                    rendItem.ModelData.FileName,
                     this.GetLayerMask(rendItem, entData),
+                    ecosystem,
                 );
             }
             //Set our data for this frame
@@ -88,6 +90,18 @@ export class InstancedMeshRenderSystem extends GameSystem {
             const transformData = data === undefined ? [] : data;
             ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(this.GetScene(ecosystem), transformData);
         });
+    }
+
+    /** Setup the AsyncStaticMeshInstanceRunner for our use */
+    GetAsyncStaticMeshInstanceRunner(
+        filePath: string,
+        fileName: string,
+        meshName: string,
+        mats: Material[],
+        layerMask: number,
+        ecosystem: GameEcosystem,
+    ): AsyncStaticMeshInstanceRunner {
+        return new AsyncStaticMeshInstanceRunner(filePath, meshName, mats, fileName, layerMask);
     }
 
     /** Get layermask to render with for a instanced render */

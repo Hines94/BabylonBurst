@@ -1,5 +1,24 @@
-import { Camera, Engine, Quaternion, Scene, TransformNode, Vector2, Vector3 } from "@babylonjs/core";
+import { Camera, Engine, Quaternion, Ray, Scene, TransformNode, Vector2, Vector3 } from "@babylonjs/core";
 import { lerp } from "../../../Shared/src/Utils/MathUtils";
+
+export function FindRayHeightIntersection(ray: Ray, height: number) {
+    // Check if the ray is parallel to the plane
+    if (ray.direction.y === 0) {
+        return null; // No intersection, ray is parallel to the plane
+    }
+
+    // Calculate the distance (t) from the ray origin to the intersection point
+    let t = (height - ray.origin.y) / ray.direction.y;
+
+    // If t is negative, the intersection is behind the ray's origin
+    if (t < 0) {
+        return null;
+    }
+
+    // Calculate the intersection point
+    let intersectionPoint = ray.origin.add(ray.direction.scale(t));
+    return intersectionPoint;
+}
 
 export function localToWorldRotation(rotation: Vector3, translationNode: TransformNode): Vector3 {
     let worldRotation = Quaternion.FromEulerAngles(

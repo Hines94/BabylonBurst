@@ -22,7 +22,7 @@ export abstract class GameSystem {
 
     private runEcosystems:{[id:string]:boolean} = {};
 
-    private lastRun = 10;
+    lastRun = 10;
 
     constructor() {
         RegisterGameSystem(this);
@@ -39,7 +39,6 @@ export abstract class GameSystem {
             if(this.lastRun < this.RateLimit) {
                 return;
             }
-            this.lastRun = 0;
         }
 
         if(!this.bSystemEnabled) {
@@ -59,6 +58,7 @@ export abstract class GameSystem {
             this.runEcosystems[ecosystem.uuid] = true;
         }
         this.RunSystem(ecosystem);
+        this.lastRun = 0;
     }
 
     /** Called as frequently as RateLimit (or every frame) */

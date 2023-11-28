@@ -1,7 +1,8 @@
-import { TransformNode, Vector3 } from "@babylonjs/core";
-import { PlayerCamera } from "@BabylonBurstCore/Camera/PlayerCamera";
+import { Mesh, MeshBuilder, TransformNode, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Clamp, Clamp01, lerp } from "@BabylonBurstCore/Utils/MathUtils";
+import { GetMousePickingRay, PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
+import { FindRayHeightIntersection } from "@BabylonBurstClient/Utils/SceneUtils";
 
 /** Generic spring arm comp. Should be applicable in a wide range of senarios (3rd person, RTS etc). root->spring arm->cameras.*/
 export class SpringArmCameraComponent {
@@ -21,6 +22,8 @@ export class SpringArmCameraComponent {
     springArmDirectionMax = new Vector3(0, 0.7, -0.3);
     /** Spring arm direction at minimum length */
     springArmDirectionMin = new Vector3(0, 0.5, -0.5);
+    /** If true then on zoom in we will go towards the cursor's loc */
+    zoomToCursorLocation = true;
 
     /** As our spring arm length changes we also change FOV to focus/defocus user attention */
     bAlterFOV = true;
@@ -53,12 +56,45 @@ export class SpringArmCameraComponent {
         this.UpdateSpringArmLength(length);
     }
 
+    originalZoomAlpha = -1;
+
     /** Axis of >0 will make spring arm longer and <0 will make smaller */
     UpdateSpringArmLength(axisValue: number) {
+        const priorSpringArm = this.GetSpringArmAlpha();
         this.springArmLength =
             this.springArmLength - axisValue * this.ecosystem.deltaTime * this.springArmScrollSpeed * this.springArmMax;
         this.springArmLength = Clamp(this.springArmLength, this.springArmMin, this.springArmMax);
         this.updateSpringArm(this.springArmLength);
+        this.ZoomToCursorLoc(priorSpringArm);
+    }
+
+    private ZoomToCursorLoc(priorSpringArm: number) {
+        if (!this.zoomToCursorLocation) {
+            return;
+        }
+        const alpha = this.GetSpringArmAlpha();
+        if (alpha <= 0.05) {
+            return;
+        }
+
+        //Move only if we are zooming in
+        var deltaSpringArm = priorSpringArm - alpha;
+        if (deltaSpringArm <= 0) {
+            this.originalZoomAlpha = -1;
+            return;
+        } else {
+            if (this.originalZoomAlpha < 0) {
+                this.originalZoomAlpha = priorSpringArm * 0.8;
+            }
+        }
+        //Move based on start length when we were zooming
+        deltaSpringArm = deltaSpringArm / this.originalZoomAlpha;
+
+        const ray = GetMousePickingRay(this.ecosystem);
+        const intersection = FindRayHeightIntersection(ray, this.playerCam.GetCameraRoot().position.y);
+        this.playerCam.UpdateCameraPosition(
+            Vector3.Lerp(this.playerCam.GetCameraRoot().position, intersection, deltaSpringArm),
+        );
     }
 
     /** Update our spring arm with additional or less length */
@@ -73,7 +109,7 @@ export class SpringArmCameraComponent {
         this.ResetCamPosition();
     }
 
-    private GetSpringArmAlpha() {
+    GetSpringArmAlpha() {
         return Clamp01((this.springArmLength - this.springArmMin) / (this.springArmMax - this.springArmMin));
     }
 
