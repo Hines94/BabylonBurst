@@ -5,6 +5,7 @@ import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { AddElementToEditorTopMenu, gizmosPriority } from "../../Utils/EditorTopMenu";
 import { HigherarchyHTML } from "./HigherarchyHTML";
+import { ParentedTransform } from "@BabylonBurstCore/EntitySystem/ParentedTransform";
 
 export async function SetupEditorGizmos(higherarchy: HigherarchyHTML) {
     const ecosystem = higherarchy.ecosystem;
@@ -198,12 +199,19 @@ export class EditorGizmos {
         this.UpdateGizmoVisibility();
 
         //Set entity transform to gizmo
-        const gizmoTransform = EntTransform.MeshToTransform(this.gizmoItem);
-        const entTf = this.entityOwner.GetComponent(EntTransform) as EntTransform;
+        var gizmoTransform = EntTransform.MeshToTransform(this.gizmoItem);
+        var entTf = this.entityOwner.GetComponent(EntTransform) as EntTransform;
         if (!EntTransform.Equals(this.oldTransformData, gizmoTransform)) {
             entTf.Copy(gizmoTransform);
+            if (this.entityOwner.GetComponent(ParentedTransform)) {
+                const parTF = this.entityOwner.GetComponent(ParentedTransform).parentEntity;
+                if (parTF && parTF.IsValid()) {
+                    this.entityOwner.GetComponent(ParentedTransform).childRelative =
+                        ParentedTransform.GetRelativeTrasnsform(gizmoTransform, parTF.GetComponent(EntTransform)); //TODO: Caclaulate relative
+                }
+            }
         }
         EntTransform.SetTransformForMesh(this.gizmoItem, entTf);
-        this.oldTransformData = EntTransform.MeshToTransform(this.gizmoItem);
+        this.oldTransformData = gizmoTransform;
     }
 }

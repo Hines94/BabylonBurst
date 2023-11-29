@@ -1,3 +1,4 @@
+import { ParentedTransform } from "../EntitySystem/ParentedTransform";
 import { NavAgentTransformSystem } from "../Navigation/NavigationAgent";
 import { NavigationBuildSystem } from "../Navigation/NavigationBuildSystem";
 import { GetSystemOfType } from "./GameSystemLoop";
@@ -16,4 +17,5 @@ export function RegisterDefaultCoreSystems() {
     }
     new NavAgentTransformSystem();
     new NavigationBuildSystem();
+    ParentedTransform.name;
 }

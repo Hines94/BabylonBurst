@@ -1,6 +1,7 @@
 import { BoundingBox, Matrix, MeshBuilder, Ray, Vector3 } from "@babylonjs/core";
 import { EntityData } from "../EntitySystem/EntityData";
 import { EntTransform, EntVector3, EntVector4 } from "../EntitySystem/CoreComponents";
+import { ParentedTransform } from "../EntitySystem/ParentedTransform";
 
 function calculateAABB(width, height, depth, rotationMatrix) {
     let halfExtents = new Vector3(width / 2, height / 2, depth / 2);

@@ -4,6 +4,7 @@ import { RegisteredType, Saved } from "./TypeRegister";
 import { Component } from "./Component";
 import { TrackedVariable } from "./TrackedVariable";
 import { InstancedMeshTransform } from "../AsyncAssets";
+import { EntityData } from "./EntityData";
 
 @RegisteredType(EntVector3)
 export class EntVector3{
@@ -123,6 +124,10 @@ export class EntVector3{
 
     static Multiply(vec1: EntVector3, vec2: EntVector3) {
         return new EntVector3(vec1.X * vec2.X, vec1.Y * vec2.Y, vec1.Z * vec2.Z);
+    }
+
+    static Divide(vec1: EntVector3, vec2: EntVector3) {
+        return new EntVector3(vec1.X / vec2.X, vec1.Y / vec2.Y, vec1.Z / vec2.Z);
     }
 
     static Normalize(vector: EntVector3): EntVector3 {
@@ -461,6 +466,24 @@ export class EntTransform extends Component {
     @TrackedVariable()
     @Saved(EntVector3)
     Scale = new EntVector3(1,1,1);
+
+    children:EntityData[] = [];
+
+    onComponentChanged(): void {
+        for(var c = 0; c <this.children.length;c++) {
+            const ent = this.children[c];
+            if(!ent || !ent.IsValid()) {
+                const entId = ent === undefined ? 0 : ent.EntityId;
+                console.warn(`Tried to recalculate invalid entity ${entId}`)
+                return;
+            }
+            const childParentComp = ent.GetComponentByName('ParentedTransform');
+            if(childParentComp) {
+                //@ts-ignore - This is a bit naughy but an easy way of doing things
+                childParentComp.recalculateThisTransform(false);
+            }
+        }
+    }
     
     static getAsInstanceArray(val: EntTransform): number[] {
         var ret: number[] = [];
