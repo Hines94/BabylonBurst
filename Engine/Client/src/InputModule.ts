@@ -109,60 +109,61 @@ export class AxisInput {
     }
 }
 
-//Key values
-const AKEY = 65;
-const WKEY = 87;
-const SKEY = 83;
-const DKEY = 68;
-const BKEY = 66;
-const XKEY = 88;
-const YKEY = 89;
-const ZKEY = 90;
-const PKEY = 80;
-const ALTKEY = 18;
-const INSERTKEY = 45;
-const ARRUPKEY = 38;
-const ARRDOWNKEY = 40;
-const ARRLEFTKEY = 37;
-const ARRRIGHTKEY = 39;
-const LEFTMOUSE = 2;
-const RIGHTMOUSE = 4;
-const MIDDLEMOUSE = 3;
-const LEFTCONTROL = 17; //CAREFUL WITH THIS - Shortcut for many Chrome functions like close window
-const CAPSKEY = 20;
-const HOME = 36;
-const END = 35;
-const ENTER = 13;
-const DELETE = 46;
-const PGUP = 33;
-const PGDWN = 34;
-const LEFTSHIFT = 16;
-const SPACE = 32;
-const CKEY = 67;
-const QKEY = 81;
-const EKEY = 69;
-const NKEY = 78;
-const VKEY = 86;
-const TKEY = 84;
-const GKEY = 71;
-const RKEY = 82;
-const FKEY = 70;
-const LKEY = 76;
-const HKEY = 72;
-const ONEKEY = 49;
-const TWOKEY = 50;
-const THREEKEY = 51;
-const FOURKEY = 52;
-const FIVEKEY = 53;
-const SIXKEY = 54;
-const SEVENKEY = 55;
-const EIGHTKEY = 56;
-const NINEKEY = 57;
-const PERIODKEY = 110;
-const ZEROKEY = 48;
-const TILDEKEY = 192;
-const TILDEKEYALT = 223;
-const IKEY = 73;
+export class BrowserKeyNameValues {
+    static AKEY = 65;
+    static WKEY = 87;
+    static SKEY = 83;
+    static DKEY = 68;
+    static BKEY = 66;
+    static XKEY = 88;
+    static YKEY = 89;
+    static ZKEY = 90;
+    static PKEY = 80;
+    static ALTKEY = 18;
+    static INSERTKEY = 45;
+    static ARRUPKEY = 38;
+    static ARRDOWNKEY = 40;
+    static ARRLEFTKEY = 37;
+    static ARRRIGHTKEY = 39;
+    static LEFTMOUSE = 2;
+    static RIGHTMOUSE = 4;
+    static MIDDLEMOUSE = 3;
+    static LEFTCONTROL = 17; //CAREFUL WITH THIS - Shortcut for many Chrome functions like close window
+    static CAPSKEY = 20;
+    static HOME = 36;
+    static END = 35;
+    static ENTER = 13;
+    static DELETE = 46;
+    static PGUP = 33;
+    static PGDWN = 34;
+    static LEFTSHIFT = 16;
+    static SPACE = 32;
+    static CKEY = 67;
+    static QKEY = 81;
+    static EKEY = 69;
+    static NKEY = 78;
+    static VKEY = 86;
+    static TKEY = 84;
+    static GKEY = 71;
+    static RKEY = 82;
+    static FKEY = 70;
+    static LKEY = 76;
+    static HKEY = 72;
+    static ONEKEY = 49;
+    static TWOKEY = 50;
+    static THREEKEY = 51;
+    static FOURKEY = 52;
+    static FIVEKEY = 53;
+    static SIXKEY = 54;
+    static SEVENKEY = 55;
+    static EIGHTKEY = 56;
+    static NINEKEY = 57;
+    static PERIODKEY = 110;
+    static ZEROKEY = 48;
+    static TILDEKEY = 192;
+    static TILDEKEYALT = 223;
+    static IKEY = 73;
+}
 
 /** contains some basic key values. Can be extended with custom values and swapped out in the ecosystem.Inputs */
 export class WindowInputValues {
@@ -184,7 +185,7 @@ export class WindowInputValues {
     secondaryClick = new ButtonInput([]);
     middleClick = new ButtonInput([]);
 
-    OPENEDITORINSPECTOR = new ButtonInput([TILDEKEY]);
+    OPENEDITORINSPECTOR = new ButtonInput([BrowserKeyNameValues.TILDEKEY]);
 
     /** Given a string input (Eg F) try to get the correct key */
     GetKey(stringKey: string): ButtonInput {
@@ -211,51 +212,51 @@ export class WindowInputValues {
 }
 
 export class EditorKeybinds extends WindowInputValues {
-    EDITORFORWARDAXIS = new AxisInput([WKEY], [SKEY]);
-    EDITORSIDEAXIS = new AxisInput([DKEY], [AKEY]);
-    EDITORUPAXIS = new AxisInput([SPACE], [CKEY]);
-    EDITORCHANGEPERSPECTIVE = new ButtonInput([VKEY]);
-    EDITORZOOMCAMERA = new ButtonInput([LEFTSHIFT]);
+    EDITORFORWARDAXIS = new AxisInput([BrowserKeyNameValues.WKEY], [BrowserKeyNameValues.SKEY]);
+    EDITORSIDEAXIS = new AxisInput([BrowserKeyNameValues.DKEY], [BrowserKeyNameValues.AKEY]);
+    EDITORUPAXIS = new AxisInput([BrowserKeyNameValues.SPACE], [BrowserKeyNameValues.CKEY]);
+    EDITORCHANGEPERSPECTIVE = new ButtonInput([BrowserKeyNameValues.VKEY]);
+    EDITORZOOMCAMERA = new ButtonInput([BrowserKeyNameValues.LEFTSHIFT]);
 }
 
 /** Contains a set of basic keybinds to get a project moving */
 export class BasicKeybinds extends WindowInputValues {
     //CAREFUL: Holding this whilst clicking etc can lead to big problems with browser keys
-    LEFTCONTROLKey = new ButtonInput([LEFTCONTROL]);
-    LEFTSHIFTKey = new ButtonInput([LEFTSHIFT]);
-    LEFTALTKey = new ButtonInput([ALTKEY]);
-    CAPSKey = new ButtonInput([CAPSKEY]);
+    LEFTCONTROLKey = new ButtonInput([BrowserKeyNameValues.LEFTCONTROL]);
+    LEFTSHIFTKey = new ButtonInput([BrowserKeyNameValues.LEFTSHIFT]);
+    LEFTALTKey = new ButtonInput([BrowserKeyNameValues.ALTKEY]);
+    CAPSKey = new ButtonInput([BrowserKeyNameValues.CAPSKEY]);
     //Arrows
-    ARROWUPKey = new ButtonInput([ARRUPKEY]);
-    ARROWDOWNKey = new ButtonInput([ARRDOWNKEY]);
-    ARROWLEFTKey = new ButtonInput([ARRLEFTKEY]);
-    ARROWRIGHTKey = new ButtonInput([ARRRIGHTKEY]);
+    ARROWUPKey = new ButtonInput([BrowserKeyNameValues.ARRUPKEY]);
+    ARROWDOWNKey = new ButtonInput([BrowserKeyNameValues.ARRDOWNKEY]);
+    ARROWLEFTKey = new ButtonInput([BrowserKeyNameValues.ARRLEFTKEY]);
+    ARROWRIGHTKey = new ButtonInput([BrowserKeyNameValues.ARRRIGHTKEY]);
     //Numbers
-    ZEROKey = new ButtonInput([ZEROKEY]);
-    ONEKey = new ButtonInput([ONEKEY]);
-    TWOKey = new ButtonInput([TWOKEY]);
-    THREEKey = new ButtonInput([THREEKEY]);
-    FOURKey = new ButtonInput([FOURKEY]);
-    FIVEKey = new ButtonInput([FIVEKEY]);
-    SIXKey = new ButtonInput([SIXKEY]);
-    SEVENKey = new ButtonInput([SEVENKEY]);
-    EIGHTKey = new ButtonInput([EIGHTKEY]);
-    NINEKey = new ButtonInput([NINEKEY]);
-    TILDEKey = new ButtonInput([TILDEKEY, TILDEKEYALT]);
+    ZEROKey = new ButtonInput([BrowserKeyNameValues.ZEROKEY]);
+    ONEKey = new ButtonInput([BrowserKeyNameValues.ONEKEY]);
+    TWOKey = new ButtonInput([BrowserKeyNameValues.TWOKEY]);
+    THREEKey = new ButtonInput([BrowserKeyNameValues.THREEKEY]);
+    FOURKey = new ButtonInput([BrowserKeyNameValues.FOURKEY]);
+    FIVEKey = new ButtonInput([BrowserKeyNameValues.FIVEKEY]);
+    SIXKey = new ButtonInput([BrowserKeyNameValues.SIXKEY]);
+    SEVENKey = new ButtonInput([BrowserKeyNameValues.SEVENKEY]);
+    EIGHTKey = new ButtonInput([BrowserKeyNameValues.EIGHTKEY]);
+    NINEKey = new ButtonInput([BrowserKeyNameValues.NINEKEY]);
+    TILDEKey = new ButtonInput([BrowserKeyNameValues.TILDEKEY, BrowserKeyNameValues.TILDEKEYALT]);
 
     //General Keys
-    XKey = new ButtonInput([XKEY]);
-    YKey = new ButtonInput([YKEY]);
-    ZKey = new ButtonInput([ZKEY]);
-    PKey = new ButtonInput([PKEY]);
-    FKey = new ButtonInput([FKEY]);
-    IKey = new ButtonInput([IKEY]);
-    TKey = new ButtonInput([TKEY]);
-    GKey = new ButtonInput([GKEY]);
-    HKey = new ButtonInput([HKEY]);
-    BKey = new ButtonInput([BKEY]);
-    EKey = new ButtonInput([EKEY]);
-    RKey = new ButtonInput([RKEY]);
+    XKey = new ButtonInput([BrowserKeyNameValues.XKEY]);
+    YKey = new ButtonInput([BrowserKeyNameValues.YKEY]);
+    ZKey = new ButtonInput([BrowserKeyNameValues.ZKEY]);
+    PKey = new ButtonInput([BrowserKeyNameValues.PKEY]);
+    FKey = new ButtonInput([BrowserKeyNameValues.FKEY]);
+    IKey = new ButtonInput([BrowserKeyNameValues.IKEY]);
+    TKey = new ButtonInput([BrowserKeyNameValues.TKEY]);
+    GKey = new ButtonInput([BrowserKeyNameValues.GKEY]);
+    HKey = new ButtonInput([BrowserKeyNameValues.HKEY]);
+    BKey = new ButtonInput([BrowserKeyNameValues.BKEY]);
+    EKey = new ButtonInput([BrowserKeyNameValues.EKEY]);
+    RKey = new ButtonInput([BrowserKeyNameValues.RKEY]);
 
     /** Given a number ty to get the correct Key */
     GetNumberKey(index: Number): ButtonInput {
@@ -354,7 +355,7 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
     }
     //Get all mouse values
     if (dsm.getDeviceSource(DeviceType.Mouse)) {
-        var PrimClickMade = dsm.getDeviceSource(DeviceType.Mouse).getInput(LEFTMOUSE);
+        var PrimClickMade = dsm.getDeviceSource(DeviceType.Mouse).getInput(BrowserKeyNameValues.LEFTMOUSE);
         //Block click if over UI
         if (PrimClickMade === 1 && ecosystem.InputValues.primaryClick.wasActive === false) {
             if (ecosystem.hoveredOverGUI === true) {
@@ -362,9 +363,11 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
             }
         }
         ecosystem.InputValues.primaryClick.setNewActivity([PrimClickMade]);
-        ecosystem.InputValues.middleClick.setNewActivity([dsm.getDeviceSource(DeviceType.Mouse).getInput(MIDDLEMOUSE)]);
+        ecosystem.InputValues.middleClick.setNewActivity([
+            dsm.getDeviceSource(DeviceType.Mouse).getInput(BrowserKeyNameValues.MIDDLEMOUSE),
+        ]);
         ecosystem.InputValues.secondaryClick.setNewActivity([
-            dsm.getDeviceSource(DeviceType.Mouse).getInput(RIGHTMOUSE),
+            dsm.getDeviceSource(DeviceType.Mouse).getInput(BrowserKeyNameValues.RIGHTMOUSE),
         ]);
     }
 }
