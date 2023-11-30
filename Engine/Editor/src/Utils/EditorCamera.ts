@@ -41,7 +41,7 @@ export class EditorCamera {
         }
 
         //Movement
-        this.movementComp.movementBoostActive = basicInputs.LEFTSHIFTKey.isActive;
+        this.movementComp.movementBoostActive = basicInputs.EDITORZOOMCAMERA.isActive;
         this.movementComp.UpdateFlyingCameraComponent(
             basicInputs.EDITORFORWARDAXIS.axisValue,
             basicInputs.EDITORSIDEAXIS.axisValue,

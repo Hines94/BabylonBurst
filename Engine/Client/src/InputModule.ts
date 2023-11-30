@@ -215,6 +215,7 @@ export class EditorKeybinds extends WindowInputValues {
     EDITORSIDEAXIS = new AxisInput([DKEY], [AKEY]);
     EDITORUPAXIS = new AxisInput([SPACE], [CKEY]);
     EDITORCHANGEPERSPECTIVE = new ButtonInput([VKEY]);
+    EDITORZOOMCAMERA = new ButtonInput([LEFTSHIFT]);
 }
 
 /** Contains a set of basic keybinds to get a project moving */

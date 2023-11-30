@@ -37,7 +37,7 @@ export class LookingCameraComponent {
     UpdateLook() {
         const lockActive = IsPointerLockActive();
         var active = lockActive || this.ecosystem.InputValues.middleClick.isActive;
-        var panning = this.ecosystem.InputValues.CAPSKey.isActive;
+        var panning = false; //this.ecosystem.InputValues.CAPSKey.isActive;
         if (this.manualPanOverride !== undefined) {
             active = this.manualPanOverride;
             panning = this.manualPanOverride;
@@ -54,7 +54,7 @@ export class LookingCameraComponent {
 
         this.DesiredRotationChange.x = (this.ecosystem.InputValues.mouseXDelta / width) * -rotSpeed;
         this.DesiredRotationChange.y = (this.ecosystem.InputValues.mouseYDelta / height) * rotSpeed;
-        this.DesiredRotationChange.z = -this.ecosystem.InputValues.roll;
+        //this.DesiredRotationChange.z = -this.ecosystem.InputValues.roll;
         if (active === false || panning) {
             this.DesiredRotationChange.x = 0;
         }
