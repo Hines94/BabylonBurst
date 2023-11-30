@@ -34,8 +34,8 @@ export abstract class GameSystem {
         if(this.bTrackSystemStats) {
             //TODO: Track stats
         }
+        this.lastRun += ecosystem.deltaTime;
         if(this.RateLimit > 0) {
-            this.lastRun += ecosystem.deltaTime;
             if(this.lastRun < this.RateLimit) {
                 return;
             }

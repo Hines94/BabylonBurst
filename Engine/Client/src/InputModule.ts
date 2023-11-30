@@ -1,5 +1,5 @@
 import { Observable } from "@babylonjs/core/Misc/observable.js";
-import { SimpleWeightedAverageSmooth } from "../../Shared/src/Utils/MathUtils";
+import { Clamp, SimpleWeightedAverageSmooth } from "../../Shared/src/Utils/MathUtils";
 import { UpdateDynamicTextureChecks } from "./GUI/AdvancedDynamicTextureTracker";
 import { DeviceSourceManager, DeviceType, PointerInput, Vector2 } from "@babylonjs/core";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
@@ -71,6 +71,44 @@ export class ButtonInput {
     onDeactivateKey = new Observable<ButtonInput>();
 }
 
+export class AxisInput {
+    positiveKeybinds: number[] = [];
+    negativeKeybinds: number[] = [];
+
+    axisValue = 0;
+    priorAxisValue = 0;
+
+    constructor(positiveKeybinds: number[], negativeKeybinds: number[]) {
+        this.positiveKeybinds = positiveKeybinds;
+        this.negativeKeybinds = negativeKeybinds;
+    }
+
+    UpdateValue(ecosystem: GameEcosystem) {
+        const vals: number[] = [];
+        var newValue = 0;
+        //If we are typing then don't activate!
+        if (!ecosystem.controlHasFocus) {
+            for (var i = 0; i < this.positiveKeybinds.length; i++) {
+                if (GetKeyboardValue(this.positiveKeybinds[i], ecosystem)) {
+                    newValue += 1;
+                }
+            }
+            for (var i = 0; i < this.negativeKeybinds.length; i++) {
+                if (GetKeyboardValue(this.negativeKeybinds[i], ecosystem)) {
+                    newValue -= 1;
+                }
+            }
+        }
+
+        this.setNewActivity(newValue);
+    }
+
+    setNewActivity(val: number) {
+        this.priorAxisValue = this.axisValue;
+        this.axisValue = Clamp(val, -1, 1);
+    }
+}
+
 //Key values
 const AKEY = 65;
 const WKEY = 87;
@@ -126,14 +164,11 @@ const TILDEKEY = 192;
 const TILDEKEYALT = 223;
 const IKEY = 73;
 
-/** Contains information on all of our relevant keybinds to play the game */
+/** contains some basic key values. Can be extended with custom values and swapped out in the ecosystem.Inputs */
 export class WindowInputValues {
     mouseOverCanvas = false;
 
     mouseWheel = 0;
-    forward = 0;
-    side = 0;
-    up = 0;
     mouseXDelta = 0;
     mouseYDelta = 0;
     /** Note: This has some slight input lag! */
@@ -144,12 +179,46 @@ export class WindowInputValues {
     mouseUnscaledXPosition = 0;
     /** Note: This has some slight input lag! */
     mouseUnscaledYPosition = 0;
-    roll = 0;
 
     primaryClick = new ButtonInput([]);
     secondaryClick = new ButtonInput([]);
     middleClick = new ButtonInput([]);
 
+    OPENEDITORINSPECTOR = new ButtonInput([TILDEKEY]);
+
+    /** Given a string input (Eg F) try to get the correct key */
+    GetKey(stringKey: string): ButtonInput {
+        const upperKey = stringKey.toUpperCase();
+        var input = this.checkKeyExists(upperKey);
+        if (input) {
+            return input;
+        }
+        input = this.checkKeyExists(upperKey + "Key");
+        if (input) {
+            return input;
+        }
+
+        return undefined;
+    }
+
+    private checkKeyExists(checkKey: string) {
+        if (checkKey in this) {
+            //@ts-ignore
+            return this[checkKey] as ButtonInput;
+        }
+        return undefined;
+    }
+}
+
+export class EditorKeybinds extends WindowInputValues {
+    EDITORFORWARDAXIS = new AxisInput([WKEY], [SKEY]);
+    EDITORSIDEAXIS = new AxisInput([DKEY], [AKEY]);
+    EDITORUPAXIS = new AxisInput([SPACE], [CKEY]);
+    EDITORCHANGEPERSPECTIVE = new ButtonInput([VKEY]);
+}
+
+/** Contains a set of basic keybinds to get a project moving */
+export class BasicKeybinds extends WindowInputValues {
     //CAREFUL: Holding this whilst clicking etc can lead to big problems with browser keys
     LEFTCONTROLKey = new ButtonInput([LEFTCONTROL]);
     LEFTSHIFTKey = new ButtonInput([LEFTSHIFT]);
@@ -183,7 +252,6 @@ export class WindowInputValues {
     TKey = new ButtonInput([TKEY]);
     GKey = new ButtonInput([GKEY]);
     HKey = new ButtonInput([HKEY]);
-    VKey = new ButtonInput([VKEY]);
     BKey = new ButtonInput([BKEY]);
     EKey = new ButtonInput([EKEY]);
     RKey = new ButtonInput([RKEY]);
@@ -213,29 +281,6 @@ export class WindowInputValues {
         }
         return undefined;
     }
-
-    /** Given a string input (Eg F) try to get the correct key */
-    GetKey(stringKey: string): ButtonInput {
-        const upperKey = stringKey.toUpperCase();
-        var input = this.checkKeyExists(upperKey);
-        if (input) {
-            return input;
-        }
-        input = this.checkKeyExists(upperKey + "Key");
-        if (input) {
-            return input;
-        }
-
-        return undefined;
-    }
-
-    private checkKeyExists(checkKey: string) {
-        if (checkKey in this) {
-            var key = checkKey as keyof WindowInputValues;
-            return this[key] as ButtonInput;
-        }
-        return undefined;
-    }
 }
 
 export function SetupInputsModule(ecosystem: GameEcosystem) {
@@ -247,7 +292,7 @@ export function SetupInputsModule(ecosystem: GameEcosystem) {
                 deviceSource.onInputChangedObservable.add(eventData => {
                     if (eventData.inputIndex === PointerInput.MouseWheelY) {
                         if (eventData.deltaY > 0) {
-                            ecosystem.InputValues.mouseWheel = eventData.deltaY;
+                            ecosystem.InputValues.mouseWheel = 1;
                         } else {
                             ecosystem.InputValues.mouseWheel = -1;
                         }
@@ -291,9 +336,6 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
     ecosystem.InputValues.mouseScaledXPosition = ecosystem.scene.pointerX / scaling;
     ecosystem.InputValues.mouseScaledYPosition = ecosystem.scene.pointerY / scaling;
 
-    ecosystem.InputValues.forward = 0;
-    ecosystem.InputValues.side = 0;
-
     //TODO what if not keyboard mouse (eg touch or gamepad)
 
     //Get all keyboard values
@@ -303,13 +345,11 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
                 const value = ecosystem.InputValues[key as keyof WindowInputValues];
                 if (value instanceof ButtonInput) {
                     value.UpdateValue(ecosystem);
+                } else if (value instanceof AxisInput) {
+                    value.UpdateValue(ecosystem);
                 }
             }
         }
-        ecosystem.InputValues.forward = GetKeyboardAxis(WKEY, SKEY, ecosystem);
-        ecosystem.InputValues.side = GetKeyboardAxis(DKEY, AKEY, ecosystem);
-        ecosystem.InputValues.up = GetKeyboardAxis(SPACE, CKEY, ecosystem);
-        ecosystem.InputValues.roll = GetKeyboardAxis(QKEY, EKEY, ecosystem);
     }
     //Get all mouse values
     if (dsm.getDeviceSource(DeviceType.Mouse)) {
@@ -345,36 +385,6 @@ export function UpdateInputValuesEndFrame(ecosystem: GameEcosystem) {
     );
     frameMouseXChanges = 0;
     frameMouseYChanges = 0;
-}
-
-//Normalise so we are not moving faster with horiz and vertical at the same time
-export function GetNormalizedVertHorizInput(ecosystem: GameEcosystem) {
-    var DesMove = new Vector2();
-    DesMove.x = ecosystem.InputValues.side;
-    DesMove.y = ecosystem.InputValues.forward;
-    if (DesMove.x !== 0 || DesMove.y !== 0) {
-        return DesMove.normalize();
-    }
-    return DesMove;
-}
-
-//A axis with positive/negative
-function GetKeyboardAxis(PosInput: number, NegInput: number, ecosystem: GameEcosystem) {
-    //If we are typing then ignore!
-    if (ecosystem.controlHasFocus) {
-        return 0;
-    }
-
-    var Ret = 0;
-    //POS
-    if (GetKeyboardValue(PosInput, ecosystem) === 1) {
-        Ret += 1;
-    }
-    //NEG
-    if (GetKeyboardValue(NegInput, ecosystem) === 1) {
-        Ret -= 1;
-    }
-    return Ret;
 }
 
 //Helper function for getting single keyboard val

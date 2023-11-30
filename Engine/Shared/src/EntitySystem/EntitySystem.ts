@@ -27,6 +27,20 @@ export class EntitySystem {
     /** When tracked variables are changed this will fire. Also called on component added at end of frame. */
     onComponentChangedEv = new Observable<ComponentNotify>();
 
+    /** Efficient way to listen for events regarding a component type */
+    private specificComponentChangedEvents:{[compName:string]:Observable<ComponentNotify>} = {};
+    /** Efficient way to listen for changes to a specific component type  */
+    RegisterSpecificComponentChangeNotify(comp:typeof Component | string, callback:(data:ComponentNotify)=>void) {
+        this.RegisterSpecificComponentEvent(comp,this.specificComponentChangedEvents,callback);
+    }
+
+    /** Efficient way to listen for removed comps regarding a component type */
+    private specificComponentRemovedEvents:{[compName:string]:Observable<ComponentNotify>} = {};
+    /** Efficient way to listen for removed comps of a specific component type  */
+    RegisterSpecificComponentRemoveNotify(comp:typeof Component | string, callback:(data:ComponentNotify)=>void) {
+        this.RegisterSpecificComponentEvent(comp,this.specificComponentRemovedEvents,callback);
+    }
+
     AddEntity(): EntityData {
         this.SpawnedEntities++;
         return this.CreateEntity(this.SpawnedEntities);
@@ -80,7 +94,13 @@ export class EntitySystem {
         if(!component) {
             return;
         }
+
+        //Events
         component.onComponentRemoved();
+        if(this.specificComponentRemovedEvents[component.constructor.name]) {
+            this.specificComponentRemovedEvents[component.constructor.name].notifyObservers({ent:entData,comp:component});
+        }
+
         component.entityOwner = undefined;
         entData.Components[component.constructor.name] = undefined;
         delete(entData.Components[component.constructor.name])
@@ -199,6 +219,9 @@ export class EntitySystem {
                 }
                 component.onComponentChanged();
                 this.onComponentChangedEv.notifyObservers({ent:data,comp:component});
+                if(this.specificComponentChangedEvents[component.constructor.name]) {
+                    this.specificComponentChangedEvents[component.constructor.name].notifyObservers({ent:data,comp:component});
+                }
             }
         }
         this.ChangedComponents = {};
@@ -293,6 +316,14 @@ export class EntitySystem {
         } else {
             return ent.EntityId;
         }
+    }
+
+    private RegisterSpecificComponentEvent(comp:typeof Component | string,events:{[compName:string]:Observable<ComponentNotify>},callback:(data:ComponentNotify)=>void) {
+        var component = typeof comp === "string" ? comp : comp.name;
+        if(events[component] === undefined) {
+            events[component] = new Observable<ComponentNotify>();
+        }
+        events[component].add(callback)
     }
 
 }

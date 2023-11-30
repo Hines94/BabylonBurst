@@ -3,6 +3,7 @@ import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
 import { EditorCamera } from "./Utils/EditorCamera";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { UpdateEditorTick } from "@userCode/EditorMain";
+import { EditorKeybinds } from "@BabylonBurstClient/InputModule";
 
 export type BuildableDescript = {
     CodeName: string;
@@ -22,6 +23,7 @@ type editorOptions = {
 //This is the editor for generating/saving/loading different buildable types for our AI and players to use
 export class BabylonBurstEditor extends RunnableClientEcosystem {
     options: editorOptions;
+    InputValues = new EditorKeybinds();
 
     isGame = false;
     isEditor = true;

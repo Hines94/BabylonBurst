@@ -4,6 +4,7 @@ import { PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
 import { FlyingCameraComponent } from "@BabylonBurstClient/Camera/FlyingCameraComponent";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { AngleToRad } from "@BabylonBurstCore/Utils/MathUtils";
+import { BasicKeybinds, EditorKeybinds } from "@BabylonBurstClient/InputModule";
 
 /** Simply takes the player camera and runs a simple movement  */
 export class EditorCamera {
@@ -31,18 +32,20 @@ export class EditorCamera {
         if (!ecosystem.InputValues) {
             return;
         }
+        const basicInputs = ecosystem.InputValues as EditorKeybinds;
+
         //Rotation
         this.lookingComp.UpdateLook();
-        if (ecosystem.InputValues.VKey.wasJustActivated()) {
+        if (basicInputs.EDITORCHANGEPERSPECTIVE.wasJustActivated()) {
             this.lookingComp.TogglePointerLockMode();
         }
 
         //Movement
-        this.movementComp.movementBoostActive = ecosystem.InputValues.LEFTSHIFTKey.isActive;
+        this.movementComp.movementBoostActive = basicInputs.LEFTSHIFTKey.isActive;
         this.movementComp.UpdateFlyingCameraComponent(
-            ecosystem.InputValues.forward,
-            ecosystem.InputValues.side,
-            ecosystem.InputValues.up,
+            basicInputs.EDITORFORWARDAXIS.axisValue,
+            basicInputs.EDITORSIDEAXIS.axisValue,
+            basicInputs.EDITORUPAXIS.axisValue,
         );
         this.sphereMesh.position = this.playerCam.GetCameraRoot().position;
         this.sphereMesh.rotation = this.lookingComp.currentRotation;

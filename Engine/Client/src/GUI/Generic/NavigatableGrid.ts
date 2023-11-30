@@ -3,6 +3,7 @@ import { NavigatableGridItemIcon } from "./NavigatableGridItemIcon";
 import { Clamp } from "../../../../Shared/src/Utils/MathUtils";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
+//TODO: Fix keybinds for this
 export class NavigatableGrid {
     itemGrid: Grid;
     itemHolders: Button[] = [];
