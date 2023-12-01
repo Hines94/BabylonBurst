@@ -6,6 +6,7 @@ import { BabylonBurstEditor } from "../../BabylonBurstEditor";
 import { AddElementToEditorTopMenu, gizmosPriority } from "../../Utils/EditorTopMenu";
 import { HigherarchyHTML } from "./HigherarchyHTML";
 import { ParentedTransform } from "@BabylonBurstCore/EntitySystem/ParentedTransform";
+import { EditorKeybinds } from "@BabylonBurstClient/InputModule";
 
 export async function SetupEditorGizmos(higherarchy: HigherarchyHTML) {
     const ecosystem = higherarchy.ecosystem;
@@ -185,14 +186,15 @@ export class EditorGizmos {
             this.HideGizmos();
             return;
         }
+        const eInputs = this.owner.InputValues as EditorKeybinds;
 
-        if (this.owner.InputValues.EKey.wasJustActivated()) {
+        if (eInputs.EDITORPOSITIONGIZMO.wasJustActivated()) {
             this.SetPositionGizmoEnabled();
         }
-        if (this.owner.InputValues.RKey.wasJustActivated()) {
+        if (eInputs.EDITORROTATIONGIZMO.wasJustActivated()) {
             this.SetRotationGizmoEnabled();
         }
-        if (this.owner.InputValues.GKey.wasJustActivated()) {
+        if (eInputs.EDITORSCALEGIZMO.wasJustActivated()) {
             this.SetScaleGizmoEnabled();
         }
 

@@ -17,10 +17,10 @@ var asyncSceneLoaders: {
 } = {};
 
 /**
- * The acual "loader" for a GLTF scene. Will load from AWS and hide the loaded meshes via isVisible.
+ * The acual "loader" for a GLB scene. Will load from AWS and hide the loaded meshes via isVisible.
  */
 export class SceneAsyncLoader extends AsyncAssetLoader {
-    loadedGLTF: ISceneLoaderAsyncResult;
+    loadedGLB: ISceneLoaderAsyncResult;
     onMeshLoaded = new Observable<SceneAsyncLoader>();
     extensionType: string;
     desiredScene: Scene = null;
@@ -52,22 +52,26 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
     }
 
     GetDataLoadType(): AsyncDataType {
-        return AsyncDataType.string;
+        return AsyncDataType.arrayBuffer;
     }
 
     override async onAsyncDataLoaded(dataFromZip: any): Promise<null> {
-        const dataAsString = dataFromZip as string;
+        const blob = new Blob([dataFromZip], { type: 'model/GLB-binary' });
+        const url = URL.createObjectURL(blob);
 
-        var result = await SceneLoader.ImportMeshAsync(
-            "",
-            "data:".concat(dataAsString),
-            "",
-            this.desiredScene,
-            null,
-            this.extensionType
-        );
-        this.loadedGLTF = result;
-
+        try{
+            var result = await SceneLoader.ImportMeshAsync(
+                "",
+                "",
+                url,
+                this.desiredScene,
+                null,
+                this.extensionType
+            );
+            this.loadedGLB = result;
+        } catch {
+            console.error(`Failed to load scene ${this.requestedAssetPath} - ${this.desiredFileName}`)
+        }
         //Hide all of our meshes until we are ready to use them!
         this.SetMeshesHidden(false);
 
@@ -77,14 +81,14 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
     }
 
     SetMeshesHidden(bVisible: boolean) {
-        for (var i = 0; i < this.loadedGLTF.meshes.length; i++) {
-            this.loadedGLTF.meshes[i].isVisible = bVisible;
+        for (var i = 0; i < this.loadedGLB.meshes.length; i++) {
+            this.loadedGLB.meshes[i].isVisible = bVisible;
         }
     }
 
     extractMeshElements(meshName: string): Mesh[] {
         var foundMeshElements: Mesh[] = [];
-        const LoadedMeshes = this.loadedGLTF.meshes;
+        const LoadedMeshes = this.loadedGLB.meshes;
         for (var i = 0; i < LoadedMeshes.length; i++) {
             if (matchesMeshPattern(meshName, LoadedMeshes[i].id)) {
                 const asMesh = LoadedMeshes[i] as Mesh;
@@ -100,14 +104,14 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
 
     extractUniqueMeshes(): MeshCount {
         let meshCount: MeshCount = {};
-        if (!this.loadedGLTF) {
+        if (!this.loadedGLB) {
             return meshCount;
         }
 
         // RegExp to identify base mesh name and ignore _primitiveX
         const pattern = /^(.*?)(_primitive(\d+))?$/;
 
-        this.loadedGLTF.meshes.forEach(mesh => {
+        this.loadedGLB.meshes.forEach(mesh => {
             const meshName = mesh.name;
             if (meshName === "__root__") {
                 return;

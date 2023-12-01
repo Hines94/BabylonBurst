@@ -76,6 +76,7 @@ var builtModels: ContentItem[] = [];
 
 export function RefreshAllModelPaths() {
     ModelPaths = [];
+    builtModels = [];
     const allModels = GetAllEditorObjectsOfType(ContentItemType.Model);
     if (allModels.every(item1 => builtModels.some(item2 => item2.name === item1.name))) {
         return;

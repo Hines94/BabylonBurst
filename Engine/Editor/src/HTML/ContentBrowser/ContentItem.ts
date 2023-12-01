@@ -48,7 +48,7 @@ export function GetContentTypeFromExtension(extension: string): ContentItemType 
     if (str === "wav") {
         return ContentItemType.Audio;
     }
-    if (str === "gltf" || str === "glb" || str === ".babylon") {
+    if (str === "glb" || str === ".babylon") {
         return ContentItemType.Model;
     }
     return ContentItemType.Unknown;

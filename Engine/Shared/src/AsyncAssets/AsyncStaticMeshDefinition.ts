@@ -27,7 +27,7 @@ export function UpdateAllMeshDefinitions() {
 }
 
 /**
- * Should contain information on Materials and submeshes that will be combined to one mesh from our GLTF on AWS.
+ * Should contain information on Materials and submeshes that will be combined to one mesh from our GLB on AWS.
  * From here we can create either an instance or clone.
  */
 export class AsyncStaticMeshDefinition {
@@ -54,8 +54,8 @@ export class AsyncStaticMeshDefinition {
 
     /**
      * @param awsPath Path to the asset bundle in AWS (including folder - eg. levels/levelAData)
-     * @param meshName The name of this specific mesh in the gltf - eg. SilverbackArms
-     * @param materials An array of materials to use. Use null to keep the gltf material. MUST be same length as material num.
+     * @param meshName The name of this specific mesh in the GLB - eg. SilverbackArms
+     * @param materials An array of materials to use. Use null to keep the GLB material. MUST be same length as material num.
      * @param fileName Name of the file that contains our mesh
      */
     constructor(awsPath: string, meshName: string, materials: any[], fileName: string, layerMask = 0x00000001) {
@@ -123,7 +123,7 @@ export class AsyncStaticMeshDefinition {
         //Mat Validation
         if (foundMeshElements.length !== matInstances.length) {
             var backupMat = null;
-            const warnMessage = `Specified different number of materials for mesh: ${this.meshName}. in GLTF: ${asyncLoader.requestedAssetPath}. Number of materials in GLTF: ${foundMeshElements.length}. Number Specified: ${this.materials.length}`;
+            const warnMessage = `Specified different number of materials for mesh: ${this.meshName}. in GLB: ${asyncLoader.requestedAssetPath}. Number of materials in GLB: ${foundMeshElements.length}. Number Specified: ${this.materials.length}`;
             if (!this.bNoFailMaterialDiff) {
                 backupMat = GetBadMeshMaterial(scene);
                 console.error(warnMessage);

@@ -5,6 +5,7 @@ import { EntitySystem } from "./EntitySystem";
 import { GetAllZippedFileDatas, GetZipPath } from "../AsyncAssets/Utils/ZipUtils";
 import { AsyncAssetManager } from "../AsyncAssets";
 import { Observable } from "@babylonjs/core";
+import { Component } from "./Component";
 
 function addPrefabEnd(item:string):string {
     if(item.includes(".Prefab")) {
@@ -102,6 +103,17 @@ export class PrefabManager {
             }
         }
         return undefined;
+    }
+
+    static GetComponentFromPrefab<T extends Component>(prefabId:string, entityId:number,comp: { new(): T }):T | undefined {
+        const template = PrefabManager.GetPrefabTemplateById(prefabId);
+        if(template === undefined) {
+            return undefined;
+        }
+        if(template.DoesEntityExist(entityId) ===  false){
+            return undefined;
+        }
+        return template.GetEntityComponent(entityId,comp,undefined,undefined);
     }
 
     static GetIdFromBundleFileName(bundlePath:string,fileName:string) {

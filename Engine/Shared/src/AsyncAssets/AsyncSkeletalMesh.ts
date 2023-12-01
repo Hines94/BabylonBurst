@@ -35,7 +35,7 @@ export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
             this.GetScene(),
             this.definition.desiredPath,
             this.definition.fileName
-        ).loadedGLTF;
+        ).loadedGLB;
 
         this.tempSkeleton = LoadedScene.skeletons[0].clone("Clone_" + LoadedScene.skeletons[0].name);
         this.cloneMesh.skeleton = this.tempSkeleton;
@@ -123,17 +123,17 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     /** Verifies that the skeletal mesh defi that we made is correct! */
     verifySkeletalMeshDefinition(scene: Scene): boolean {
         const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileName);
-        const LoadedScene = asyncLoader.loadedGLTF;
+        const LoadedScene = asyncLoader.loadedGLB;
         if (LoadedScene.skeletons.length === 0) {
             console.error(
-                "No skeletons found in the GLTF scene for " +
+                "No skeletons found in the GLB scene for " +
                     this.desiredPath +
                     ". Require ONE (only) for importing skeletal meshes"
             );
             return false;
         } else if (LoadedScene.skeletons.length > 1) {
             console.error(
-                "Multiple skeletons found in the GLTF scene for " +
+                "Multiple skeletons found in the GLB scene for " +
                     this.desiredPath +
                     ". Async loading works with ONE only!"
             );
@@ -142,7 +142,7 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
         return true;
     }
 
-    /** Retrieve all animations from our GLTF */
+    /** Retrieve all animations from our GLB */
     getAnimationData(): AnimationRange[] {
         return this.getFirstFinalMesh().skeleton.getAnimationRanges();
     }

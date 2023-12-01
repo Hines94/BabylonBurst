@@ -189,6 +189,15 @@ export class WindowInputValues {
 
     /** Given a string input (Eg F) try to get the correct key */
     GetKey(stringKey: string): ButtonInput {
+        var input = this.checkKeyExists(stringKey);
+        if (input) {
+            return input;
+        }
+        input = this.checkKeyExists(stringKey + "Key");
+        if (input) {
+            return input;
+        }
+
         const upperKey = stringKey.toUpperCase();
         var input = this.checkKeyExists(upperKey);
         if (input) {
@@ -203,7 +212,8 @@ export class WindowInputValues {
     }
 
     private checkKeyExists(checkKey: string) {
-        if (checkKey in this) {
+        //@ts-ignore
+        if (this[checkKey] !== undefined) {
             //@ts-ignore
             return this[checkKey] as ButtonInput;
         }
@@ -217,6 +227,9 @@ export class EditorKeybinds extends WindowInputValues {
     EDITORUPAXIS = new AxisInput([BrowserKeyNameValues.SPACE], [BrowserKeyNameValues.CKEY]);
     EDITORCHANGEPERSPECTIVE = new ButtonInput([BrowserKeyNameValues.VKEY]);
     EDITORZOOMCAMERA = new ButtonInput([BrowserKeyNameValues.LEFTSHIFT]);
+    EDITORPOSITIONGIZMO = new ButtonInput([BrowserKeyNameValues.EKEY]);
+    EDITORROTATIONGIZMO = new ButtonInput([BrowserKeyNameValues.RKEY]);
+    EDITORSCALEGIZMO = new ButtonInput([BrowserKeyNameValues.GKEY]);
 }
 
 /** Contains a set of basic keybinds to get a project moving */
