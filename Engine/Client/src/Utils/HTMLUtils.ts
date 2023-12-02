@@ -143,3 +143,24 @@ export async function CopyToClipboard(text: string) {
         console.error("Failed to copy text: ", err);
     }
 }
+
+export function SetupHoverForElement(element: HTMLElement, setupTooltip: (tt: HTMLElement) => Promise<void>) {
+    element.style.pointerEvents = "auto";
+    var tooltip: HTMLElement = undefined;
+    element.addEventListener("mouseenter", e => {
+        tooltip = element.ownerDocument.createElement("div");
+        SetupElementToCursor({ x: e.pageX, y: e.pageY }, tooltip);
+        setupTooltip(tooltip);
+        tooltip.style.pointerEvents = "none";
+        element.ownerDocument.body.appendChild(tooltip);
+    });
+    element.addEventListener("mousemove", e => {
+        SetupElementToCursor({ x: e.pageX, y: e.pageY }, tooltip);
+    });
+    element.addEventListener("mouseleave", () => {
+        if (tooltip) {
+            tooltip.remove();
+            tooltip = undefined;
+        }
+    });
+}
