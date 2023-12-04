@@ -147,12 +147,15 @@ export async function CopyToClipboard(text: string) {
 export function SetupHoverForElement(element: HTMLElement, setupTooltip: (tt: HTMLElement) => Promise<void>) {
     element.style.pointerEvents = "auto";
     var tooltip: HTMLElement = undefined;
+    var observer: MutationObserver = undefined;
+
     element.addEventListener("mouseenter", e => {
         tooltip = element.ownerDocument.createElement("div");
         SetupElementToCursor({ x: e.pageX, y: e.pageY }, tooltip);
         setupTooltip(tooltip);
         tooltip.style.pointerEvents = "none";
         element.ownerDocument.body.appendChild(tooltip);
+        observer = GetTooltipMutationObserver(element, tooltip);
     });
     element.addEventListener("mousemove", e => {
         SetupElementToCursor({ x: e.pageX, y: e.pageY }, tooltip);
@@ -162,5 +165,25 @@ export function SetupHoverForElement(element: HTMLElement, setupTooltip: (tt: HT
             tooltip.remove();
             tooltip = undefined;
         }
+        if (observer) {
+            observer.disconnect();
+            observer = undefined;
+        }
     });
+}
+
+function GetTooltipMutationObserver(element: HTMLElement, tooltip: HTMLElement) {
+    var observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (!document.contains(element)) {
+                if (tooltip) {
+                    tooltip.remove();
+                }
+
+                observer.disconnect();
+            }
+        });
+    });
+    observer.observe(element.parentElement, { childList: true, subtree: true });
+    return observer;
 }
