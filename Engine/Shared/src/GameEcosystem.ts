@@ -50,3 +50,19 @@ export interface GameEcosystem {
     onUpdate: Observable<GameEcosystem>;
     dispose(): void;
 }
+
+var ecosystems:GameEcosystem[] = [];
+export function registerEcosystem(ecosystem:GameEcosystem) {
+    ecosystems.push(ecosystem);
+}
+export function deregisterEcosystem(ecosystem:GameEcosystem) {
+    ecosystems = ecosystems.filter((e)=>{return e !== ecosystem;});
+}
+export function GetEcosystemFromEntitySystem(entSystem:EntitySystem) {
+    for(var e = 0; e < ecosystems.length;e++) {
+        if(ecosystems[e].entitySystem === entSystem) {
+            return ecosystems[e];
+        }
+    }
+    return undefined;
+}

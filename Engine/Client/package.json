@@ -32,6 +32,7 @@
         "@babylonjs/gui": "../../node_modules/@babylonjs/gui",
         "@babylonjs/inspector": "../../node_modules/@babylonjs/inspector",
         "@babylonjs/serializers": "../../node_modules/@babylonjs/serializers",
+        "@babylonjs/havok": "../../node_modules/@babylonjs/havok",
         "@msgpack/msgpack": "../../node_modules/@babylonjs/msgpack",
         "reflect-metadata": "../../node_modules/reflect-metadata",
         "vite": "../../node_modules/vite",

@@ -1,4 +1,3 @@
-import { hideColliderVisualSystem } from "@BabylonBurstClient/Rendering/ColliderVisualRenderSystem";
 import { GenerateTopMenuToggle, viewItemPriority } from "../../Utils/EditorTopMenu";
 import { RefreshWireframeMode } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 import { Color4, HemisphericLight, Vector3 } from "@babylonjs/core";
@@ -7,6 +6,8 @@ import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverl
 import { AngleToRad } from "@BabylonBurstCore/Utils/MathUtils";
 import { NavigationLayer } from "@BabylonBurstCore/Navigation/NavigationLayer";
 import { ShowAgentViz } from "@BabylonBurstCore/Navigation/NavAgentVisualistaionSystem";
+import { PhysicsMeshComponent } from "@BabylonBurstCore/Physics/PhysicsMesh";
+import { HiddenEntity } from "@BabylonBurstCore/Rendering/InstancedRender";
 
 export class EditorVisOptions {
     bShowNavmeshByDefault = true;
@@ -18,11 +19,11 @@ export async function SetupAllEditorVisualisations(ecosystem: GameEcosystem, opt
     Object.assign(spawnoptions, options);
     await ecosystem.waitLoadedPromise;
     SetupWiremeshVisualistaion(ecosystem);
-    SetupColliderVisualisation(ecosystem);
     SetupNavmeshVisualisation(ecosystem, spawnoptions);
     SetupNavAgentVisualisation(ecosystem, spawnoptions);
     SetupEditorDownLight(ecosystem);
     SetupEditorGridFloor(ecosystem);
+    SetupPhysicsVisualistaion(ecosystem);
 }
 
 function SetupEditorDownLight(ecosystem: GameEcosystem) {
@@ -82,24 +83,6 @@ function SetupEditorGridFloor(ecosystem: GameEcosystem) {
     );
 }
 
-function SetupColliderVisualisation(ecosystem: GameEcosystem) {
-    return; //TODO: Fix collider visuals
-    GenerateTopMenuToggle(
-        ecosystem,
-        "Show Collider",
-        "View",
-        "",
-        viewItemPriority,
-        (ecosystem: GameEcosystem) => {
-            //On callback
-        },
-        (ecosystem: GameEcosystem) => {
-            //Off callback
-            hideColliderVisualSystem(ecosystem);
-        },
-    );
-}
-
 function SetupNavmeshVisualisation(ecosystem: GameEcosystem, options: EditorVisOptions) {
     GenerateTopMenuToggle(
         ecosystem,
@@ -156,6 +139,38 @@ function SetupWiremeshVisualistaion(ecosystem: GameEcosystem) {
             ecosystem.dynamicProperties["___MATERIALWIREFRAMEMODE___"] = false;
             //On callback
             RefreshWireframeMode(ecosystem);
+        },
+    );
+}
+
+function SetupPhysicsVisualistaion(ecosystem: GameEcosystem) {
+    GenerateTopMenuToggle(
+        ecosystem,
+        "Show Physics",
+        "View",
+        "Physics",
+        viewItemPriority,
+        (ecosystem: GameEcosystem) => {
+            ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"] = true;
+            ecosystem.entitySystem.GetEntitiesWithData([PhysicsMeshComponent], [HiddenEntity]).iterateEntities(e => {
+                if (
+                    e.GetComponent(PhysicsMeshComponent).physicsMesh &&
+                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh
+                ) {
+                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh.isVisible = true;
+                }
+            });
+        },
+        (ecosystem: GameEcosystem) => {
+            ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"] = false;
+            ecosystem.entitySystem.GetEntitiesWithData([PhysicsMeshComponent], [HiddenEntity]).iterateEntities(e => {
+                if (
+                    e.GetComponent(PhysicsMeshComponent).physicsMesh &&
+                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh
+                ) {
+                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh.isVisible = false;
+                }
+            });
         },
     );
 }

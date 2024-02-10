@@ -1,6 +1,7 @@
 import { ParentedTransform } from "../EntitySystem/ParentedTransform";
 import { NavAgentTransformSystem } from "../Navigation/NavigationAgent";
 import { NavigationBuildSystem } from "../Navigation/NavigationBuildSystem";
+import { PhysicsSystem } from "../Physics/PhysicsSystem";
 import { GetSystemOfType } from "./GameSystemLoop";
 
 export const ConnectionProcessingPriority = 100;
@@ -17,5 +18,6 @@ export function RegisterDefaultCoreSystems() {
     }
     new NavAgentTransformSystem();
     new NavigationBuildSystem();
+    new PhysicsSystem();
     ParentedTransform.name;
 }

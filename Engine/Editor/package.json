@@ -13,6 +13,7 @@
         "@aws-sdk/credential-providers": "../../node_modules/@aws-sdk/credential-providers",
         "@babylonjs/core": "../../node_modules/@babylonjs/core",
         "@babylonjs/gui": "../../node_modules/@babylonjs/gui",
+        "@babylonjs/havok": "../../node_modules/@babylonjs/havok",
         "@babylonjs/inspector": "../../node_modules/@babylonjs/inspector",
         "@babylonjs/serializers": "../../node_modules/@babylonjs/serializers",
         "@codemirror/autocomplete": "^6.10.2",

@@ -4,7 +4,6 @@ import { UpdateAdminInterface } from "./Admin/AdminDebugInterface";
 import { DebugMode, environmentVaraibleTracker } from "../../Shared/src/Utils/EnvironmentVariableTracker";
 import { ServerConnectionProcesserSystem, serverConnection } from "./Networking/ServerConnection";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
-import { ColliderVisualSystem } from "./Rendering/ColliderVisualRenderSystem";
 import { UpdateTickClient } from "@userCode/ClientMain";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { LightingGameSystem } from "./Rendering/LightsSystem";
@@ -25,11 +24,9 @@ function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     new LightingGameSystem();
     new ServerConnectionProcesserSystem();
 
-    const colSystem = new ColliderVisualSystem();
     const navAgentViz = new NavAgentVisualisationSystem();
 
     if (ecosystem.isEditor === false) {
-        colSystem.bSystemEnabled = false;
         navAgentViz.bSystemEnabled = false;
     }
 

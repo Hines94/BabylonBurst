@@ -7,11 +7,12 @@ import { v4 as uuidv4 } from "uuid";
 import { UpdateSystemsLoop } from "./SystemsLoop";
 import { PlayerCamera } from "./Camera/PlayerCamera";
 import { GetGameSettings } from "./Settings";
-import { EcosystemType, GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { EcosystemType, GameEcosystem, deregisterEcosystem, registerEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { EntitySystem } from "@BabylonBurstCore/EntitySystem/EntitySystem";
 import { setupAsyncManager } from "@BabylonBurstClient/Setup/AWSAssetSetup";
 import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
+import HavokPhysics from "@babylonjs/havok";
 
 /** Custom game launch - eg editor or client side performance checks */
 export class RunnableClientEcosystem implements GameEcosystem {
@@ -55,9 +56,11 @@ export class RunnableClientEcosystem implements GameEcosystem {
         this.doc = canvas.ownerDocument;
         this.setupCanvas(canvas);
         this.setupEngineRunLoop(canvas);
+        registerEcosystem(this);
     }
 
     dispose(): void {
+        deregisterEcosystem(this);
         this.entitySystem.ResetSystem();
         this.engine.dispose();
     }
@@ -96,6 +99,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
         // await engine.initAsync();
         // this.engine = engine;
         this.engine.enableOfflineSupport = false;
+        globalThis.HK = await HavokPhysics();
     }
 
     async setupScene() {
