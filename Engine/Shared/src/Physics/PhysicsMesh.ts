@@ -1,4 +1,4 @@
-import { Material, Matrix, Mesh, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, StandardMaterial } from "@babylonjs/core";
+import { Material, Matrix, Mesh, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, PhysicsViewer, StandardMaterial } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
@@ -71,12 +71,25 @@ export class PhysicsMeshComponent extends Component {
         var meshes = ecosystem.dynamicProperties["___PHYSICSMESHES___"];
 
         //Load in mesh?
-        if(!meshes[meshName]) {
+        if(meshes[meshName] === undefined) {
             const meshDef = new AsyncStaticMeshDefinition(this.model.FilePath,this.model.MeshName,[null],this.model.FileName,defaultLayerMask)
             meshDef.bNoFailMaterialDiff = true;
             const loadMesh = meshDef.getMeshClone(ecosystem.scene,true);
-            await loadMesh.getMeshCreatedPromise();
             meshes[meshName] = loadMesh;
+            await loadMesh.getMeshCreatedPromise();
+            var body = new PhysicsBody(loadMesh.cloneMesh, PhysicsMotionType.STATIC, false, ecosystem.scene);
+            body.shape = new PhysicsShapeMesh(
+                loadMesh.cloneMesh, 
+                ecosystem.scene 
+            );
+            body.setMassProperties({mass: 1});
+
+            
+            const view = new PhysicsViewer(ecosystem.scene)
+            view.showBody(body)
+        //Already loaded?
+        } else {
+            await meshes[meshName].getMeshCreatedPromise();
         }
         
         //Unable to load mesh?
@@ -101,22 +114,16 @@ export class PhysicsMeshComponent extends Component {
         }
 
         //Create a new instance for this entity
-        var body = new PhysicsBody(ourMesh.cloneMesh, PhysicsMotionType.STATIC, false, ecosystem.scene);
-        body.shape = new PhysicsShapeMesh(
-            ourMesh.cloneMesh, 
-            ecosystem.scene 
-        );
-        body.setMassProperties({mass: 1});
         this.physicsMesh = ourMesh;
         const positionMatrix = EntTransform.getAsInstanceTransform(this.entityOwner.GetComponent(EntTransform)).getMatrix();
-        this.physicsInstanceNumber = ourMesh.cloneMesh.thinInstanceCount;
-        ourMesh.cloneMesh.thinInstanceAdd(positionMatrix);
+        this.physicsInstanceNumber = ourMesh.cloneMesh.thinInstanceAdd(positionMatrix);
+        this.physicsMesh.cloneMesh.physicsBody.updateBodyInstances();
 
+        //Debug properties
         if(!physicsMeshWireframeMat) {
             physicsMeshWireframeMat = new StandardMaterial("PhysicsWireframeMat",ecosystem.scene);
             physicsMeshWireframeMat.wireframe = true;
         }
-
         ourMesh.cloneMesh.material = physicsMeshWireframeMat;
         if(!ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"]) {
             ourMesh.cloneMesh.isVisible = false;
@@ -129,10 +136,14 @@ export class PhysicsMeshComponent extends Component {
         if(!this.physicsMesh || !this.physicsMesh.cloneMesh || this.physicsInstanceNumber === -1) {
             return;
         }
-        this.physicsMesh.cloneMesh.physicsBody.setMassProperties({},this.physicsInstanceNumber);
         const transform = this.entityOwner.GetComponent(EntTransform);
+
+        this.physicsMesh.cloneMesh.physicsBody.setMassProperties({},this.physicsInstanceNumber);
+        //this.physicsMesh.cloneMesh.physicsBody.setMotionType(this.MotionType,this.physicsInstanceNumber);
         this.physicsMesh.cloneMesh.physicsBody.setTargetTransform(EntVector3.GetVector3(transform.Position),EntVector4.GetQuaternion(transform.Rotation),this.physicsInstanceNumber);
-        this.physicsMesh.cloneMesh.physicsBody.setMotionType(this.MotionType,this.physicsInstanceNumber);
-        this.physicsMesh.cloneMesh.thinInstanceSetMatrixAt(this.physicsInstanceNumber,EntTransform.getAsInstanceTransform(this.entityOwner.GetComponent(EntTransform)).getMatrix());
+        //this.physicsMesh.cloneMesh.thinInstanceSetMatrixAt(this.physicsInstanceNumber,EntTransform.getAsInstanceTransform(transform).getMatrix());
+        
+        console.log(`Instance ${this.physicsInstanceNumber} properties set`)
+        console.log(this.physicsMesh.cloneMesh.thinInstanceCount)
     }
 }

@@ -1,4 +1,4 @@
-import { Mesh, MeshBuilder, TransformNode, Vector3 } from "@babylonjs/core";
+import { Matrix, Mesh, MeshBuilder, Quaternion, TransformNode, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Clamp, Clamp01, lerp } from "@BabylonBurstCore/Utils/MathUtils";
 import { GetMousePickingRay, PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
@@ -120,11 +120,9 @@ export class SpringArmCameraComponent {
     }
 
     private ResetCamPosition() {
-        const direction = Vector3.Lerp(
-            this.springArmDirectionMin,
-            this.springArmDirectionMax,
-            this.GetSpringArmAlpha(),
-        );
+        var direction = Vector3.Lerp(this.springArmDirectionMin, this.springArmDirectionMax, this.GetSpringArmAlpha());
+        const rot = Quaternion.FromEulerVector(this.playerCam.shakeRoot.rotation);
+        direction = direction.applyRotationQuaternion(rot);
         this.playerCam.mainCamera.position = direction.multiplyByFloats(
             this.springArmLength,
             this.springArmLength,

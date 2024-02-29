@@ -8,6 +8,7 @@ import {
     Matrix,
     Observer,
     Observable,
+    Quaternion,
 } from "@babylonjs/core";
 import { GetGameSettings } from "../Settings";
 import { defaultLayerMask, uiLayerMask } from "../Utils/LayerMasks";
@@ -126,10 +127,8 @@ export class PlayerCamera {
         this.onCameraPosUpdate.notifyObservers(this);
     }
 
-    UpdateCameraRotation() {
-        //TODO:S
-        // this._camRoot.rotationQuaternion = EntVector4.GetQuaternion(desiredRot);
-        // this.UpdateLook(desiredRot, ecosystem);
+    UpdateCameraRotation(desiredRot: Quaternion) {
+        this.shakeRoot.rotationQuaternion = desiredRot;
     }
 
     SetupAsOrthographic(dist: number) {
