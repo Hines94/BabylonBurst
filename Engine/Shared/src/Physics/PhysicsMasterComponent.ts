@@ -4,6 +4,7 @@ import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { EntVector3 } from "../EntitySystem/CoreComponents";
 import { GameEcosystem, GetEcosystemFromEntitySystem } from "../GameEcosystem";
 import { HavokPlugin } from "@babylonjs/core";
+import { prePhysicsLooper } from "../GameLoop/GameSystemLoop";
 
 @RegisteredType(PhysicsMasterComponent,{RequiredComponents:[],comment:`Controls physics meta for this world`})
 export class PhysicsMasterComponent extends Component {
@@ -17,12 +18,16 @@ export class PhysicsMasterComponent extends Component {
     @Saved(EntVector3,{comment:"Constant gravity force if applicable"})
     gravity = new EntVector3(0,-9.81,0);
 
+    @TrackedVariable()
+    @Saved(Number,{comment:"Number of physics steps per second"})
+    physicsStepsPerS = 90;
+
     priorParameters:PhysicsMasterComponent;
+    physicsLooperCallback:any;
 
     onComponentChanged(): void {
         this.RebuildPhysics(GetEcosystemFromEntitySystem(this.entityOwner.owningSystem));
     }
-
 
     RebuildPhysics(ecosystem:GameEcosystem) {
         if(this.priorParameters) {
@@ -38,8 +43,13 @@ export class PhysicsMasterComponent extends Component {
 
         if(!this.physicsEnabled) {
             ecosystem.scene.disablePhysicsEngine();
+            ecosystem.scene.onBeforePhysicsObservable.remove(this.physicsLooperCallback)
         } else {
             ecosystem.scene.enablePhysics(EntVector3.GetVector3(this.gravity),new HavokPlugin());
+            ecosystem.scene.getPhysicsEngine().setSubTimeStep((1/this.physicsStepsPerS)*1000);
+            this.physicsLooperCallback=ecosystem.scene.onBeforePhysicsObservable.add(()=>{
+                prePhysicsLooper.RunGameSystems(ecosystem)
+            })
         }
     }
 }
