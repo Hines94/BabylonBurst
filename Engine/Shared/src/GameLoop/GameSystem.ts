@@ -42,10 +42,6 @@ export abstract class GameSystem {
             }
         }
 
-        if(!this.bSystemEnabled) {
-            return;
-        }
-
         if(!ecosystem.isEditor && this.systemRunType === GameSystemRunType.EditorOnly) {
             return;
         }
@@ -53,11 +49,16 @@ export abstract class GameSystem {
             return;
         }
 
-        //First time running the system for this ecosystem?
+        //Init system?
         if(this.runEcosystems[ecosystem.uuid] === undefined) {
             this.SetupGameSystem(ecosystem);
             this.runEcosystems[ecosystem.uuid] = true;
         }
+
+        if(!this.bSystemEnabled) {
+            return;
+        }
+
         this.RunSystem(ecosystem, deltaTime);
         this.lastRun = 0;
     }

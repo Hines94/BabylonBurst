@@ -3,6 +3,8 @@ import { ComponentNotify } from "../EntitySystem/EntitySystem";
 import { GameEcosystem } from "../GameEcosystem";
 import { GameSystem, GameSystemRunType } from "../GameLoop/GameSystem";
 import { HiddenEntity, InstancedRender } from "../Rendering/InstancedRender";
+import { PhysicsBoxComponent } from "./PhysicsBox";
+import { PhysicsItem } from "./PhysicsItem";
 import { PhysicsMasterComponent } from "./PhysicsMasterComponent";
 import { PhysicsMeshComponent, PhysicsStaticMesh } from "./PhysicsMesh";
 
@@ -15,7 +17,6 @@ export class PhysicsSystem extends GameSystem {
         ecosystem.dynamicProperties["___PHYSICSMESHES___"] = [];
         ecosystem.entitySystem.RegisterSpecificComponentChangeNotify(PhysicsMasterComponent,this.CheckRebuildMaster);
         ecosystem.entitySystem.RegisterSpecificComponentChangeNotify(EntTransform,this.CheckRebuildMesh);
-        ecosystem.entitySystem.RegisterSpecificComponentChangeNotify(PhysicsMeshComponent,this.CheckRebuildMesh);
     }
 
     private CheckRebuildMaster(notify:ComponentNotify) {
@@ -30,6 +31,12 @@ export class PhysicsSystem extends GameSystem {
             return;
         }
         notify.ent.GetComponent(PhysicsMeshComponent).updateMeshProperties();
+    }
+
+    //This is just so the physics comps are pulled into the build (they are childs)
+    private importsRequirement(){
+        new PhysicsMeshComponent();
+        new PhysicsBoxComponent();
     }
 
     
