@@ -6,6 +6,7 @@ var physicsMeshWireframeMat:StandardMaterial;
 export function GetPhysicsWireframeMat(ecosystem:GameEcosystem):Material {
     if(!physicsMeshWireframeMat) {
         physicsMeshWireframeMat = new StandardMaterial("PhysicsWireframeMat",ecosystem.scene);
+        physicsMeshWireframeMat.emissiveColor = Color3.White();
         physicsMeshWireframeMat.disableLighting = true;
         physicsMeshWireframeMat.wireframe = true;
     }
@@ -17,7 +18,7 @@ var physicsTriggerMeshWireframeMat:StandardMaterial;
 export function GetPhysicsTriggerWireframeMat(ecosystem:GameEcosystem):Material {
     if(!physicsTriggerMeshWireframeMat) {
         physicsTriggerMeshWireframeMat = new StandardMaterial("PhysicsWireframeMat",ecosystem.scene);
-        physicsTriggerMeshWireframeMat.diffuseColor = Color3.Red();
+        physicsTriggerMeshWireframeMat.emissiveColor = Color3.Red();
         physicsTriggerMeshWireframeMat.disableLighting = true;
         physicsTriggerMeshWireframeMat.wireframe = true;
     }

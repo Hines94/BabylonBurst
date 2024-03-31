@@ -5,6 +5,7 @@ import { GameSystem, GameSystemRunType } from "../GameLoop/GameSystem";
 import { HiddenEntity, InstancedRender } from "../Rendering/InstancedRender";
 import { PhysicsBoxComponent } from "./PhysicsBox";
 import { PhysicsItem } from "./PhysicsItem";
+import { PhysicsItemCollisionListener } from "./PhysicsItemCollisionListener";
 import { PhysicsMasterComponent } from "./PhysicsMasterComponent";
 import { PhysicsMeshComponent, PhysicsStaticMesh } from "./PhysicsMesh";
 
@@ -37,8 +38,8 @@ export class PhysicsSystem extends GameSystem {
     private importsRequirement(){
         new PhysicsMeshComponent();
         new PhysicsBoxComponent();
+        new PhysicsItemCollisionListener();
     }
-
     
     RunSystem(ecosystem: GameEcosystem) {
         //Iterate all meshes

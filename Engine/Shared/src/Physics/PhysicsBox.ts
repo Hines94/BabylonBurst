@@ -1,7 +1,6 @@
-import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
-import { EntTransform, EntVector3 } from "../EntitySystem/CoreComponents";
-import { GetSavedPhysicsMeshes, PhysicsItem } from "./PhysicsItem";
+import { EntVector3 } from "../EntitySystem/CoreComponents";
+import { PhysicsItem } from "./PhysicsItem";
 import { Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeBox, Quaternion, Vector3 } from "@babylonjs/core";
 import { GameEcosystem, GetEcosystemFromEntitySystem } from "../GameEcosystem";
 

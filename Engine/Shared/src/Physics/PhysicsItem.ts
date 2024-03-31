@@ -1,21 +1,25 @@
-import { Material, Matrix, Mesh, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, PhysicsViewer, StandardMaterial } from "@babylonjs/core";
+import { Mesh, Observable, PhysicsBody, PhysicsMotionType } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
-import { ModelSpecifier } from "../Rendering/ModelSpecifier";
-import { InstancedRender } from "../Rendering/InstancedRender";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
-import { EntTransform, EntVector3, EntVector4 } from "../EntitySystem/CoreComponents";
-import { AsyncStaticMeshDefinition, StaticMeshCloneDetails } from "../AsyncAssets";
+import { EntTransform } from "../EntitySystem/CoreComponents";
 import { GameEcosystem, GetEcosystemFromEntitySystem } from "../GameEcosystem";
 import { defaultLayerMask } from "../../../Client/src/Utils/LayerMasks";
-import { GetPhysicsWireframeMat } from "./PhysicsMaterials";
+import { GetPhysicsTriggerWireframeMat, GetPhysicsWireframeMat } from "./PhysicsMaterials";
 
 @RegisteredType(PhysicsStaticItem,{ RequiredComponents:[EntTransform], bEditorAddable:false, bEditorRemovable:false, comment:"A static physics item that is built not to move"})
 export class PhysicsStaticItem extends Component {
 
 }
 
+export class CustomPhysicBody extends PhysicsBody {
+    owningPhysicsItems:PhysicsItem[];
+}
+
+var warned = false;
+
+@RegisteredType(PhysicsItem,{ RequiredComponents:[EntTransform], bEditorAddable:false})
 /** Generic physics item - could be a box or a specific mesh */
 export abstract class PhysicsItem extends Component {
     
@@ -36,13 +40,20 @@ export abstract class PhysicsItem extends Component {
 
     physicsMesh:Mesh;
 
+    onMeshRebuilt = new Observable<PhysicsItem>();
+
     abstract isValidItem():Boolean;
     /** Should be overwritten with specific method for getting our mesh (eg box or sphere) including physics body */
     async GetPhysicsMesh():Promise<Mesh>{return undefined;}
     /** Unique name to identify exactly this physics mesh */
     abstract GetPhysicsMeshName():string;
 
+    onComponentAdded(): void {
+        this.entityOwner.GetComponent(EntTransform).componentChanged.add(this.onComponentChanged.bind(this));
+    }
+
     onComponentChanged(): void {
+        const ecosystem = GetEcosystemFromEntitySystem(this.entityOwner.owningSystem); 
 
         //Set static tag
         if(this.MotionType === PhysicsMotionType.STATIC) {
@@ -66,6 +77,7 @@ export abstract class PhysicsItem extends Component {
     private removeOldPhysicsMesh() {
         if(this.physicsMesh) {
             this.physicsMesh.thinInstanceCount--;
+            console.error("TODO: reassign all meshes in PhysicMesh.owningPhysicsItems")
             //TODO: update all other meshes to reflect new instance numbers?
             this.physicsMesh = undefined;
             this.physicsInstanceNumber = -1;
@@ -77,11 +89,11 @@ export abstract class PhysicsItem extends Component {
     async LoadMeshIn() {
         const ecosystem = GetEcosystemFromEntitySystem(this.entityOwner.owningSystem);
 
-        // TODO: What about trigger? Different physics body!
-
         const savedMeshes = GetSavedPhysicsMeshes(ecosystem);
-        const thisMeshName = this.GetPhysicsMeshName();
+        const thisMeshName = `${this.triggerOnly}_${this.GetPhysicsMeshName()}`;
         var physicMesh:Mesh = savedMeshes[thisMeshName];
+
+        const positionMatrix = EntTransform.getAsInstanceTransform(this.entityOwner.GetComponent(EntTransform)).getMatrix();
         
         if(!physicMesh) {
             physicMesh = await this.GetPhysicsMesh();
@@ -90,12 +102,17 @@ export abstract class PhysicsItem extends Component {
                 this.removeOldPhysicsMesh();
                 return;
             }
-            
-            physicMesh.isVisible = false;
-            physicMesh.layerMask = defaultLayerMask;
-            physicMesh.thinInstanceAddSelf(true);
-            savedMeshes[thisMeshName] = physicMesh;
-            physicMesh.physicsBody = this.generatePhysicsBody(ecosystem,physicMesh);
+
+            if(!physicMesh.physicsBody && ecosystem.isGame) {
+                if(!ecosystem.scene.getPhysicsEngine()) {
+                    console.error("Trying to build physics with no engine enabled");
+                }
+                physicMesh.isVisible = false;
+                physicMesh.layerMask = defaultLayerMask;
+                physicMesh.thinInstanceAdd(positionMatrix);
+                savedMeshes[thisMeshName] = physicMesh;
+                physicMesh.physicsBody = this.generatePhysicsBody(ecosystem,physicMesh);
+            }
         }
 
         if(physicMesh === this.physicsMesh) {
@@ -105,21 +122,25 @@ export abstract class PhysicsItem extends Component {
 
         //Create a new instance for this entity
         this.physicsMesh = physicMesh;
-        const positionMatrix = EntTransform.getAsInstanceTransform(this.entityOwner.GetComponent(EntTransform)).getMatrix();
-        
+
+        const customPhys = physicMesh.physicsBody as CustomPhysicBody;
         // Workaround https://forum.babylonjs.com/t/instanced-physics-static-mesh/49031/4 required at least 1 ahead of time
-        if(this.physicsMesh.thinInstanceCount === 1) {
+        if(!customPhys.owningPhysicsItems) {
+            customPhys.owningPhysicsItems = [this];
             this.physicsInstanceNumber = 0;
         } else {
+            customPhys.owningPhysicsItems.push(this);
             this.physicsInstanceNumber = this.physicsMesh.thinInstanceAdd(positionMatrix);
             this.physicsMesh.physicsBody.updateBodyInstances();
         }
 
         //Debug properties
-        this.physicsMesh.material = GetPhysicsWireframeMat(ecosystem);
+        this.physicsMesh.material = this.triggerOnly ? GetPhysicsTriggerWireframeMat(ecosystem) : GetPhysicsWireframeMat(ecosystem);
         if(ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"]) {
             this.physicsMesh.isVisible = true;
         }
+        
+        this.onMeshRebuilt.notifyObservers(this);
 
         this.updateMeshProperties();
     }

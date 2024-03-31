@@ -188,13 +188,13 @@ export class EditorGizmos {
         }
         const eInputs = this.owner.InputValues as EditorKeybinds;
 
-        if (eInputs.EDITORPOSITIONGIZMO.wasJustActivated()) {
+        if (eInputs.EDITORPOSITIONGIZMO && eInputs.EDITORPOSITIONGIZMO.wasJustActivated()) {
             this.SetPositionGizmoEnabled();
         }
-        if (eInputs.EDITORROTATIONGIZMO.wasJustActivated()) {
+        if (eInputs.EDITORROTATIONGIZMO && eInputs.EDITORROTATIONGIZMO.wasJustActivated()) {
             this.SetRotationGizmoEnabled();
         }
-        if (eInputs.EDITORSCALEGIZMO.wasJustActivated()) {
+        if (eInputs.EDITORSCALEGIZMO && eInputs.EDITORSCALEGIZMO.wasJustActivated()) {
             this.SetScaleGizmoEnabled();
         }
 

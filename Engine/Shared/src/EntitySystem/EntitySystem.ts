@@ -218,6 +218,7 @@ export class EntitySystem {
                     continue;
                 }
                 component.onComponentChanged();
+                component.componentChanged.notifyObservers(component);
                 this.onComponentChangedEv.notifyObservers({ent:data,comp:component});
                 if(this.specificComponentChangedEvents[component.constructor.name]) {
                     this.specificComponentChangedEvents[component.constructor.name].notifyObservers({ent:data,comp:component});
