@@ -9,7 +9,7 @@ import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { SetupContentInputWithDatalist } from "../../Utils/ContentTypeTrackers";
 import { SetupElementToCursor } from "@BabylonBurstClient/Utils/HTMLUtils";
-import { SetupLoadedHTMLUI } from "@BabylonBurstClient/GUI/HTMLUILoader";
+import { SetupLoadedHTMLUI, styleScriptsName } from "@BabylonBurstClient/GUI/HTMLUILoader";
 
 export async function OpenUIEditor(item: ContentItem, existingHTML: string, saveCallback: (newHTML: string) => void) {
     const Displayer = OpenNewWindow(item.name, "EditorSections/UIDisplayer", "UI " + item.name);
@@ -27,7 +27,7 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
         extensions: [html(), oneDark, autocompletion()],
     });
     const view = new EditorView({
-        state,
+        state: state,
         parent: displayerElement.querySelector("#HTMLCoding"),
     });
 
@@ -44,6 +44,28 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
     });
     //Right click
     setupRightClickEditor(editorElement, view);
+
+    // Rebuild styles preview
+    const callback = ()=>{RebuildStylePreview(displayerElement)}
+    editorElement.ownerDocument['RebuildUICallback'] = callback;
+}
+
+
+function RebuildStylePreview(displayerElement: HTMLDivElement) {
+    var styleText = "";
+    const styles = displayerElement.ownerDocument[styleScriptsName];
+    Object.keys(styles).forEach(k => {
+        styleText += `\nITEM: ${k} \n`;
+        styleText += styles[k].innerHTML;
+    });
+    const styleState = EditorState.create({
+        doc: styleText,
+        extensions: [EditorState.readOnly.of(true), html(), oneDark, autocompletion()],
+    });
+    const styleView = new EditorView({
+        state: styleState,
+        parent: displayerElement.querySelector("#HTMLStylesHolder"),
+    });
 }
 
 function setupRightClickEditor(editor: HTMLDivElement, view: EditorView) {
@@ -130,6 +152,7 @@ async function RebuildUI(newHtml: string, item: ContentItem, previewElement: HTM
     previewElement.innerHTML = newHtml;
     previewElement.setAttribute("data-uipath", item.parent.getItemLocation());
     previewElement.setAttribute("data-uifilename", item.GetSaveName());
+
     //Parse out images etc to load them in
     SetupLoadedHTMLUI(previewElement, true);
 }

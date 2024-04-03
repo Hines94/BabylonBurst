@@ -41,21 +41,18 @@
             display: flex;
             background-color: black;
         }
-        #HTMLCodingHolder {
-            position: relative;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
+        #HTMLCodingSection {
+            overflow: auto;
+            padding: 10px;
+            width:100vw;
+            height:90%;
         }
         #HTMLCoding {
-            position: absolute;
-            top:0px;
-            bottom:0px;
-            right:0px;
-            left:0px;
             background-color: rgb(20, 20, 20);
-            padding: 10px;
-            overflow: scroll;
+        }
+        #CodeSectionOptions{
+            display: flex;
+            padding: 5px;
         }
     </style>
     <link rel="stylesheet" href="/GeneralStyles.css" />
@@ -81,7 +78,14 @@
     </div>
 
     <div class="centerUIPanel" id="centerUIPanel">
-        <div id="HTMLCodingHolder">
+        <div id="HTMLCodingSection">
+            <div id="CodeSectionOptions">
+                <button onclick="refreshCodingSection('HTMLCoding')">Coding</button>
+                <button onclick="refreshCodingSection('HTMLStylesHolder')">Styles</button>
+            </div>
+            <div id="HTMLStylesHolder" style="display: none;padding:2px;">
+            
+            </div>
             <div id="HTMLCoding">
             </div>
         </div>
@@ -181,12 +185,22 @@
             });
         } else {
             centerPanel.appendChild(previewElementHolder);
-            previewElementHolder.style.width = "70%";
-            editor.style.width = "30%";
+            previewElementHolder.style.width = "200%";
             previewWindow.close();
             previewWindow = undefined;
             EnsureResolutionSizing();
         }
     
+    }
+    function refreshCodingSection(item){
+        const c = document.getElementById("HTMLCodingSection").children;
+        for(var i = 0; i < c.length;i++) {
+            const element = c[i];
+            if(element.id === item || element.id==="CodeSectionOptions") {
+                element.style.display="block";
+            } else {
+                element.style.display="none";
+            }
+        }
     }
 </script>

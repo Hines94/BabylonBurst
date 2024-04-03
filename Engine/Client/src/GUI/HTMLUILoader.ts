@@ -32,7 +32,7 @@ export async function LoadUIContent(
     return div;
 }
 
-const styleScriptsName = "___allBBStyleScripts___";
+export const styleScriptsName = "___allBBStyleScripts___";
 
 /** Given an element which has loaded the text content from UI - load this element */
 export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleFunctions = false) {
@@ -104,4 +104,7 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
             await setupElementUI(div as HTMLElement);
         }
     }
+
+    //@ts-ignore For when we are in preview mode for our pages
+    if(element.ownerDocument["RebuildUICallback"]) element.ownerDocument["RebuildUICallback"]();
 }
