@@ -146,13 +146,16 @@ export class RunnableClientEcosystem implements GameEcosystem {
                 this.scene.render();
             }
         });
+
+        this.engine.onEndFrameObservable.add(c=>{
+            UpdateInputValuesEndFrame(this);
+        })
     }
     protected async setupExtras(): Promise<void> {}
 
     private updateLoop() {
         UpdateInputValues(this);
         this.updateEcosystemLoop();
-        UpdateInputValuesEndFrame(this);
     }
 
     /** General update for this ecosystem to update inputs etc */

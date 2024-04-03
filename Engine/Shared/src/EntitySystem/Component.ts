@@ -25,4 +25,6 @@ export class Component {
     onComponentRemoved() {}
     /** Called at the end of the frame (not instantly on var change) */
     onComponentChanged() {}
+    /** Called instantly on var change */
+    onInstantComponentChanged() {}
 }

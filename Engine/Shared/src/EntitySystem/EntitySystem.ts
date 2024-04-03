@@ -252,6 +252,7 @@ export class EntitySystem {
         if(!this.ChangedComponents[entId].includes(name)) {
             this.ChangedComponents[entId].push(name);
         }
+        comp.onInstantComponentChanged();
     }
 
     /** NOT RECOMMENDED FOR ANYTHING NETWORKED! Good for changing about local prefabs etc. */

@@ -40,12 +40,12 @@ export function TrackedVariable(): PropertyDecorator {
                 if(originalDescriptor && originalDescriptor.set) {
                     originalDescriptor.set(value);
                 }
+                this[originalKey] = value;
                 if (this[proxyCallbackSymbol] !== undefined) {
                     // Assuming DeepSetupCallback is defined somewhere in your code
                     DeepSetupCallback(value, this[proxyCallbackSymbol]);
                     this[proxyCallbackSymbol]();
                 }
-                this[originalKey] = value;
             },
             enumerable: true,
             configurable: true

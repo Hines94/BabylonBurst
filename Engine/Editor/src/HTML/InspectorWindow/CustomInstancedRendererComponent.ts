@@ -31,12 +31,10 @@ export function ProcessInstancedRenderComp(
     function refreshMaterialsNumWarning() {
         const modelSpecifier = FindModelForParams(existingData);
         if (modelSpecifier) {
-            console.log("Check");
             warning.hidden = true;
             if (existingData.MaterialData && modelSpecifier.materialsNum !== existingData.MaterialData.length) {
                 warning.hidden = false;
                 warning.innerText = "Incorrect number of materials. Model specifies " + modelSpecifier.materialsNum;
-                console.log("Warning triggered");
             }
         } else {
             warning.hidden = true;

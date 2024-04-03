@@ -129,7 +129,12 @@ export class CustomEditorHTML extends BaseTickableObject {
                 </div>`,
                 );
 
-                return [newPrefab, newMaterial, newUI];
+                const newDatasheet = new ContentItem(undefined, undefined);
+                newDatasheet.name = "New Datasheet";
+                newDatasheet.category = ContentItemType.Datasheet;
+                newDatasheet.data = JSON.stringify({});
+
+                return [newPrefab, newMaterial, newUI, newDatasheet];
             },
             onContentChange: () => {
                 RefreshObjectTypeTracking();

@@ -1,9 +1,12 @@
-import { Mesh, Observable, PhysicsBody, PhysicsMotionType } from "@babylonjs/core";
+import { Material, Matrix, Mesh, Observable, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, PhysicsViewer, StandardMaterial } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
+import { ModelSpecifier } from "../Rendering/ModelSpecifier";
+import { InstancedRender } from "../Rendering/InstancedRender";
 import { EntitySystem } from "../EntitySystem/EntitySystem";
-import { EntTransform } from "../EntitySystem/CoreComponents";
+import { EntTransform, EntVector3, EntVector4 } from "../EntitySystem/CoreComponents";
+import { AsyncStaticMeshDefinition, StaticMeshCloneDetails } from "../AsyncAssets";
 import { GameEcosystem, GetEcosystemFromEntitySystem } from "../GameEcosystem";
 import { defaultLayerMask } from "../../../Client/src/Utils/LayerMasks";
 import { GetPhysicsTriggerWireframeMat, GetPhysicsWireframeMat } from "./PhysicsMaterials";
@@ -123,21 +126,23 @@ export abstract class PhysicsItem extends Component {
         //Create a new instance for this entity
         this.physicsMesh = physicMesh;
 
-        const customPhys = physicMesh.physicsBody as CustomPhysicBody;
-        // Workaround https://forum.babylonjs.com/t/instanced-physics-static-mesh/49031/4 required at least 1 ahead of time
-        if(!customPhys.owningPhysicsItems) {
-            customPhys.owningPhysicsItems = [this];
-            this.physicsInstanceNumber = 0;
-        } else {
-            customPhys.owningPhysicsItems.push(this);
-            this.physicsInstanceNumber = this.physicsMesh.thinInstanceAdd(positionMatrix);
-            this.physicsMesh.physicsBody.updateBodyInstances();
-        }
-
         //Debug properties
         this.physicsMesh.material = this.triggerOnly ? GetPhysicsTriggerWireframeMat(ecosystem) : GetPhysicsWireframeMat(ecosystem);
         if(ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"]) {
             this.physicsMesh.isVisible = true;
+        }
+
+        const customPhys = physicMesh.physicsBody as CustomPhysicBody;
+        if(customPhys) {
+            // Workaround https://forum.babylonjs.com/t/instanced-physics-static-mesh/49031/4 required at least 1 ahead of time
+            if(!customPhys.owningPhysicsItems) {
+                customPhys.owningPhysicsItems = [this];
+                this.physicsInstanceNumber = 0;
+            } else {
+                customPhys.owningPhysicsItems.push(this);
+                this.physicsInstanceNumber = this.physicsMesh.thinInstanceAdd(positionMatrix);
+                this.physicsMesh.physicsBody.updateBodyInstances();
+            }
         }
         
         this.onMeshRebuilt.notifyObservers(this);
@@ -148,13 +153,12 @@ export abstract class PhysicsItem extends Component {
     abstract generatePhysicsBody(ecosystem:GameEcosystem, generatedMesh:Mesh):PhysicsBody;
 
     updateMeshProperties() {
-        if(!this.physicsMesh || !this.physicsMesh || this.physicsInstanceNumber === -1) {
-            return;
-        }
+        if(!this.physicsMesh) return;
         const transform = this.entityOwner.GetComponent(EntTransform);
-
-        this.physicsMesh.physicsBody.setMassProperties({},this.physicsInstanceNumber);
         this.physicsMesh.thinInstanceSetMatrixAt(this.physicsInstanceNumber,EntTransform.getAsInstanceTransform(transform).getMatrix());
+        
+        if(!this.physicsMesh.physicsBody || this.physicsInstanceNumber === -1) return;
+        this.physicsMesh.physicsBody.setMassProperties({},this.physicsInstanceNumber);       
         this.physicsMesh.physicsBody.setMotionType(this.MotionType,this.physicsInstanceNumber);
     }
 }

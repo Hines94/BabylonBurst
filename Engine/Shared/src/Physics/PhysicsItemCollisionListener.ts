@@ -1,6 +1,6 @@
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
-import { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, Mesh, Observer } from "@babylonjs/core"
+import { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, Mesh, Observable, Observer, PhysicsBody } from "@babylonjs/core"
 import { CustomPhysicBody, PhysicsItem } from "./PhysicsItem";
 import { EntityData } from "../EntitySystem/EntityData";
 import { PhysicsMeshComponent } from "./PhysicsMesh";

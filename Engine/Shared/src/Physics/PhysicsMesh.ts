@@ -1,13 +1,16 @@
-import { Mesh, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh } from "@babylonjs/core";
+import { Material, Matrix, Mesh, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, PhysicsViewer, StandardMaterial } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
 import { ModelSpecifier } from "../Rendering/ModelSpecifier";
-import { EntTransform } from "../EntitySystem/CoreComponents";
-import { AsyncStaticMeshDefinition } from "../AsyncAssets";
+import { InstancedRender } from "../Rendering/InstancedRender";
+import { EntitySystem } from "../EntitySystem/EntitySystem";
+import { EntTransform, EntVector3, EntVector4 } from "../EntitySystem/CoreComponents";
+import { AsyncStaticMeshDefinition, StaticMeshCloneDetails } from "../AsyncAssets";
 import { GameEcosystem, GetEcosystemFromEntitySystem } from "../GameEcosystem";
 import { defaultLayerMask } from "../../../Client/src/Utils/LayerMasks";
-import { PhysicsItem } from "./PhysicsItem";
+import { GetPhysicsWireframeMat } from "./PhysicsMaterials";
+import { GetSavedPhysicsMeshes, PhysicsItem } from "./PhysicsItem";
 
 @RegisteredType(PhysicsStaticMesh,{ RequiredComponents:[EntTransform], bEditorAddable:false, bEditorRemovable:false, comment:"A static physics mesh that is built not to move"})
 export class PhysicsStaticMesh extends Component {
