@@ -46,26 +46,37 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
     setupRightClickEditor(editorElement, view);
 
     // Rebuild styles preview
-    const callback = ()=>{RebuildStylePreview(displayerElement)}
+    const styleView = setupStylePreview(displayerElement);
+    const callback = ()=>{RebuildStylePreview(displayerElement,styleView)}
     editorElement.ownerDocument['RebuildUICallback'] = callback;
 }
 
 
-function RebuildStylePreview(displayerElement: HTMLDivElement) {
-    var styleText = "";
-    const styles = displayerElement.ownerDocument[styleScriptsName];
-    Object.keys(styles).forEach(k => {
-        styleText += `\nITEM: ${k} \n`;
-        styleText += styles[k].innerHTML;
-    });
+function setupStylePreview(displayerElement: HTMLDivElement) {
     const styleState = EditorState.create({
-        doc: styleText,
+        doc: "",
         extensions: [EditorState.readOnly.of(true), html(), oneDark, autocompletion()],
     });
     const styleView = new EditorView({
         state: styleState,
         parent: displayerElement.querySelector("#HTMLStylesHolder"),
     });
+    return styleView;
+}
+
+function RebuildStylePreview(displayerElement: HTMLDivElement,styleView:EditorView) {
+    var styleText = "";
+    const styles = displayerElement.ownerDocument[styleScriptsName];
+    Object.keys(styles).forEach(k => {
+        styleText += `\nITEM: ${k} \n`;
+        styleText += styles[k].innerHTML;
+    });
+
+    styleView.dispatch({changes: {
+        from: 0,
+        to: styleView.state.doc.length,
+        insert: styleText
+      }})
 }
 
 function setupRightClickEditor(editor: HTMLDivElement, view: EditorView) {
