@@ -16,6 +16,7 @@ print_cyan "--- Installing Common Modules ---\n"
 cd ${base_path}
 sudo npm install -g bun
 npm install
+bash Source/ClientCustomPackages.sh
 
 print_cyan "--- Installing Engine Modules ---\n"
 cd ${base_path}/Engine/Shared || exit
@@ -23,9 +24,11 @@ npm install
 
 cd ${base_path}/Engine/Client || exit
 npm install
+bash ../../Source/ClientCustomPackages.sh
 
 cd ${base_path}/Engine/Editor
 npm install
+bash ../../Source/ClientCustomPackages.sh
 
 cd ${base_path}/Engine/Server
 print_cyan "TODO: Setup server once implemented!"

@@ -163,6 +163,7 @@ export class BrowserKeyNameValues {
     static TILDEKEY = 192;
     static TILDEKEYALT = 223;
     static IKEY = 73;
+    static ESCKEY = 27;
 }
 
 /** contains some basic key values. Can be extended with custom values and swapped out in the ecosystem.Inputs */
