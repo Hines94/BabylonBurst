@@ -21,17 +21,9 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
     const previewElement = displayerElement.querySelector("#HTMLDisplay") as HTMLDivElement;
     const editorElement = displayerElement.querySelector(`#HTMLCoding`) as HTMLDivElement;
 
-    //Setup
-    const state = EditorState.create({
-        doc: existingHTML,
-        extensions: [html(), oneDark, autocompletion()],
-    });
-    const view = new EditorView({
-        state: state,
-        parent: displayerElement.querySelector("#HTMLCoding"),
-    });
-
-    const newHTML = state.doc.toString();
+    //Setup code editor and live changes
+    const view = SetupCodeEditor(existingHTML, displayerElement);
+    const newHTML = view.state.doc.toString();
     RebuildUI(newHTML, item, previewElement);
     checkRebuildUI(view, item, previewElement, displayerElement, newHTML);
 
@@ -42,6 +34,7 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
         savB.style.color = "white";
         savB.innerText = "Save Changes";
     });
+
     //Right click
     setupRightClickEditor(editorElement, view);
 
@@ -51,6 +44,18 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
     editorElement.ownerDocument['RebuildUICallback'] = callback;
 }
 
+
+function SetupCodeEditor(existingHTML: string, displayerElement: HTMLDivElement) {
+    const state = EditorState.create({
+        doc: existingHTML,
+        extensions: [html(), oneDark, autocompletion()],
+    });
+    const view = new EditorView({
+        state: state,
+        parent: displayerElement.querySelector("#HTMLCoding"),
+    });
+    return view;
+}
 
 function setupStylePreview(displayerElement: HTMLDivElement) {
     const styleState = EditorState.create({

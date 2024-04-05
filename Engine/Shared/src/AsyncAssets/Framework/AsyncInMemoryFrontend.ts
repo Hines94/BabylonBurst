@@ -19,6 +19,10 @@ export class AsyncInMemoryFrontend implements IFrontendStorageInterface {
         return true;
     }
 
+    async GetAllItemNames(): Promise<string[]> {
+        return Object.keys(this.storedRequests);
+    }
+
     async Get(path: string): Promise<CacheEntry> {
         return this.storedRequests[path];
     }

@@ -8,11 +8,11 @@ import { AssetFolder } from "./ContentBrowser/AssetFolder";
 import { AssetBundle } from "./ContentBrowser/AssetBundle";
 import { Scene } from "@babylonjs/core";
 import { encode } from "@msgpack/msgpack";
-import { v4 as uuidv4 } from "uuid";
 import { RefreshObjectTypeTracking } from "../Utils/ContentTypeTrackers";
 import { AsyncAWSBackend, AsyncAssetManager } from "@BabylonBurstCore/AsyncAssets";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { SetupAllTopBarOptions } from "./HTMLUtils/TopBarSetup";
+import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 
 //This assumes only one editor per time - pretty reasonable
 export var topLevelEditorFolder: AssetFolder;
@@ -108,10 +108,7 @@ export class CustomEditorHTML extends BaseTickableObject {
                 const newPrefab = new ContentItem(undefined, undefined);
                 newPrefab.name = "New Prefab";
                 newPrefab.category = ContentItemType.Prefab;
-                newPrefab.data = encode({
-                    prefabID: uuidv4(),
-                    prefabData: encode({}),
-                });
+                newPrefab.data = PrefabManager.GenerateNewPrefabSave({})
 
                 const newMaterial = new ContentItem(undefined, undefined);
                 newMaterial.name = "New Material";

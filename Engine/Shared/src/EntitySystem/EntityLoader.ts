@@ -10,7 +10,7 @@ export class EntityTemplate {
     entityData:{ [ent:number]: any } = {};
 
     DoesEntityExist(ent:number) : boolean {
-        return this.entityData[ent] !== undefined;
+        return this.entityData && this.entityData[ent] !== undefined;
     }
 
     DoesEntityHaveComponentByName(ent:number,compName:string) {

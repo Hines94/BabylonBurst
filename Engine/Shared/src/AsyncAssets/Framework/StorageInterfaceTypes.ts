@@ -33,6 +33,7 @@ export interface CacheEntry {
 
 /** Generic frontend storage for caching data retrieved from backend */
 export interface IFrontendStorageInterface {
+    GetAllItemNames():Promise<string[]>;
     InitializeFrontendCache(): Promise<boolean>;
     Put(data: CacheEntry, path: string): Promise<boolean>;
     Get(path: string): Promise<CacheEntry>;

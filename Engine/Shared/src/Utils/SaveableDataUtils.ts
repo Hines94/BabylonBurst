@@ -27,7 +27,6 @@ export function GetTypingsCompIndex(comp:string,typings:EntitySavedTypings, bCre
         typings.push({compName:comp,compParams:[]});
         return typings.length-1;
     }
-    console.error("could not find comp index for " + comp);
     return undefined;
 }
 
