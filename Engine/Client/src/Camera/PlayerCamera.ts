@@ -151,6 +151,11 @@ export class PlayerCamera {
         this.shakeRoot.parent = root;
         this.shakeRoot.position = new Vector3();
     }
+
+    ResetCustomRoot() {
+        this.shakeRoot.parent = undefined;
+        this.customCameraRoot = undefined;
+    }
 }
 
 export function GetMousePickingRay(ecosystem: GameEcosystem) {

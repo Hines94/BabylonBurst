@@ -186,7 +186,7 @@ export abstract class HigherarchyHTML {
         var pf = entity.GetComponent(Prefab);
         if (pf !== undefined) {
             var insetLevel = 0;
-            while (pf.parent !== undefined) {
+            while (pf && pf.parent !== undefined) {
                 insetLevel++;
                 pf = pf.parent.GetComponent<Prefab>(Prefab);
             }

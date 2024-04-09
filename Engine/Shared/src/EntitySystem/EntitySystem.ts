@@ -119,6 +119,10 @@ export class EntitySystem {
         const compKeys = Object.keys(entData.Components);
         compKeys.forEach((ck)=> {
             const comp = entData.Components[ck];
+            if(!comp) {
+                console.error(`No component: ${ck} to remove`);
+                return;
+            }
             comp.onComponentRemoved();
             comp.entityOwner = undefined;
         });

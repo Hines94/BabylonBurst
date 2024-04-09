@@ -3,7 +3,7 @@ import { CustomEditorHTML } from "./HTML/CustomEditorHTML";
 import { EditorCamera } from "./Utils/EditorCamera";
 import { ShowToastError, ShowToastNotification } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import { UpdateEditorTick } from "@userCode/EditorMain";
-import { EditorKeybinds } from "@BabylonBurstClient/InputModule";
+import { EditorKeybinds } from "@BabylonBurstClient/Inputs/PresetInputs";
 
 export type BuildableDescript = {
     CodeName: string;

@@ -1,4 +1,4 @@
-import { Matrix, Mesh, MeshBuilder, Quaternion, TransformNode, Vector3 } from "@babylonjs/core";
+import { Matrix, Mesh, MeshBuilder, Observer, Quaternion, TransformNode, Vector3 } from "@babylonjs/core";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Clamp, Clamp01, lerp } from "@BabylonBurstCore/Utils/MathUtils";
 import { GetMousePickingRay, PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
@@ -9,6 +9,7 @@ export class SpringArmCameraComponent {
     ecosystem: GameEcosystem;
     playerCam: PlayerCamera;
     springArmRoot: TransformNode;
+    playerCamBinding:Observer<PlayerCamera>;
 
     /** Speed we scroll small->large in 1 sec */
     springArmScrollSpeed = 0.5;
@@ -40,7 +41,7 @@ export class SpringArmCameraComponent {
             return;
         }
         this.playerCam.bSpringArmComp = true;
-        this.playerCam.onCameraPosUpdate.add(this.PlayerCameraPosUpdate.bind(this));
+        this.playerCamBinding = this.playerCam.onCameraPosUpdate.add(this.PlayerCameraPosUpdate.bind(this));
 
         this.springArmRoot = new TransformNode("Camera Root");
         this.springArmRoot.position = new Vector3(0, 0, 0); //initialized at (0,0,0)
@@ -49,6 +50,14 @@ export class SpringArmCameraComponent {
         this.playerCam.SetCustomRoot(this.springArmRoot);
         this.ResetCamPosition();
         this.playerCam.mainCamera.lockedTarget = this.springArmRoot.position;
+    }
+
+    dispose() {
+        if(!this.playerCam) return;
+        this.playerCam.bSpringArmComp = false;
+        this.playerCam.onCameraPosUpdate.remove(this.playerCamBinding);
+        this.playerCam.ResetCustomRoot();
+        this.playerCam = undefined;
     }
 
     /** Force our spring arm to be a fixed length (eg set to 0 for "first person mode") */
