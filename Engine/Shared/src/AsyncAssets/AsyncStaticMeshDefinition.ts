@@ -1,4 +1,4 @@
-import { Mesh, MeshBuilder, Observable, Scene, StandardMaterial } from "@babylonjs/core";
+import { Mesh, MeshBuilder, Observable, Scene } from "@babylonjs/core";
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { ExtractMaterialFromAny } from "./AsyncMaterial";
 import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh";
@@ -6,7 +6,6 @@ import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
 import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
 import { GetAsyncSceneIdentifier, GetBadMeshMaterial } from "./Utils/SceneUtils";
-import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 
 var UpdateRequireSMDefinitions: AsyncStaticMeshDefinition[] = [];
@@ -142,6 +141,7 @@ export class AsyncStaticMeshDefinition {
 
         //Change to specified materials
         for (var i = 0; i < matInstances.length; i++) {
+            if(!foundMeshElements[i]['OriginalMaterial']) foundMeshElements[i]['OriginalMaterial']=foundMeshElements[i].material
             //If material was not overriden then set it so
             if (matInstances[i] !== null) {
                 foundMeshElements[i].material = matInstances[i];
@@ -165,6 +165,11 @@ export class AsyncStaticMeshDefinition {
                 false,
                 true
             );
+        }
+
+        //Reset mesh elements to original material
+        for(var i = 0; i < foundMeshElements.length;i++) {
+            foundMeshElements[i].material = foundMeshElements[i]['OriginalMaterial'];
         }
 
         //Final check

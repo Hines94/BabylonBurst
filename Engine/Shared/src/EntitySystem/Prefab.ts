@@ -34,6 +34,14 @@ export class Prefab extends Component {
     @Saved(EntityData,{editorViewOnly:true,comment:`If not 0 (or undefined) then this prefab has been added/managed from a PrefabInstance`})
     /** Parent prefabInstance - means this is an active 'instance' of a prefab */
     parent:EntityData;
+
+    /** Will search for a component type through all parents in this prefab */
+    static getParentedComponent<T extends Component>(entity:EntityData, type: { new(): T }): T | undefined {
+        const pf = entity.GetComponent(Prefab);
+        if(pf === undefined || pf.parent === undefined) return undefined;
+        if(pf.parent.GetComponent(type) !== undefined) return pf.parent.GetComponent(type);
+        return this.getParentedComponent(pf.parent,type);
+    }
 }
 
 @RegisteredType(PrefabInstance,{comment:`A way of spawning/managing prefabs into a scene`})

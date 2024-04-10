@@ -25,7 +25,10 @@ export class PhysicsMeshComponent extends PhysicsItem {
     model = new ModelSpecifier();
 
     isValidItem(): Boolean {
-        return !this.model.FilePath || !this.model.MeshName;
+        if(this.model.FileName === undefined) return false;
+        if(this.model.FilePath === undefined) return false;
+        if(this.model.MeshName === undefined) return false;
+        return true;
     }
 
     GetPhysicsMeshName(): string {

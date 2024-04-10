@@ -80,7 +80,7 @@ export class EntitySystem {
 
     RemoveComponent(en:number | EntityData,comp:typeof Component | string) {
         const entData = this.getEntData(en);
-        if(!entData.IsValid()) {
+        if(!entData || !entData.IsValid()) {
             return;
         }
         
