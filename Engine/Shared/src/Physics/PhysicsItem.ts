@@ -18,7 +18,6 @@ export class PhysicsStaticItem extends Component {
 
 export class CustomPhysicBody extends PhysicsBody {
     owningPhysicsItems:PhysicsItem[];
-    bRequirePosChange:boolean;
 }
 
 var warned = false;
@@ -107,14 +106,15 @@ export abstract class PhysicsItem extends Component {
                 return;
             }
 
+            physicMesh.isVisible = false;
+            physicMesh.layerMask = defaultLayerMask;
+            physicMesh.thinInstanceAdd(positionMatrix);
+            savedMeshes[thisMeshName] = physicMesh;
+
             if(!physicMesh.physicsBody && ecosystem.isGame) {
                 if(!ecosystem.scene.getPhysicsEngine()) {
                     console.error("Trying to build physics with no engine enabled");
                 }
-                physicMesh.isVisible = false;
-                physicMesh.layerMask = defaultLayerMask;
-                physicMesh.thinInstanceAdd(positionMatrix);
-                savedMeshes[thisMeshName] = physicMesh;
                 physicMesh.physicsBody = this.generatePhysicsBody(ecosystem,physicMesh);
             }
         }
@@ -144,6 +144,10 @@ export abstract class PhysicsItem extends Component {
                 this.physicsInstanceNumber = this.physicsMesh.thinInstanceAdd(positionMatrix);
                 this.physicsMesh.physicsBody.updateBodyInstances();
             }
+        // Support for editor visualistaion
+        } else if(!ecosystem.isGame) {
+            if(this.physicsMesh.thinInstanceCount === 1) { this.physicsInstanceNumber = 0; }
+            else { this.physicsInstanceNumber = this.physicsMesh.thinInstanceAdd(positionMatrix);}
         }
         
         this.onMeshRebuilt.notifyObservers(this);
@@ -155,11 +159,11 @@ export abstract class PhysicsItem extends Component {
 
     updateMeshProperties() {
         if(!this.physicsMesh || this.physicsInstanceNumber === -1) return;
-        this.physicsMesh.physicsBody.disablePreStep = false;
-        //TODO: Disable phusics step again after 1 frame
         const transform = this.entityOwner.GetComponent(EntTransform);
         this.physicsMesh.thinInstanceSetMatrixAt(this.physicsInstanceNumber,EntTransform.getAsInstanceTransform(transform).getMatrix(),true);
         if(!this.physicsMesh.physicsBody) return;
+        //TODO: Disable phusics step again after 1 frame
+        this.physicsMesh.physicsBody.disablePreStep = false;
         this.physicsMesh.physicsBody.setMassProperties({},this.physicsInstanceNumber);       
         this.physicsMesh.physicsBody.setMotionType(this.MotionType,this.physicsInstanceNumber);
     }
