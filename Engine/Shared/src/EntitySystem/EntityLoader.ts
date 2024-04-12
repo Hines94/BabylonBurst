@@ -3,7 +3,8 @@ import { EntitySystem } from "./EntitySystem";
 import { EntityData, EntityLoadMapping } from "./EntityData";
 import { Component } from "./Component";
 import { registeredTypes } from "./TypeRegister";
-import { EntitySavedTypings, GetDefaultComponent, GetTypingsCompIndex, LoadCustomSaveData, TwoPropertiesAreIdentical } from "../Utils/SaveableDataUtils";
+import { ComponentLoadData, EntitySavedTypings, GetDefaultComponent, GetTypingsCompIndex, LoadCustomSaveData, TwoPropertiesAreIdentical } from "../Utils/SaveableDataUtils";
+import { Prefab, PrefabInstance } from "./Prefab";
 
 export class EntityTemplate {
     typings:EntitySavedTypings;
@@ -54,7 +55,7 @@ export class EntityTemplate {
     }
 
     /** Given a component - load the data we have into that component */
-    LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component,bPreserveNonDefaults = false) {
+    LoadDataIntoComponent(ent:number,compName:string,mapping:EntityLoadMapping,comp:Component) {
         if(mapping === undefined || mapping === null) {
             mapping = {};
         }
@@ -64,19 +65,22 @@ export class EntityTemplate {
             return;
         }
 
-        const defaultComp = bPreserveNonDefaults ? GetDefaultComponent(registeredTypes[compName].type,mapping[ent]) : undefined;
-        
+
         const params = Object.keys(compData);
         for(var i = 0; i < params.length;i++) {
             const paramIndex = parseInt(params[i]);
             const paramName = this.typings[compIndex].compParams[paramIndex];
 
-            if(bPreserveNonDefaults && !TwoPropertiesAreIdentical(defaultComp[paramName],comp[paramName])) {
-                continue;
+            const loadParams:ComponentLoadData = {
+                entityToLoad:mapping[ent],
+                entMap:mapping,
+                savedData:compData[paramIndex],
+                parentTypeName:compName,
+                parentData:comp,
+                savedDataTypings:this.typings,
+                thisParamName:paramName
             }
-
-            const data = LoadCustomSaveData(mapping[ent],mapping,compData[paramIndex],compName,paramName,this.typings);
-            comp[paramName] = data;
+            LoadCustomSaveData(loadParams);
         }
     }
 
@@ -129,7 +133,7 @@ export class EntityLoader {
         return entMappings;
     }
 
-    static LoadTemplateIntoSpecifiedEntities(template:EntityTemplate,system:EntitySystem, entMappings:EntityLoadMapping, bPreserveNonDefaults = false):EntityLoadMapping {
+    static LoadTemplateIntoSpecifiedEntities(template:EntityTemplate,system:EntitySystem, entMappings:EntityLoadMapping):EntityLoadMapping {
         if(!isValidTemplate(template)) {
             return;
         }
@@ -141,16 +145,19 @@ export class EntityLoader {
             }
             const originalEntId = parseInt(e);
             const comps = Object.keys(template.entityData[originalEntId]);
-            const entMapping = entMappings[e];
+            const entMapping = entMappings[e] as EntityData;
             //Load prefab first in case we are using defaults
-            TryLoadComponentIn("Prefab",originalEntId,entMapping);
+            TryLoadComponentIn(Prefab.name,originalEntId,entMapping);
             for(var c = 0; c < comps.length;c++){
                 const compKey = parseInt(Object.keys(template.typings)[parseInt(comps[c])]);
                 const compName:string = template.typings[compKey].compName;
-                if(compName === "Prefab") {
+                if(compName === Prefab.name) {
                     continue;
                 }
                 TryLoadComponentIn(compName,originalEntId,entMapping);
+                if(compName === PrefabInstance.name) {
+                    entMapping.GetComponent(PrefabInstance).refreshPrefabInstance();
+                }
             }
         })
         return entMappings;
@@ -166,7 +173,7 @@ export class EntityLoader {
             }
             const existingComp = entMapping.GetComponentByName(compName);
             if(existingComp !== undefined) {
-                template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp, bPreserveNonDefaults);
+                template.LoadDataIntoComponent(originalEntId,compName,entMappings,existingComp);
             } else {
                 const compData = template.GetEntityComponent(originalEntId,compType.type as any,entMapping,entMappings);
                 if(compData !== undefined) {

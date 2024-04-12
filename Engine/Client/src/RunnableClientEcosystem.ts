@@ -37,6 +37,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
     gameSetup = false;
     camera: PlayerCamera;
     onUpdate = new Observable<GameEcosystem>();
+    onChangeDynamicProperty = new Observable<string>();
     controlHasFocus: boolean;
     hoveredOverGUI: boolean;
     ecosystemNetworkType = EcosystemType.Client;
@@ -55,11 +56,20 @@ export class RunnableClientEcosystem implements GameEcosystem {
 
     constructor(canvas: HTMLCanvasElement) {
         this.doc = canvas.ownerDocument;
+        const ecosystem = this;
+        const handler = {
+            set(target:any,prop:string,val:any) : boolean {
+                target[prop] = val;
+                ecosystem.onChangeDynamicProperty.notifyObservers(prop);
+                return true;
+            },
+        };
+        this.dynamicProperties = new Proxy(this.dynamicProperties,handler)
         this.setupCanvas(canvas);
         this.setupEngineRunLoop(canvas);
         registerEcosystem(this);
     }
-
+ 
     dispose(): void {
         deregisterEcosystem(this);
         this.entitySystem.ResetSystem();

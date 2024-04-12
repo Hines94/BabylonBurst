@@ -66,11 +66,6 @@ export class PrefabInstance extends Component {
         this.SpawnedPrefabIdentifier.prefabUUID = uuid;
     }
 
-    onComponentAdded():void {
-        const prefabInst = this.entityOwner.GetComponent<PrefabInstance>(PrefabInstance);
-        prefabInst.refreshPrefabInstance(this.entityOwner);
-    }
-
     onComponentRemoved(): void {
         if(this.reloadObserver !== undefined) {
             PrefabManager.onPrefabAdded.remove(this.reloadObserver);
@@ -78,9 +73,19 @@ export class PrefabInstance extends Component {
         this.clearSpawnedEntities();
     }
 
+    onComponentAdded(): void {
+        if(this.reloadObserver === undefined) {
+            this.reloadObserver = PrefabManager.onPrefabAdded.add((uuid:string)=>{
+                if(uuid === this.lastSpawnedPrefab && this.entityOwner && this.entityOwner.owningSystem) {
+                    this.refreshPrefabInstance(true);
+                }
+            })
+        }
+
+    }
+
     onComponentChanged(): void {
-        const prefabInst = this.entityOwner.GetComponent<PrefabInstance>(PrefabInstance);
-        prefabInst.refreshPrefabInstance(this.entityOwner);
+        this.refreshPrefabInstance();
     }
 
     /** Get all spawned entities that were created by this prefab instance */
@@ -100,17 +105,15 @@ export class PrefabInstance extends Component {
         return ret;
     }
 
-    refreshPrefabInstance(ent:EntityData) {
-        //Subscribe for future
-        if(this.reloadObserver === undefined) {
-            this.reloadObserver = PrefabManager.onPrefabAdded.add((uuid:string)=>{
-                if(uuid === this.SpawnedPrefabIdentifier.prefabUUID && ent && ent.owningSystem) {
-                    this.refreshPrefabInstance(ent);
-                }
-            })
+    /** Tracks the last actual spawned prefab */
+    lastSpawnedPrefab:string;
+    refreshPrefabInstance(bForce = false) {
+
+        if(!bForce && this.SpawnedPrefabIdentifier && this.SpawnedPrefabIdentifier.prefabUUID === this.lastSpawnedPrefab) {
+            return;
         }
 
-        const prefabComp = ent.GetComponent(Prefab);
+        const prefabComp = this.entityOwner.GetComponent(Prefab);
         if(prefabComp && prefabComp.PrefabIdentifier === this.SpawnedPrefabIdentifier.prefabUUID) {
             console.error(`Prefab ${prefabComp.PrefabIdentifier} has itself inside prefab instance! Aborting!`);
             this.clearSpawnedEntities();
@@ -164,7 +167,7 @@ export class PrefabInstance extends Component {
                     }
                 //New entity?
                 } else {
-                    map[entId] = ent.owningSystem.AddEntity();
+                    map[entId] = this.entityOwner.owningSystem.AddEntity();
                 }
             }
             //Remove ents that no longer exist
@@ -175,8 +178,7 @@ export class PrefabInstance extends Component {
                 }
             }
     
-            const mappings = EntityLoader.LoadTemplateIntoSpecifiedEntities(template, ent.owningSystem,map,true);
-            
+            const mappings = EntityLoader.LoadTemplateIntoSpecifiedEntities(template, this.entityOwner.owningSystem,map);
             //Setup so we know which ents we have
             const origEnts = Object.keys(mappings);
             const newBundle = new SpawnedPrefabBundle();
@@ -194,7 +196,7 @@ export class PrefabInstance extends Component {
                 if(prefab === undefined) {
                     console.error(`Prefab instance ent has no prefab comp! ${origEntId}`);
                 } else {
-                    prefab.parent = ent;
+                    prefab.parent = this.entityOwner;
                 }
             }
         }
@@ -212,7 +214,7 @@ export class PrefabInstance extends Component {
     }
 
     private DeleteEntityBucket(bucket: SpawnedPrefabBundle) {
-        if (!bucket || bucket.spawnedEntities.length === 0) {
+        if (!bucket || !bucket.spawnedEntities || bucket.spawnedEntities.length === 0) {
             return;
         }
         for (var e = 0; e < bucket.spawnedEntities.length; e++) {

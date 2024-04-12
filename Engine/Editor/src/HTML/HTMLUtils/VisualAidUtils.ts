@@ -6,8 +6,6 @@ import { GridFloorOverlay } from "@BabylonBurstClient/Environment/GridFloorOverl
 import { AngleToRad } from "@BabylonBurstCore/Utils/MathUtils";
 import { NavigationLayer } from "@BabylonBurstCore/Navigation/NavigationLayer";
 import { ShowAgentViz } from "@BabylonBurstCore/Navigation/NavAgentVisualistaionSystem";
-import { PhysicsMeshComponent } from "@BabylonBurstCore/Physics/PhysicsMesh";
-import { HiddenEntity } from "@BabylonBurstCore/Rendering/InstancedRender";
 
 export class EditorVisOptions {
     bShowNavmeshByDefault = true;
@@ -152,25 +150,9 @@ function SetupPhysicsVisualistaion(ecosystem: GameEcosystem) {
         viewItemPriority,
         (ecosystem: GameEcosystem) => {
             ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"] = true;
-            ecosystem.entitySystem.GetEntitiesWithData([PhysicsMeshComponent], [HiddenEntity]).iterateEntities(e => {
-                if (
-                    e.GetComponent(PhysicsMeshComponent).physicsMesh &&
-                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh
-                ) {
-                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh.isVisible = true;
-                }
-            });
         },
         (ecosystem: GameEcosystem) => {
             ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"] = false;
-            ecosystem.entitySystem.GetEntitiesWithData([PhysicsMeshComponent], [HiddenEntity]).iterateEntities(e => {
-                if (
-                    e.GetComponent(PhysicsMeshComponent).physicsMesh &&
-                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh
-                ) {
-                    e.GetComponent(PhysicsMeshComponent).physicsMesh.cloneMesh.isVisible = false;
-                }
-            });
         },
     );
 }

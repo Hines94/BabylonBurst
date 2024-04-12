@@ -1,4 +1,4 @@
-import { Mesh, MeshBuilder, Observable, Scene } from "@babylonjs/core";
+import { Material, Mesh, MeshBuilder, Observable, Scene, StandardMaterial } from "@babylonjs/core";
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { ExtractMaterialFromAny } from "./AsyncMaterial";
 import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh";
@@ -6,6 +6,7 @@ import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
 import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
 import { GetAsyncSceneIdentifier, GetBadMeshMaterial } from "./Utils/SceneUtils";
+import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
 
 var UpdateRequireSMDefinitions: AsyncStaticMeshDefinition[] = [];

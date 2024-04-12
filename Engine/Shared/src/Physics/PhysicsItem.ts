@@ -1,4 +1,4 @@
-import { Material, Matrix, Mesh, Observable, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, PhysicsViewer, StandardMaterial } from "@babylonjs/core";
+import { AbstractMesh, Material, Matrix, Mesh, Observable, PhysicsAggregate, PhysicsBody, PhysicsMotionType, PhysicsShapeMesh, PhysicsShapeType, PhysicsViewer, StandardMaterial } from "@babylonjs/core";
 import { Component } from "../EntitySystem/Component";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { TrackedVariable } from "../EntitySystem/TrackedVariable";
@@ -18,6 +18,7 @@ export class PhysicsStaticItem extends Component {
 
 export class CustomPhysicBody extends PhysicsBody {
     owningPhysicsItems:PhysicsItem[];
+    bRequirePosChange:boolean;
 }
 
 var warned = false;
@@ -130,7 +131,7 @@ export abstract class PhysicsItem extends Component {
         this.physicsMesh.material = this.triggerOnly ? GetPhysicsTriggerWireframeMat(ecosystem) : GetPhysicsWireframeMat(ecosystem);
         if(ecosystem.dynamicProperties["___PHYSICSDEBUGMODE___"]) {
             this.physicsMesh.isVisible = true;
-        }
+        }  
 
         const customPhys = physicMesh.physicsBody as CustomPhysicBody;
         if(customPhys) {
@@ -153,11 +154,12 @@ export abstract class PhysicsItem extends Component {
     abstract generatePhysicsBody(ecosystem:GameEcosystem, generatedMesh:Mesh):PhysicsBody;
 
     updateMeshProperties() {
-        if(!this.physicsMesh) return;
+        if(!this.physicsMesh || this.physicsInstanceNumber === -1) return;
+        this.physicsMesh.physicsBody.disablePreStep = false;
+        //TODO: Disable phusics step again after 1 frame
         const transform = this.entityOwner.GetComponent(EntTransform);
-        this.physicsMesh.thinInstanceSetMatrixAt(this.physicsInstanceNumber,EntTransform.getAsInstanceTransform(transform).getMatrix());
-        
-        if(!this.physicsMesh.physicsBody || this.physicsInstanceNumber === -1) return;
+        this.physicsMesh.thinInstanceSetMatrixAt(this.physicsInstanceNumber,EntTransform.getAsInstanceTransform(transform).getMatrix(),true);
+        if(!this.physicsMesh.physicsBody) return;
         this.physicsMesh.physicsBody.setMassProperties({},this.physicsInstanceNumber);       
         this.physicsMesh.physicsBody.setMotionType(this.MotionType,this.physicsInstanceNumber);
     }

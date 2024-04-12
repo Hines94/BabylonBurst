@@ -1,3 +1,4 @@
+import { ComponentLoadData } from "../Utils/SaveableDataUtils";
 import { EntityData, EntityLoadMapping } from "./EntityData";
 import { PrefabManager } from "./PrefabManager";
 import { FindSavedProperty, registeredTypes, savedProperty } from "./TypeRegister";
@@ -9,7 +10,7 @@ export abstract class SaveableDataField {
         throw new Error("Get Save Data Not Implemented: " + property.constructor.name);
     }
 
-    static LoadSaveableData(entity: EntityData,property:any, entityMap:EntityLoadMapping):any {
+    static LoadSaveableData(data:ComponentLoadData):any {
         throw new Error("Load Save Data Not Implemented");
     }
 

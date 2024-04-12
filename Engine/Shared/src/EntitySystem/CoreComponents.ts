@@ -479,7 +479,7 @@ export class EntTransform extends Component {
             }
             const childParentComp = ent.GetComponentByName('ParentedTransform');
             if(childParentComp) {
-                //@ts-ignore - This is a bit naughy but an easy way of doing things
+                //@ts-ignore - Use ts hacks to refresh children
                 childParentComp.recalculateThisTransform(false);
             }
         }

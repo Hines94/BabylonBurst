@@ -1,6 +1,5 @@
 import { Observable, Scene } from "@babylonjs/core";
 import { SceneSetupSettings } from "../../Client/src/Environment/SceneSetupSettings";
-import { WindowInputValues } from "../../Client/src/InputModule";
 import { EntitySystem } from "./EntitySystem/EntitySystem";
 
 export enum EcosystemType {
@@ -44,6 +43,8 @@ export interface GameEcosystem {
     /** Used for when a log.error is not enough. Will ping the users screen. */
     DisplayError:(message:string)=>void;
 
+    /** When a dynamic property changes we call this to notify */
+    onChangeDynamicProperty:Observable<string>;
     /** Can wait for this if we need to run things after ecosystem fully setup */
     waitLoadedPromise: Promise<GameEcosystem>;
     /** Small method that will give a hook into updates BEFORE game loop is run */
