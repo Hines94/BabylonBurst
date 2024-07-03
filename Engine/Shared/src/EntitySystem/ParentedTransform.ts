@@ -70,8 +70,6 @@ export class ParentedTransform extends Component {
         EntVector3.Copy(transform.Position,EntVector3.Add(parentTransform.Position,this.childRelative.Position));
         EntVector4.Copy(transform.Rotation,EntVector4.Multiply(parentTransform.Rotation, this.childRelative.Rotation));
         EntVector3.Copy(transform.Scale,EntVector3.Multiply(parentTransform.Scale, this.childRelative.Scale));
-
-        transform.onComponentChanged();
     }
 
     static GetRelativeTrasnsform(worldTransform:EntTransform,parentTransform:EntTransform) {

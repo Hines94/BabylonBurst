@@ -1,6 +1,5 @@
 import { Engine, Observable, Scene, Vector3 } from "@babylonjs/core";
 import { SceneSetupSettings } from "./Environment/SceneSetupSettings";
-import { SetupInputsModule, UpdateInputValues, UpdateInputValuesEndFrame, WindowInputValues } from "./InputModule";
 import { SimpleWeightedSmoothWithSteps } from "../../Shared/src/Utils/MathUtils";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
 import { v4 as uuidv4 } from "uuid";
@@ -13,6 +12,8 @@ import { setupAsyncManager } from "@BabylonBurstClient/Setup/AWSAssetSetup";
 import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import HavokPhysics from "@babylonjs/havok";
+import { WindowInputValues } from "@BabylonBurstClient/Inputs/PresetInputs";
+import { SetupInputsModule, UpdateInputValues, UpdateInputValuesEndFrame } from "@BabylonBurstClient/Inputs/InputModule";
 
 /** Custom game launch - eg editor or client side performance checks */
 export class RunnableClientEcosystem implements GameEcosystem {
@@ -36,6 +37,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
     gameSetup = false;
     camera: PlayerCamera;
     onUpdate = new Observable<GameEcosystem>();
+    onChangeDynamicProperty = new Observable<string>();
     controlHasFocus: boolean;
     hoveredOverGUI: boolean;
     ecosystemNetworkType = EcosystemType.Client;
@@ -54,11 +56,20 @@ export class RunnableClientEcosystem implements GameEcosystem {
 
     constructor(canvas: HTMLCanvasElement) {
         this.doc = canvas.ownerDocument;
+        const ecosystem = this;
+        const handler = {
+            set(target:any,prop:string,val:any) : boolean {
+                target[prop] = val;
+                ecosystem.onChangeDynamicProperty.notifyObservers(prop);
+                return true;
+            },
+        };
+        this.dynamicProperties = new Proxy(this.dynamicProperties,handler)
         this.setupCanvas(canvas);
         this.setupEngineRunLoop(canvas);
         registerEcosystem(this);
     }
-
+ 
     dispose(): void {
         deregisterEcosystem(this);
         this.entitySystem.ResetSystem();
@@ -146,13 +157,16 @@ export class RunnableClientEcosystem implements GameEcosystem {
                 this.scene.render();
             }
         });
+
+        this.engine.onEndFrameObservable.add(c=>{
+            UpdateInputValuesEndFrame(this);
+        })
     }
     protected async setupExtras(): Promise<void> {}
 
     private updateLoop() {
         UpdateInputValues(this);
         this.updateEcosystemLoop();
-        UpdateInputValuesEndFrame(this);
     }
 
     /** General update for this ecosystem to update inputs etc */

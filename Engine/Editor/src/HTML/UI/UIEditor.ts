@@ -9,7 +9,7 @@ import { ShowContextMenu } from "@BabylonBurstClient/HTML/HTMLContextMenu";
 import { ContentItem, ContentItemType } from "../ContentBrowser/ContentItem";
 import { SetupContentInputWithDatalist } from "../../Utils/ContentTypeTrackers";
 import { SetupElementToCursor } from "@BabylonBurstClient/Utils/HTMLUtils";
-import { SetupLoadedHTMLUI } from "@BabylonBurstClient/GUI/HTMLUILoader";
+import { SetupLoadedHTMLUI, styleScriptsName } from "@BabylonBurstClient/GUI/HTMLUILoader";
 
 export async function OpenUIEditor(item: ContentItem, existingHTML: string, saveCallback: (newHTML: string) => void) {
     const Displayer = OpenNewWindow(item.name, "EditorSections/UIDisplayer", "UI " + item.name);
@@ -21,17 +21,9 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
     const previewElement = displayerElement.querySelector("#HTMLDisplay") as HTMLDivElement;
     const editorElement = displayerElement.querySelector(`#HTMLCoding`) as HTMLDivElement;
 
-    //Setup
-    const state = EditorState.create({
-        doc: existingHTML,
-        extensions: [html(), oneDark, autocompletion()],
-    });
-    const view = new EditorView({
-        state,
-        parent: displayerElement.querySelector("#HTMLCoding"),
-    });
-
-    const newHTML = state.doc.toString();
+    //Setup code editor and live changes
+    const view = SetupCodeEditor(existingHTML, displayerElement);
+    const newHTML = view.state.doc.toString();
     RebuildUI(newHTML, item, previewElement);
     checkRebuildUI(view, item, previewElement, displayerElement, newHTML);
 
@@ -42,8 +34,54 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
         savB.style.color = "white";
         savB.innerText = "Save Changes";
     });
+
     //Right click
     setupRightClickEditor(editorElement, view);
+
+    // Rebuild styles preview
+    const styleView = setupStylePreview(displayerElement);
+    const callback = ()=>{RebuildStylePreview(displayerElement,styleView)}
+    editorElement.ownerDocument['RebuildUICallback'] = callback;
+}
+
+
+function SetupCodeEditor(existingHTML: string, displayerElement: HTMLDivElement) {
+    const state = EditorState.create({
+        doc: existingHTML,
+        extensions: [html(), oneDark, autocompletion()],
+    });
+    const view = new EditorView({
+        state: state,
+        parent: displayerElement.querySelector("#HTMLCoding"),
+    });
+    return view;
+}
+
+function setupStylePreview(displayerElement: HTMLDivElement) {
+    const styleState = EditorState.create({
+        doc: "",
+        extensions: [EditorState.readOnly.of(true), html(), oneDark, autocompletion()],
+    });
+    const styleView = new EditorView({
+        state: styleState,
+        parent: displayerElement.querySelector("#HTMLStylesHolder"),
+    });
+    return styleView;
+}
+
+function RebuildStylePreview(displayerElement: HTMLDivElement,styleView:EditorView) {
+    var styleText = "";
+    const styles = displayerElement.ownerDocument[styleScriptsName];
+    Object.keys(styles).forEach(k => {
+        styleText += `\nITEM: ${k} \n`;
+        styleText += styles[k].innerHTML;
+    });
+
+    styleView.dispatch({changes: {
+        from: 0,
+        to: styleView.state.doc.length,
+        insert: styleText
+      }})
 }
 
 function setupRightClickEditor(editor: HTMLDivElement, view: EditorView) {
@@ -130,6 +168,7 @@ async function RebuildUI(newHtml: string, item: ContentItem, previewElement: HTM
     previewElement.innerHTML = newHtml;
     previewElement.setAttribute("data-uipath", item.parent.getItemLocation());
     previewElement.setAttribute("data-uifilename", item.GetSaveName());
+
     //Parse out images etc to load them in
     SetupLoadedHTMLUI(previewElement, true);
 }

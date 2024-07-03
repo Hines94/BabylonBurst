@@ -27,7 +27,6 @@ export function GetTypingsCompIndex(comp:string,typings:EntitySavedTypings, bCre
         typings.push({compName:comp,compParams:[]});
         return typings.length-1;
     }
-    console.error("could not find comp index for " + comp);
     return undefined;
 }
 
@@ -155,41 +154,68 @@ export function GetCustomSaveData(propIdentifier: savedProperty, entity:EntityDa
     
 }
 
-export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, property: any,parentTypeName:string,paramName:string, typings:EntitySavedTypings) : any {
+export type ComponentLoadData = {
+    entityToLoad:EntityData;
+    entMap:EntityLoadMapping;
+    savedData: any;
+    savedDataTypings:EntitySavedTypings;
+    parentTypeName:string;
+    /** Can be used to set or set props in existing items */
+    parentData:object;
+    thisParamName:string;
+}
+
+function getChildComponentData(existing:ComponentLoadData, newSavedData:any, newParent:object, newParamName:string, newParentType:string):ComponentLoadData {
+    return {
+        entityToLoad:existing.entityToLoad,
+        entMap:existing.entMap,
+        savedData:newSavedData,
+        savedDataTypings:existing.savedDataTypings,
+        parentTypeName:newParentType,
+        parentData:newParent,
+        thisParamName:newParamName
+    }
+}
+
+/** If parentData then we should just directly set in that */
+export function LoadCustomSaveData(params:ComponentLoadData) : any {
     //Try get the appropriate type to load in
     var loadSpecification:savedProperty | storedRegisteredType | undefined = undefined;
-    if(property[customTypeId] !== undefined){ 
+    if(params.savedData[customTypeId] !== undefined){ 
         //Custom? (Eg subtype)
-        loadSpecification = registeredTypes[property[customTypeId]];
+        loadSpecification = registeredTypes[params.savedData[customTypeId]];
     } else {
-        loadSpecification = FindSavedProperty(parentTypeName,paramName);
+        loadSpecification = FindSavedProperty(params.parentTypeName,params.thisParamName);
     }
 
     //Try to get the type to load this var as from our spec
     var loadType = loadSpecification !== undefined ? loadSpecification.type : undefined;
 
     //Array case?
-    if(Array.isArray(property)) {
+    if(Array.isArray(params.savedData)) {
         const ret:any[] = [];
-        for(var i = 0; i < property.length;i++) {
-            ret.push(LoadCustomSaveData(entity,entMap,property[i],parentTypeName,paramName,typings));
+        for(var i = 0; i < params.savedData.length;i++) {
+            const arrayParams = getChildComponentData(params,params.savedData[i],undefined,params.thisParamName,params.parentTypeName)
+            ret.push(LoadCustomSaveData(arrayParams));
         }
-        return ret;
+        return trySetDirectlyInParent(ret);
     }
     //Custom serializable?
     if (loadType && loadType["LoadSaveableData"]) {
-        return loadType.LoadSaveableData(entity,property,entMap);
+        const customData = loadType.LoadSaveableData(params);
+        return trySetDirectlyInParent(customData);
     } 
     //Nested object?
-    if(loadType && typeof property === "object" && !IsIntArrayInstance(property)) {
-        const newProp = new loadType();
+    if(loadType && objectIsPlainObject(params.savedData)) {
+        const existingOb = params.parentData && objectIsPlainObject(params.parentData) ? params.parentData[params.thisParamName] : undefined;
+        const newProp = objectIsPlainObject(existingOb) && existingOb.constructor === loadType ? existingOb : new loadType();
         var parentTypes = GetParentClassesOfInstance(newProp);
-        const keys = Object.keys(property);
+        const keys = Object.keys(params.savedData);
         
         for(var k = 0; k < keys.length;k++) {
             //Get basic info on parameter to load in
             const paramIndex = parseInt(keys[k]);
-            const keyName = GetTypingsParamName(loadType.name,paramIndex,typings);
+            const keyName = GetTypingsParamName(loadType.name,paramIndex,params.savedDataTypings);
             if(keyName === undefined) {
                 continue;
             }
@@ -205,16 +231,27 @@ export function LoadCustomSaveData(entity:EntityData, entMap:EntityLoadMapping, 
                 }
             }
             //Load in this property into the object
-            const loadedData = LoadCustomSaveData(entity,entMap,property[paramIndex],componentLoadFromType,keyName,typings);
-            newProp[keyName] = loadedData;
-
-
+            const objectParams = getChildComponentData(params,params.savedData[paramIndex],newProp,keyName,componentLoadFromType);
+            LoadCustomSaveData(objectParams);
         }
-        return newProp;
+        return trySetDirectlyInParent(newProp);
     }
 
-    //Regular
-    return property;
+    // Regular - requires no special loading - eg float
+    return trySetDirectlyInParent(params.savedData);
+
+    function objectIsPlainObject(ob:any) {
+        return ob && !Array.isArray(ob) && typeof ob === "object" && !IsIntArrayInstance(ob);
+    }
+
+    /** If can set directly in parent then do that so we can preserve other data */
+    function trySetDirectlyInParent(data:any) {
+        if(params.parentData && objectIsPlainObject(params.parentData)) {
+            params.parentData[params.thisParamName] = data;
+            return undefined;
+        }
+        return data;
+    }
 }
 
 export function TwoPropertiesAreIdentical(propA:any,propB:any) {

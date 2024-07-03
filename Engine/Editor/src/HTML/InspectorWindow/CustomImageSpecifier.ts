@@ -2,10 +2,10 @@ import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { ContentItemType } from "../ContentBrowser/ContentItem";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Observable } from "@babylonjs/core";
-import { MaterialSpecifier } from "@BabylonBurstCore/Rendering/MaterialSpecifier";
+import { ImageSpecifier } from "@BabylonBurstCore/Rendering/ImageSpecifier";
 import { ProcessGenericSpecifierComp } from "@BabylonBurstEditor/HTML/InspectorWindow/CustomSpecifierGeneric";
 
-export function ProcessMaterialSpecifierComp(
+export function ProcessImageSpecifierComp(
     container: HTMLElement,
     propType: savedProperty,
     parentData: any,
@@ -14,13 +14,13 @@ export function ProcessMaterialSpecifierComp(
     requireRefresh: Observable<void>,
 ): boolean {
     return ProcessGenericSpecifierComp(
-        container,
-        propType,
-        parentData,
-        changeCallback,
-        ecosystem,
-        requireRefresh,
-        MaterialSpecifier,
-        ContentItemType.Material
-    )
+            container,
+            propType,
+            parentData,
+            changeCallback,
+            ecosystem,
+            requireRefresh,
+            ImageSpecifier,
+            ContentItemType.Image
+        )
 }

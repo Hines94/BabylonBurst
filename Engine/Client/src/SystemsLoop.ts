@@ -10,7 +10,7 @@ import { LightingGameSystem } from "./Rendering/LightsSystem";
 import { UpdateAsyncSystemOnTick } from "@BabylonBurstCore/AsyncAssets";
 import { NavigationAgent } from "@BabylonBurstCore/Navigation/NavigationAgent";
 import { NavAgentVisualisationSystem } from "@BabylonBurstCore/Navigation/NavAgentVisualistaionSystem";
-import { GetSystemOfType, RunGameSystems } from "@BabylonBurstCore/GameLoop/GameSystemLoop";
+import { GetSystemOfType, preRenderLooper, renderLooper } from "@BabylonBurstCore/GameLoop/GameSystemLoop";
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
 import { RegisterDefaultCoreSystems } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
 
@@ -31,6 +31,9 @@ function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     }
 
     RegisterDefaultCoreSystems();
+
+    //Setup alternative loops
+    ecosystem.scene.onBeforeRenderObservable.add(()=>{preRenderLooper.RunGameSystems(ecosystem)});
 }
 
 /** Our tick system that contains general functions like rendering that we will want on a range of windows */
@@ -40,8 +43,8 @@ export function UpdateSystemsLoop(ecosystem: GameEcosystem, specificSystems: (ec
     }
     RegisterDefaultClientSystems(ecosystem);
 
-    //Our main systems updater
-    RunGameSystems(ecosystem);
+    //Our main systems updater (For render)
+    renderLooper.RunGameSystems(ecosystem);
 
     if (serverConnection) {
         serverConnection.ProcessQueuedServerMessages(ecosystem);

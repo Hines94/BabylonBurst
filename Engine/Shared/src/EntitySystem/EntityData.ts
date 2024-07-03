@@ -1,3 +1,4 @@
+import { ComponentLoadData } from "../Utils/SaveableDataUtils";
 import { Component } from "./Component";
 import { SaveableDataField } from "./SaveableDataField";
 import { RegisteredType } from "./TypeRegister";
@@ -39,11 +40,11 @@ export class EntityData extends SaveableDataField {
         return property.EntityId;
     }
 
-    static LoadSaveableData(entity: EntityData,property:any, entityMap:EntityLoadMapping):any {
-        if(!property || property === 0) {
+    static LoadSaveableData(data:ComponentLoadData):any {
+        if(!data.savedData || data.savedData === 0) {
             return undefined;
         }
-        return entityMap[property];
+        return data.entMap[data.savedData];
     }
 
     ____oldbucket___:any;

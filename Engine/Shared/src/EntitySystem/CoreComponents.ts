@@ -469,7 +469,7 @@ export class EntTransform extends Component {
 
     children:EntityData[] = [];
 
-    onComponentChanged(): void {
+    onInstantComponentChanged(): void {
         for(var c = 0; c <this.children.length;c++) {
             const ent = this.children[c];
             if(!ent || !ent.IsValid()) {
@@ -479,7 +479,7 @@ export class EntTransform extends Component {
             }
             const childParentComp = ent.GetComponentByName('ParentedTransform');
             if(childParentComp) {
-                //@ts-ignore - This is a bit naughy but an easy way of doing things
+                //@ts-ignore - Use ts hacks to refresh children
                 childParentComp.recalculateThisTransform(false);
             }
         }

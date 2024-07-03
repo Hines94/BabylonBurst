@@ -36,7 +36,7 @@
         "@msgpack/msgpack": "../../node_modules/@babylonjs/msgpack",
         "reflect-metadata": "../../node_modules/reflect-metadata",
         "vite": "../../node_modules/vite",
-        "uuid": "../../node_modules/uuid",
+        "uuid": "^9.0.1",
         "typescript": "../../node_modules/typescript"
     }
 }

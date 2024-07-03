@@ -3,12 +3,14 @@ import { EnterPointerLock, ExitPointerLock, IsPointerLockActive } from "@Babylon
 import { Vector3 } from "@babylonjs/core";
 import { EntVector4 } from "@BabylonBurstCore/EntitySystem/CoreComponents";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { ButtonInput } from "@BabylonBurstClient/Inputs/ButtonInput";
 
 export class LookingCameraComponent {
     viewRotationSpeed = 100;
     mouseRotationSpeed = 0.7;
     nonLockRotSpeedMulti = 2;
     panSpeed = 5;
+    lookKey:ButtonInput;
 
     rotationViewOffset = new Vector3();
     manualPanOverride: boolean;
@@ -36,7 +38,7 @@ export class LookingCameraComponent {
 
     UpdateLook() {
         const lockActive = IsPointerLockActive();
-        var active = lockActive || this.ecosystem.InputValues.middleClick.isActive;
+        var active = lockActive || (this.lookKey !== undefined && this.lookKey.isActive);
         var panning = false; //this.ecosystem.InputValues.CAPSKey.isActive;
         if (this.manualPanOverride !== undefined) {
             active = this.manualPanOverride;

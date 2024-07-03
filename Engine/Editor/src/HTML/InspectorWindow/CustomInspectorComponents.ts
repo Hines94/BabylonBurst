@@ -10,6 +10,7 @@ import { ProcessMaterialSpecifierComp } from "./CustomMaterialSpecifier";
 import { ProcessPrefabSpecifierComp } from "./CustomPrefabIdentifier";
 import { Observable } from "@babylonjs/core";
 import { ProcessUISpecifierComp } from "./CustomUISpecifier";
+import { ProcessImageSpecifierComp } from "@BabylonBurstEditor/HTML/InspectorWindow/CustomImageSpecifier";
 
 export type editorPropertyCallback = (
     container: HTMLElement,
@@ -30,6 +31,7 @@ RegisterCustomEditorPropertyGenerator(ProcessModelSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessMaterialSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessPrefabSpecifierComp);
 RegisterCustomEditorPropertyGenerator(ProcessUISpecifierComp);
+RegisterCustomEditorPropertyGenerator(ProcessImageSpecifierComp);
 
 type ArrayElementSpecifier = {
     ele: HTMLButtonElement;

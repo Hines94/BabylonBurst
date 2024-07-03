@@ -1,4 +1,4 @@
-import { decode } from "@msgpack/msgpack";
+import { decode, encode } from "@msgpack/msgpack";
 import { PrefabPackedType } from "./Prefab";
 import { EntityLoader, EntityTemplate } from "./EntityLoader";
 import { EntitySystem } from "./EntitySystem";
@@ -6,6 +6,7 @@ import { GetAllZippedFileDatas, GetZipPath } from "../AsyncAssets/Utils/ZipUtils
 import { AsyncAssetManager } from "../AsyncAssets";
 import { Observable } from "@babylonjs/core";
 import { Component } from "./Component";
+import { v4 as uuidv4 } from "uuid";
 
 function addPrefabEnd(item:string):string {
     if(item.includes(".Prefab")) {
@@ -147,5 +148,14 @@ export class PrefabManager {
             return;
         }
         EntityLoader.LoadTemplateIntoExistingEntities(Manager.allPrefabs[id],entitySystem);
+    }
+
+    static GenerateNewPrefabSave(data:any,id:string = undefined) {
+        const thisId = id === undefined ? uuidv4() : id;
+        const thisData = data instanceof Uint8Array ? data : encode(data);
+        return encode({
+            prefabID: thisId ,
+            prefabData: thisData,
+        });
     }
 }

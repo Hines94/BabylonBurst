@@ -1,5 +1,5 @@
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
-import { premadeUltraSetting } from "./Utils/PremadeSettings";
+import { premadeLowSetting, premadeUltraSetting } from "./Utils/PremadeSettings";
 
 export enum DownloadRegion {
     sydney,
@@ -33,7 +33,7 @@ export class Settings {
 }
 
 var settings = new Settings();
-settings.RefreshSettings(premadeUltraSetting);
+settings.RefreshSettings(premadeLowSetting);
 
 /**
  * Overall game settings all contained in a handy class.

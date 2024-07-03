@@ -29,6 +29,21 @@ export class AsyncIndexDBFrontend implements IFrontendStorageInterface {
         this.indexDBName = `${storageName}_CachedAssets`;
     }
 
+    GetAllItemNames(): Promise<string[]> {
+        return new Promise((resolve, reject) => {
+            this.OpenReadTransaction();
+            const request= this.frontendCache.getAllKeys();
+            request.onsuccess = () => {
+                const ret:string[] = [];
+                request.result.forEach(k=>{
+                    ret.push(k.toString())
+                })
+                resolve(ret);
+            }
+            request.onerror = () => reject(request.error);
+        })
+    }
+
     async Delete(loc: string): Promise<boolean> {
         await this.OpenWriteTransaction();
         const fullPath = GetZipPath(loc);

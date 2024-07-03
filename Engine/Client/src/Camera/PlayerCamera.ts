@@ -9,6 +9,7 @@ import {
     Observer,
     Observable,
     Quaternion,
+    Ray,
 } from "@babylonjs/core";
 import { GetGameSettings } from "../Settings";
 import { defaultLayerMask, uiLayerMask } from "../Utils/LayerMasks";
@@ -151,9 +152,14 @@ export class PlayerCamera {
         this.shakeRoot.parent = root;
         this.shakeRoot.position = new Vector3();
     }
+
+    ResetCustomRoot() {
+        this.shakeRoot.parent = undefined;
+        this.customCameraRoot = undefined;
+    }
 }
 
-export function GetMousePickingRay(ecosystem: GameEcosystem) {
+export function GetMousePickingRay(ecosystem: GameEcosystem) : Ray {
     const screenPos = GetMousePosAccountLock(ecosystem.scene);
     const camRay = ecosystem.scene.createPickingRay(
         screenPos.x,

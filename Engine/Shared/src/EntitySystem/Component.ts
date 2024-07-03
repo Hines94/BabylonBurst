@@ -1,10 +1,14 @@
 import 'reflect-metadata';
 import { EntityData } from './EntityData';
+import { Observable } from '@babylonjs/core';
 
 export class Component {
 
     /** Entity that currently owns this component */
     entityOwner:EntityData;
+
+    /** Called when this component triggers one of our tracked variable changes */
+    componentChanged = new Observable<Component>();
 
     static GetComponentName(comp:any) : string{
         return comp.constructor.name;
@@ -21,4 +25,6 @@ export class Component {
     onComponentRemoved() {}
     /** Called at the end of the frame (not instantly on var change) */
     onComponentChanged() {}
+    /** Called instantly on var change */
+    onInstantComponentChanged() {}
 }

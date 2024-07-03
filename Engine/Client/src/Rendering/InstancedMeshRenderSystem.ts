@@ -4,7 +4,7 @@ import {
     GetAsyncSceneIdentifier,
     InstancedMeshTransform,
 } from "@BabylonBurstCore/AsyncAssets";
-import { Material, Scene } from "@babylonjs/core";
+import { Material, Mesh, PickingInfo, Scene } from "@babylonjs/core";
 import { GetPreviouslyLoadedAWSAsset } from "@BabylonBurstCore/AsyncAssets/Framework/AsyncAssetLoader";
 import { decode } from "@msgpack/msgpack";
 import { GetMaterialDescription } from "@BabylonBurstClient/Materials/EngineMaterialDescriptions";
@@ -31,6 +31,16 @@ export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     });
 }
 
+type instancedMeshData = {
+    transformData:InstancedMeshTransform[];
+    entityData:number[];
+}
+
+class InstancedMesh extends Mesh {
+    /** For each instance what is the entity for that inst */
+    entityData:number[];
+}
+
 export class InstancedMeshRenderSystem extends GameSystem {
     SystemOrdering = InstancedRenderSystemPriority;
     systemRunType = GameSystemRunType.GameAndEditor;
@@ -42,7 +52,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     RunSystem(ecosystem: GameEcosystem) {
-        var thisFrameTransformData: { [id: string]: InstancedMeshTransform[] } = {};
+        var thisFrameTransformData: { [id: string]: instancedMeshData } = {};
 
         const allInstEntities = this.GetRenderEntities(ecosystem);
 
@@ -73,10 +83,11 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
             //Set our data for this frame
             if (thisFrameTransformData[runnerID] === undefined) {
-                thisFrameTransformData[runnerID] = [];
+                thisFrameTransformData[runnerID] = {transformData:[],entityData:[]};
             }
             const transform = entData.GetComponent<EntTransform>(EntTransform);
-            thisFrameTransformData[runnerID].push(EntTransform.getAsInstanceTransform(transform));
+            thisFrameTransformData[runnerID].transformData.push(EntTransform.getAsInstanceTransform(transform));
+            thisFrameTransformData[runnerID].entityData.push(entData.EntityId);
         });
 
         const rendVariant = this.constructor.name;
@@ -86,9 +97,15 @@ export class InstancedMeshRenderSystem extends GameSystem {
             if (!key.endsWith(rendVariant)) {
                 return;
             }
+            const transformSystem = ecosystem.dynamicProperties.LoadedRunners[key] as AsyncStaticMeshInstanceRunner;
             const data = thisFrameTransformData[key];
-            const transformData = data === undefined ? [] : data;
-            ecosystem.dynamicProperties.LoadedRunners[key].RunTransformSystem(this.GetScene(ecosystem), transformData);
+            transformSystem.RunTransformSystem(this.GetScene(ecosystem), data === undefined ? [] : data.transformData);
+            const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
+            if(finalM) {
+                finalM.isPickable = true;
+                finalM.thinInstanceEnablePicking=true;
+                finalM.entityData = data === undefined ? [] : data.entityData;
+            }           
         });
     }
 
@@ -199,4 +216,13 @@ export class InstancedMeshRenderSystem extends GameSystem {
         }
         return ret;
     }
+}
+
+/** Given a picked mesh try to get the entity that it is tied to */
+export function TryGetEntityFromMeshPick(ecosystem:GameEcosystem, pick:PickingInfo) : EntityData {
+    if(!pick.pickedMesh) return undefined;
+    if(pick.thinInstanceIndex === undefined || pick.thinInstanceIndex < 0) return undefined;
+    const instm = pick.pickedMesh as InstancedMesh;
+    if(!instm.entityData) return undefined;
+    return ecosystem.entitySystem.GetEntityData(instm.entityData[pick.thinInstanceIndex]);
 }
