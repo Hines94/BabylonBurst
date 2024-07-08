@@ -32,13 +32,13 @@ export function RefreshWireframeMode(ecosystem: GameEcosystem) {
 }
 
 type instancedMeshData = {
-    transformData:InstancedMeshTransform[];
-    entityData:number[];
-}
+    transformData: InstancedMeshTransform[];
+    entityData: number[];
+};
 
 class InstancedMesh extends Mesh {
     /** For each instance what is the entity for that inst */
-    entityData:number[];
+    entityData: number[];
 }
 
 export class InstancedMeshRenderSystem extends GameSystem {
@@ -83,7 +83,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
             //Set our data for this frame
             if (thisFrameTransformData[runnerID] === undefined) {
-                thisFrameTransformData[runnerID] = {transformData:[],entityData:[]};
+                thisFrameTransformData[runnerID] = { transformData: [], entityData: [] };
             }
             const transform = entData.GetComponent<EntTransform>(EntTransform);
             thisFrameTransformData[runnerID].transformData.push(EntTransform.getAsInstanceTransform(transform));
@@ -101,11 +101,11 @@ export class InstancedMeshRenderSystem extends GameSystem {
             const data = thisFrameTransformData[key];
             transformSystem.RunTransformSystem(this.GetScene(ecosystem), data === undefined ? [] : data.transformData);
             const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
-            if(finalM) {
+            if (finalM) {
                 finalM.isPickable = true;
-                finalM.thinInstanceEnablePicking=true;
+                finalM.thinInstanceEnablePicking = true;
                 finalM.entityData = data === undefined ? [] : data.entityData;
-            }           
+            }
         });
     }
 
@@ -219,10 +219,10 @@ export class InstancedMeshRenderSystem extends GameSystem {
 }
 
 /** Given a picked mesh try to get the entity that it is tied to */
-export function TryGetEntityFromMeshPick(ecosystem:GameEcosystem, pick:PickingInfo) : EntityData {
-    if(!pick.pickedMesh) return undefined;
-    if(pick.thinInstanceIndex === undefined || pick.thinInstanceIndex < 0) return undefined;
+export function TryGetEntityFromMeshPick(ecosystem: GameEcosystem, pick: PickingInfo): EntityData {
+    if (!pick.pickedMesh) return undefined;
+    if (pick.thinInstanceIndex === undefined || pick.thinInstanceIndex < 0) return undefined;
     const instm = pick.pickedMesh as InstancedMesh;
-    if(!instm.entityData) return undefined;
+    if (!instm.entityData) return undefined;
     return ecosystem.entitySystem.GetEntityData(instm.entityData[pick.thinInstanceIndex]);
 }

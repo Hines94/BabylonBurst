@@ -126,15 +126,9 @@ def ZipAndUploadToS3(fileExt, tempDirPath,self, context):
 class UploadStaticToS3Operator(bpy.types.Operator):
     bl_idname = 'opr.upload_s3_static_op'
     bl_label = 'Upload static To S3'
-    bl_description ="Uploads Static Mesh to S3 with the given params. Note the path is derrived from our filename. (folder$test -> folder/test)"
+    bl_description ="Uploads Mesh to S3 with the given params. Note the path is derrived from our filename. (folder$test -> folder/test)"
     
     def execute(self, context):
-        #Check if we have any rogue skeletal meshes included
-        for obj in bpy.context.selected_objects:
-            for modifier in obj.modifiers:
-                if modifier.type == "ARMATURE":
-                    self.report({'ERROR'}, "Tried to use static mesh uploader for skeletal mesh!")
-                    return {'CANCELLED'}
 
         #Create a temporary dir and work in here
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -152,9 +146,12 @@ class UploadStaticToS3Operator(bpy.types.Operator):
                     export_lights=True,
                     export_materials='EXPORT',
                     export_draco_mesh_compression_enable=True,
-                    export_draco_mesh_compression_level=10,
+                    export_draco_mesh_compression_level=7,
                     use_selection=True,
                     export_apply=True,
+                    export_animations=True,
+                    export_optimize_animation_size=True,
+                    export_animation_mode='SCENE'
                     )
             glbMbSize =GetSizeOfFile(fullPath + ".glb")
             self.report({'INFO'}, "Saved glb. File size is: " + str(glbMbSize) + "mb")
@@ -164,63 +161,7 @@ class UploadStaticToS3Operator(bpy.types.Operator):
                    
         return {'FINISHED'}
 
-#Actual operator for skeletal mesh
-class UploadSkeletalToS3Operator(bpy.types.Operator):
-    bl_idname = 'opr.upload_s3_skeletal_op'
-    bl_label = 'Upload skinned To S3'
-    bl_description ="Uploads Skeletal Mesh to S3 with the given params. Note the path is derrived from our filename. (folder$test -> folder/test)"
-    
-    def execute(self, context):
-        #make sure we have at least one skeletal mesh
-        found = False
-        AAT = bpy.data.actions.get("AAT")
-        if AAT == None:
-            self.report({'ERROR'}, "No AAT pose. Please make sure we have a neutral T pose named \"AAT\"")
-            return {'CANCELLED'}
-        for obj in bpy.context.selected_objects:
-            if obj.animation_data.action == None or obj.animation_data.action.name != "AAT":
-                obj.animation_data.action = AAT
-            for modifier in obj.modifiers:
-                if modifier.type == "ARMATURE":
-                    found = True                  
-        if found == False:
-            self.report({'ERROR'}, "No skeletal meshes present! Please use static mesh uploader to save size instead!")
-            return {'CANCELLED'}
-        
-        #Remove materials otherwise get textures errors
-        for obj in bpy.context.selected_objects:
-            objType = getattr(obj, 'type', '')
-            if objType != "MESH":
-                continue
-            for mat in range(0,len(obj.data.materials)):
-                exist = obj.data.materials[mat]
-                if "DUMMY_" not in exist.name:
-                    new = newMaterial("DUMMY_"+exist.name)
-                    obj.data.materials[mat] = new
-            
 
-        #Create a temporary dir and work in here
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            self.report({'INFO'}, "Exporting/Saving In Temp: " + tmpdirname)
-            #First save as glb
-            fullPath = tmpdirname + "BABYLONOBJECT"
-
-            try:
-                bpy.ops.export.bjs(
-                        filepath=fullPath + ".babylon",
-                        export_selected=True)
-            except Exception as e:
-                self.report({'ERROR'}, e)
-                #self.report({'ERROR'}, "No babylon mesh exporter installed. Please install from https://github.com/BabylonJS/BlenderExporter")
-                return {'CANCELLED'}
-
-            babMbSize =GetSizeOfFile(fullPath + ".babylon")
-            self.report({'INFO'}, "Saved Babylon File. File size is: " + str(babMbSize) + "mb")
-            
-            #Next zip and perform upload
-            ZipAndUploadToS3(".babylon",fullPath,self, context)
-                   
-        return {'FINISHED'}
 #Visible panel
 class ExamplePanel(bpy.types.Panel):
     bl_idname = 'S3_Upload'
@@ -246,12 +187,10 @@ class ExamplePanel(bpy.types.Panel):
                     continue
             row.prop(context.scene, prop_name)
             
-        col.operator('opr.upload_s3_static_op', text='Static Mesh Upload')
-        col.operator('opr.upload_s3_skeletal_op', text='Skeletal Mesh Upload')
+        col.operator('opr.upload_s3_static_op', text='Mesh Upload')
 
 CLASSES = [
     UploadStaticToS3Operator,
-    UploadSkeletalToS3Operator,
     ExamplePanel,
 ]
 

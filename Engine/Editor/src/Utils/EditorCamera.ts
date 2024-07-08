@@ -34,6 +34,8 @@ export class EditorCamera {
         }
         const basicInputs = ecosystem.InputValues as EditorKeybinds;
 
+        if (!basicInputs.EDITORCHANGEPERSPECTIVE) return;
+
         //Rotation
         this.lookingComp.UpdateLook();
         if (basicInputs.EDITORCHANGEPERSPECTIVE.wasJustActivated()) {

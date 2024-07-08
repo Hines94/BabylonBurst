@@ -22,6 +22,8 @@ export abstract class HigherarchyHTML {
     ecosystem: BabylonBurstEditor;
     generatedEntityRows: { [entId: number]: HTMLDivElement } = {};
 
+    higherPanelVisible = false;
+
     onEntitySelected = new Observable<EntityData>();
 
     setEcosystem(ecosystem: GameEcosystem) {
@@ -62,10 +64,12 @@ export abstract class HigherarchyHTML {
     HideHigherarchy() {
         this.higherarchPanel.classList.add("hidden");
         this.setupInspectorForEntity(undefined);
+        this.higherPanelVisible = false;
     }
 
     ShowHigherarchy() {
         this.higherarchPanel.classList.remove("hidden");
+        this.higherPanelVisible = true;
     }
 
     protected setupRightClick() {
@@ -94,6 +98,7 @@ export abstract class HigherarchyHTML {
 
     /** Rebuild Entities and entity rows */
     RegenerateHigherarchy() {
+        if (!this.higherPanelVisible) return;
         const allEnts = this.ecosystem.entitySystem.GetEntitiesWithData([], []);
         //Generate new entities and higherarchy data
         allEnts.iterateEntities((e: EntityData) => {
@@ -111,6 +116,7 @@ export abstract class HigherarchyHTML {
     }
 
     EntCompAddChange(entData: ComponentNotify) {
+        if (!this.higherPanelVisible) return;
         if (entData.comp.constructor.name === "Prefab" && this.generatedEntityRows[entData.ent.EntityId]) {
             this.setEntRowInset(this.generatedEntityRows[entData.ent.EntityId], entData.ent.EntityId);
         }

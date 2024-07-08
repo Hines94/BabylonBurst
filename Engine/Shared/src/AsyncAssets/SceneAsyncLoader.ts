@@ -81,6 +81,7 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
     }
 
     SetMeshesHidden(bVisible: boolean) {
+        if(!this.loadedGLB || !this.loadedGLB.meshes) return;
         for (var i = 0; i < this.loadedGLB.meshes.length; i++) {
             this.loadedGLB.meshes[i].isVisible = bVisible;
         }
@@ -88,6 +89,7 @@ export class SceneAsyncLoader extends AsyncAssetLoader {
 
     extractMeshElements(meshName: string): Mesh[] {
         var foundMeshElements: Mesh[] = [];
+        if(!this.loadedGLB || !this.loadedGLB.meshes) return foundMeshElements;
         const LoadedMeshes = this.loadedGLB.meshes;
         for (var i = 0; i < LoadedMeshes.length; i++) {
             if (matchesMeshPattern(meshName, LoadedMeshes[i].id)) {

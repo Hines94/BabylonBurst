@@ -9,7 +9,7 @@ export class SpringArmCameraComponent {
     ecosystem: GameEcosystem;
     playerCam: PlayerCamera;
     springArmRoot: TransformNode;
-    playerCamBinding:Observer<PlayerCamera>;
+    playerCamBinding: Observer<PlayerCamera>;
 
     /** Speed we scroll small->large in 1 sec */
     springArmScrollSpeed = 0.5;
@@ -53,7 +53,7 @@ export class SpringArmCameraComponent {
     }
 
     dispose() {
-        if(!this.playerCam) return;
+        if (!this.playerCam) return;
         this.playerCam.bSpringArmComp = false;
         this.playerCam.onCameraPosUpdate.remove(this.playerCamBinding);
         this.playerCam.ResetCustomRoot();

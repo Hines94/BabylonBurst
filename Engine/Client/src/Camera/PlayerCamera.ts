@@ -159,7 +159,7 @@ export class PlayerCamera {
     }
 }
 
-export function GetMousePickingRay(ecosystem: GameEcosystem) : Ray {
+export function GetMousePickingRay(ecosystem: GameEcosystem): Ray {
     const screenPos = GetMousePosAccountLock(ecosystem.scene);
     const camRay = ecosystem.scene.createPickingRay(
         screenPos.x,

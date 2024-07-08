@@ -13,7 +13,11 @@ import { PrefabManager } from "@BabylonBurstCore/EntitySystem/PrefabManager";
 import { ShowToastError } from "@BabylonBurstClient/HTML/HTMLToastItem";
 import HavokPhysics from "@babylonjs/havok";
 import { WindowInputValues } from "@BabylonBurstClient/Inputs/PresetInputs";
-import { SetupInputsModule, UpdateInputValues, UpdateInputValuesEndFrame } from "@BabylonBurstClient/Inputs/InputModule";
+import {
+    SetupInputsModule,
+    UpdateInputValues,
+    UpdateInputValuesEndFrame,
+} from "@BabylonBurstClient/Inputs/InputModule";
 
 /** Custom game launch - eg editor or client side performance checks */
 export class RunnableClientEcosystem implements GameEcosystem {
@@ -58,18 +62,18 @@ export class RunnableClientEcosystem implements GameEcosystem {
         this.doc = canvas.ownerDocument;
         const ecosystem = this;
         const handler = {
-            set(target:any,prop:string,val:any) : boolean {
+            set(target: any, prop: string, val: any): boolean {
                 target[prop] = val;
                 ecosystem.onChangeDynamicProperty.notifyObservers(prop);
                 return true;
             },
         };
-        this.dynamicProperties = new Proxy(this.dynamicProperties,handler)
+        this.dynamicProperties = new Proxy(this.dynamicProperties, handler);
         this.setupCanvas(canvas);
         this.setupEngineRunLoop(canvas);
         registerEcosystem(this);
     }
- 
+
     dispose(): void {
         deregisterEcosystem(this);
         this.entitySystem.ResetSystem();
@@ -158,9 +162,9 @@ export class RunnableClientEcosystem implements GameEcosystem {
             }
         });
 
-        this.engine.onEndFrameObservable.add(c=>{
+        this.engine.onEndFrameObservable.add(c => {
             UpdateInputValuesEndFrame(this);
-        })
+        });
     }
     protected async setupExtras(): Promise<void> {}
 

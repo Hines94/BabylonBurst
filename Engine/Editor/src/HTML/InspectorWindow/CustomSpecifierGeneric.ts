@@ -1,8 +1,12 @@
 import { savedProperty } from "@BabylonBurstCore/EntitySystem/TypeRegister";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { ContentItem, ContentItemType } from "@BabylonBurstEditor/HTML/ContentBrowser/ContentItem";
-import { GetEditorObjectWithValues, SetInputValueFromDatalist, SetupContentInputWithDatalist } from "@BabylonBurstEditor/Utils/ContentTypeTrackers";
-import { Observable } from "@babylonjs/core"
+import {
+    GetEditorObjectWithValues,
+    SetInputValueFromDatalist,
+    SetupContentInputWithDatalist,
+} from "@BabylonBurstEditor/Utils/ContentTypeTrackers";
+import { Observable } from "@babylonjs/core";
 
 export function ProcessGenericSpecifierComp(
     container: HTMLElement,
@@ -11,8 +15,8 @@ export function ProcessGenericSpecifierComp(
     changeCallback: (any) => void,
     ecosystem: GameEcosystem,
     requireRefresh: Observable<void>,
-    classType:any,
-    contentType:ContentItemType
+    classType: any,
+    contentType: ContentItemType,
 ): boolean {
     if (propType.type !== classType) {
         return false;
@@ -41,14 +45,9 @@ export function ProcessGenericSpecifierComp(
 
     function RefreshValueToComp() {
         const existingData = parentData[propType.name];
-        if(!existingData || !existingData.FilePath || !existingData.fileName) return;
-        
-        var existingItem = GetEditorObjectWithValues(
-            contentType,
-            existingData.FilePath,
-            existingData.FileName,
-        );
+        if (!existingData || !existingData.FilePath || !existingData.fileName) return;
+
+        var existingItem = GetEditorObjectWithValues(contentType, existingData.FilePath, existingData.FileName);
         SetInputValueFromDatalist(input, existingItem);
-        
     }
 }

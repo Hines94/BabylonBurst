@@ -21,6 +21,6 @@ export function ProcessMaterialSpecifierComp(
         ecosystem,
         requireRefresh,
         MaterialSpecifier,
-        ContentItemType.Material
-    )
+        ContentItemType.Material,
+    );
 }

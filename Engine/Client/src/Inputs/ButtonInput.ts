@@ -1,6 +1,6 @@
 import { GetBoundInputValue } from "@BabylonBurstClient/Inputs/InputKeyNameValues";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
-import { Observable } from "@babylonjs/core"
+import { Observable } from "@babylonjs/core";
 
 /**
  * An input for a specific keybind. Contains useful methods for checking if we have used or not.

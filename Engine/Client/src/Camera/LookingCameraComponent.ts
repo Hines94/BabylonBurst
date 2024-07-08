@@ -10,7 +10,7 @@ export class LookingCameraComponent {
     mouseRotationSpeed = 0.7;
     nonLockRotSpeedMulti = 2;
     panSpeed = 5;
-    lookKey:ButtonInput;
+    lookKey: ButtonInput;
 
     rotationViewOffset = new Vector3();
     manualPanOverride: boolean;

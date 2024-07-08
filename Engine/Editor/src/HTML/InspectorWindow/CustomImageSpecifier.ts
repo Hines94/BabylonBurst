@@ -14,13 +14,13 @@ export function ProcessImageSpecifierComp(
     requireRefresh: Observable<void>,
 ): boolean {
     return ProcessGenericSpecifierComp(
-            container,
-            propType,
-            parentData,
-            changeCallback,
-            ecosystem,
-            requireRefresh,
-            ImageSpecifier,
-            ContentItemType.Image
-        )
+        container,
+        propType,
+        parentData,
+        changeCallback,
+        ecosystem,
+        requireRefresh,
+        ImageSpecifier,
+        ContentItemType.Image,
+    );
 }

@@ -33,7 +33,9 @@ function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     RegisterDefaultCoreSystems();
 
     //Setup alternative loops
-    ecosystem.scene.onBeforeRenderObservable.add(()=>{preRenderLooper.RunGameSystems(ecosystem)});
+    ecosystem.scene.onBeforeRenderObservable.add(() => {
+        preRenderLooper.RunGameSystems(ecosystem);
+    });
 }
 
 /** Our tick system that contains general functions like rendering that we will want on a range of windows */

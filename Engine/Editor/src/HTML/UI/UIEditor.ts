@@ -40,10 +40,11 @@ export async function OpenUIEditor(item: ContentItem, existingHTML: string, save
 
     // Rebuild styles preview
     const styleView = setupStylePreview(displayerElement);
-    const callback = ()=>{RebuildStylePreview(displayerElement,styleView)}
-    editorElement.ownerDocument['RebuildUICallback'] = callback;
+    const callback = () => {
+        RebuildStylePreview(displayerElement, styleView);
+    };
+    editorElement.ownerDocument["RebuildUICallback"] = callback;
 }
-
 
 function SetupCodeEditor(existingHTML: string, displayerElement: HTMLDivElement) {
     const state = EditorState.create({
@@ -69,7 +70,7 @@ function setupStylePreview(displayerElement: HTMLDivElement) {
     return styleView;
 }
 
-function RebuildStylePreview(displayerElement: HTMLDivElement,styleView:EditorView) {
+function RebuildStylePreview(displayerElement: HTMLDivElement, styleView: EditorView) {
     var styleText = "";
     const styles = displayerElement.ownerDocument[styleScriptsName];
     Object.keys(styles).forEach(k => {
@@ -77,11 +78,13 @@ function RebuildStylePreview(displayerElement: HTMLDivElement,styleView:EditorVi
         styleText += styles[k].innerHTML;
     });
 
-    styleView.dispatch({changes: {
-        from: 0,
-        to: styleView.state.doc.length,
-        insert: styleText
-      }})
+    styleView.dispatch({
+        changes: {
+            from: 0,
+            to: styleView.state.doc.length,
+            insert: styleText,
+        },
+    });
 }
 
 function setupRightClickEditor(editor: HTMLDivElement, view: EditorView) {

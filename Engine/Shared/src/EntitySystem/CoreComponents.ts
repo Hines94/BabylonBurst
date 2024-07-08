@@ -62,11 +62,7 @@ export class EntVector3{
     }
 
     static VectorToEnt(vec: Vector3) {
-        const ret = new EntVector3();
-        ret.X = vec.x;
-        ret.Y = vec.y;
-        ret.Z = vec.z;
-        return ret;
+        return new EntVector3(vec.x,vec.y,vec.z);
     }
 
     static CompareTo(a: EntVector3, b: EntVector3): number {

@@ -54,7 +54,7 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
     UpdateDynamicTextureChecks(ecosystem);
 
     //Scaled mouse
-    if(ecosystem.InputValues.mouseUnscaledXPosition) {
+    if (ecosystem.InputValues.mouseUnscaledXPosition) {
         const scaling = ecosystem.scene.getEngine().getHardwareScalingLevel();
         ecosystem.InputValues.mouseUnscaledXPosition = ecosystem.scene.pointerX;
         ecosystem.InputValues.mouseUnscaledYPosition = ecosystem.scene.pointerY;
@@ -69,7 +69,7 @@ export function UpdateInputValues(ecosystem: GameEcosystem) {
             value.UpdateValue(ecosystem);
         } else if (value instanceof AxisInput) {
             value.UpdateValue(ecosystem);
-        }     
+        }
     }
 }
 

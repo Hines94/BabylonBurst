@@ -106,5 +106,5 @@ export async function SetupLoadedHTMLUI(element: HTMLElement, bForceReloadStyleF
     }
 
     //@ts-ignore For when we are in preview mode for our pages
-    if(element.ownerDocument["RebuildUICallback"]) element.ownerDocument["RebuildUICallback"]();
+    if (element.ownerDocument["RebuildUICallback"]) element.ownerDocument["RebuildUICallback"]();
 }

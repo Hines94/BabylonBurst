@@ -1,7 +1,7 @@
 import { GetBoundInputValue } from "@BabylonBurstClient/Inputs/InputKeyNameValues";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { Clamp } from "@BabylonBurstCore/Utils/MathUtils";
-import { } from "@babylonjs/core"
+import {} from "@babylonjs/core";
 
 export class AxisInput {
     positiveKeybinds: number[] = [];

@@ -26,6 +26,6 @@ export function ProcessUISpecifierComp(
         ecosystem,
         requireRefresh,
         UISpecifier,
-        ContentItemType.UI
-    )
+        ContentItemType.UI,
+    );
 }
