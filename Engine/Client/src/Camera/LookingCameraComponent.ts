@@ -6,11 +6,14 @@ import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { ButtonInput } from "@BabylonBurstClient/Inputs/ButtonInput";
 
 export class LookingCameraComponent {
-    viewRotationSpeed = 100;
+    viewRotationSpeed = 60;
     mouseRotationSpeed = 0.7;
     nonLockRotSpeedMulti = 2;
     panSpeed = 5;
     lookKey: ButtonInput;
+
+    lastXVal: number;
+    lastYVal: number;
 
     rotationViewOffset = new Vector3();
     manualPanOverride: boolean;
@@ -45,6 +48,12 @@ export class LookingCameraComponent {
             panning = this.manualPanOverride;
         }
 
+        if (!this.lastXVal) {
+            this.lastXVal = this.ecosystem.scene.pointerX;
+            this.lastYVal = this.ecosystem.scene.pointerY;
+            return;
+        }
+
         //Get mouse desired values
         var rotSpeed = this.viewRotationSpeed * this.mouseRotationSpeed;
         if (lockActive === false) {
@@ -54,8 +63,11 @@ export class LookingCameraComponent {
         const height = this.ecosystem.scene.getEngine().getRenderHeight(true);
         const width = this.ecosystem.scene.getEngine().getRenderWidth(true);
 
-        this.DesiredRotationChange.x = (this.ecosystem.InputValues.mouseXDelta / width) * -rotSpeed;
-        this.DesiredRotationChange.y = (this.ecosystem.InputValues.mouseYDelta / height) * rotSpeed;
+        const xDelta = this.ecosystem.scene.pointerX - this.lastXVal;
+        const yDelta = this.ecosystem.scene.pointerY - this.lastYVal;
+
+        this.DesiredRotationChange.x = (xDelta / width) * -rotSpeed;
+        this.DesiredRotationChange.y = (yDelta / height) * rotSpeed;
         //this.DesiredRotationChange.z = -this.ecosystem.InputValues.roll;
         if (active === false || panning) {
             this.DesiredRotationChange.x = 0;
@@ -77,5 +89,8 @@ export class LookingCameraComponent {
         const offset = EntVector4.EulerToQuaternion(this.rotationViewOffset);
         const final = EntVector4.Multiply(offset, EntVector4.EulerToQuaternion(this.currentRotation));
         this.camera.GetCameraRoot().rotationQuaternion = EntVector4.GetQuaternion(final);
+
+        this.lastXVal = this.ecosystem.scene.pointerX;
+        this.lastYVal = this.ecosystem.scene.pointerY;
     }
 }

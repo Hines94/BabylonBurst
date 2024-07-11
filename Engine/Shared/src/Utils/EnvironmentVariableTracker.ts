@@ -22,6 +22,7 @@ export function GetStringAsDebugMode(string: string): DebugMode {
 export class EnvVariableTracker {
 
     overrideVariables:{[id:string]:string} = {};
+    cachedDebug:DebugMode;
 
     GetVariable(varName: string): string {
 
@@ -43,6 +44,11 @@ export class EnvVariableTracker {
         return undefined;
     }
 
+    GetBooleanVariable(va:string) {
+        const v = this.GetVariable(va);
+        return v == 'true' || v == 'True' || v == 'TRUE';
+    }
+
     GetGameName():string {
         const potentialName=this.GetVariable("GAME_NAME");
         return potentialName ? potentialName : "SET GAME NAME";
@@ -59,12 +65,16 @@ export class EnvVariableTracker {
         if (this.debugOverride !== undefined) {
             return this.debugOverride;
         }
-        const debug = this.GetVariable("DEBUG_MODE");
-        const convert = GetStringAsDebugMode(debug);
-        if (convert === undefined || convert === null || isNaN(convert)) {
-            return DebugMode.None;
+        if(!this.cachedDebug) {
+            const debug = this.GetVariable("DEBUG_MODE");
+            const convert = GetStringAsDebugMode(debug);
+            if (convert === undefined || convert === null || isNaN(convert)) {
+                this.cachedDebug = DebugMode.None;
+            } else {
+                this.cachedDebug = convert;
+            }
         }
-        return convert;
+        return this.cachedDebug;
     }
 
     GetAdminAWSCreds() {

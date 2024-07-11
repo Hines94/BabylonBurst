@@ -144,6 +144,7 @@ export function Saved(type?: Function | { [key: string]: number | string },optio
 
 /** Debug Check to see if property typing is correct (not in production due to overhead) */
 export function CheckTypingForProperty(newVal: any, propertyKey: string, compName:string) {
+    if(environmentVaraibleTracker.GetDebugMode() == DebugMode.None) return;
     const desiredType = FindSavedProperty(compName,propertyKey);
     if (desiredType) {
         if (typeof newVal === 'object' && Array.isArray(newVal)) {

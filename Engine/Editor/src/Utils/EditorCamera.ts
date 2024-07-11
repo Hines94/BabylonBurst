@@ -5,6 +5,9 @@ import { FlyingCameraComponent } from "@BabylonBurstClient/Camera/FlyingCameraCo
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 import { AngleToRad } from "@BabylonBurstCore/Utils/MathUtils";
 import { BasicKeybinds, EditorKeybinds } from "@BabylonBurstClient/InputModule";
+import { WindowInputValues } from "@BabylonBurstClient/Inputs/PresetInputs";
+import { ButtonInput } from "@BabylonBurstClient/Inputs/ButtonInput";
+import { BrowserKeyNameValues } from "@BabylonBurstClient/Inputs/InputKeyNameValues";
 
 /** Simply takes the player camera and runs a simple movement  */
 export class EditorCamera {
@@ -22,6 +25,8 @@ export class EditorCamera {
             ecosystem.scene,
         );
         this.lookingComp = new LookingCameraComponent(ecosystem);
+        ecosystem.InputValues.EDITOR_MOUSE_RIGHT = new ButtonInput([BrowserKeyNameValues.RIGHTMOUSE]);
+        this.lookingComp.lookKey = (ecosystem.InputValues as WindowInputValues).GetKey("EDITOR_MOUSE_RIGHT");
         this.playerCam = ecosystem.camera as PlayerCamera;
         this.movementComp = new FlyingCameraComponent(ecosystem);
         this.playerCam.GetCameraRoot().position = new Vector3(0, 2, -5);
