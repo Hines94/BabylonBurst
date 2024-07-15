@@ -5,6 +5,7 @@ import { InstancedMeshTransform } from "./Utils/InstanceMeshUtils";
 import { StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 import { EntityQuery } from "../EntitySystem/EntityQuery";
 import { SkeletalAnimationSpecifier } from "../Rendering/InstancedRender";
+import { Clamp } from "../Utils/MathUtils";
 
 export class AsyncSkeletalMeshInstanceRunner extends AsyncSkeletalMeshDefinition {
     //Instance change no longer does anything as we are running system as a whole
@@ -13,7 +14,8 @@ export class AsyncSkeletalMeshInstanceRunner extends AsyncSkeletalMeshDefinition
     lastRun = 0;
     /** Change all transforms for this specific mesh */
     RunTransformSystem(scene: Scene, values: InstancedMeshTransform[],query:EntityQuery) {
-        runStaticMeshTransformSystem(scene,values,this);
+        if(!runStaticMeshTransformSystem(scene,values,this)) return;
+
         const dt = (performance.now()-this.lastRun)/1000;
         this.lastRun = performance.now();
         //Animation stuff
@@ -29,13 +31,13 @@ export class AsyncSkeletalMeshInstanceRunner extends AsyncSkeletalMeshDefinition
                     // Get animation from definition
                     const data = this.animationRanges[anim.AnimationName];
                     anim.currentFrame += dt*anim.playRate*data.framerate;
-                    const maxF = data.from-data.to;
+                    const maxF = data.to-data.from;
                     if(anim.currentFrame > maxF) {
-                        if(anim.Loop) anim.currentFrame = Math.max(anim.currentFrame%maxF,1);
+                        if(anim.Loop) anim.currentFrame = Clamp(anim.currentFrame%maxF,1,maxF);
                         else anim.currentFrame = maxF-1;
                     }
                     params.set(data.from,data.to,anim.currentFrame + data.from,data.framerate)
-     
+
                 } else { params.setAll(0);}
                 animParameters.set(params.asArray(),i*4);
             })

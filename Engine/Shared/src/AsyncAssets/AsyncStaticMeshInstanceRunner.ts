@@ -46,16 +46,16 @@ export function runStaticMeshTransformSystem(scene: Scene, values: InstancedMesh
     const finalMesh = system.GetFinalMesh(scene);
     if (finalMesh === undefined) {
         if(values.length === 0) {
-            return;
+            return false;
         }
         system.loadInMesh(scene);
-        return;
+        return false;
     }
     if(!system.finishedLoadingProcess[GetAsyncSceneIdentifier(scene)]) return;
 
     if(values.length === 0) {
         finalMesh.isVisible = false;
-        return;
+        return false;
     }
 
     //Require add more instances?
@@ -68,4 +68,6 @@ export function runStaticMeshTransformSystem(scene: Scene, values: InstancedMesh
     //update all transforms
     SetTransformArray(instanceLocations,finalMesh);
     finalMesh.isVisible = values.length > 0;
+
+    return true;
 }
