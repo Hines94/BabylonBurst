@@ -99,7 +99,11 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
             const transformSystem = ecosystem.dynamicProperties.LoadedRunners[key] as AsyncStaticMeshInstanceRunner;
             const data = thisFrameTransformData[key];
-            transformSystem.RunTransformSystem(this.GetScene(ecosystem), data === undefined ? [] : data.transformData);
+            transformSystem.RunTransformSystem(
+                this.GetScene(ecosystem),
+                data === undefined ? [] : data.transformData,
+                allInstEntities,
+            );
             const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
             if (finalM) {
                 finalM.isPickable = true;

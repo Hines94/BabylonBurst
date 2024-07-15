@@ -91,7 +91,7 @@ async function bakeVertexData(mesh:Mesh, ags:AnimationGroup[]) {
             if (ii++ === 0) continue;
             // start anim for one frame
             ag.start(false, 100, frameIndex, frameIndex, false);
-            // wait for finishing
+            // wait for finishing TODO: Make this faster! run in one frame
             await ag.onAnimationEndObservable.runCoroutineAsync(captureFrame());
             textureIndex++;
             // stop anim
@@ -149,7 +149,6 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
             if(!ag.targetedAnimations[0]) return;
             this.animationRanges[ag.name] = new AnimationDetails(ag.name,latest,latest+ag.to,ag.targetedAnimations[0].animation.framePerSecond);
             latest+=ag.to;
-            console.log( this.animationRanges[ag.name])
         })
         
         // Bake in animation data
