@@ -52,6 +52,7 @@ export abstract class HigherarchyHTML {
         this.higherarchyItems = this.higherarchPanel.querySelector("#HigherarchyItems");
         this.inspector = this.ecosystem.doc.getElementById("InspectorPanel");
         this.contentOptions = this.ecosystem.doc.getElementById("ContentOptions");
+        this.higherPanelVisible = true;
 
         //Setup events to update UI when we change
         this.ecosystem.entitySystem.onEntityCreatedEv.add(this.GenerateEntityRow.bind(this));
