@@ -16,6 +16,23 @@ export class InstancedRender extends Component {
     LayerMask:number = 0;
 }
 
+@RegisteredType(SkeletalAnimationSpecifier,{RequiredComponents:[EntTransform],comment:'Specify an animation to play during the skeletal animation'})
+export class SkeletalAnimationSpecifier extends Component {
+    @Saved(String)
+    AnimationName = '';
+    @Saved(Boolean)
+    Loop = false;
+    @Saved(Number)
+    playRate = 1;
+
+    currentFrame = 0;
+}
+
+@RegisteredType(InstancedSkeletalRender,{RequiredComponents:[EntTransform,SkeletalAnimationSpecifier],comment:`Used to display a visual mesh on an Entity. Use animation controller to show desired anim.`})
+export class InstancedSkeletalRender extends InstancedRender {
+
+}
+
 @RegisteredType(HiddenEntity,{comment:`Use this to easily and quickly prevent an entity from being rendered`})
 /** Set this for an easy way to avoid rendering an entity */
 export class HiddenEntity extends Component {

@@ -1,7 +1,8 @@
-import { Skeleton, AnimationRange, VertexAnimationBaker, BakedVertexAnimationManager, Scene } from "@babylonjs/core";
-import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh.js";
-import { AsyncStaticMeshDefinition } from "./AsyncStaticMeshDefinition.js";
-import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
+import { Skeleton, AnimationRange, VertexAnimationBaker, BakedVertexAnimationManager, Scene, Mesh, AnimationGroup } from "@babylonjs/core";
+import { AsyncStaticMeshDefinition } from "./AsyncStaticMeshDefinition";
+import { SceneAsyncLoader } from "./SceneAsyncLoader";
+import { StaticMeshCloneDetails } from "./AsyncStaticMesh";
+
 
 
 //TODO: This needs to be fixed!
@@ -17,16 +18,12 @@ import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
 // }
 
 /** A skeletal mesh clone. Comes with a copy of the original skeleton.
- *  Currently used for ALL skeletal meshes.
+ *  TODO: Fix this!
  */
 export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
     private tempSkeleton: Skeleton = null;
 
     override createClone(bNotifyComplete: boolean) {
-        //If the skeletal is not valid then just return
-        if ((this.definition as AsyncSkeletalMeshDefinition).verifySkeletalMeshDefinition(this.GetScene()) === false) {
-            return;
-        }
         //Create static mesh clone
         super.createClone(false);
 
@@ -65,29 +62,60 @@ export class SkeletalMeshCloneDetails extends StaticMeshCloneDetails {
         }
         this.cloneMesh.skeleton = skel;
     }
+}
 
-    GetAnimationRangeByName(name: string, bWarn = true) {
-        const anims = (this.definition as AsyncSkeletalMeshDefinition).getAnimationData();
-        for (var i = 0; i < anims.length; i++) {
-            if (anims[i].name === name) {
-                return anims[i];
-            }
-        }
-        if (bWarn)
-            console.warn("Can't find animation range by name: " + name + " this mesh: " + this.definition.meshName);
-        return null;
+async function bakeVertexData(mesh:Mesh, ags:AnimationGroup[]) {
+    ags.forEach((ag) => ag.stop());
+    const s = mesh.skeleton;
+    const boneCount = s.bones.length;
+    //const relevantAnims = ags.reduce((ag)=> ag.)
+    /** total number of frames in our animations */
+    const frameCount = ags.reduce((acc, ag) => acc + (Math.floor(ag.to) - Math.floor(ag.from)) + 1, 0);
+
+    // reset our loop data
+    let textureIndex = 0;
+    const textureSize = (boneCount + 1) * 4 * 4 * frameCount;
+    const vertexData = new Float32Array(textureSize);
+
+    function* captureFrame() {
+        const skeletonMatrices = s.getTransformMatrices(mesh);
+        vertexData.set(skeletonMatrices, textureIndex * skeletonMatrices.length);
     }
 
-    GetAllAnimationRanges(): AnimationRange[] {
-        return (this.definition as AsyncSkeletalMeshDefinition).getAnimationData();
+    let ii = 0;
+    for (const ag of ags) {
+        ag.reset();
+        const from = Math.floor(ag.from);
+        const to = Math.floor(ag.to);
+        for (let frameIndex = from; frameIndex <= to; frameIndex++) {
+            if (ii++ === 0) continue;
+            // start anim for one frame
+            ag.start(false, 100, frameIndex, frameIndex, false);
+            // wait for finishing
+            await ag.onAnimationEndObservable.runCoroutineAsync(captureFrame());
+            textureIndex++;
+            // stop anim
+            ag.stop();
+        }
+    }
+    
+    return vertexData;
+}
+
+export class AnimationDetails extends AnimationRange {
+    framerate = 60;
+    constructor(name: string, from: number, to: number, framerate: number) {
+        super(name,from,to);
+        this.framerate = framerate;
     }
 }
 
 /** Skeletal mesh version of async. */
 export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     /** So our scene loader knows which extension to use */
-    extensionType = ".babylon";
+    extensionType = ".glb";
     instanceVertexData: Float32Array = null;
+    protected animationRanges:{[id:string]:AnimationDetails} = {};
 
     override getMeshClone(scene: Scene, bStartVisible: boolean): SkeletalMeshCloneDetails {
         const newClone = new SkeletalMeshCloneDetails(this, bStartVisible, scene);
@@ -95,57 +123,83 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
         return newClone;
     }
 
-    // override getMeshInstance(scene: Scene,startVisible: boolean): StaticMeshInstanceDetails {
-    //     const newDef = new SkeletalMeshInstanceDetails(this, startVisible,scene);
-    //     this.meshInstances.push(newDef);
-    //     this.populateMeshInstance(newDef);
-    //     return newDef;
-    // }
+    override async preMeshReady(scene:Scene,foundMeshElements:Mesh[],asyncLoader:SceneAsyncLoader): Promise<void> {
+        const final = this.GetFinalMesh(scene);
 
-    protected async populateMeshInstance(details: StaticMeshInstanceDetails): Promise<null> {
-        await super.populateMeshInstance(details);
-        if (this.instanceVertexData === null) {
-            await this.bakeVertexAnimationData(details.GetScene());
+        final.skeleton = foundMeshElements[0].skeleton;
+        //TODO: Check all skeletons are the same
+        if(!this.verifySkeletalMeshDefinition(foundMeshElements)) {
+            return;
         }
-        return null;
+        if (this.instanceVertexData === null) {
+            await this.bakeVertexAnimationData(scene,asyncLoader);
+        }
     }
+    
 
     /** Will bake out our animation data so we can play animations on instances */
-    private async bakeVertexAnimationData(scene: Scene) {
-        const baker = new VertexAnimationBaker(scene, this.GetFinalMesh(scene));
-        this.instanceVertexData = await baker.bakeVertexData(this.getAnimationData());
+    private async bakeVertexAnimationData(scene: Scene,asyncLoader:SceneAsyncLoader) {
+        const finalMesh = this.GetFinalMesh(scene);
+        const baker = new VertexAnimationBaker(scene, finalMesh);
+        
+        //Setup ranges
+        var latest = 0;
+        asyncLoader.loadedGLB.animationGroups.forEach(ag=>{
+            //TODO: Check is the same skeleton!
+            if(!ag.targetedAnimations[0]) return;
+            this.animationRanges[ag.name] = new AnimationDetails(ag.name,latest,latest+ag.to,ag.targetedAnimations[0].animation.framePerSecond);
+            latest+=ag.to;
+            console.log( this.animationRanges[ag.name])
+        })
+        
+        // Bake in animation data
+        this.instanceVertexData = await bakeVertexData(finalMesh,asyncLoader.loadedGLB.animationGroups);
         const vertexTexture = baker.textureFromBakedVertexData(this.instanceVertexData);
         const manager = new BakedVertexAnimationManager(scene);
         manager.texture = vertexTexture;
-        this.GetFinalMesh(scene).bakedVertexAnimationManager = manager;
+        finalMesh.bakedVertexAnimationManager = manager;
     }
 
     /** Verifies that the skeletal mesh defi that we made is correct! */
-    verifySkeletalMeshDefinition(scene: Scene): boolean {
-        const asyncLoader = AsyncStaticMeshDefinition.GetAsyncMeshLoader(scene, this.desiredPath, this.fileName);
-        const LoadedScene = asyncLoader.loadedGLB;
-        if (LoadedScene.skeletons.length === 0) {
+    private verifySkeletalMeshDefinition(loadedMeshes:Mesh[]): boolean {
+        //TODO: Change this to all meshes sharing the same skeleton
+        const skels = [];
+        var allSkels = true;
+        loadedMeshes.forEach(s=>{
+            if(!s.skeleton) {allSkels = false; return;}
+            if(!skels.includes(s.skeleton)) skels.push(s.skeleton);
+        })
+
+        if(!allSkels) {
             console.error(
-                "No skeletons found in the GLB scene for " +
+                "Not all meshes have a skeleton for GLB skeletal mesh definition " +
                     this.desiredPath +
-                    ". Require ONE (only) for importing skeletal meshes"
-            );
-            return false;
-        } else if (LoadedScene.skeletons.length > 1) {
-            console.error(
-                "Multiple skeletons found in the GLB scene for " +
-                    this.desiredPath +
-                    ". Async loading works with ONE only!"
+                    ". Require all meshes to have the same skeleton"
             );
             return false;
         }
+
+        if(skels.length === 0) {
+            console.error(
+                "No skeletons for for GLB skeletal mesh definition " +
+                    this.desiredPath +
+                    ". Require at least one skele."
+            );
+            return false;
+        }
+        
+        if(skels.length > 1) {
+            console.error(
+                "Multiple skeletons for for GLB skeletal mesh definition " +
+                    this.desiredPath +
+                    ". Require JUST one skeleton for a definition"
+            );
+            return false;
+        }
+
         return true;
     }
 
-    /** Retrieve all animations from our GLB */
-    getAnimationData(): AnimationRange[] {
-        return this.getFirstFinalMesh().skeleton.getAnimationRanges();
-    }
 
     /** Get the skeleton in our original mesh */
     getMeshSkeleton(): Skeleton {

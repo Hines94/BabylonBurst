@@ -17,8 +17,9 @@ export interface GameEcosystem {
     uuid: string;
     window: Window;
     deltaTime: number;
+    timeScaler: number;
     dynamicProperties: { [key: string]: any };
-    InputValues: WindowInputValues;
+    InputValues: any;
     entitySystem: EntitySystem;
 
     //---HTML/GUI related---

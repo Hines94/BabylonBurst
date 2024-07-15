@@ -49,7 +49,7 @@ export function ProcessPrefabSpecifierComp(
 
     function RefreshToData() {
         const existingData = parentData[propType.name];
-        if (existingData.prefabUUID !== undefined) {
+        if (existingData && existingData.prefabUUID !== undefined) {
             const prefab = PrefabManager.GetPrefabBundleNameFromId(existingData.prefabUUID);
             if (prefab) {
                 newInput.value = prefab;

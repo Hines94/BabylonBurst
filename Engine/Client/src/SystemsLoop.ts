@@ -13,12 +13,14 @@ import { NavAgentVisualisationSystem } from "@BabylonBurstCore/Navigation/NavAge
 import { GetSystemOfType, preRenderLooper, renderLooper } from "@BabylonBurstCore/GameLoop/GameSystemLoop";
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
 import { RegisterDefaultCoreSystems } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
+import { InstancedSkeletalMeshRenderSystem } from "@BabylonBurstClient/Rendering/InstancedSkeletalMeshRenderSystem";
 
 function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     if (GetSystemOfType(InstancedMeshRenderSystem)) {
         return;
     }
 
+    new InstancedSkeletalMeshRenderSystem();
     new InstancedMeshRenderSystem();
     new AnimationInterpSystem();
     new LightingGameSystem();

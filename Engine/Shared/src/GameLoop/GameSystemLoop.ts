@@ -55,6 +55,7 @@ export class GameSystemLooper {
         var NewTick = performance.now();
         this.LoopDeltaTime = (NewTick - this.lastRunTime)/1000;
         this.lastRunTime = NewTick;
+        this.LoopDeltaTime*=ecosystem.timeScaler;
 
         for(var i = 0; i < registeredSystems.length;i++) {
             if(registeredSystems[i].systemHookType !== this.ourLoopType) {

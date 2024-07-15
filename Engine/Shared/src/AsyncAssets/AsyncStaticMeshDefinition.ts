@@ -1,13 +1,13 @@
 import { Material, Mesh, MeshBuilder, Observable, Scene, StandardMaterial } from "@babylonjs/core";
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { ExtractMaterialFromAny } from "./AsyncMaterial";
-import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 import { WipePreviouslyLoadedAsyncAssets } from "./Framework/AsyncAssetLoader";
 import { SceneAsyncLoader } from "./SceneAsyncLoader";
 import { InstancedMeshTransform, SetTransformArray, SetTransformAtIndex } from "./Utils/InstanceMeshUtils";
 import { GetAsyncSceneIdentifier, GetBadMeshMaterial } from "./Utils/SceneUtils";
 import { GetAssetFullPath, GetZipPath } from "./Utils/ZipUtils";
 import { DebugMode, environmentVaraibleTracker } from "../Utils/EnvironmentVariableTracker";
+import { StaticMeshCloneDetails, StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 
 var UpdateRequireSMDefinitions: AsyncStaticMeshDefinition[] = [];
 
@@ -199,9 +199,13 @@ export class AsyncStaticMeshDefinition {
             parent.dispose();
         }
 
+        await this.preMeshReady(scene,foundMeshElements,asyncLoader);
+
         //Completion and hand over for others
         this.onMeshReady.notifyObservers(this);
     }
+
+    async preMeshReady(scene:Scene,foundMeshElements:Mesh[],asyncLoader:SceneAsyncLoader):Promise<void> {}
 
     protected getNamePrefix(): string {
         return "";

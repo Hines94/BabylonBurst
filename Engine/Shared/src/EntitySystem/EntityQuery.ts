@@ -26,6 +26,11 @@ export class EntityQuery {
         })
         return ret;
     }
+
+    GetSingleton() : EntityData | undefined {
+        if(this.GetNumEntities() != 1) return undefined;
+        return this.GetEntitiesArray()[0];
+    }
     
     /** All included types have been changed? */
     AddChanged_ALL_Filter() {

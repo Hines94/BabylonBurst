@@ -1,4 +1,4 @@
-import { Engine, Observable, Scene, Vector3 } from "@babylonjs/core";
+import { Engine, MeshBuilder, Observable, Scene, Vector3 } from "@babylonjs/core";
 import { SceneSetupSettings } from "./Environment/SceneSetupSettings";
 import { SimpleWeightedSmoothWithSteps } from "../../Shared/src/Utils/MathUtils";
 import { UpdateAllTickables } from "./Utils/BaseTickableObject";
@@ -31,6 +31,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
     canvas: HTMLCanvasElement;
     doc: Document;
     deltaTime = 0.00001;
+    timeScaler = 1;
     scene: Scene;
     dynamicProperties: { [key: string]: any } = {};
     InputValues = new WindowInputValues();
@@ -140,6 +141,20 @@ export class RunnableClientEcosystem implements GameEcosystem {
         }
     }
 
+    wasHidden = false;
+    performHiddenAutoPause() {
+        if (this.doc.hidden) {
+            this.wasHidden = true;
+            return true;
+        }
+        if (this.wasHidden) {
+            this.wasHidden = false;
+            this.lastTick = performance.now();
+            return true;
+        }
+        return false;
+    }
+
     runGameLoop(): void {
         if (!this.runRenderLoop) {
             return;
@@ -154,6 +169,8 @@ export class RunnableClientEcosystem implements GameEcosystem {
             }
             //Make sure we don't need this!
             this.scene.cleanCachedTextureBuffer();
+            if (this.performHiddenAutoPause()) return;
+
             this.updateTick();
             this.onUpdate.notifyObservers(this);
             this.updateLoop();
@@ -187,7 +204,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
         //This is more accurate than engine!
         var NewTick = performance.now();
         //Convert to S from ms
-        const newDeltaTime = Math.max((NewTick - this.lastTick) / 1000, 0.0000001);
+        const newDeltaTime = Math.max((NewTick - this.lastTick) / 1000, 0.0000001) * this.timeScaler;
         this.deltaTime = SimpleWeightedSmoothWithSteps(this.deltaTime, newDeltaTime, 6);
         this.lastTick = NewTick;
     }

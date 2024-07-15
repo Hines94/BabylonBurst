@@ -4,7 +4,7 @@ bl_info = {
     'blender': (2, 93, 0),
     'category': 'Object',
     # optional
-    'version': (1, 0, 0),
+    'version': (1, 1, 0),
     'author': 'Jack Hines',
     'description': """
     Takes our assets and saves them to S3 in a zip.
@@ -40,6 +40,67 @@ except:
     import boto3
 
 from botocore.exceptions import ClientError
+
+# ------------ EXPORT ONLY SELECT ANIMS -------------------
+
+def filter_animations_by_prefix(context):
+    prefix = context.scene.animationPrefix  
+    objects_to_restore = {}
+    
+    for obj in bpy.context.scene.objects:
+        if obj.animation_data and obj.animation_data.action:
+            action = obj.animation_data.action
+            if not action.name.startswith(prefix):
+                # Store FCurve data before removal for each object
+                fcurve_data = []
+                for fcurve in action.fcurves:
+                    data_path = fcurve.data_path
+                    array_index = fcurve.array_index
+                    keyframe_points = [(key.co[0], key.co[1]) for key in fcurve.keyframe_points]
+                    fcurve_data.append({'data_path': data_path, 'array_index': array_index, 'keyframe_points': keyframe_points})
+
+                # Remove FCurves
+                fcurves_to_remove = [fcurve for fcurve in action.fcurves]
+                for fcurve in fcurves_to_remove:
+                    action.fcurves.remove(fcurve)
+
+                # Store object and its FCurve data for restoration
+                objects_to_restore[obj.name] = {'action': action, 'fcurve_data': fcurve_data}
+    
+    return objects_to_restore
+
+# Function to restore FCurves to the original action
+def restore_removed_animations(objects_to_restore):
+    restored_objects = []
+
+    for obj_name, restore_data in objects_to_restore.items():
+        obj = bpy.data.objects.get(obj_name)
+        if obj:
+            original_action = restore_data['action']
+            fcurve_data = restore_data['fcurve_data']
+
+            # Clear existing FCurves from the original action
+            original_action.fcurves.clear()
+
+            # Restore FCurves to the original action
+            for fcurve_info in fcurve_data:
+                data_path = fcurve_info['data_path']
+                array_index = fcurve_info['array_index']
+                keyframe_points = fcurve_info['keyframe_points']
+
+                fcurve = original_action.fcurves.new(data_path, index=array_index)
+
+                # Add keyframes to the restored FCurve
+                for frame, value in keyframe_points:
+                    fcurve.keyframe_points.insert(frame, value)
+
+            # Assign the restored action back to the object
+            obj.animation_data.action = original_action
+            restored_objects.append(obj)
+    
+    return restored_objects
+
+# ------------ EXPORT ONLY SELECT ANIMS -------------------
 
 #Get the path to save in our S3 determined by the save name
 def GetFilePath():
@@ -87,8 +148,10 @@ PROPS = [
                     },
                     default='REPLACE')),
     ('replaceversion', bpy.props.IntProperty(name='Replace Version Num', default=1)),
-    ('includeImages', bpy.props.BoolProperty(name='Include Images', default=False, description='Include Images for our materials? (Only relevant for Static Mesh)')),
-    ('awsBucket', bpy.props.StringProperty(name='AWS Bucket', description='Name of the AWS bucket to use', default=''))
+    ('includeImages', bpy.props.BoolProperty(name='Include Images', default=False, description='Include Images for our materials?')),
+    ('selectedonly', bpy.props.BoolProperty(name='Selected Only', default=False, description='Upload selected items only?')),
+    ('awsBucket', bpy.props.StringProperty(name='AWS Bucket', description='Name of the AWS bucket to use', default='')),
+    ('animationPrefix', bpy.props.StringProperty(name='Animation Prefix', description='Prefix of the animations to export', default=''))
 ]
 
 def GetSizeOfFile(path):
@@ -121,7 +184,7 @@ def ZipAndUploadToS3(fileExt, tempDirPath,self, context):
                     
     else: #if (context.scene.versioning == 'REPLACE'):
         self.report({'ERROR'}, "No support yet for this verisoning method!")
-
+        
 #Actual operator for static mesh!
 class UploadStaticToS3Operator(bpy.types.Operator):
     bl_idname = 'opr.upload_s3_static_op'
@@ -129,6 +192,8 @@ class UploadStaticToS3Operator(bpy.types.Operator):
     bl_description ="Uploads Mesh to S3 with the given params. Note the path is derrived from our filename. (folder$test -> folder/test)"
     
     def execute(self, context):
+        # Filter animations by prefix
+        removed_animations = filter_animations_by_prefix(context)
 
         #Create a temporary dir and work in here
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -147,17 +212,21 @@ class UploadStaticToS3Operator(bpy.types.Operator):
                     export_materials='EXPORT',
                     export_draco_mesh_compression_enable=True,
                     export_draco_mesh_compression_level=7,
-                    use_selection=True,
+                    use_selection=context.scene.selectedonly,
                     export_apply=True,
                     export_animations=True,
                     export_optimize_animation_size=True,
-                    export_animation_mode='SCENE'
+                    export_nla_strips =False,
+                    export_animation_mode='ACTIONS'
                     )
             glbMbSize =GetSizeOfFile(fullPath + ".glb")
             self.report({'INFO'}, "Saved glb. File size is: " + str(glbMbSize) + "mb")
             
             #Next zip and perform upload
             ZipAndUploadToS3(".glb",fullPath,self, context)
+
+        # Restore the removed animations
+        restore_removed_animations(removed_animations)
                    
         return {'FINISHED'}
 
