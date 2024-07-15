@@ -14,7 +14,7 @@ export class AsyncStaticMeshInstanceRunner extends AsyncStaticMeshDefinition {
     override instanceChange(details: StaticMeshInstanceDetails): void {}
 
     /** Change all transforms for this specific mesh */
-    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[],query:EntityQuery) {
+    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[],query:EntityQuery,deltaTime:number) {
         runStaticMeshTransformSystem(scene,values,this);
     }
 

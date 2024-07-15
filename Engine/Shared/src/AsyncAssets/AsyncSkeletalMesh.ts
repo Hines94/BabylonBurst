@@ -136,7 +136,7 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
         }
     }
     
-
+    manager:BakedVertexAnimationManager;
     /** Will bake out our animation data so we can play animations on instances */
     private async bakeVertexAnimationData(scene: Scene,asyncLoader:SceneAsyncLoader) {
         const finalMesh = this.GetFinalMesh(scene);
@@ -154,9 +154,9 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
         // Bake in animation data
         this.instanceVertexData = await bakeVertexData(finalMesh,asyncLoader.loadedGLB.animationGroups);
         const vertexTexture = baker.textureFromBakedVertexData(this.instanceVertexData);
-        const manager = new BakedVertexAnimationManager(scene);
-        manager.texture = vertexTexture;
-        finalMesh.bakedVertexAnimationManager = manager;
+        this.manager = new BakedVertexAnimationManager(scene);
+        this.manager.texture = vertexTexture;
+        finalMesh.bakedVertexAnimationManager = this.manager;
     }
 
     /** Verifies that the skeletal mesh defi that we made is correct! */

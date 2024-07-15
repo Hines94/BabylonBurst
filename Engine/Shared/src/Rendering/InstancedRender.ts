@@ -24,8 +24,9 @@ export class SkeletalAnimationSpecifier extends Component {
     Loop = false;
     @Saved(Number)
     playRate = 1;
-
-    currentFrame = 0;
+    @Saved(Boolean)
+    bRandomOffsetFrame = true;
+    frameOffset = 0;
 }
 
 @RegisteredType(InstancedSkeletalRender,{RequiredComponents:[EntTransform,SkeletalAnimationSpecifier],comment:`Used to display a visual mesh on an Entity. Use animation controller to show desired anim.`})

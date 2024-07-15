@@ -103,6 +103,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 this.GetScene(ecosystem),
                 data === undefined ? [] : data.transformData,
                 allInstEntities,
+                ecosystem.deltaTime * this.getAnimationTimeScale(ecosystem),
             );
             const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
             if (finalM) {
@@ -111,6 +112,10 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 finalM.entityData = data === undefined ? [] : data.entityData;
             }
         });
+    }
+
+    getAnimationTimeScale(ecosystem: GameEcosystem) {
+        return ecosystem.timeScaler;
     }
 
     /** Setup the AsyncStaticMeshInstanceRunner for our use */
