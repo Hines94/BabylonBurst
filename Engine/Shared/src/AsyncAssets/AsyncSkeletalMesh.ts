@@ -81,7 +81,7 @@ async function bakeVertexData(mesh:Mesh, ags:AnimationGroup[]) {
         const skeletonMatrices = s.getTransformMatrices(mesh);
         vertexData.set(skeletonMatrices, textureIndex * skeletonMatrices.length);
     }
-
+    mesh.isVisible = true;
     let ii = 0;
     for (const ag of ags) {
         ag.reset();
@@ -91,7 +91,7 @@ async function bakeVertexData(mesh:Mesh, ags:AnimationGroup[]) {
             if (ii++ === 0) continue;
             // start anim for one frame
             ag.start(false, 100, frameIndex, frameIndex, false);
-            // wait for finishing TODO: Make this faster! run in one frame
+            // wait for finishing TODO: Make this faster! run in one frame and hide whilst running!?
             await ag.onAnimationEndObservable.runCoroutineAsync(captureFrame());
             textureIndex++;
             // stop anim

@@ -3,6 +3,7 @@ import { AsyncStaticMeshDefinition, GetMeshInstanceNum } from "./AsyncStaticMesh
 import { GetInstanceLocations, InstancedMeshTransform, SetTransformArray } from "./Utils/InstanceMeshUtils";
 import { EntityQuery } from "../EntitySystem/EntityQuery";
 import { StaticMeshInstanceDetails } from "./AsyncStaticMesh";
+import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
 
 /**
  * Similar to a static mesh definition but is purpose built to run instance meshes with entity systems
@@ -50,6 +51,7 @@ export function runStaticMeshTransformSystem(scene: Scene, values: InstancedMesh
         system.loadInMesh(scene);
         return;
     }
+    if(!system.finishedLoadingProcess[GetAsyncSceneIdentifier(scene)]) return;
 
     if(values.length === 0) {
         finalMesh.isVisible = false;

@@ -34,6 +34,7 @@ export class AsyncStaticMeshDefinition {
     desiredPath: string;
     onMeshReady = new Observable<AsyncStaticMeshDefinition>();
     startedLoadingProcess:{[sceneId:string]:boolean} = {};
+    finishedLoadingProcess:{[sceneId:string]:boolean} = {};
     /** Set to true if we want to accept different number of materials input vs actual mesh */
     bNoFailMaterialDiff = false;
 
@@ -198,10 +199,10 @@ export class AsyncStaticMeshDefinition {
         if (parent !== null && parent.getChildren().length === 0) {
             parent.dispose();
         }
-
         await this.preMeshReady(scene,foundMeshElements,asyncLoader);
 
         //Completion and hand over for others
+        this.finishedLoadingProcess[sceneId] = true;
         this.onMeshReady.notifyObservers(this);
     }
 
