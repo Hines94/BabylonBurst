@@ -15,6 +15,12 @@ export class BitSet {
         this.bits[wordIndex] |= (1 << bitIndex);
     }
 
+    hasBit(index: number): boolean {
+        const wordIndex = Math.floor(index / 32);
+        const bitIndex = index % 32;
+        return (this.bits[wordIndex] & (1 << bitIndex)) !== 0;
+    }
+
     // Resizes the bitset to accommodate the specified size
     resize(newSize: number): void {
         const newBits = new Uint32Array(Math.ceil(newSize / 32));
@@ -26,7 +32,7 @@ export class BitSet {
     anyInCommon(other: BitSet): boolean {
         const minLength = Math.min(this.bits.length, other.bits.length);
         for (let i = 0; i < minLength; i++) {
-            if ((this.bits[i] & other.bits[i]) !== 0) {
+            if (toUnsigned((this.bits[i] & other.bits[i])) !== 0) {
                 return true;
             }
         }
@@ -37,13 +43,13 @@ export class BitSet {
    allInCommon(other: BitSet): boolean {
         const minLength = Math.min(this.bits.length, other.bits.length);
         for (let i = 0; i < minLength; i++) {
-            if ((this.bits[i] & other.bits[i]) !== this.bits[i]) {
+            if (toUnsigned((this.bits[i] & other.bits[i])) !== this.bits[i]) {
                 return false;
             }
         }
         // Check remaining bits in this BitSet if it's longer than the other BitSet
         for (let i = minLength; i < this.bits.length; i++) {
-            if (this.bits[i] !== 0) {
+            if (toUnsigned(this.bits[i]) !== 0) {
                 return false;
             }
         }
@@ -54,7 +60,7 @@ export class BitSet {
     noneInCommon(other: BitSet): boolean {
         const minLength = Math.min(this.bits.length, other.bits.length);
         for (let i = 0; i < minLength; i++) {
-            if ((this.bits[i] & other.bits[i]) !== 0) {
+            if (toUnsigned((other.bits[i] & this.bits[i])) !== 0) {
                 return false;
             }
         }
@@ -64,8 +70,13 @@ export class BitSet {
     isEqual(other: BitSet): boolean {
         const minLength = Math.min(this.bits.length, other.bits.length);
         for (let i = 0; i < minLength; i++) {
-            if (this.bits[i] !== other.bits[i]) return false;
+            if (toUnsigned(this.bits[i]) !== toUnsigned(other.bits[i])) return false;
         }
         return true;
     }
+}
+
+function toUnsigned(value: number): number {
+    // Mask with 0xFFFFFFFF to ensure the number is interpreted as unsigned
+    return value >>> 0;
 }
