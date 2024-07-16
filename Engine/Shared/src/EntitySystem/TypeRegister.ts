@@ -204,6 +204,7 @@ export class RegisteredTypeOptions {
 export type storedRegisteredType =  {
     type:Function;
     options:RegisteredTypeOptions;
+    bitId:number;
 }
 
 export const registeredTypes:{[compName:string]:storedRegisteredType} = {};
@@ -220,7 +221,7 @@ export function RegisteredType(target:Function,options:Partial<RegisteredTypeOpt
         }
         const createdOptions = new RegisteredTypeOptions();
         Object.assign(createdOptions,options);
-        registeredTypes[className] = {type:target,options:createdOptions};
+        registeredTypes[className] = {type:target,options:createdOptions,bitId:Object.keys(registeredTypes).length};
         if(!savedProperties[className]) {
             savedProperties[className] = [];
         }

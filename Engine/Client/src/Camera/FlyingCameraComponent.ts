@@ -1,6 +1,6 @@
 import { Vector3 } from "@babylonjs/core";
-import { PlayerCamera } from "@BabylonBurstCore/Camera/PlayerCamera";
 import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
+import { PlayerCamera } from "@BabylonBurstClient/Camera/PlayerCamera";
 
 export class FlyingCameraComponent {
     ecosystem: GameEcosystem;

@@ -117,6 +117,8 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     instanceVertexData: Float32Array = null;
     protected animationRanges:{[id:string]:AnimationDetails} = {};
 
+    
+
     override getMeshClone(scene: Scene, bStartVisible: boolean): SkeletalMeshCloneDetails {
         const newClone = new SkeletalMeshCloneDetails(this, bStartVisible, scene);
         this.populateMeshClone(newClone);
@@ -203,6 +205,10 @@ export class AsyncSkeletalMeshDefinition extends AsyncStaticMeshDefinition {
     /** Get the skeleton in our original mesh */
     getMeshSkeleton(): Skeleton {
         return this.getFirstFinalMesh().skeleton;
+    }
+
+    GetAnimRange(anim:string) {
+        return this.animationRanges[anim];
     }
 
     protected getFirstFinalMesh() {

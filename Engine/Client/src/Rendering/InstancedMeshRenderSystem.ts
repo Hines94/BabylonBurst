@@ -16,6 +16,7 @@ import { AsyncArrayBufferLoader } from "@BabylonBurstCore/Utils/StandardAsyncLoa
 import { GameSystem, GameSystemRunType } from "@BabylonBurstCore/GameLoop/GameSystem";
 import { InstancedRenderSystemPriority } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
 import { EntityQuery } from "@BabylonBurstCore/EntitySystem/EntityQuery";
+import { environmentVaraibleTracker } from "@BabylonBurstCore/Utils/EnvironmentVariableTracker";
 
 export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     if (!ecosystem.dynamicProperties.LoadedRunners) {
@@ -44,6 +45,7 @@ class InstancedMesh extends Mesh {
 export class InstancedMeshRenderSystem extends GameSystem {
     SystemOrdering = InstancedRenderSystemPriority;
     systemRunType = GameSystemRunType.GameAndEditor;
+    enableThinPicking = environmentVaraibleTracker.GetBooleanVariable("ENABLE_INSTANCED_RENDER_PICKING");
 
     SetupGameSystem(ecosystem: GameEcosystem) {
         if (ecosystem.dynamicProperties[InstancedMeshRenderSystem.priorLoadedMaterialsArray] === undefined) {
@@ -98,20 +100,23 @@ export class InstancedMeshRenderSystem extends GameSystem {
                 return;
             }
             const transformSystem = ecosystem.dynamicProperties.LoadedRunners[key] as AsyncStaticMeshInstanceRunner;
-            const data = thisFrameTransformData[key];
-            transformSystem.RunTransformSystem(
-                this.GetScene(ecosystem),
-                data === undefined ? [] : data.transformData,
-                allInstEntities,
-                ecosystem.deltaTime * this.getAnimationTimeScale(ecosystem),
-            );
-            const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
-            if (finalM) {
-                finalM.isPickable = true;
-                finalM.thinInstanceEnablePicking = true;
-                finalM.entityData = data === undefined ? [] : data.entityData;
-            }
+            this.RunTransformSystem(transformSystem, thisFrameTransformData[key], ecosystem);
         });
+    }
+
+    RunTransformSystem(
+        transformSystem: AsyncStaticMeshInstanceRunner,
+        data: instancedMeshData,
+        ecosystem: GameEcosystem,
+    ) {
+        transformSystem.RunTransformSystem(this.GetScene(ecosystem), data === undefined ? [] : data.transformData);
+
+        const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
+        if (finalM) {
+            finalM.isPickable = this.enableThinPicking;
+            finalM.thinInstanceEnablePicking = this.enableThinPicking;
+            finalM.entityData = data === undefined ? [] : data.entityData;
+        }
     }
 
     getAnimationTimeScale(ecosystem: GameEcosystem) {

@@ -1,4 +1,4 @@
-import { EntVector3, EntVector4 } from "./CoreComponents";
+import { EntVector3, EntVector4 } from "@BabylonBurstCore/EntitySystem/CoreComponents";
 
 export class EntBoxCheck {
     center: EntVector3;

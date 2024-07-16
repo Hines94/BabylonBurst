@@ -62,7 +62,7 @@ export class AsyncAWSBackend implements IBackendStorageInterface {
     }
 
     async GetAllBackendLastSaveTimes(): Promise<{ [filename: string]: Date; }> {
-        const ret = {};
+        const ret:{ [filename: string]: Date; } = {};
         const response = await this.s3.send(this.getListCommand());
         if(!response.Contents) {
             return ret;

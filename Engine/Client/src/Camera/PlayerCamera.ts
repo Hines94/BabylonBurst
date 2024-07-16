@@ -13,15 +13,8 @@ import {
 } from "@babylonjs/core";
 import { GetGameSettings } from "../Settings";
 import { defaultLayerMask, uiLayerMask } from "../Utils/LayerMasks";
-import {
-    EnterPointerLock,
-    ExitPointerLock,
-    GetMousePosAccountLock,
-    IsPointerLockActive,
-    SetupOrthographicCamera,
-} from "../Utils/SceneUtils";
-import { EntVector4 } from "../EntitySystem/CoreComponents";
-import { GameEcosystem } from "../GameEcosystem";
+import { GetMousePosAccountLock, SetupOrthographicCamera } from "../Utils/SceneUtils";
+import { GameEcosystem } from "@BabylonBurstCore/GameEcosystem";
 
 const CamFOV = 1;
 

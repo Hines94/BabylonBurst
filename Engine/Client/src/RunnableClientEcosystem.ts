@@ -115,6 +115,7 @@ export class RunnableClientEcosystem implements GameEcosystem {
         // await engine.initAsync();
         // this.engine = engine;
         this.engine.enableOfflineSupport = false;
+        //@ts-ignore - requirement of Babylon
         globalThis.HK = await HavokPhysics();
     }
 

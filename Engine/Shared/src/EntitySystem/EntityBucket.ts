@@ -1,10 +1,10 @@
-import { Component } from "./Component";
+import { BitSet } from "../Utils/BitSet";
 import { EntityData } from "./EntityData";
 
 
 export class EntityBucket {
     ContainedEntities:{[entId:number]:EntityData} = [];
-    SetComponents:string[] = [];
+    SetComponents = new BitSet(256);
 
     ChangeEntityToThisBucket(ent:EntityData) {
         EntityBucket.RemoveEntityFromAnyBuckets(ent);

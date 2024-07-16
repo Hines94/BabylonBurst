@@ -1,6 +1,6 @@
 import { Mesh, VertexBuffer } from "@babylonjs/core";
-import { EntTransform, EntVector3, EntVector4 } from "./CoreComponents";
 import { StaticMeshCloneDetails } from "@BabylonBurstCore/AsyncAssets";
+import { EntTransform, EntVector3, EntVector4 } from "@BabylonBurstCore/EntitySystem/CoreComponents";
 
 export type RaycastFind = {
     distance: number;

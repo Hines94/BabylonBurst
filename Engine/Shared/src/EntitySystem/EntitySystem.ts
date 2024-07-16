@@ -6,6 +6,7 @@ import { EntityData } from "./EntityData"
 import { EntityQuery } from "./EntityQuery";
 import { registeredTypes } from "./TypeRegister";
 import { DeepSetupCallback } from "./TrackedVariable";
+import { BitSet } from '../Utils/BitSet'
 
 export type ComponentNotify = {
     ent:EntityData;
@@ -134,27 +135,21 @@ export class EntitySystem {
 
     GetEntitiesWithData(includeComps:typeof Component[],excludeComps:typeof Component[]): EntityQuery {
         //Setup
-        const includeNames:string[] = [];
+        const includeBitset = new BitSet(256);
         includeComps.forEach(inc=>{
-            includeNames.push(inc.name);
+            const rt = registeredTypes[inc.name];
+            if(rt) includeBitset.setBit(rt.bitId);
         })
-        const excludeNames:string[] = [];
+        const excludeBitset = new BitSet(256);
         excludeComps.forEach(exc=>{
-            excludeNames.push(exc.name);
+            const rt = registeredTypes[exc.name];
+            if(rt) excludeBitset.setBit(rt.bitId);
         })
         //Compare buckets
         const possibleBuckets:EntityBucket[] = [];
         this.EntityBuckets.forEach(b=>{
-            for(var n = 0; n < includeNames.length;n++) {
-                if(!b.SetComponents.includes(includeNames[n])) {
-                    return;
-                }
-            }
-            for(var n = 0; n < excludeNames.length;n++) {
-                if(b.SetComponents.includes(excludeNames[n])) {
-                    return;
-                }
-            }
+            if(!includeBitset.allInCommon(b.SetComponents)) return;
+            if(!excludeBitset.noneInCommon(b.SetComponents)) return;
             possibleBuckets.push(b);
         })
 
@@ -284,18 +279,22 @@ export class EntitySystem {
     }
 
     private FindMakeBucket(comps:{[compName:string]:Component}):EntityBucket {
-        const compNames:string[] = Object.keys(comps);
-        
+        const bitset = new BitSet(256);
+        Object.keys(comps).forEach(c=>{
+            const rt = registeredTypes[c];
+            if(rt) bitset.setBit(rt.bitId);
+        })
+
         //Existing bucket?
         for(var b = 0; b < this.EntityBuckets.length;b++) {
-            if(ArraysContainEqualItems(this.EntityBuckets[b].SetComponents,compNames)) {
+            if(this.EntityBuckets[b].SetComponents.isEqual(bitset)) {
                 return this.EntityBuckets[b];
             }
         }
         
         //New bucket
         const newBucket = new EntityBucket();
-        newBucket.SetComponents = compNames;
+        newBucket.SetComponents = bitset;
         this.EntityBuckets.push(newBucket);
 
         return newBucket;
