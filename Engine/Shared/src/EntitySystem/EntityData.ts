@@ -26,7 +26,6 @@ export class EntityData extends SaveableDataField {
 
     GetComponent<T extends Component>(type: { new(): T }): T | undefined {
         return this.Components[type.name] as T;
-
     }
 
     GetComponentByName(name:string) : Component {

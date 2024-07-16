@@ -48,13 +48,18 @@ export function TrackedVariable(): PropertyDecorator {
                 return this[originalKey];
             },
             set: function(value) {
-                if(originalDescriptor && originalDescriptor.set) {
-                    originalDescriptor.set(value);
+                const disabT = environmentVaraibleTracker.GetBooleanVariable('DISABLE_TRACKED_VARIABLES');
+                if(!disabT) {
+                    if(originalDescriptor && originalDescriptor.set) {
+                        originalDescriptor.set(value);
+                    }
                 }
                 this[originalKey] = value;
-                if (this[proxyCallbackSymbol] !== undefined) {
-                    DeepSetupCallback(value, this[proxyCallbackSymbol]);
-                    this[proxyCallbackSymbol]();
+                if(!disabT) {
+                    if (this[proxyCallbackSymbol] !== undefined) {
+                        DeepSetupCallback(value, this[proxyCallbackSymbol]);
+                        this[proxyCallbackSymbol]();
+                    }
                 }
             },
             enumerable: true,
