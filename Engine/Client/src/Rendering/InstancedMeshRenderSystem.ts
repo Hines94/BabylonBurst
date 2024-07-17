@@ -17,6 +17,7 @@ import { GameSystem, GameSystemRunType } from "@BabylonBurstCore/GameLoop/GameSy
 import { InstancedRenderSystemPriority } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
 import { EntityQuery } from "@BabylonBurstCore/EntitySystem/EntityQuery";
 import { environmentVaraibleTracker } from "@BabylonBurstCore/Utils/EnvironmentVariableTracker";
+import { IColourable } from "@BabylonBurstCore/AsyncAssets/AsyncStaticMeshInstanceRunner";
 
 export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     if (!ecosystem.dynamicProperties.LoadedRunners) {
@@ -32,9 +33,10 @@ export function RefreshWireframeMode(ecosystem: GameEcosystem) {
     });
 }
 
-type instancedMeshData = {
+export type InstancedMeshData = {
     transformData: InstancedMeshTransform[];
     entityData: number[];
+    colourData: IColourable[];
 };
 
 class InstancedMesh extends Mesh {
@@ -54,7 +56,7 @@ export class InstancedMeshRenderSystem extends GameSystem {
     }
 
     RunSystem(ecosystem: GameEcosystem) {
-        var thisFrameTransformData: { [id: string]: instancedMeshData } = {};
+        var thisFrameTransformData: { [id: string]: InstancedMeshData } = {};
 
         const allInstEntities = this.GetRenderEntities(ecosystem);
 
@@ -85,11 +87,12 @@ export class InstancedMeshRenderSystem extends GameSystem {
             }
             //Set our data for this frame
             if (thisFrameTransformData[runnerID] === undefined) {
-                thisFrameTransformData[runnerID] = { transformData: [], entityData: [] };
+                thisFrameTransformData[runnerID] = { transformData: [], entityData: [], colourData: [] };
             }
             const transform = entData.GetComponent<EntTransform>(EntTransform);
             thisFrameTransformData[runnerID].transformData.push(EntTransform.getAsInstanceTransform(transform));
             thisFrameTransformData[runnerID].entityData.push(entData.EntityId);
+            thisFrameTransformData[runnerID].colourData.push(rendItem);
         });
 
         const rendVariant = this.constructor.name;
@@ -106,10 +109,14 @@ export class InstancedMeshRenderSystem extends GameSystem {
 
     RunTransformSystem(
         transformSystem: AsyncStaticMeshInstanceRunner,
-        data: instancedMeshData,
+        data: InstancedMeshData,
         ecosystem: GameEcosystem,
     ) {
-        transformSystem.RunTransformSystem(this.GetScene(ecosystem), data === undefined ? [] : data.transformData);
+        transformSystem.RunTransformSystem(
+            this.GetScene(ecosystem),
+            data === undefined ? [] : data.transformData,
+            data === undefined ? [] : data.colourData,
+        );
 
         const finalM = transformSystem.GetFinalMesh(ecosystem.scene) as InstancedMesh;
         if (finalM) {

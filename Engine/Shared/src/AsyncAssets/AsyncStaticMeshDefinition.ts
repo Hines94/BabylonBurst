@@ -353,6 +353,7 @@ export class AsyncStaticMeshDefinition {
         this.requireTransformResets = [];
     }
 
+    priorColors:Float32Array;
     requireColorUpdate = false;
     private colorUpdate(mesh: Mesh, instances: { [index: number]: StaticMeshInstanceDetails }) {
         if (this.requireColorUpdate === false) {
@@ -398,25 +399,21 @@ export class AsyncStaticMeshDefinition {
     }
 }
 
+var warned=false;
+const checks = [5,12,15,25,50,100,200];
 /** Handy to generate a couple extra rather than needing more! */
 export function GetMeshInstanceNum(currentLength: number) {
-    if(currentLength <= 0) {
-        return 1;
+    for(var i = 0; i < checks.length;i++) {
+        if(currentLength < checks[i]) {
+            return checks[i];
+        }
     }
-    if (currentLength < 5) {
-        return 5;
+    if(!warned){
+        console.warn("Require a lot of mesh instances: " + currentLength);
+        warned=true;
     }
-    if (currentLength < 12) {
-        return 12;
-    }
-    if (currentLength < 20) {
-        return 20;
-    }
-    if (currentLength < 50) {
-        return 50;
-    }
-    console.warn("Require a lot of mesh instances: " + currentLength);
-    return currentLength * 1.5;
+    checks.push(currentLength * 1.5);
+    return checks[checks.length-1];
 }
 
 export async function VerifyAllSMDefinitions(scene: Scene) {

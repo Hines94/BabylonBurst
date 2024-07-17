@@ -1,4 +1,4 @@
-import { InstancedMeshRenderSystem } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
+import { InstancedMeshData, InstancedMeshRenderSystem } from "@BabylonBurstClient/Rendering/InstancedMeshRenderSystem";
 import { AsyncStaticMeshInstanceRunner, InstancedMeshTransform } from "@BabylonBurstCore/AsyncAssets";
 import {
     AsyncSkeletalMeshInstanceRunner,
@@ -29,14 +29,14 @@ export class InstancedSkeletalMeshRenderSystem extends InstancedMeshRenderSystem
     }
     override RunTransformSystem(
         transformSystem: AsyncStaticMeshInstanceRunner,
-        data: { transformData: InstancedMeshTransform[]; entityData: number[] },
+        data: InstancedMeshData,
         ecosystem: GameEcosystem,
     ): void {
         super.RunTransformSystem(transformSystem, data, ecosystem);
         //@ts-ignore
         const tf = transformSystem as AsyncSkeletalMeshInstanceRunner;
         const skData: SkeletalData[] = getAnimationData();
-        tf.RunAnimationSystem(ecosystem.scene, skData, ecosystem.deltaTime);
+        tf.RunAnimationSystem(ecosystem.scene, skData, ecosystem.deltaTime * this.getAnimationTimeScale(ecosystem));
 
         function getAnimationData() {
             const skData: SkeletalData[] = [];

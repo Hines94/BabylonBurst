@@ -2,7 +2,7 @@ import { Scene, Vector4 } from "@babylonjs/core";
 import { AsyncSkeletalMeshDefinition } from "./AsyncSkeletalMesh";
 import { StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 import { InstancedMeshTransform } from "./Utils/InstanceMeshUtils";
-import { runStaticMeshTransformSystem } from "./AsyncStaticMeshInstanceRunner";
+import { IColourable, runStaticMeshColorSystem, runStaticMeshTransformSystem } from "./AsyncStaticMeshInstanceRunner";
 
 export interface SkeletalData {
     //TODO: Loop or non loop
@@ -17,8 +17,9 @@ export class AsyncSkeletalMeshInstanceRunner extends AsyncSkeletalMeshDefinition
     priorParams:Float32Array;
 
     /** Exact copy of static */
-    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[]) {
+    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[], colours:IColourable[]) {
         runStaticMeshTransformSystem(scene,values,this);
+        runStaticMeshColorSystem(this.GetFinalMesh(scene),colours,this);
     }
 
     RunAnimationSystem(scene:Scene,skeletalData:SkeletalData[],deltaTime:number) {

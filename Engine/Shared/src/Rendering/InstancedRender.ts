@@ -1,5 +1,5 @@
 import { Component } from "../EntitySystem/Component";
-import { EntTransform } from "../EntitySystem/CoreComponents";
+import { EntTransform, EntVector4 } from "../EntitySystem/CoreComponents";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
 import { MaterialSpecifier } from "./MaterialSpecifier";
 import { ModelSpecifier } from "./ModelSpecifier";
@@ -14,6 +14,9 @@ export class InstancedRender extends Component {
     
     @Saved(Number,{comment:`Use different layers (eg 1,2,3) to give preference in rendering. Leave as 0 for default.`})
     LayerMask:number = 0;
+
+    @Saved(EntVector4,{comment:'Automatically updated for each instance'})
+    currentColor = new EntVector4(1,1,1,1);
 }
 
 @RegisteredType(SkeletalAnimationSpecifier,{RequiredComponents:[EntTransform],comment:'Specify an animation to play during the skeletal animation'})

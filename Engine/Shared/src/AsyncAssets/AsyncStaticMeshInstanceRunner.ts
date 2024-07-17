@@ -4,6 +4,11 @@ import { GetInstanceLocations, InstancedMeshTransform, SetTransformArray } from 
 import { EntityQuery } from "../EntitySystem/EntityQuery";
 import { StaticMeshInstanceDetails } from "./AsyncStaticMesh";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils";
+import { EntVector4 } from "../EntitySystem/CoreComponents";
+
+export interface IColourable {
+    currentColor:EntVector4;
+}
 
 /**
  * Similar to a static mesh definition but is purpose built to run instance meshes with entity systems
@@ -14,33 +19,15 @@ export class AsyncStaticMeshInstanceRunner extends AsyncStaticMeshDefinition {
     override instanceChange(details: StaticMeshInstanceDetails): void {}
 
     /** Change all transforms for this specific mesh */
-    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[]) {
+    RunTransformSystem(scene: Scene, values: InstancedMeshTransform[], colours:IColourable[]) {
         runStaticMeshTransformSystem(scene,values,this);
+        runStaticMeshColorSystem(this.GetFinalMesh(scene), colours,this);
     }
 
     protected override getNamePrefix(): string {
         return "InstRunner_";
     }
 }
-
-//TODO: Colours and other custom data too?
-// private colorUpdate(mesh:Mesh, instances:{[index:number]:StaticMeshInstanceDetails}){
-//     if(this.requireColorUpdate === false){return;}
-//     //TODO: This will not work with multiple scenes
-//     var instanceColors:Float32Array = new Float32Array(4 * this.currentInstanceNum);
-//     for (var i = 0; i < this.currentInstanceNum ; i++) {
-//         const offset = i*4;
-//         var color = [0,0,0,0];
-//         //set indexes on all instances
-//         if(instances[i] !== undefined){
-//             color = instances[i].getInstanceColor();
-//         }
-//         try{instanceColors.set(color,offset);}
-//         catch{console.warn("Tried to set outside erorr");}
-//     }
-//     mesh.thinInstanceSetBuffer("color",instanceColors,4);
-//     this.requireColorUpdate = false;
-// }
 
 export function runStaticMeshTransformSystem(scene: Scene, values: InstancedMeshTransform[],system:AsyncStaticMeshDefinition) {
     const finalMesh = system.GetFinalMesh(scene);
@@ -70,4 +57,31 @@ export function runStaticMeshTransformSystem(scene: Scene, values: InstancedMesh
     finalMesh.isVisible = values.length > 0;
 
     return true;
+}
+
+// Colours TODO: other custom data too?
+export function runStaticMeshColorSystem(mesh:Mesh, colours:IColourable[],system:AsyncStaticMeshDefinition){
+    if(!mesh){return;}
+    var instanceColors:Float32Array = new Float32Array(GetMeshInstanceNum(colours.length)*4);
+    var same = system.priorColors === undefined ? system.priorColors.length === instanceColors.length : true;
+    for (var i = 0; i < colours.length ; i++) {
+        const offset = i*4;
+        var color = colours[i];
+        instanceColors[offset] = color.currentColor.X;
+        instanceColors[offset+1] = color.currentColor.Y;
+        instanceColors[offset+2] = color.currentColor.Z;
+        instanceColors[offset+3] = color.currentColor.W;
+    }
+    if(system.priorColors && same) {
+        for(var j = 0; j < system.priorColors.length; j++) {
+            if(instanceColors[j] !== system.priorColors[j]) {
+                same=false;
+                break;
+            }
+        }
+    }
+
+    if(same) return;
+    mesh.thinInstanceSetBuffer("color", instanceColors, 4);
+    system.priorColors = instanceColors;
 }
