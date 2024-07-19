@@ -110,12 +110,8 @@ export class AsyncStaticMeshDefinition {
             }
         }
 
-        //Check if a similar asset has loaded yet?
-        if (SceneAsyncLoader.GetAsyncSceneLoader(scene, this.desiredPath, this.fileName) === undefined) {
-            new SceneAsyncLoader(this.desiredPath, this.fileName, scene, this.extensionType);
-        }
         //Make sure actual mesh is loaded
-        const asyncLoader = SceneAsyncLoader.GetAsyncSceneLoader(scene, this.desiredPath, this.fileName);
+        const asyncLoader = SceneAsyncLoader.GetAsyncSceneLoader(scene, this.desiredPath, this.fileName,this.extensionType);
         await asyncLoader.getWaitForFullyLoadPromise();
 
         //Extract submeshes that we want
@@ -228,13 +224,12 @@ export class AsyncStaticMeshDefinition {
         return newClone;
     }
 
-    protected async populateMeshClone(details: StaticMeshCloneDetails): Promise<null> {
+    protected async populateMeshClone(details: StaticMeshCloneDetails): Promise<void> {
         await this.loadInMesh(details.GetScene());
         const finalMesh = this.GetFinalMesh(details.GetScene());
         if (finalMesh !== null && finalMesh !== undefined) {
-            details.createClone(true);
+            details.createClone();
         }
-        return null;
     }
 
     /** Instances that are CURRENTLY ACTIVE (not hidden etc) */

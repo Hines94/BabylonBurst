@@ -27,6 +27,7 @@ export class InstancedSkeletalMeshRenderSystem extends InstancedMeshRenderSystem
         //@ts-ignore - we know we just need to match the RunTransformSystem method
         return new AsyncSkeletalMeshInstanceRunner(filePath, meshName, mats, fileName, layerMask);
     }
+
     override RunTransformSystem(
         transformSystem: AsyncStaticMeshInstanceRunner,
         data: InstancedMeshData,

@@ -1,4 +1,4 @@
-import { BoundingBox, Material, Mesh, MultiMaterial, Observable, Scene, Vector3 } from "@babylonjs/core";
+import { BoundingBox, Material, Mesh, MultiMaterial, Observable, Quaternion, Scene, Vector3 } from "@babylonjs/core";
 import { InstancedMeshTransform } from "./Utils/InstanceMeshUtils.js";
 import { AsyncStaticMeshDefinition } from "./AsyncStaticMeshDefinition.js";
 import { GetAsyncSceneIdentifier } from "./Utils/SceneUtils.js";
@@ -14,7 +14,7 @@ import { Color4 } from "@babylonjs/core/Maths/math.color.js";
 export class StaticMeshCloneDetails {
     //The owning definition
     protected definition: AsyncStaticMeshDefinition;
-    private desiredScene: Scene = null;
+    protected desiredScene: Scene = null;
     GetScene() {
         return this.desiredScene;
     }
@@ -106,9 +106,13 @@ export class StaticMeshCloneDetails {
     }
 
     /** Sets the rotation of our clone Only (no pos/scale) (works with Async) */
-    setCloneRotation(newRot: Vector3) {
+    setCloneRotation(newRot: Vector3 | Quaternion) {
         var clone = this.desiredTransform.clone();
-        clone.rotation = newRot;
+        if(newRot instanceof Vector3) {
+            clone.rotation = newRot;
+        } else {
+            clone.rotation = newRot.toEulerAngles();
+        }
         this.setCloneTransform(clone);
     }
 
@@ -128,7 +132,7 @@ export class StaticMeshCloneDetails {
     }
 
     /** This is called when the master is loaded and our clone is ready */
-    createClone(bNotifyComplete: boolean) {
+    createClone() {
         if (this.bAwaitingDestroy === true) {
             return;
         }
@@ -149,9 +153,7 @@ export class StaticMeshCloneDetails {
             this.materials = this.definition.materials;
         }
 
-        if (bNotifyComplete) {
-            this.notifyCloneCreated();
-        }
+        this.notifyCloneCreated();
     }
 
     bAwaitingDestroy = false;

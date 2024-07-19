@@ -1,3 +1,5 @@
+import { AnimationGroup } from "@babylonjs/core";
+import { AnimationDetails, AsyncSkeletalMeshDefinition, SkeletalMeshCloneDetails } from "../AsyncAssets/AsyncSkeletalMesh";
 import { Component } from "../EntitySystem/Component";
 import { EntTransform, EntVector4 } from "../EntitySystem/CoreComponents";
 import { RegisteredType, Saved } from "../EntitySystem/TypeRegister";
@@ -35,6 +37,14 @@ export class SkeletalAnimationSpecifier extends Component {
 @RegisteredType(InstancedSkeletalRender,{RequiredComponents:[EntTransform,SkeletalAnimationSpecifier],comment:`Used to display a visual mesh on an Entity. Use animation controller to show desired anim.`})
 export class InstancedSkeletalRender extends InstancedRender {
 
+}
+
+@RegisteredType(ClonedSkeletalRender,{comment:'Allows direct access of bone positions rather than instanced which is vertex based but is less performant.'})
+export class ClonedSkeletalRender extends InstancedRender {
+    /** This will control the cloned mesh */
+    clone:SkeletalMeshCloneDetails;
+    description:AsyncSkeletalMeshDefinition;
+    playingAnimation:AnimationGroup;
 }
 
 @RegisteredType(HiddenEntity,{comment:`Use this to easily and quickly prevent an entity from being rendered`})

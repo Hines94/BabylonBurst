@@ -14,6 +14,7 @@ import { GetSystemOfType, preRenderLooper, renderLooper } from "@BabylonBurstCor
 import { AnimationInterpSystem } from "@BabylonBurstClient/Rendering/AnimationInterpSystem";
 import { RegisterDefaultCoreSystems } from "@BabylonBurstCore/GameLoop/GameSystemPriorities";
 import { InstancedSkeletalMeshRenderSystem } from "@BabylonBurstClient/Rendering/InstancedSkeletalMeshRenderSystem";
+import { ClonedSkeletalMeshSystem } from "@BabylonBurstClient/Rendering/ClonedSkeletalMeshSystem";
 
 function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
     if (GetSystemOfType(InstancedMeshRenderSystem)) {
@@ -22,6 +23,7 @@ function RegisterDefaultClientSystems(ecosystem: GameEcosystem) {
 
     new InstancedSkeletalMeshRenderSystem();
     new InstancedMeshRenderSystem();
+    new ClonedSkeletalMeshSystem();
     new AnimationInterpSystem();
     new LightingGameSystem();
     new ServerConnectionProcesserSystem();

@@ -3,7 +3,7 @@ import { Observable, Scene } from "@babylonjs/core";
 import { GetAllEditorObjectsOfType, editorObjectCategoriesChange } from "./ContentTypeTrackers";
 import { mainEditorScene } from "../HTML/CustomEditorHTML";
 import { SceneAsyncLoader } from "@BabylonBurstCore/AsyncAssets";
-import { ModelSpecifier } from "@BabylonBurstCore/Rendering/InstancedRender";
+import { ModelSpecifier } from "@BabylonBurstCore/Rendering/ModelSpecifier";
 
 export type ModelInformation = {
     specifier: ModelSpecifier;
@@ -91,10 +91,7 @@ async function GatherModelPaths(item: ContentItem, scene: Scene, allModels: Cont
         return;
     }
     const fullPath = item.parent.getItemLocation();
-    var sceneLoader = SceneAsyncLoader.GetAsyncSceneLoader(scene, fullPath, item.GetSaveName());
-    if (sceneLoader === undefined) {
-        sceneLoader = new SceneAsyncLoader(fullPath, item.GetSaveName(), scene, "." + item.extension);
-    }
+    var sceneLoader = SceneAsyncLoader.GetAsyncSceneLoader(scene, fullPath, item.GetSaveName(), "." + item.extension);
     await sceneLoader.performAsyncLoad();
     if (allModels != builtModels) {
         return;

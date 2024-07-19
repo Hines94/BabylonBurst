@@ -63,7 +63,7 @@ export function runStaticMeshTransformSystem(scene: Scene, values: InstancedMesh
 export function runStaticMeshColorSystem(mesh:Mesh, colours:IColourable[],system:AsyncStaticMeshDefinition){
     if(!mesh){return;}
     var instanceColors:Float32Array = new Float32Array(GetMeshInstanceNum(colours.length)*4);
-    var same = system.priorColors === undefined ? system.priorColors.length === instanceColors.length : true;
+    var same = system.priorColors === undefined ? true : system.priorColors.length === instanceColors.length;
     for (var i = 0; i < colours.length ; i++) {
         const offset = i*4;
         var color = colours[i];
